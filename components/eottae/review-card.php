@@ -57,6 +57,13 @@ if (!function_exists('eottae_review_card_html')) {
                 <?php echo eottae_review_stars_html($review['rating']); ?>
                 <span class="review-card__rating-num"><?php echo number_format($review['rating'], 1); ?></span>
             </div>
+            <?php if (!empty($review['shop_id'])) { ?>
+            <p class="review-card__shop">
+                <a href="<?php echo G5_BBS_URL; ?>/board.php?bo_table=<?php echo EOTTae_SHOP_TABLE; ?>&wr_id=<?php echo (int) $review['shop_id']; ?>">
+                    <?php echo $review['shop_name'] ? get_text($review['shop_name']) : '업체 보기'; ?>
+                </a>
+            </p>
+            <?php } ?>
             <div class="review-card__content">
                 <?php echo nl2br(get_text(strip_tags($review['content']))); ?>
             </div>

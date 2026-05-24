@@ -6,8 +6,9 @@ if (!$is_member) {
 }
 
 include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
+eottae_coupon_ensure_ready();
 
-eottae_coupon_ensure_welcome($member['mb_id']);
+$welcome = eottae_coupon_ensure_welcome($member['mb_id']);
 
 $active_coupons = eottae_coupon_get_member_list($member['mb_id'], 'active');
 $used_coupons = eottae_coupon_get_member_list($member['mb_id'], 'used');
@@ -17,7 +18,12 @@ g5_page_start('쿠폰함');
 ?>
 
 <main class="mypage-subpage">
+    <?php eottae_render_mypage_back(); ?>
     <h1 class="mypage-subpage__title">쿠폰함</h1>
+
+    <?php if (!empty($welcome['ok']) && empty($welcome['duplicate'])) { ?>
+    <p class="mypage-subpage__notice" role="status">신규 가입 웰컴 쿠폰이 발급되었습니다.</p>
+    <?php } ?>
 
     <section class="mypage-coupon-summary" style="margin-bottom:20px">
         <div class="mypage-coupon-summary__box" style="grid-column:1/-1">

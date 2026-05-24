@@ -2793,6 +2793,49 @@ body.eottae-page .hd_sch_wr {
   font-weight: 800;
 }
 
+.mypage-subpage__back {
+  margin: 0 0 12px;
+}
+
+.mypage-subpage__back a {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--eottae-muted);
+  text-decoration: none;
+}
+
+.mypage-subpage__back a:hover {
+  color: var(--eottae-primary);
+}
+
+.mypage-subpage__notice {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #e6fcfd;
+  color: #004fb0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.review-card__shop {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.review-card__shop a {
+  color: var(--eottae-primary);
+  text-decoration: none;
+}
+
+.shop-save-btn--guest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
 .mypage-point-list {
   list-style: none;
   margin: 0;

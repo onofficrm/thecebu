@@ -27,7 +27,7 @@ $is_ad = isset($view['wr_link2']) && stripos((string) $view['wr_link2'], 'ad') !
 
     <header class="shop-detail-page__topbar">
         <a href="<?php echo $list_href ? $list_href : eottae_shop_list_url(); ?>" class="shop-detail-page__back">← 내주변 목록</a>
-        <span class="shop-detail-page__save-wrap"><?php eottae_render_shop_save_button($view['wr_id'], $shop_is_saved); ?></span>
+        <span class="shop-detail-page__save-wrap"><?php eottae_render_shop_save_button($view['wr_id'], $shop_is_saved, $share_url); ?></span>
     </header>
 
     <div class="shop-detail-page__layout">

@@ -352,7 +352,12 @@
         .then(function (data) {
           btn.disabled = false;
           if (!data.success) {
-            alert(data.message || '처리에 실패했습니다.');
+            var msg = data.message || '처리에 실패했습니다.';
+            if (msg.indexOf('로그인') !== -1) {
+              window.location.href = btn.getAttribute('data-login-url') || '/bbs/login.php';
+              return;
+            }
+            alert(msg);
             return;
           }
           var saved = !!data.saved;

@@ -127,6 +127,20 @@ if (!function_exists('eottae_coupon_seed_defaults')) {
     }
 }
 
+if (!function_exists('eottae_coupon_ensure_ready')) {
+    function eottae_coupon_ensure_ready()
+    {
+        if (eottae_coupon_tables_ready()) {
+            return true;
+        }
+
+        eottae_install_create_coupon_tables();
+        eottae_coupon_seed_defaults();
+
+        return eottae_coupon_tables_ready();
+    }
+}
+
 if (!function_exists('eottae_coupon_get_by_code')) {
     function eottae_coupon_get_by_code($cp_code)
     {

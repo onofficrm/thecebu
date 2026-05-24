@@ -144,6 +144,8 @@ sql_query(" insert into {$g5['board_new_table']} ( bo_table, wr_id, wr_parent, b
     values ( '{$bo_table}', '{$wr_id}', '{$wr_id}', '".G5_TIME_YMDHIS."', '{$mb_id}' ) ");
 sql_query(" update {$g5['board_table']} set bo_count_write = bo_count_write + 1 where bo_table = '{$bo_table}' ");
 
+eottae_sync_shop_review_stats($shop_wr_id);
+
 $photo_count = 0;
 if (!empty($_FILES['photo']['name']) && is_uploaded_file($_FILES['photo']['tmp_name'])) {
     $allowed = array('image/jpeg', 'image/png', 'image/webp');

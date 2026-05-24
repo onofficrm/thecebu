@@ -325,6 +325,14 @@ if (!function_exists('eottae_install_run')) {
         eottae_install_update_config();
         $log[] = array('ok' => true, 'action' => 'config', 'message' => 'cf_theme cleared, member skin = eottae');
 
+        if (function_exists('eottae_install_create_coupon_tables')) {
+            include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
+            eottae_install_create_coupon_tables();
+            foreach (eottae_coupon_seed_defaults() as $entry) {
+                $log[] = $entry;
+            }
+        }
+
         if (function_exists('run_event')) {
             run_event('cache_delete', 'board');
         }

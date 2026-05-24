@@ -601,9 +601,12 @@ if (!function_exists('eottae_get_shop_rows_by_ids')) {
             $map[(int) $row['wr_id']] = $row;
         }
 
+        $bo_table = EOTTae_SHOP_TABLE;
         $rows = array();
         foreach ($clean as $id) {
             if (isset($map[$id])) {
+                $map[$id]['bo_table'] = $bo_table;
+                $map[$id]['href'] = G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$id;
                 $rows[] = $map[$id];
             }
         }
@@ -797,16 +800,50 @@ if (!function_exists('eottae_hide_review')) {
     }
 }
 
-if (!function_exists('eottae_render_shop_save_button')) {
-    function eottae_render_shop_save_button($shop_wr_id, $is_saved = false)
+if (!function_exists('eottae_sync_shop_review_stats')) {
+    /**
+     * 업체 게시글 wr_comment(리뷰수)·wr_good(평점×10) 동기화 — 목록 정렬용
+     */
+    function eottae_sync_shop_review_stats($shop_wr_id)
     {
-        global $is_member;
+        global $g5;
 
-        if (!$is_member) {
+        $shop_wr_id = (int) $shop_wr_id;
+        if ($shop_wr_id < 1) {
             return;
         }
 
+        $summary = eottae_get_shop_review_summary($shop_wr_id);
+        $shop_table = $g5['write_prefix'].EOTTae_SHOP_TABLE;
+        $count = (int) $summary['count'];
+        $good = (int) round((float) $summary['average'] * 10);
+
+        sql_query(" update {$shop_table} set wr_comment = '{$count}', wr_good = '{$good}' where wr_id = '{$shop_wr_id}' ");
+    }
+}
+
+if (!function_exists('eottae_render_mypage_back')) {
+    function eottae_render_mypage_back()
+    {
+        echo '<p class="mypage-subpage__back"><a href="'.eottae_mypage_url().'">← MY</a></p>';
+    }
+}
+
+if (!function_exists('eottae_render_shop_save_button')) {
+    function eottae_render_shop_save_button($shop_wr_id, $is_saved = false, $return_url = '')
+    {
+        global $is_member;
+
         $shop_wr_id = (int) $shop_wr_id;
+        if ($return_url === '' && isset($_SERVER['REQUEST_URI'])) {
+            $return_url = (string) $_SERVER['REQUEST_URI'];
+        }
+
+        if (!$is_member) {
+            echo '<a href="'.eottae_login_url($return_url).'" class="shop-save-btn shop-save-btn--guest">찜하기</a>';
+            return;
+        }
+
         $token = eottae_shop_save_token(true);
         $saved = $is_saved ? '1' : '0';
         $label = $is_saved ? '찜 해제' : '찜하기';

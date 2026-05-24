@@ -20,6 +20,7 @@ g5_page_start('포인트');
 ?>
 
 <main class="mypage-subpage">
+    <?php eottae_render_mypage_back(); ?>
     <h1 class="mypage-subpage__title">포인트</h1>
 
     <section class="mypage-point-summary" style="margin-bottom:20px">

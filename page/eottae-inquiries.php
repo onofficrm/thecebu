@@ -11,6 +11,7 @@ g5_page_start('문의 내역');
 ?>
 
 <main class="mypage-subpage">
+    <?php eottae_render_mypage_back(); ?>
     <h1 class="mypage-subpage__title">문의 내역</h1>
 
     <?php if (empty($inquiries)) { ?>

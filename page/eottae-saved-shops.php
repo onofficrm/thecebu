@@ -17,6 +17,7 @@ g5_page_start('저장·최근 본 업체');
 ?>
 
 <main class="mypage-subpage">
+    <?php eottae_render_mypage_back(); ?>
     <h1 class="mypage-subpage__title">저장·최근 본 업체</h1>
 
     <nav class="mypage-tabs" aria-label="업체 목록 탭">

@@ -12,6 +12,7 @@ g5_page_start('내 리뷰');
 ?>
 
 <main class="mypage-subpage">
+    <?php eottae_render_mypage_back(); ?>
     <h1 class="mypage-subpage__title">내 리뷰</h1>
 
     <?php if (empty($reviews)) { ?>
