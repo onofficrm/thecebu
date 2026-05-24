@@ -205,6 +205,102 @@ function g5b_youtube_print_video_schema($write, $video_id = '')
 }
 
 /**
+ * wr_2 또는 작성자명 → 채널 표시명
+ */
+function g5b_youtube_channel_label($write)
+{
+    $label = '';
+    if (!empty($write['wr_2'])) {
+        $label = get_text(strip_tags($write['wr_2']));
+        $label = preg_replace('/\s*채널\s*$/u', '', $label);
+    }
+    if ($label === '' && !empty($write['wr_name'])) {
+        $label = get_text(strip_tags($write['wr_name']));
+    }
+
+    return trim((string) $label);
+}
+
+/**
+ * 채널 이니셜 아바타
+ */
+function g5b_youtube_avatar_html($label, $extra_class = '')
+{
+    $label = trim((string) $label);
+    $char = $label !== '' ? mb_substr($label, 0, 1, 'UTF-8') : '?';
+    $hue = abs(crc32($label)) % 360;
+    $class = 'board-yt-avatar'.($extra_class ? ' '.$extra_class : '');
+
+    return '<span class="'.htmlspecialchars($class, ENT_QUOTES, 'UTF-8').'" style="--yt-avatar-hue:'.$hue.'" aria-hidden="true">'
+        .htmlspecialchars($char, ENT_QUOTES, 'UTF-8').'</span>';
+}
+
+/**
+ * 상대 시간 (예: 3시간 전)
+ */
+function g5b_youtube_relative_time($datetime)
+{
+    $datetime = trim((string) $datetime);
+    if ($datetime === '' || $datetime === '0000-00-00 00:00:00') {
+        return '';
+    }
+
+    $ts = strtotime($datetime);
+    if (!$ts) {
+        return '';
+    }
+
+    $now = defined('G5_SERVER_TIME') ? G5_SERVER_TIME : time();
+    $diff = max(0, $now - $ts);
+
+    if ($diff < 60) {
+        return '방금 전';
+    }
+    if ($diff < 3600) {
+        return floor($diff / 60).'분 전';
+    }
+    if ($diff < 86400) {
+        return floor($diff / 3600).'시간 전';
+    }
+    if ($diff < 86400 * 7) {
+        return floor($diff / 86400).'일 전';
+    }
+    if ($diff < 86400 * 30) {
+        return floor($diff / (86400 * 7)).'주 전';
+    }
+    if ($diff < 86400 * 365) {
+        return floor($diff / (86400 * 30)).'개월 전';
+    }
+
+    return floor($diff / (86400 * 365)).'년 전';
+}
+
+/**
+ * 조회수 표기 (예: 조회수 1.2만회)
+ */
+function g5b_youtube_format_views($hit)
+{
+    $hit = (int) $hit;
+    if ($hit >= 100000000) {
+        $val = round($hit / 100000000, 1);
+
+        return '조회수 '.(fmod($val, 1.0) < 0.05 ? (string) (int) $val : number_format($val, 1)).'억회';
+    }
+    if ($hit >= 10000) {
+        $val = $hit / 10000;
+
+        return '조회수 '.(fmod($val, 1.0) < 0.05 ? (string) (int) $val : number_format($val, 1)).'만회';
+    }
+    if ($hit >= 1000) {
+        $val = $hit / 1000;
+
+        return '조회수 '.(fmod($val, 1.0) < 0.05 ? (string) (int) $val : number_format($val, 1)).'천회';
+    }
+
+    return '조회수 '.number_format($hit).'회';
+}
+
+/**
  * 목록용 썸네일 HTML
  */
 function g5b_youtube_thumb_html($video_id, $alt = '', $is_secret = false)

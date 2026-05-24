@@ -4,14 +4,28 @@
 
 /* Fallback: /img/common/no-youtube.svg (PHP: G5B_FALLBACK_NO_YOUTUBE_URL) */
 
+/* ── YouTube-like tokens (scoped) ── */
+.board-wrap--youtube-list {
+  --yt-bg: #f9f9f9;
+  --yt-text: #0f0f0f;
+  --yt-text-secondary: #606060;
+  --yt-chip-bg: rgba(0, 0, 0, 0.05);
+  --yt-chip-active-bg: #0f0f0f;
+  --yt-chip-active-text: #fff;
+  --yt-card-radius: 12px;
+  --yt-grid-gap: 16px 16px;
+  --yt-avatar-size: 36px;
+  margin-bottom: 0;
+}
+
 /* YouTube 썸네일 공통 */
 .board-yt-thumb {
   display: block;
   width: 100%;
   height: 100%;
-  border-radius: var(--radius-md);
+  border-radius: var(--yt-card-radius);
   overflow: hidden;
-  background: var(--board-media-bg);
+  background: #000;
 }
 
 .board-yt-thumb__img {
@@ -19,6 +33,11 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.2s ease;
+}
+
+.board-yt-card__link:hover .board-yt-thumb__img {
+  transform: scale(1.02);
 }
 
 .board-yt-thumb__img--placeholder {
@@ -29,7 +48,7 @@
 
 .board-yt-thumb--empty {
   min-height: 100%;
-  background: linear-gradient(145deg, var(--board-media-bg), var(--board-media-gradient-end));
+  background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
 }
 
 .board-yt-thumb--empty::before {
@@ -53,107 +72,277 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-muted);
+  color: #aaa;
   font-size: 1.5rem;
+  background: #1a1a1a;
 }
 
-.board-yt-play {
-  position: absolute;
-  inset: 0;
-  display: flex;
+/* 채널 아바타 */
+.board-yt-avatar {
+  flex-shrink: 0;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  pointer-events: none;
-  color: var(--board-on-media);
-  font-size: 2rem;
-  text-shadow: 0 2px 12px color-mix(in srgb, var(--color-text) 50%, transparent);
-  opacity: 0.9;
+  width: var(--yt-avatar-size);
+  height: var(--yt-avatar-size);
+  border-radius: 50%;
+  background: hsl(var(--yt-avatar-hue, 210), 55%, 45%);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
-/* youtube-list 목록 */
-.board-list--youtube-list .board-list__items {
+/* ── 카테고리 칩 (YouTube 스타일) ── */
+.board-wrap--youtube-list .board-cate--yt {
+  margin: 0 0 1rem;
+}
+
+.board-wrap--youtube-list .board-cate--yt__scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin: 0 -0.25rem;
+  padding: 0 0.25rem 0.25rem;
+}
+
+.board-wrap--youtube-list .board-cate--yt__scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.board-wrap--youtube-list .board-cate--yt ul,
+.board-wrap--youtube-list #bo_cate_ul {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.75rem;
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: 2px solid var(--color-text, #1e293b);
+  width: max-content;
+  min-width: 100%;
 }
 
-.board-list--youtube-list .board-list__item {
-  position: relative;
-  border-bottom: 1px solid var(--color-line, #e2e8f0);
-}
-
-.board-list--youtube-list .board-list__item--notice {
-  background: color-mix(in srgb, var(--color-primary, #2563eb) 5%, var(--color-bg, #fff));
-}
-
-.board-list--youtube-list .board-list__item-chk {
-  position: absolute;
-  top: var(--space-md, 1rem);
-  left: var(--space-md, 1rem);
-  z-index: 3;
-}
-
-.board-list--youtube-list .board-list__item-link {
-  display: flex;
-  gap: var(--space-lg, 1.5rem);
-  padding: var(--space-lg, 1.5rem);
+.board-wrap--youtube-list .board-cate--yt a,
+.board-wrap--youtube-list #bo_cate a {
+  display: inline-block;
+  padding: 0.45rem 0.75rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--yt-chip-bg);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--yt-text);
+  white-space: nowrap;
   text-decoration: none;
-  color: inherit;
-  transition: background var(--transition-fast, 150ms ease);
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
-.board-list--youtube-list .board-list__item-link:hover {
-  background: var(--color-surface, #f8fafc);
+.board-wrap--youtube-list .board-cate--yt a:hover,
+.board-wrap--youtube-list #bo_cate a:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--yt-text);
 }
 
-.board-list--youtube-list .board-list__thumb-wrap {
-  position: relative;
-  flex-shrink: 0;
-  width: 200px;
-  aspect-ratio: 16 / 9;
+.board-wrap--youtube-list #bo_cate_on {
+  background: var(--yt-chip-active-bg);
+  color: var(--yt-chip-active-text);
 }
 
-.board-list--youtube-list .board-yt-thumb-wrap {
-  display: block;
-  width: 100%;
-  height: 100%;
+.board-wrap--youtube-list #bo_cate_on:hover {
+  background: var(--yt-chip-active-bg);
+  color: var(--yt-chip-active-text);
 }
 
-.board-list--youtube-list .board-list__body {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
+/* ── 헤더 툴바 ── */
+.board-wrap--youtube-list .board-header--yt {
+  margin-bottom: 1rem;
+  padding-bottom: 0;
+  border-bottom: none;
+  justify-content: flex-end;
+}
+
+.board-wrap--youtube-list .board-actions--yt {
   gap: 0.35rem;
 }
 
-.board-list--youtube-list .board-title--yt .board-title__text {
-  font-size: var(--font-size-lg, 1.125rem);
-  font-weight: var(--font-weight-semibold, 600);
-  color: var(--color-text, #1e293b);
+.board-wrap--youtube-list .board-actions--yt__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding: 0 0.65rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--yt-text);
+  font-size: 0.875rem;
 }
 
-.board-list--youtube-list .board-list__item-link:hover .board-title__text {
-  color: var(--color-primary, #2563eb);
+.board-wrap--youtube-list .board-actions--yt__btn:hover {
+  background: rgba(0, 0, 0, 0.06);
 }
 
-.board-list--youtube-list .board-list__excerpt {
-  font-size: var(--font-size-sm, 0.875rem);
-  color: var(--color-muted, #64748b);
-  line-height: var(--line-height-relaxed, 1.75);
+.board-wrap--youtube-list .board-actions--yt__write {
+  background: var(--yt-text);
+  color: #fff;
+  padding: 0 1rem;
+  gap: 0.35rem;
+}
+
+.board-wrap--youtube-list .board-actions--yt__write:hover {
+  background: #272727;
+  color: #fff;
+}
+
+/* ── 그리드 ── */
+.board-yt-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--yt-grid-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.board-yt-card {
+  position: relative;
+  margin: 0;
+}
+
+.board-yt-card__link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.board-yt-card__media {
+  position: relative;
+  display: block;
+  border-radius: var(--yt-card-radius);
+  overflow: hidden;
+}
+
+.board-yt-card__thumb {
+  display: block;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+
+.board-yt-card__thumb .board-yt-thumb {
+  border-radius: 0;
+  height: 100%;
+}
+
+.board-yt-card__badge {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 2;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: rgba(15, 15, 15, 0.82);
+}
+
+.board-yt-card__badge--new {
+  left: auto;
+  right: 0.5rem;
+  background: #cc0000;
+}
+
+.board-yt-card__info {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding-right: 0.15rem;
+}
+
+.board-yt-card__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.board-yt-card__title {
+  display: block;
+  margin: 0 0 0.25rem;
+}
+
+.board-yt-card__title-text {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--yt-text);
 }
 
-.board-list--youtube-list .board-list__foot {
-  display: flex;
-  gap: var(--space-md, 1rem);
-  font-size: var(--font-size-sm, 0.875rem);
-  color: var(--color-muted, #64748b);
-  margin-top: auto;
+.board-yt-card__link:hover .board-yt-card__title-text {
+  color: var(--yt-text);
+}
+
+.board-yt-card__meta {
+  display: block;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--yt-text-secondary);
+}
+
+.board-yt-card__more {
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -0.15rem;
+  color: var(--yt-text-secondary);
+  font-size: 0.875rem;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.board-yt-card:hover .board-yt-card__more {
+  opacity: 1;
+}
+
+.board-yt-card__cmt {
+  margin-left: 0.25rem;
+  color: var(--yt-text-secondary);
+  font-size: 0.8125rem;
+}
+
+.board-yt-card__chk {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 4;
+}
+
+.board-yt-admin-chk {
+  margin-bottom: 0.75rem;
+}
+
+.board-yt-empty {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--yt-text-secondary);
+}
+
+.board-wrap--youtube-list .board-footer--yt {
+  display: none;
+}
+
+.board-wrap--youtube-list .board-paging--yt {
+  margin-top: 2rem;
 }
 
 /* 글쓰기 */
@@ -212,14 +401,6 @@
   margin-top: var(--space-sm, 0.5rem);
 }
 
-.board-list--youtube-list .youtube-thumb,
-.board-list--youtube-gallery .youtube-thumb {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
 .board-yt-fallback {
   padding: var(--space-3xl, 4rem) var(--space-xl, 2rem);
   text-align: center;
@@ -259,13 +440,32 @@
   padding-top: var(--space-xl, 2rem);
 }
 
-@media (max-width: 767px) {
-  .board-list--youtube-list .board-list__item-link {
-    flex-direction: column;
-    padding: var(--space-md, 1rem);
+@media (max-width: 1199px) {
+  .board-yt-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 639px) {
+  .board-wrap--youtube-list {
+    --yt-grid-gap: 24px 0;
   }
 
-  .board-list--youtube-list .board-list__thumb-wrap {
-    width: 100%;
+  .board-yt-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .board-wrap--youtube-list .board-actions--yt__write-label {
+    display: none;
+  }
+
+  .board-yt-card__more {
+    opacity: 1;
+  }
+}
+
+@media (min-width: 1400px) {
+  .board-yt-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }

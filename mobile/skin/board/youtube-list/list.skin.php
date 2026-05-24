@@ -3,17 +3,17 @@ if (!defined('_GNUBOARD_')) exit;
 
 include_once(G5_SKIN_PATH.'/board/_inc/g5b-youtube.php');
 
-$excerpt_len = G5_IS_MOBILE ? 60 : 100;
-
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
 ?>
 
 <div class="board-wrap board-wrap--youtube-list" id="bo_list" style="width:<?php echo $width; ?>">
 
     <?php if ($is_category) { ?>
-    <nav class="board-cate" id="bo_cate">
+    <nav class="board-cate board-cate--yt" id="bo_cate">
         <h2 class="sound_only"><?php echo $board['bo_subject'] ?> 카테고리</h2>
-        <ul id="bo_cate_ul"><?php echo $category_option ?></ul>
+        <div class="board-cate--yt__scroll">
+            <ul id="bo_cate_ul"><?php echo $category_option ?></ul>
+        </div>
     </nav>
     <?php } ?>
 
@@ -28,19 +28,19 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
     <input type="hidden" name="page" value="<?php echo $page ?>">
     <input type="hidden" name="sw" value="">
 
-    <header class="board-header" id="bo_btn_top">
+    <header class="board-header board-header--yt" id="bo_btn_top">
         <div class="board-header__info" id="bo_list_total">
-            <span class="board-header__count">Total <strong><?php echo number_format($total_count) ?></strong>건</span>
-            <span class="board-header__page"><?php echo $page ?> 페이지</span>
+            <span class="board-header__count sound_only">Total <strong><?php echo number_format($total_count) ?></strong>건</span>
+            <span class="board-header__page sound_only"><?php echo $page ?> 페이지</span>
         </div>
-        <ul class="board-actions btn_bo_user">
-            <?php if ($admin_href) { ?><li><a href="<?php echo $admin_href ?>" class="btn_admin btn" title="관리자"><i class="fa fa-cog fa-spin fa-fw" aria-hidden="true"></i><span class="sound_only">관리자</span></a></li><?php } ?>
-            <?php if ($rss_href) { ?><li><a href="<?php echo $rss_href ?>" class="btn_b01 btn" title="RSS"><i class="fa fa-rss" aria-hidden="true"></i><span class="sound_only">RSS</span></a></li><?php } ?>
-            <li><button type="button" class="btn_bo_sch btn_b01 btn" title="검색"><i class="fa fa-search" aria-hidden="true"></i><span class="sound_only">검색</span></button></li>
-            <?php if ($write_href) { ?><li><a href="<?php echo $write_href ?>" class="board-actions__write btn_b01 btn" title="글쓰기"><i class="fa fa-pencil" aria-hidden="true"></i><span>글쓰기</span></a></li><?php } ?>
+        <ul class="board-actions btn_bo_user board-actions--yt">
+            <?php if ($admin_href) { ?><li><a href="<?php echo $admin_href ?>" class="btn_admin btn board-actions--yt__btn" title="관리자"><i class="fa fa-cog fa-fw" aria-hidden="true"></i><span class="sound_only">관리자</span></a></li><?php } ?>
+            <?php if ($rss_href) { ?><li><a href="<?php echo $rss_href ?>" class="btn_b01 btn board-actions--yt__btn" title="RSS"><i class="fa fa-rss" aria-hidden="true"></i><span class="sound_only">RSS</span></a></li><?php } ?>
+            <li><button type="button" class="btn_bo_sch btn_b01 btn board-actions--yt__btn" title="검색"><i class="fa fa-search" aria-hidden="true"></i><span class="sound_only">검색</span></button></li>
+            <?php if ($write_href) { ?><li><a href="<?php echo $write_href ?>" class="board-actions__write btn_b01 btn board-actions--yt__btn board-actions--yt__write" title="글쓰기"><i class="fa fa-video-camera" aria-hidden="true"></i><span class="board-actions--yt__write-label">영상 등록</span></a></li><?php } ?>
             <?php if ($is_admin == 'super' || $is_auth) { ?>
             <li>
-                <button type="button" class="btn_more_opt is_list_btn btn_b01 btn" title="옵션"><i class="fa fa-ellipsis-v" aria-hidden="true"></i></button>
+                <button type="button" class="btn_more_opt is_list_btn btn_b01 btn board-actions--yt__btn" title="옵션"><i class="fa fa-ellipsis-v" aria-hidden="true"></i></button>
                 <?php if ($is_checkbox) { ?>
                 <ul class="more_opt is_list_btn">
                     <li><button type="submit" name="btn_submit" value="선택삭제" onclick="document.pressed=this.value"><i class="fa fa-trash-o" aria-hidden="true"></i> 선택삭제</button></li>
@@ -54,7 +54,7 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
     </header>
 
     <?php if ($is_checkbox) { ?>
-    <div class="board-list__chkall all_chk chk_box">
+    <div class="board-list__chkall all_chk chk_box board-yt-admin-chk">
         <input type="checkbox" id="chkall" onclick="if (this.checked) all_checked(true); else all_checked(false);" class="selec_chk">
         <label for="chkall"><span></span><b>전체선택</b></label>
     </div>
@@ -62,49 +62,53 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
 
     <div class="board-list board-list--youtube-list">
         <?php if (count($list) == 0) { ?>
-        <p class="board-list__empty">게시물이 없습니다.</p>
+        <p class="board-list__empty board-yt-empty">등록된 영상이 없습니다.</p>
         <?php } else { ?>
-        <ul class="board-list__items">
+        <ul class="board-yt-grid">
         <?php for ($i=0; $i<count($list); $i++) {
             $is_secret = isset($list[$i]['wr_option']) && strstr($list[$i]['wr_option'], 'secret');
             $yt_id = g5b_youtube_id_from_write($list[$i]);
             $thumb_html = g5b_youtube_thumb_html($yt_id, $list[$i]['subject'], $is_secret);
-            $summary = '';
-            if (!empty($list[$i]['wr_2']) && !$is_secret) {
-                $summary = cut_str(get_text(strip_tags($list[$i]['wr_2'])), $excerpt_len, '…');
-            } elseif (!empty($list[$i]['list_content']) && !$is_secret) {
-                $summary = cut_str(strip_tags($list[$i]['list_content']), $excerpt_len, '…');
+            $channel = g5b_youtube_channel_label($list[$i]);
+            $rel_time = g5b_youtube_relative_time(isset($list[$i]['wr_datetime']) ? $list[$i]['wr_datetime'] : '');
+            $views = g5b_youtube_format_views($list[$i]['wr_hit']);
+            $meta_parts = array();
+            if ($channel !== '') {
+                $meta_parts[] = $channel;
             }
+            if ($views !== '') {
+                $meta_parts[] = $views;
+            }
+            if ($rel_time !== '') {
+                $meta_parts[] = $rel_time;
+            }
+            $meta_line = implode(' • ', $meta_parts);
         ?>
-            <li class="board-list__item <?php if ($list[$i]['is_notice']) echo 'board-list__item--notice bo_notice'; ?>">
+            <li class="board-yt-card <?php if ($list[$i]['is_notice']) echo 'board-yt-card--notice bo_notice'; ?>">
                 <?php if ($is_checkbox) { ?>
-                <div class="board-list__item-chk td_chk chk_box">
+                <div class="board-yt-card__chk chk_box">
                     <input type="checkbox" name="chk_wr_id[]" value="<?php echo $list[$i]['wr_id'] ?>" id="chk_wr_id_<?php echo $i ?>" class="selec_chk">
                     <label for="chk_wr_id_<?php echo $i ?>"><span></span><b class="sound_only"><?php echo $list[$i]['subject'] ?></b></label>
                 </div>
                 <?php } ?>
-                <a href="<?php echo $list[$i]['href'] ?>" class="board-list__item-link">
-                    <span class="board-list__thumb-wrap">
-                        <span class="board-yt-thumb-wrap"><?php echo $thumb_html; ?></span>
-                        <?php if ($yt_id && !$is_secret) { ?><span class="board-yt-play" aria-hidden="true"><i class="fa fa-play" aria-hidden="true"></i></span><?php } ?>
+                <a href="<?php echo $list[$i]['href'] ?>" class="board-yt-card__link">
+                    <span class="board-yt-card__media">
+                        <span class="board-yt-card__thumb"><?php echo $thumb_html; ?></span>
+                        <?php if ($list[$i]['is_notice']) { ?><span class="board-yt-card__badge board-yt-card__badge--notice">공지</span><?php } ?>
+                        <?php if ($list[$i]['icon_new']) { ?><span class="board-yt-card__badge board-yt-card__badge--new">NEW</span><?php } ?>
                     </span>
-                    <span class="board-list__body">
-                        <span class="board-list__meta">
-                            <?php if ($list[$i]['is_notice']) { ?><span class="notice_icon board-badge board-badge--notice">공지</span><?php } ?>
-                            <time class="board-list__date"><?php echo $list[$i]['datetime2'] ?></time>
+                    <span class="board-yt-card__info">
+                        <?php echo g5b_youtube_avatar_html($channel, 'board-yt-card__avatar'); ?>
+                        <span class="board-yt-card__text">
+                            <span class="board-yt-card__title">
+                                <?php echo $list[$i]['icon_reply'] ?>
+                                <?php if (isset($list[$i]['icon_secret'])) echo rtrim($list[$i]['icon_secret']); ?>
+                                <span class="board-yt-card__title-text"><?php echo $list[$i]['subject'] ?></span>
+                                <?php if ($list[$i]['comment_cnt']) { ?><span class="cnt_cmt board-yt-card__cmt"><?php echo $list[$i]['wr_comment']; ?></span><?php } ?>
+                            </span>
+                            <?php if ($meta_line) { ?><span class="board-yt-card__meta"><?php echo htmlspecialchars($meta_line, ENT_QUOTES, 'UTF-8'); ?></span><?php } ?>
                         </span>
-                        <span class="board-title board-title--yt">
-                            <?php echo $list[$i]['icon_reply'] ?>
-                            <?php if (isset($list[$i]['icon_secret'])) echo rtrim($list[$i]['icon_secret']); ?>
-                            <span class="board-title__text"><?php echo $list[$i]['subject'] ?></span>
-                            <?php if ($list[$i]['icon_new']) echo '<span class="new_icon board-badge board-badge--new">N</span>'; ?>
-                            <?php if ($list[$i]['comment_cnt']) { ?><span class="cnt_cmt board-list__cmt"><?php echo $list[$i]['wr_comment']; ?></span><?php } ?>
-                        </span>
-                        <?php if ($summary) { ?><span class="board-list__excerpt"><?php echo $summary ?></span><?php } ?>
-                        <span class="board-list__foot">
-                            <span class="board-list__author"><?php echo $list[$i]['name'] ?></span>
-                            <span class="board-list__hit"><i class="fa fa-eye" aria-hidden="true"></i> <?php echo number_format($list[$i]['wr_hit']) ?></span>
-                        </span>
+                        <span class="board-yt-card__more" aria-hidden="true"><i class="fa fa-ellipsis-v" aria-hidden="true"></i></span>
                     </span>
                 </a>
             </li>
@@ -113,12 +117,12 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
         <?php } ?>
     </div>
 
-    <nav class="board-paging" aria-label="게시판 페이지"><?php echo $write_pages; ?></nav>
+    <nav class="board-paging board-paging--yt" aria-label="게시판 페이지"><?php echo $write_pages; ?></nav>
 
     <?php if ($write_href) { ?>
-    <footer class="board-footer bo_fx">
+    <footer class="board-footer bo_fx board-footer--yt">
         <ul class="board-actions btn_bo_user">
-            <?php if ($write_href) { ?><li><a href="<?php echo $write_href ?>" class="board-actions__write btn_b01 btn"><i class="fa fa-pencil" aria-hidden="true"></i><span>글쓰기</span></a></li><?php } ?>
+            <?php if ($write_href) { ?><li><a href="<?php echo $write_href ?>" class="board-actions__write btn_b01 btn"><i class="fa fa-video-camera" aria-hidden="true"></i><span>영상 등록</span></a></li><?php } ?>
         </ul>
     </footer>
     <?php } ?>
