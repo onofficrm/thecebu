@@ -173,6 +173,27 @@
       "children": []
     },
     {
+      "name": "내주변",
+      "url": "/bbs/board.php?bo_table=shop",
+      "target": "_self",
+      "order": 2,
+      "children": []
+    },
+    {
+      "name": "커뮤니티",
+      "url": "/bbs/board.php?bo_table=community",
+      "target": "_self",
+      "order": 3,
+      "children": []
+    },
+    {
+      "name": "MY",
+      "url": "/page/eottae-mypage.php",
+      "target": "_self",
+      "order": 4,
+      "children": []
+    },
+    {
       "name": "회사소개",
       "url": "/page/about.php",
       "target": "_self",
