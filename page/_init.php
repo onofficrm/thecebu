@@ -9,6 +9,7 @@ if (isset($_SERVER['SCRIPT_FILENAME']) && basename($_SERVER['SCRIPT_FILENAME']) 
 }
 
 if (!defined('_GNUBOARD_')) {
+    chdir(dirname(__FILE__).'/..');
     include_once(dirname(__FILE__).'/../_common.php');
 }
 
