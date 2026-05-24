@@ -930,3 +930,270 @@ if (!function_exists('eottae_seed_youtube_urls')) {
         return $logs;
     }
 }
+
+if (!function_exists('eottae_seed_gallery_table')) {
+    function eottae_seed_gallery_table()
+    {
+        return defined('EOTTae_GALLERY_TABLE') ? EOTTae_GALLERY_TABLE : 'gallery';
+    }
+}
+
+if (!function_exists('eottae_seed_gallery_board_ready')) {
+    function eottae_seed_gallery_board_ready()
+    {
+        global $g5;
+
+        $bo_table = eottae_seed_gallery_table();
+        $row = sql_fetch(" select count(*) as cnt from {$g5['board_table']} where bo_table = '".sql_escape_string($bo_table)."' ");
+
+        return !empty($row['cnt']);
+    }
+}
+
+if (!function_exists('eottae_seed_gallery_exists')) {
+    function eottae_seed_gallery_exists($subject)
+    {
+        global $g5;
+
+        $bo_table = eottae_seed_gallery_table();
+        $write_table = $g5['write_prefix'].$bo_table;
+        $subject = sql_escape_string($subject);
+        $row = sql_fetch(" select wr_id from {$write_table} where wr_subject = '{$subject}' and wr_is_comment = 0 limit 1 ");
+
+        return !empty($row['wr_id']);
+    }
+}
+
+if (!function_exists('eottae_seed_fetch_remote_file')) {
+    function eottae_seed_fetch_remote_file($url, $dest_path)
+    {
+        $url = trim((string) $url);
+        if ($url === '') {
+            return false;
+        }
+
+        $ctx = stream_context_create(array(
+            'http' => array(
+                'timeout' => 30,
+                'user_agent' => 'thecebu-seed/1.0',
+                'follow_location' => 1,
+            ),
+            'ssl' => array(
+                'verify_peer' => true,
+                'verify_peer_name' => true,
+            ),
+        ));
+
+        $bytes = @file_get_contents($url, false, $ctx);
+        if ($bytes === false || $bytes === '') {
+            return false;
+        }
+
+        return @file_put_contents($dest_path, $bytes) !== false;
+    }
+}
+
+if (!function_exists('eottae_seed_attach_board_image')) {
+    function eottae_seed_attach_board_image($bo_table, $wr_id, $source_path, $source_name)
+    {
+        global $g5;
+
+        $wr_id = (int) $wr_id;
+        if ($wr_id < 1 || !is_file($source_path)) {
+            return false;
+        }
+
+        $bo_table = sql_escape_string($bo_table);
+        $exists = sql_fetch(" select bf_no from {$g5['board_file_table']} where bo_table = '{$bo_table}' and wr_id = '{$wr_id}' and bf_no = '0' limit 1 ");
+        if (is_array($exists) && isset($exists['bf_no'])) {
+            return true;
+        }
+
+        $dest_dir = G5_DATA_PATH.'/file/'.$bo_table;
+        if (!is_dir($dest_dir)) {
+            @mkdir($dest_dir, G5_DIR_PERMISSION, true);
+        }
+
+        $ext = strtolower(pathinfo($source_path, PATHINFO_EXTENSION));
+        if ($ext === '') {
+            $ext = 'jpg';
+        }
+        $bf_file = md5(uniqid((string) mt_rand(), true)).'.'.$ext;
+        if (!@copy($source_path, $dest_dir.'/'.$bf_file)) {
+            return false;
+        }
+
+        $size = (int) filesize($dest_dir.'/'.$bf_file);
+        $info = @getimagesize($dest_dir.'/'.$bf_file);
+        $bf_width = isset($info[0]) ? (int) $info[0] : 0;
+        $bf_height = isset($info[1]) ? (int) $info[1] : 0;
+        $bf_type = isset($info[2]) ? (int) $info[2] : 0;
+        $bf_source = sql_escape_string($source_name);
+
+        sql_query(" insert into {$g5['board_file_table']} set
+            bo_table = '{$bo_table}',
+            wr_id = '{$wr_id}',
+            bf_no = '0',
+            bf_source = '{$bf_source}',
+            bf_file = '{$bf_file}',
+            bf_content = '',
+            bf_fileurl = '',
+            bf_thumburl = '',
+            bf_storage = '',
+            bf_download = 0,
+            bf_filesize = '{$size}',
+            bf_width = '{$bf_width}',
+            bf_height = '{$bf_height}',
+            bf_type = '{$bf_type}',
+            bf_datetime = '".G5_TIME_YMDHIS."' ");
+
+        $write_table = $g5['write_prefix'].$bo_table;
+        sql_query(" update {$write_table} set wr_file = wr_file + 1 where wr_id = '{$wr_id}' ");
+
+        return true;
+    }
+}
+
+if (!function_exists('eottae_seed_insert_gallery')) {
+    function eottae_seed_insert_gallery($data)
+    {
+        global $g5;
+
+        if (!eottae_seed_gallery_board_ready()) {
+            return eottae_seed_log('gallery', 'gallery board missing — run install first', false);
+        }
+
+        $bo_table = eottae_seed_gallery_table();
+        $write_table = $g5['write_prefix'].$bo_table;
+
+        if (eottae_seed_gallery_exists($data['wr_subject'])) {
+            return eottae_seed_log('gallery', $data['wr_subject'].' already exists', true);
+        }
+
+        $image_url = isset($data['image_url']) ? trim((string) $data['image_url']) : '';
+        if ($image_url === '') {
+            return eottae_seed_log('gallery', $data['wr_subject'].' missing image_url', false);
+        }
+
+        $subject = sql_escape_string($data['wr_subject']);
+        $content = sql_escape_string(isset($data['wr_content']) ? $data['wr_content'] : '<p>'.get_text($data['wr_subject']).'</p>');
+        $ca_name = sql_escape_string(isset($data['ca_name']) ? $data['ca_name'] : '풍경');
+        $mb_id = sql_escape_string('admin');
+        $wr_name = sql_escape_string('세부어때');
+        $wr_seo_title = sql_escape_string('gallery-'.md5($data['wr_subject']));
+        $wr_hit = isset($data['wr_hit']) ? (int) $data['wr_hit'] : mt_rand(20, 400);
+        $wr_datetime = isset($data['wr_datetime']) ? sql_escape_string($data['wr_datetime']) : G5_TIME_YMDHIS;
+
+        $sql = " insert into {$write_table} set
+            wr_num = (SELECT IFNULL(MIN(wr_num) - 1, -1) FROM {$write_table} as sq),
+            wr_reply = '',
+            wr_comment = 0,
+            ca_name = '{$ca_name}',
+            wr_option = 'html1',
+            wr_subject = '{$subject}',
+            wr_content = '{$content}',
+            wr_seo_title = '{$wr_seo_title}',
+            wr_link1 = '',
+            wr_link2 = '',
+            mb_id = '{$mb_id}',
+            wr_password = '',
+            wr_name = '{$wr_name}',
+            wr_email = '',
+            wr_homepage = '',
+            wr_datetime = '{$wr_datetime}',
+            wr_last = '{$wr_datetime}',
+            wr_ip = '127.0.0.1',
+            wr_hit = '{$wr_hit}',
+            wr_1 = '', wr_2 = '', wr_3 = '', wr_4 = '', wr_5 = '',
+            wr_6 = '', wr_7 = '', wr_8 = '', wr_9 = '', wr_10 = '' ";
+        sql_query($sql);
+
+        $wr_id = sql_insert_id();
+        sql_query(" update {$write_table} set wr_parent = '{$wr_id}' where wr_id = '{$wr_id}' ");
+        sql_query(" insert into {$g5['board_new_table']} ( bo_table, wr_id, wr_parent, bn_datetime, mb_id )
+            values ( '{$bo_table}', '{$wr_id}', '{$wr_id}', '{$wr_datetime}', '{$mb_id}' ) ");
+        sql_query(" update {$g5['board_table']} set bo_count_write = bo_count_write + 1 where bo_table = '{$bo_table}' ");
+
+        $tmp = G5_DATA_PATH.'/tmp/gallery-seed-'.md5($image_url).'.jpg';
+        if (!is_dir(G5_DATA_PATH.'/tmp')) {
+            @mkdir(G5_DATA_PATH.'/tmp', G5_DIR_PERMISSION, true);
+        }
+        if (!eottae_seed_fetch_remote_file($image_url, $tmp)) {
+            return eottae_seed_log('gallery', $data['wr_subject'].' image download failed', false);
+        }
+
+        $source_name = preg_replace('/[^a-zA-Z0-9._-]+/', '-', $data['wr_subject']).'.jpg';
+        if (!eottae_seed_attach_board_image($bo_table, $wr_id, $tmp, $source_name)) {
+            @unlink($tmp);
+
+            return eottae_seed_log('gallery', $data['wr_subject'].' image attach failed', false);
+        }
+        @unlink($tmp);
+
+        return eottae_seed_log('gallery', $data['wr_subject'].' created wr_id='.$wr_id);
+    }
+}
+
+if (!function_exists('eottae_seed_get_sample_gallery_posts')) {
+    function eottae_seed_get_sample_gallery_posts()
+    {
+        $img = function ($id) {
+            return 'https://images.unsplash.com/'.$id.'?auto=format&fit=crop&q=80&w=900';
+        };
+
+        $samples = array(
+            array('wr_subject' => '오슬롭 고래상어 스노클링', 'ca_name' => '풍경', 'image_url' => $img('photo-1544551763-46a013bb70d5')),
+            array('wr_subject' => '막탄 해변 석양', 'ca_name' => '풍경', 'image_url' => $img('photo-1518509562904-e7ef99cdcc86')),
+            array('wr_subject' => '카와asan 폭포 트레킹', 'ca_name' => '풍경', 'image_url' => $img('photo-1544365558-35aa4afcf11f')),
+            array('wr_subject' => '세부 시티 야경', 'ca_name' => '풍경', 'image_url' => $img('photo-1514565131-fce0801e5785')),
+            array('wr_subject' => '모알보알 비치 리조트', 'ca_name' => '풍경', 'image_url' => $img('photo-1506929562875-bb42485412de')),
+            array('wr_subject' => '탑스 힐 전망대', 'ca_name' => '풍경', 'image_url' => $img('photo-1559827260-dc66d52bef19')),
+            array('wr_subject' => '나팔링 스쿠버다이빙', 'ca_name' => '풍경', 'image_url' => $img('photo-1540204353-112890a803e6')),
+            array('wr_subject' => '반탸얀 섬 호핑', 'ca_name' => '풍경', 'image_url' => $img('photo-1473496167767-0a4ca0e7e4c4')),
+            array('wr_subject' => '마젤란 십자가', 'ca_name' => '일상', 'image_url' => $img('photo-1582719478133-9054791a207b')),
+            array('wr_subject' => '산 페드로 요새', 'ca_name' => '일상', 'image_url' => $img('photo-1566073771259-6a8506099945')),
+            array('wr_subject' => 'IT Park 저녁 풍경', 'ca_name' => '일상', 'image_url' => $img('photo-1480714378408-67cf0d13bc1b')),
+            array('wr_subject' => '아얄라 몰 주말', 'ca_name' => '일상', 'image_url' => $img('photo-1441986300917-64674bd600d8')),
+            array('wr_subject' => '세부 로컬 시장', 'ca_name' => '일상', 'image_url' => $img('photo-1555396273-367ea4eb4db5')),
+            array('wr_subject' => '막탄 새벽 해변 산책', 'ca_name' => '일상', 'image_url' => $img('photo-1507525428034-b723cf961d3e')),
+            array('wr_subject' => 'JPark 리조트 풀', 'ca_name' => '풍경', 'image_url' => $img('photo-1571896349842-33c89424de2d')),
+            array('wr_subject' => '세부 한식당 비빔밥', 'ca_name' => '맛집', 'image_url' => $img('photo-1574483150660-440fbf33f4e8')),
+            array('wr_subject' => '막탄 해산물 레스토랑', 'ca_name' => '맛집', 'image_url' => $img('photo-1559339352-11d035aa65de')),
+            array('wr_subject' => '세부 로컬 카페', 'ca_name' => '맛집', 'image_url' => $img('photo-1495474472287-4d71bcdd2085')),
+            array('wr_subject' => '필리핀 BBQ 디너', 'ca_name' => '맛집', 'image_url' => $img('photo-1529042410751-026cb0f060b4')),
+            array('wr_subject' => '망고 스무디 한 잔', 'ca_name' => '맛집', 'image_url' => $img('photo-1623065420722-1795d7a73a06')),
+            array('wr_subject' => '세부 교민 모임', 'ca_name' => '기타', 'image_url' => $img('photo-1529156069898-49953e39b3ac')),
+            array('wr_subject' => '주말 골프 라운딩', 'ca_name' => '기타', 'image_url' => $img('photo-1535131749006-b7f58c990269')),
+            array('wr_subject' => '세부 국제학교 행사', 'ca_name' => '기타', 'image_url' => $img('photo-1523580494863-6f3031224c94')),
+            array('wr_subject' => '보홀 데이트립', 'ca_name' => '풍경', 'image_url' => $img('photo-1501785888041-afed7782798e')),
+            array('wr_subject' => '초콜릿 힐스 전망', 'ca_name' => '풍경', 'image_url' => $img('photo-1464822759023-fed622ff2c3b')),
+            array('wr_subject' => '카나와an 해양 보호구역', 'ca_name' => '풍경', 'image_url' => $img('photo-1551244072-8fb912328172')),
+            array('wr_subject' => '세부 항공뷰', 'ca_name' => '풍경', 'image_url' => $img('photo-1436491865339-9a109754c83d')),
+            array('wr_subject' => '랑라스 섬 피크닉', 'ca_name' => '풍경', 'image_url' => $img('photo-1504280390367-361c6d9f38f4')),
+            array('wr_subject' => '세부 트라이시클', 'ca_name' => '일상', 'image_url' => $img('photo-1558618666-fcd25c85cd64')),
+            array('wr_subject' => '비치 클럽 주말', 'ca_name' => '기타', 'image_url' => $img('photo-1514933651103-005eec06c04b')),
+        );
+
+        $offset = 0;
+        foreach ($samples as $idx => &$sample) {
+            $sample['wr_datetime'] = eottae_seed_community_datetime(-3600 * ($idx + 1 + $offset));
+            $sample['wr_content'] = '<p>'.get_text($sample['wr_subject']).' — 세부어때 갤러리 샘플</p>';
+        }
+        unset($sample);
+
+        return $samples;
+    }
+}
+
+if (!function_exists('eottae_seed_gallery_samples_run')) {
+    function eottae_seed_gallery_samples_run()
+    {
+        $logs = array();
+        foreach (eottae_seed_get_sample_gallery_posts() as $post) {
+            $logs[] = eottae_seed_insert_gallery($post);
+            usleep(200000);
+        }
+
+        return $logs;
+    }
+}

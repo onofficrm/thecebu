@@ -60,6 +60,14 @@ switch ($action) {
         ));
         break;
 
+    case 'gallery':
+        $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 27;
+        eottae_api_json(array(
+            'success' => true,
+            'items'   => eottae_api_get_gallery_posts($limit),
+        ));
+        break;
+
     case 'home':
     default:
         eottae_api_json(array(

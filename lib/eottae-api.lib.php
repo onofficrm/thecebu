@@ -440,6 +440,95 @@ if (!function_exists('eottae_api_get_youtube_posts')) {
     }
 }
 
+if (!function_exists('eottae_api_gallery_table')) {
+    function eottae_api_gallery_table()
+    {
+        return defined('EOTTae_GALLERY_TABLE') ? EOTTae_GALLERY_TABLE : 'gallery';
+    }
+}
+
+if (!function_exists('eottae_api_gallery_board_ready')) {
+    function eottae_api_gallery_board_ready()
+    {
+        global $g5;
+
+        $bo_table = eottae_api_gallery_table();
+        $row = sql_fetch(" select count(*) as cnt from {$g5['board_table']} where bo_table = '".sql_escape_string($bo_table)."' ");
+
+        return !empty($row['cnt']);
+    }
+}
+
+if (!function_exists('eottae_api_format_gallery_row')) {
+    function eottae_api_format_gallery_row($row)
+    {
+        if (!is_array($row) || empty($row['wr_id'])) {
+            return null;
+        }
+
+        $bo_table = eottae_api_gallery_table();
+        $wr_id = (int) $row['wr_id'];
+        $datetime = isset($row['wr_datetime']) ? $row['wr_datetime'] : '';
+        $ts = strtotime($datetime);
+        $is_new = $ts ? (G5_SERVER_TIME - $ts) < 86400 : false;
+        $hit = isset($row['wr_hit']) ? (int) $row['wr_hit'] : 0;
+
+        $item = array(
+            'wr_id'    => $wr_id,
+            'board'    => isset($row['ca_name']) && $row['ca_name'] !== '' ? get_text($row['ca_name']) : '풍경',
+            'title'    => isset($row['wr_subject']) ? get_text($row['wr_subject']) : '',
+            'comments' => isset($row['wr_comment']) ? (int) $row['wr_comment'] : 0,
+            'views'    => $hit,
+            'datetime' => $datetime,
+            'time'     => eottae_api_relative_time_label($datetime),
+            'is_new'   => $is_new,
+            'is_hot'   => false,
+            'url'      => G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$wr_id,
+            'thumb'    => '',
+        );
+
+        if (!function_exists('get_list_thumbnail')) {
+            include_once G5_LIB_PATH.'/thumbnail.lib.php';
+        }
+        $thumb = get_list_thumbnail($bo_table, $wr_id, 400, 400, false, true);
+        if (!empty($thumb['src'])) {
+            $item['thumb'] = $thumb['src'];
+        }
+
+        return $item;
+    }
+}
+
+if (!function_exists('eottae_api_get_gallery_posts')) {
+    function eottae_api_get_gallery_posts($limit = 27)
+    {
+        global $g5;
+
+        if (!eottae_api_gallery_board_ready()) {
+            return array();
+        }
+
+        $limit = max(1, min(30, (int) $limit));
+        $bo_table = eottae_api_gallery_table();
+        $write_table = $g5['write_prefix'].$bo_table;
+
+        $result = sql_query(" select wr_id, ca_name, wr_subject, wr_comment, wr_hit, wr_datetime, wr_file
+            from {$write_table}
+            where wr_is_comment = 0 and wr_file > 0
+            order by wr_id desc
+            limit {$limit} ");
+        $items = array();
+        while ($row = sql_fetch_array($result)) {
+            $formatted = eottae_api_format_gallery_row($row);
+            if ($formatted && $formatted['thumb'] !== '') {
+                $items[] = $formatted;
+            }
+        }
+
+        return $items;
+    }
+}
+
 if (!function_exists('eottae_api_get_home_bundle')) {
     function eottae_api_get_home_bundle()
     {
@@ -448,10 +537,12 @@ if (!function_exists('eottae_api_get_home_bundle')) {
             'events'         => eottae_api_get_events(4),
             'community'      => eottae_api_get_community_home(),
             'youtube'        => eottae_api_get_youtube_posts(9),
+            'gallery_posts'  => eottae_api_get_gallery_posts(27),
             'urls'           => array(
                 'shop'      => G5_BBS_URL.'/board.php?bo_table='.EOTTae_SHOP_TABLE,
                 'community' => G5_BBS_URL.'/board.php?bo_table='.EOTTae_COMMUNITY_TABLE,
                 'youtube'   => G5_BBS_URL.'/board.php?bo_table='.eottae_api_youtube_table(),
+                'gallery'   => G5_BBS_URL.'/board.php?bo_table='.eottae_api_gallery_table(),
                 'mypage'    => G5_URL.'/page/eottae-mypage.php',
             ),
         );
