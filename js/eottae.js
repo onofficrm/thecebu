@@ -272,6 +272,64 @@
     });
   }
 
+  function initAdCarousel() {
+    var root = qs('[data-ad-carousel]');
+    if (!root) return;
+
+    var slides = qsa('[data-ad-slide]', root);
+    if (slides.length < 2) return;
+
+    var dots = qsa('[data-ad-dot]', root);
+    var current = 0;
+    var timer = null;
+    var delay = 5500;
+
+    function show(index) {
+      current = (index + slides.length) % slides.length;
+      slides.forEach(function (slide, i) {
+        slide.classList.toggle('is-active', i === current);
+      });
+      dots.forEach(function (dot, i) {
+        dot.classList.toggle('is-active', i === current);
+        dot.setAttribute('aria-selected', i === current ? 'true' : 'false');
+      });
+    }
+
+    function next() {
+      show(current + 1);
+    }
+
+    function start() {
+      stop();
+      timer = window.setInterval(next, delay);
+    }
+
+    function stop() {
+      if (timer) {
+        window.clearInterval(timer);
+        timer = null;
+      }
+    }
+
+    dots.forEach(function (dot) {
+      dot.addEventListener('click', function () {
+        var idx = parseInt(dot.getAttribute('data-ad-dot'), 10);
+        if (!isNaN(idx)) {
+          show(idx);
+          start();
+        }
+      });
+    });
+
+    root.addEventListener('mouseenter', stop);
+    root.addEventListener('mouseleave', start);
+    root.addEventListener('focusin', stop);
+    root.addEventListener('focusout', start);
+
+    show(0);
+    start();
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     document.body.classList.add('eottae-page');
     initShopRegisterWizard();
@@ -282,6 +340,7 @@
     initShopSave();
     initShopDetailGallery();
     initPhotoPreview();
+    initAdCarousel();
   });
 
   function initReviewModal() {

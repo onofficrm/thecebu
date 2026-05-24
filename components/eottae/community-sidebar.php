@@ -77,10 +77,5 @@ if (empty($featured) && function_exists('eottae_shop_from_write')) {
         <?php } ?>
     </section>
 
-    <section class="community-sidebar__ad">
-        <p class="community-sidebar__ad-kicker">사장님, 가게 홍보가 필요하신가요?</p>
-        <p class="community-sidebar__ad-text">세부어때에 무료로 업체를 등록하고 교민·여행객에게 알려보세요.</p>
-        <a href="<?php echo G5_BBS_URL; ?>/write.php?bo_table=<?php echo EOTTae_SHOP_TABLE; ?>" class="community-sidebar__ad-btn">무료 업소등록</a>
-        <span class="community-sidebar__ad-tag">AD</span>
-    </section>
+    <?php include G5_PATH.'/components/eottae/community-ad-carousel.php'; ?>
 </aside>
