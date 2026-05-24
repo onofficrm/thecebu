@@ -273,6 +273,103 @@ if (!function_exists('eottae_seed_get_sample_shops')) {
     }
 }
 
+if (!function_exists('eottae_seed_get_shop_wr_id')) {
+    function eottae_seed_get_shop_wr_id($subject)
+    {
+        global $g5;
+
+        $write_table = $g5['write_prefix'].EOTTae_SHOP_TABLE;
+        $subject = sql_escape_string($subject);
+        $row = sql_fetch(" select wr_id from {$write_table} where wr_subject = '{$subject}' limit 1 ");
+
+        return !empty($row['wr_id']) ? (int) $row['wr_id'] : 0;
+    }
+}
+
+if (!function_exists('eottae_seed_attach_shop_image')) {
+    function eottae_seed_attach_shop_image($subject, $source_rel, $source_name)
+    {
+        global $g5;
+
+        $bo_table = EOTTae_SHOP_TABLE;
+        $wr_id = eottae_seed_get_shop_wr_id($subject);
+        if (!$wr_id) {
+            return eottae_seed_log('image', $subject.' not found', false);
+        }
+
+        $src = G5_PATH.'/'.$source_rel;
+        if (!is_file($src)) {
+            return eottae_seed_log('image', 'missing file '.$source_rel, false);
+        }
+
+        $exists = sql_fetch(" select bf_no from {$g5['board_file_table']} where bo_table = '{$bo_table}' and wr_id = '{$wr_id}' and bf_no = '0' ");
+        if (!empty($exists['bf_no']) || $exists['bf_no'] === '0') {
+            return eottae_seed_log('image', $subject.' image already attached', true);
+        }
+
+        $dest_dir = G5_DATA_PATH.'/file/'.$bo_table;
+        if (!is_dir($dest_dir)) {
+            @mkdir($dest_dir, G5_DIR_PERMISSION, true);
+        }
+
+        $ext = pathinfo($src, PATHINFO_EXTENSION);
+        if ($ext === '') {
+            $ext = 'jpg';
+        }
+        $bf_file = md5(uniqid((string) mt_rand(), true)).'.'.strtolower($ext);
+        if (!@copy($src, $dest_dir.'/'.$bf_file)) {
+            return eottae_seed_log('image', 'copy failed for '.$subject, false);
+        }
+
+        $size = (int) filesize($dest_dir.'/'.$bf_file);
+        $info = @getimagesize($dest_dir.'/'.$bf_file);
+        $bf_width = isset($info[0]) ? (int) $info[0] : 0;
+        $bf_height = isset($info[1]) ? (int) $info[1] : 0;
+        $bf_type = isset($info[2]) ? (int) $info[2] : 0;
+        $bf_source = sql_escape_string($source_name);
+
+        sql_query(" insert into {$g5['board_file_table']} set
+            bo_table = '{$bo_table}',
+            wr_id = '{$wr_id}',
+            bf_no = '0',
+            bf_source = '{$bf_source}',
+            bf_file = '{$bf_file}',
+            bf_content = '',
+            bf_fileurl = '',
+            bf_thumburl = '',
+            bf_storage = '',
+            bf_download = 0,
+            bf_filesize = '{$size}',
+            bf_width = '{$bf_width}',
+            bf_height = '{$bf_height}',
+            bf_type = '{$bf_type}',
+            bf_datetime = '".G5_TIME_YMDHIS."' ");
+
+        $write_table = $g5['write_prefix'].$bo_table;
+        sql_query(" update {$write_table} set wr_file = wr_file + 1 where wr_id = '{$wr_id}' ");
+
+        return eottae_seed_log('image', $subject.' image attached (wr_id='.$wr_id.')');
+    }
+}
+
+if (!function_exists('eottae_seed_attach_sample_images')) {
+    function eottae_seed_attach_sample_images()
+    {
+        return array(
+            eottae_seed_attach_shop_image(
+                'J Park Korean BBQ IT Park',
+                'img/eottae/shop-jpark-itp.jpg',
+                'shop-jpark-itp.jpg'
+            ),
+            eottae_seed_attach_shop_image(
+                'Korean Mart Ayala Center Cebu',
+                'img/eottae/shop-kmart-ayala.jpg',
+                'shop-kmart-ayala.jpg'
+            ),
+        );
+    }
+}
+
 if (!function_exists('eottae_seed_run')) {
     function eottae_seed_run()
     {
