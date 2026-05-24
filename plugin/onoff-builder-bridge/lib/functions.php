@@ -97,27 +97,12 @@ if (!function_exists('onoff_builder_imports_json_path')) {
     }
 }
 
-if (!function_exists('onoff_builder_migrate_legacy_imports')) {
-    function onoff_builder_migrate_legacy_imports()
+if (!function_exists('onoff_builder_collect_meta_import_rows')) {
+    function onoff_builder_collect_meta_import_rows()
     {
-        static $done = false;
-        if ($done) {
-            return;
-        }
-        $done = true;
-
         $legacy_dir = ONOFF_BUILDER_DATA_PATH . '/imports';
         if (!is_dir($legacy_dir)) {
-            return;
-        }
-
-        $path = onoff_builder_imports_json_path();
-        if (is_file($path)) {
-            $raw = @file_get_contents($path);
-            $existing = $raw ? json_decode($raw, true) : null;
-            if (is_array($existing) && count($existing) > 0) {
-                return;
-            }
+            return array();
         }
 
         $items = array();
@@ -146,6 +131,75 @@ if (!function_exists('onoff_builder_migrate_legacy_imports')) {
             );
         }
 
+        return $items;
+    }
+}
+
+if (!function_exists('onoff_builder_sync_import_registry')) {
+    function onoff_builder_sync_import_registry()
+    {
+        static $done = false;
+        if ($done) {
+            return;
+        }
+        $done = true;
+
+        $meta_rows = onoff_builder_collect_meta_import_rows();
+        if ($meta_rows === array()) {
+            return;
+        }
+
+        $path = onoff_builder_imports_json_path();
+        $existing = array();
+        if (is_file($path)) {
+            $raw = @file_get_contents($path);
+            $decoded = $raw ? json_decode($raw, true) : null;
+            if (is_array($decoded)) {
+                $existing = $decoded;
+            }
+        }
+
+        $known = array();
+        foreach ($existing as $row) {
+            if (is_array($row) && !empty($row['id'])) {
+                $known[onoff_builder_sanitize_project_id($row['id'])] = true;
+            }
+        }
+
+        $changed = false;
+        foreach ($meta_rows as $row) {
+            if (empty($known[$row['id']])) {
+                $existing[] = $row;
+                $known[$row['id']] = true;
+                $changed = true;
+            }
+        }
+
+        if ($changed) {
+            onoff_builder_save_imports($existing);
+        }
+    }
+}
+
+if (!function_exists('onoff_builder_migrate_legacy_imports')) {
+    function onoff_builder_migrate_legacy_imports()
+    {
+        static $done = false;
+        if ($done) {
+            return;
+        }
+        $done = true;
+
+        $path = onoff_builder_imports_json_path();
+        if (is_file($path)) {
+            $raw = @file_get_contents($path);
+            $existing = $raw ? json_decode($raw, true) : null;
+            if (is_array($existing) && count($existing) > 0) {
+                return;
+            }
+        }
+
+        $items = onoff_builder_collect_meta_import_rows();
         if ($items !== array()) {
             onoff_builder_save_imports($items);
         }
@@ -156,6 +210,7 @@ if (!function_exists('onoff_builder_get_imports')) {
     function onoff_builder_get_imports()
     {
         onoff_builder_migrate_legacy_imports();
+        onoff_builder_sync_import_registry();
 
         $path = onoff_builder_imports_json_path();
         if (!is_file($path)) {
@@ -242,7 +297,31 @@ if (!function_exists('onoff_builder_get_import')) {
             }
         }
 
-        return null;
+        $meta_path = ONOFF_BUILDER_DATA_PATH . '/imports/' . $id . '.json';
+        if (!is_file($meta_path)) {
+            return null;
+        }
+
+        $raw = @file_get_contents($meta_path);
+        $row = $raw ? json_decode($raw, true) : null;
+        if (!is_array($row) || empty($row['id'])) {
+            return null;
+        }
+
+        $entry = 'index.html';
+        if (!empty($row['entry'])) {
+            $entry = $row['entry'];
+        } elseif (!empty($row['entry_file'])) {
+            $entry = $row['entry_file'];
+        }
+
+        return array(
+            'id'         => $id,
+            'name'       => isset($row['name']) ? $row['name'] : $id,
+            'path'       => $id,
+            'entry'      => $entry,
+            'created_at' => isset($row['created_at']) ? $row['created_at'] : date('Y-m-d H:i:s'),
+        );
     }
 }
 
