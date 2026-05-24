@@ -302,8 +302,8 @@ if (!function_exists('eottae_seed_attach_shop_image')) {
             return eottae_seed_log('image', 'missing file '.$source_rel, false);
         }
 
-        $exists = sql_fetch(" select bf_no from {$g5['board_file_table']} where bo_table = '{$bo_table}' and wr_id = '{$wr_id}' and bf_no = '0' ");
-        if (!empty($exists['bf_no']) || $exists['bf_no'] === '0') {
+        $exists = sql_fetch(" select bf_no from {$g5['board_file_table']} where bo_table = '{$bo_table}' and wr_id = '{$wr_id}' and bf_no = '0' limit 1 ");
+        if (is_array($exists) && isset($exists['bf_no'])) {
             return eottae_seed_log('image', $subject.' image already attached', true);
         }
 
