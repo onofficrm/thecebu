@@ -116,6 +116,14 @@
     }
     if (btnNext) {
       btnNext.addEventListener('click', function () {
+        if (current === 0) {
+          var subjectInput = qs('#wr_subject', root);
+          if (subjectInput && !subjectInput.value.trim()) {
+            alert('업체명을 입력해 주세요.');
+            subjectInput.focus();
+            return;
+          }
+        }
         if (current < panels.length - 1) {
           current++;
           render();

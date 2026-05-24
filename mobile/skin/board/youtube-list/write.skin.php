@@ -165,6 +165,9 @@ $yt_summary = isset($wr_2) ? get_text($wr_2) : '';
         if (subject) { alert("제목에 금지단어가 포함되어 있습니다."); f.wr_subject.focus(); return false; }
         if (content) { alert("내용에 금지단어가 포함되어 있습니다."); return false; }
         if (!f.wr_1.value.trim()) { alert("유튜브 URL을 입력해 주세요."); f.wr_1.focus(); return false; }
+        if (!f.wr_content.value.trim()) {
+            f.wr_content.value = f.wr_2.value.trim() || f.wr_subject.value.trim();
+        }
         <?php echo $captcha_js; ?>
         document.getElementById("btn_submit").disabled = "disabled";
         return true;

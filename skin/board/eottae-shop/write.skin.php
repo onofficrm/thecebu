@@ -46,7 +46,7 @@ $region_options = eottae_shop_region_options();
     <input type="hidden" name="sod" value="<?php echo $sod ?>">
     <input type="hidden" name="page" value="<?php echo $page ?>">
     <input type="hidden" name="wr_1" id="wr_1" value="<?php echo $v['wr_1'] !== '' ? $v['wr_1'] : $ca_value; ?>">
-    <?php echo $option_hidden; ?>
+    <?php include G5_PATH.'/components/eottae/board-write-options.php'; ?>
 
     <div class="shop-register-page__panel is-active" data-step="0">
         <h3>1. 업체 기본정보</h3>
@@ -181,6 +181,14 @@ function fwrite_submit(f) {
     var wr1 = document.getElementById('wr_1');
     if (ca && wr1) {
         wr1.value = ca.value;
+    }
+    if (!f.wr_subject.value.trim()) {
+        alert('업체명을 입력해 주세요.');
+        f.wr_subject.focus();
+        return false;
+    }
+    if (!f.wr_content.value.trim()) {
+        f.wr_content.value = f.wr_subject.value.trim();
     }
     <?php echo $editor_js; ?>
     <?php echo $captcha_js; ?>

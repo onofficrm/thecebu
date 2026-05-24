@@ -1509,7 +1509,17 @@ if (!function_exists('eottae_shop_detail_flags')) {
 if (!function_exists('eottae_community_list_url')) {
     function eottae_community_list_url($params = array())
     {
-        $base = G5_BBS_URL.'/board.php?bo_table='.eottae_community_board_table();
+        global $bo_table;
+
+        $table = '';
+        if (isset($params['bo_table'])) {
+            $table = (string) $params['bo_table'];
+            unset($params['bo_table']);
+        } elseif (!empty($bo_table)) {
+            $table = (string) $bo_table;
+        }
+
+        $base = G5_BBS_URL.'/board.php?bo_table='.eottae_community_board_table($table);
         if (empty($params)) {
             return $base;
         }

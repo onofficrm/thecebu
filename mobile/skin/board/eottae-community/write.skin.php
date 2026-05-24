@@ -23,7 +23,7 @@ $write_category = $sca !== '' ? $sca : (isset($write['ca_name']) ? get_text($wri
     <input type="hidden" name="wr_id" value="<?php echo $wr_id ?>">
     <input type="hidden" name="sca" value="<?php echo $sca ?>">
     <input type="hidden" name="page" value="<?php echo $page ?>">
-    <?php echo $option_hidden; ?>
+    <?php include G5_PATH.'/components/eottae/board-write-options.php'; ?>
 
     <?php if ($is_category && !empty($community_tabs)) { ?>
     <div class="community-write-page__field">
@@ -61,6 +61,9 @@ $write_category = $sca !== '' ? $sca : (isset($write['ca_name']) ? get_text($wri
                 <img src="" alt="" class="community-write-page__photo-preview" hidden>
                 <?php if ($w === 'u' && isset($file[$i]['file']) && $file[$i]['file']) { ?>
                 <span class="community-write-page__photo-current"><?php echo $file[$i]['source']; ?></span>
+                <label class="community-write-page__photo-delete">
+                    <input type="checkbox" name="bf_file_del[<?php echo $i; ?>]" value="1"> 삭제
+                </label>
                 <?php } ?>
             </label>
             <?php } ?>
@@ -82,6 +85,36 @@ $write_category = $sca !== '' ? $sca : (isset($write['ca_name']) ? get_text($wri
 <script>
 function fwrite_submit(f) {
     <?php echo $editor_js; ?>
+
+    var subject = "";
+    var content = "";
+    $.ajax({
+        url: g5_bbs_url+"/ajax.filter.php",
+        type: "POST",
+        data: {
+            "subject": f.wr_subject.value,
+            "content": f.wr_content.value
+        },
+        dataType: "json",
+        async: false,
+        cache: false,
+        success: function(data) {
+            subject = data.subject;
+            content = data.content;
+        }
+    });
+
+    if (subject) {
+        alert("제목에 금지단어('"+subject+"')가 포함되어 있습니다.");
+        f.wr_subject.focus();
+        return false;
+    }
+    if (content) {
+        alert("내용에 금지단어('"+content+"')가 포함되어 있습니다.");
+        f.wr_content.focus();
+        return false;
+    }
+
     <?php echo $captcha_js; ?>
     document.getElementById('btn_submit').disabled = true;
     return true;

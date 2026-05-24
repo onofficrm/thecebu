@@ -2030,6 +2030,135 @@ body.eottae-page hr {
   padding: 18px;
 }
 
+.community-sidebar__login {
+  padding: 22px 20px;
+}
+
+.community-login-box__title {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.community-login-box__cta {
+  display: block;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #0284c7;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  transition: background-color 0.15s ease;
+}
+
+.community-login-box__cta:hover {
+  background: #0369a1;
+  color: #fff;
+}
+
+.community-login-box__links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.community-login-box__links a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.community-login-box__links a:hover {
+  color: #0f172a;
+}
+
+.community-login-box__divider {
+  width: 1px;
+  height: 12px;
+  background: #e2e8f0;
+}
+
+.community-login-box__profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.community-login-box__avatar {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0284c7, #0ea5e9);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.community-login-box__welcome {
+  margin: 0 0 2px;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.community-login-box__welcome strong {
+  font-weight: 800;
+}
+
+.community-login-box__type {
+  margin: 0;
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.community-login-box__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.community-login-box__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f8fafc;
+  text-decoration: none;
+  color: inherit;
+}
+
+.community-login-box__stat:hover {
+  background: #f1f5f9;
+}
+
+.community-login-box__stat-label {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.community-login-box__stat-value {
+  font-size: 14px;
+  color: #0f172a;
+  font-weight: 800;
+}
+
 .community-sidebar__head {
   display: flex;
   align-items: center;

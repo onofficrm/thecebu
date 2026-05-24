@@ -25,6 +25,7 @@ if (empty($featured) && function_exists('eottae_shop_from_write')) {
 ?>
 
 <aside class="community-sidebar" aria-label="커뮤니티 사이드바">
+    <?php include G5_PATH.'/components/eottae/community-login-box.php'; ?>
     <section class="community-sidebar__card">
         <header class="community-sidebar__head">
             <span class="community-sidebar__icon community-sidebar__icon--hot" aria-hidden="true">↗</span>
