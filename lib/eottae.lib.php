@@ -1518,36 +1518,44 @@ if (!function_exists('eottae_community_board_hero')) {
             $table = (string) $bo_table;
         }
 
+        $cebu_img = 'https://images.unsplash.com/photo-%s?auto=format&fit=crop&w=1600&q=85';
+
         $presets = array(
             'community' => array(
                 'kicker' => '세부 자유 게시판',
                 'title'  => '세부 생활정보',
                 'desc'   => '세부 교민과 여행자가 함께 나누는 생생한 로컬 생활정보 게시판입니다.',
+                'image'  => sprintf($cebu_img, '1555881400-0d2f29490987'),
             ),
             'people' => array(
                 'kicker' => '사람찾기',
                 'title'  => '실종·만남·동행',
                 'desc'   => '지인 찾기, 동행 모집, 만남 게시글을 올리는 공간입니다.',
+                'image'  => sprintf($cebu_img, '1507525428034-b723cf961d3e'),
             ),
             'job' => array(
                 'kicker' => '구인구직',
                 'title'  => '일자리 정보',
                 'desc'   => '세부 지역 구인·구직·알바 정보를 공유하는 게시판입니다.',
+                'image'  => sprintf($cebu_img, '1497366216548-37526070297c'),
             ),
             'estate' => array(
                 'kicker' => '부동산',
                 'title'  => '매매·전월세',
                 'desc'   => '세부 부동산 매매, 전·월세, 양도 정보를 나누는 게시판입니다.',
+                'image'  => sprintf($cebu_img, '1560518883-ce09059eeffa'),
             ),
             'event' => array(
                 'kicker' => '이벤트',
                 'title'  => '프로모션·기획전',
                 'desc'   => '업체 이벤트와 세부어때 기획전 소식을 확인하세요.',
+                'image'  => sprintf($cebu_img, '1511795409834-ef04bbd61622'),
             ),
             'review' => array(
                 'kicker' => '업체 리뷰',
                 'title'  => '리뷰 모음',
                 'desc'   => '세부 업체에 대한 회원 리뷰를 모아 보는 게시판입니다.',
+                'image'  => sprintf($cebu_img, '1414235077428-338989a43e79'),
             ),
         );
 
@@ -1559,6 +1567,7 @@ if (!function_exists('eottae_community_board_hero')) {
                 'kicker' => $subject,
                 'title'  => $subject,
                 'desc'   => '',
+                'image'  => sprintf($cebu_img, '1518509562904-7fc873a70436'),
             );
         }
 

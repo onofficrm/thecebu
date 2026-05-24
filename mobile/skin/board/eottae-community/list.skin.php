@@ -19,28 +19,7 @@ $hero = eottae_community_board_hero($board, $sca);
 <div class="community-page__layout">
 <main class="community-page__main">
 
-    <section class="community-hero">
-        <div class="community-hero__inner">
-            <div class="community-hero__copy">
-                <p class="community-hero__kicker"><?php echo $hero['kicker']; ?></p>
-                <h1 class="community-hero__title"><?php echo $hero['title']; ?></h1>
-                <?php if ($hero['desc'] !== '') { ?>
-                <p class="community-hero__desc"><?php echo $hero['desc']; ?></p>
-                <?php } ?>
-                <p class="community-hero__stats">
-                    <span>전체글 <strong><?php echo number_format($total_count); ?></strong></span>
-                    <span class="community-hero__stats-divider">|</span>
-                    <span>오늘 새글 <strong><?php echo number_format($today_count); ?></strong></span>
-                </p>
-            </div>
-            <?php if ($write_href) { ?>
-            <a href="<?php echo $write_href; ?>" class="community-hero__write">
-                <span class="community-hero__write-icon" aria-hidden="true">✎</span>
-                글쓰기
-            </a>
-            <?php } ?>
-        </div>
-    </section>
+    <?php include G5_PATH.'/components/eottae/community-hero.php'; ?>
 
     <?php if ($is_category && !empty($community_tabs)) { ?>
     <nav class="community-tabs" aria-label="게시판 분류">
@@ -56,15 +35,7 @@ $hero = eottae_community_board_hero($board, $sca);
     </nav>
     <?php } ?>
 
-    <section class="community-toolbar">
-        <form class="community-search" name="fsearch" method="get" action="<?php echo G5_BBS_URL; ?>/board.php">
-            <input type="hidden" name="bo_table" value="<?php echo $bo_table; ?>">
-            <?php if ($sca) { ?><input type="hidden" name="sca" value="<?php echo get_text($sca); ?>"><?php } ?>
-            <input type="hidden" name="sfl" value="wr_subject||wr_content">
-            <label class="sound_only" for="community_stx">검색어</label>
-            <span class="community-search__icon" aria-hidden="true">⌕</span>
-            <input type="search" id="community_stx" name="stx" value="<?php echo isset($stx) ? get_text(stripslashes($stx)) : ''; ?>" placeholder="궁금한 세부 정보를 검색해보세요" class="community-search__input">
-        </form>
+    <section class="community-toolbar community-toolbar--filters">
         <div class="community-toolbar__filters">
             <form class="community-filter" method="get" action="<?php echo G5_BBS_URL; ?>/board.php">
                 <input type="hidden" name="bo_table" value="<?php echo $bo_table; ?>">
