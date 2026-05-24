@@ -143,6 +143,7 @@
     initShopRegisterWizard();
     initMemberType();
     initReviewModal();
+    initShopSave();
   });
 
   function initReviewModal() {
@@ -208,5 +209,38 @@
           });
       });
     }
+  }
+
+  function initShopSave() {
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-shop-save]');
+      if (!btn) return;
+      e.preventDefault();
+
+      var shopId = btn.getAttribute('data-shop-id');
+      var token = btn.getAttribute('data-save-token') || '';
+      var fd = new FormData();
+      fd.append('shop_wr_id', shopId);
+      fd.append('eottae_shop_save_token', token);
+
+      btn.disabled = true;
+      fetch('/proc/eottae-shop-save.php', { method: 'POST', body: fd, credentials: 'same-origin' })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          btn.disabled = false;
+          if (!data.success) {
+            alert(data.message || '처리에 실패했습니다.');
+            return;
+          }
+          var saved = !!data.saved;
+          btn.setAttribute('data-saved', saved ? '1' : '0');
+          btn.textContent = saved ? '찜 해제' : '찜하기';
+          btn.classList.toggle('is-saved', saved);
+        })
+        .catch(function () {
+          btn.disabled = false;
+          alert('네트워크 오류가 발생했습니다.');
+        });
+    });
   }
 })();

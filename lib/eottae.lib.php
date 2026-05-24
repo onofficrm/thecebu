@@ -104,7 +104,10 @@ if (!function_exists('eottae_should_load_assets')) {
         }
 
         if (isset($_SERVER['SCRIPT_FILENAME'])) {
-            $page_scripts = array('eottae-mypage.php', 'eottae-points.php', 'eottae-coupons.php', 'eottae-my-reviews.php');
+            $page_scripts = array(
+                'eottae-mypage.php', 'eottae-points.php', 'eottae-coupons.php', 'eottae-my-reviews.php',
+                'eottae-saved-shops.php', 'eottae-inquiries.php', 'eottae-events.php',
+            );
             foreach ($page_scripts as $ps) {
                 if (strpos($_SERVER['SCRIPT_FILENAME'], $ps) !== false) {
                     return true;
@@ -459,5 +462,259 @@ if (!function_exists('eottae_business_pending_replies_count')) {
               ) ");
 
         return isset($row['cnt']) ? (int) $row['cnt'] : 0;
+    }
+}
+
+if (!function_exists('eottae_shop_save_token')) {
+    function eottae_shop_save_token($regenerate = false)
+    {
+        $key = 'eottae_shop_save_token';
+        $token = get_session($key);
+        if ($regenerate || $token === '' || $token === null) {
+            $token = md5(uniqid((string) mt_rand(), true));
+            set_session($key, $token);
+        }
+
+        return $token;
+    }
+}
+
+if (!function_exists('eottae_is_shop_saved')) {
+    function eottae_is_shop_saved($mb_id, $shop_wr_id)
+    {
+        global $g5;
+
+        $mb_id = sql_escape_string((string) $mb_id);
+        $shop_wr_id = (int) $shop_wr_id;
+        if ($mb_id === '' || $shop_wr_id < 1) {
+            return false;
+        }
+
+        $bo_table = EOTTae_SHOP_TABLE;
+        $row = sql_fetch(" select ms_id from {$g5['scrap_table']}
+            where mb_id = '{$mb_id}' and bo_table = '{$bo_table}' and wr_id = '{$shop_wr_id}' limit 1 ");
+
+        return !empty($row['ms_id']);
+    }
+}
+
+if (!function_exists('eottae_get_saved_shop_ids')) {
+    function eottae_get_saved_shop_ids($mb_id, $limit = 30)
+    {
+        global $g5;
+
+        $mb_id = sql_escape_string((string) $mb_id);
+        $limit = max(1, min(50, (int) $limit));
+        if ($mb_id === '') {
+            return array();
+        }
+
+        $bo_table = EOTTae_SHOP_TABLE;
+        $result = sql_query(" select wr_id from {$g5['scrap_table']}
+            where mb_id = '{$mb_id}' and bo_table = '{$bo_table}'
+            order by ms_id desc
+            limit {$limit} ");
+        $ids = array();
+        while ($row = sql_fetch_array($result)) {
+            $ids[] = (int) $row['wr_id'];
+        }
+
+        return $ids;
+    }
+}
+
+if (!function_exists('eottae_track_recent_shop')) {
+    function eottae_track_recent_shop($shop_wr_id)
+    {
+        $shop_wr_id = (int) $shop_wr_id;
+        if ($shop_wr_id < 1) {
+            return;
+        }
+
+        $list = get_session('eottae_recent_shops');
+        if (!is_array($list)) {
+            $list = array();
+        }
+
+        $filtered = array();
+        foreach ($list as $id) {
+            $id = (int) $id;
+            if ($id > 0 && $id !== $shop_wr_id) {
+                $filtered[] = $id;
+            }
+        }
+        array_unshift($filtered, $shop_wr_id);
+        set_session('eottae_recent_shops', array_slice($filtered, 0, 20));
+    }
+}
+
+if (!function_exists('eottae_get_recent_shop_ids')) {
+    function eottae_get_recent_shop_ids($limit = 20)
+    {
+        $list = get_session('eottae_recent_shops');
+        if (!is_array($list)) {
+            return array();
+        }
+
+        $limit = max(1, min(20, (int) $limit));
+        $ids = array();
+        foreach ($list as $id) {
+            $id = (int) $id;
+            if ($id > 0) {
+                $ids[] = $id;
+            }
+            if (count($ids) >= $limit) {
+                break;
+            }
+        }
+
+        return $ids;
+    }
+}
+
+if (!function_exists('eottae_get_shop_rows_by_ids')) {
+    function eottae_get_shop_rows_by_ids($ids)
+    {
+        global $g5;
+
+        if (!is_array($ids) || empty($ids)) {
+            return array();
+        }
+
+        $clean = array();
+        foreach ($ids as $id) {
+            $id = (int) $id;
+            if ($id > 0) {
+                $clean[$id] = $id;
+            }
+        }
+        if (empty($clean)) {
+            return array();
+        }
+
+        $write_table = $g5['write_prefix'].EOTTae_SHOP_TABLE;
+        $id_list = implode(',', $clean);
+        $result = sql_query(" select * from {$write_table}
+            where wr_id in ({$id_list}) and wr_is_comment = 0 ");
+        $map = array();
+        while ($row = sql_fetch_array($result)) {
+            $map[(int) $row['wr_id']] = $row;
+        }
+
+        $rows = array();
+        foreach ($clean as $id) {
+            if (isset($map[$id])) {
+                $rows[] = $map[$id];
+            }
+        }
+
+        return $rows;
+    }
+}
+
+if (!function_exists('eottae_get_member_inquiries')) {
+    function eottae_get_member_inquiries($mb_id, $limit = 20)
+    {
+        global $g5;
+
+        $mb_id = sql_escape_string((string) $mb_id);
+        $limit = max(1, min(50, (int) $limit));
+        if ($mb_id === '') {
+            return array();
+        }
+
+        $bo_table = defined('EOTTae_INQUIRY_TABLE') ? EOTTae_INQUIRY_TABLE : 'inquiry';
+        $write_table = $g5['write_prefix'].$bo_table;
+        $exists = sql_fetch(" select count(*) as cnt from {$g5['board_table']} where bo_table = '{$bo_table}' ");
+        if (empty($exists['cnt'])) {
+            return array();
+        }
+
+        $result = sql_query(" select wr_id, wr_subject, wr_content, wr_datetime, wr_6
+            from {$write_table}
+            where wr_is_comment = 0 and mb_id = '{$mb_id}'
+            order by wr_id desc
+            limit {$limit} ");
+        $rows = array();
+        while ($row = sql_fetch_array($result)) {
+            $rows[] = array(
+                'wr_id'    => (int) $row['wr_id'],
+                'subject'  => get_text($row['wr_subject']),
+                'content'  => get_text(strip_tags($row['wr_content'])),
+                'status'   => get_text($row['wr_6'] ?: '신규'),
+                'datetime' => $row['wr_datetime'],
+            );
+        }
+
+        return $rows;
+    }
+}
+
+if (!function_exists('eottae_event_table')) {
+    function eottae_event_table()
+    {
+        return defined('EOTTae_EVENT_TABLE') ? EOTTae_EVENT_TABLE : 'event';
+    }
+}
+
+if (!function_exists('eottae_get_events')) {
+    function eottae_get_events($limit = 12, $category = '')
+    {
+        global $g5;
+
+        $bo_table = eottae_event_table();
+        $exists = sql_fetch(" select count(*) as cnt from {$g5['board_table']} where bo_table = '".sql_escape_string($bo_table)."' ");
+        if (empty($exists['cnt'])) {
+            return array();
+        }
+
+        $write_table = $g5['write_prefix'].$bo_table;
+        $limit = max(1, min(30, (int) $limit));
+        $where = " wr_is_comment = 0 ";
+        if ($category !== '') {
+            $category = sql_escape_string($category);
+            $where .= " and ca_name = '{$category}' ";
+        }
+
+        $result = sql_query(" select wr_id, wr_subject, wr_content, ca_name, wr_datetime
+            from {$write_table}
+            where {$where}
+            order by wr_id desc
+            limit {$limit} ");
+        $rows = array();
+        while ($row = sql_fetch_array($result)) {
+            $rows[] = array(
+                'wr_id'    => (int) $row['wr_id'],
+                'subject'  => get_text($row['wr_subject']),
+                'content'  => cut_str(strip_tags($row['wr_content']), 120),
+                'category' => get_text($row['ca_name']),
+                'datetime' => $row['wr_datetime'],
+                'href'     => G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$row['wr_id'],
+            );
+        }
+
+        return $rows;
+    }
+}
+
+if (!function_exists('eottae_render_shop_save_button')) {
+    function eottae_render_shop_save_button($shop_wr_id, $is_saved = false)
+    {
+        global $is_member;
+
+        if (!$is_member) {
+            return;
+        }
+
+        $shop_wr_id = (int) $shop_wr_id;
+        $token = eottae_shop_save_token(true);
+        $saved = $is_saved ? '1' : '0';
+        $label = $is_saved ? '찜 해제' : '찜하기';
+
+        echo '<button type="button" class="shop-save-btn'.($is_saved ? ' is-saved' : '').'"';
+        echo ' data-shop-save data-shop-id="'.$shop_wr_id.'" data-saved="'.$saved.'"';
+        echo ' data-save-token="'.htmlspecialchars($token, ENT_QUOTES, 'UTF-8').'">';
+        echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8');
+        echo '</button>';
     }
 }

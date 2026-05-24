@@ -293,6 +293,20 @@ if (!function_exists('eottae_install_get_board_defs')) {
                 'bo_4_subj'        => '상태',
                 'bo_5_subj'        => '사진수',
             ),
+            array(
+                'bo_table'         => 'event',
+                'bo_subject'       => '이벤트·프로모션',
+                'bo_skin'          => 'eottae-community',
+                'bo_mobile_skin'   => 'eottae-community',
+                'gr_id'            => 'community',
+                'bo_read_level'    => 1,
+                'bo_write_level'   => 5,
+                'bo_comment_level' => 2,
+                'bo_use_category'  => 1,
+                'bo_category_list' => '진행중|예정|종료',
+                'bo_upload_count'  => 3,
+                'bo_order'         => 4,
+            ),
         );
     }
 }

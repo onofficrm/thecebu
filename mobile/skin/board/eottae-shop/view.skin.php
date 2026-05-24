@@ -5,6 +5,8 @@ include_once(G5_LIB_PATH.'/thumbnail.lib.php');
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
 
 $shop = eottae_shop_from_write($view);
+eottae_track_recent_shop($view['wr_id']);
+$shop_is_saved = $is_member && eottae_is_shop_saved($member['mb_id'], $view['wr_id']);
 $share_url = G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$view['wr_id'];
 $thumb = '';
 if ($view['file']['count']) {
@@ -26,6 +28,7 @@ if ($view['file']['count']) {
         <?php if ($shop['category']) { ?><span class="shop-detail-page__badge"><?php echo $shop['category']; ?></span><?php } ?>
         <?php if ($shop['region']) { ?><span class="shop-detail-page__badge"><?php echo $shop['region']; ?></span><?php } ?>
         <?php if ($shop['status']) { ?><span class="shop-detail-page__badge"><?php echo $shop['status']; ?></span><?php } ?>
+        <span class="shop-detail-page__save-wrap"><?php eottae_render_shop_save_button($view['wr_id'], $shop_is_saved); ?></span>
     </div>
 
     <section class="shop-detail-page__info">

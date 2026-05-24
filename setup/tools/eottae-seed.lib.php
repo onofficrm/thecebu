@@ -475,6 +475,62 @@ if (!function_exists('eottae_seed_sample_reviews')) {
     }
 }
 
+if (!function_exists('eottae_seed_sample_events')) {
+    function eottae_seed_sample_events()
+    {
+        global $g5;
+
+        $bo_table = defined('EOTTae_EVENT_TABLE') ? EOTTae_EVENT_TABLE : 'event';
+        $row = sql_fetch(" select count(*) as cnt from {$g5['board_table']} where bo_table = '{$bo_table}' ");
+        if (empty($row['cnt'])) {
+            return array(eottae_seed_log('event', 'event board missing', false));
+        }
+
+        $write_table = $g5['write_prefix'].$bo_table;
+        $logs = array();
+        $samples = array(
+            array(
+                'subject' => '신규 가입 웰컴 — 첫 리뷰 작성 이벤트',
+                'category' => '진행중',
+                'content' => '<p>세부어때에 가입하고 첫 업체 리뷰를 작성해 주세요. 포인트 자동 지급은 3차 업데이트 예정입니다.</p>',
+            ),
+            array(
+                'subject' => 'IT Park 맛집 주말 할인 프로모션',
+                'category' => '진행중',
+                'content' => '<p>IT Park 인근 제휴 맛집에서 주말 한정 할인 혜택을 준비 중입니다.</p>',
+            ),
+        );
+
+        foreach ($samples as $sample) {
+            $subject = sql_escape_string($sample['subject']);
+            $exists = sql_fetch(" select wr_id from {$write_table} where wr_subject = '{$subject}' limit 1 ");
+            if (!empty($exists['wr_id'])) {
+                $logs[] = eottae_seed_log('event', $sample['subject'].' already exists', true);
+                continue;
+            }
+
+            $content = sql_escape_string($sample['content']);
+            $ca_name = sql_escape_string($sample['category']);
+            sql_query(" insert into {$write_table} set
+                wr_num = (SELECT IFNULL(MIN(wr_num) - 1, -1) FROM {$write_table} as sq),
+                wr_reply = '', wr_comment = 0, ca_name = '{$ca_name}',
+                wr_option = 'html1', wr_subject = '{$subject}', wr_content = '{$content}',
+                mb_id = 'admin', wr_password = '', wr_name = '세부어때',
+                wr_datetime = '".G5_TIME_YMDHIS."', wr_last = '".G5_TIME_YMDHIS."',
+                wr_ip = '127.0.0.1', wr_1 = '', wr_2 = '', wr_3 = '', wr_4 = '', wr_5 = '',
+                wr_6 = '', wr_7 = '', wr_8 = '', wr_9 = '', wr_10 = '' ");
+            $wr_id = sql_insert_id();
+            sql_query(" update {$write_table} set wr_parent = '{$wr_id}' where wr_id = '{$wr_id}' ");
+            sql_query(" insert into {$g5['board_new_table']} ( bo_table, wr_id, wr_parent, bn_datetime, mb_id )
+                values ( '{$bo_table}', '{$wr_id}', '{$wr_id}', '".G5_TIME_YMDHIS."', 'admin' ) ");
+            sql_query(" update {$g5['board_table']} set bo_count_write = bo_count_write + 1 where bo_table = '{$bo_table}' ");
+            $logs[] = eottae_seed_log('event', $sample['subject'].' created');
+        }
+
+        return $logs;
+    }
+}
+
 if (!function_exists('eottae_seed_run')) {
     function eottae_seed_run()
     {

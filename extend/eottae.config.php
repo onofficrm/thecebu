@@ -23,6 +23,10 @@ if (!defined('EOTTae_INQUIRY_TABLE')) {
     define('EOTTae_INQUIRY_TABLE', 'inquiry');
 }
 
+if (!defined('EOTTae_EVENT_TABLE')) {
+    define('EOTTae_EVENT_TABLE', 'event');
+}
+
 if (!defined('EOTTae_MEMBER_SKIN')) {
     define('EOTTae_MEMBER_SKIN', 'eottae');
 }
