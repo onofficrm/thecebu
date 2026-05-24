@@ -5,6 +5,7 @@
  */
 define('EOTTae_API', true);
 
+chdir(dirname(__FILE__).'/..');
 include_once dirname(__FILE__).'/../_common.php';
 
 if (!defined('_GNUBOARD_')) {
