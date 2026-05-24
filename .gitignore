@@ -1,0 +1,6 @@
+.DS_Store
+**/._*
+data/dbconfig.local.php
+_BUILDER_INPUT/
+.env
+.env.*
