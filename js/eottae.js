@@ -119,10 +119,88 @@
         if (current < panels.length - 1) {
           current++;
           render();
+          if (current === panels.length - 1) {
+            updateShopRegisterSummary(root);
+          }
         }
       });
     }
+
+    var caSelect = qs('#ca_name', root);
+    var wr1Input = qs('#wr_1', root);
+    if (caSelect && wr1Input) {
+      caSelect.addEventListener('change', function () {
+        wr1Input.value = caSelect.value;
+      });
+    }
+
     render();
+  }
+
+  function updateShopRegisterSummary(root) {
+    var box = qs('#shopRegisterSummary', root);
+    if (!box) return;
+
+    var fields = [
+      ['업체명', qs('#wr_subject', root)],
+      ['카테고리', qs('#ca_name', root)],
+      ['지역', qs('#wr_2', root)],
+      ['주소', qs('#wr_3', root)],
+      ['전화', qs('#wr_4', root)],
+      ['영업시간', qs('#wr_6', root)],
+      ['영업상태', qs('#wr_8', root)]
+    ];
+
+    var html = '<dl>';
+    var hasValue = false;
+    fields.forEach(function (item) {
+      var el = item[1];
+      if (!el) return;
+      var val = (el.value || '').trim();
+      if (val === '') return;
+      hasValue = true;
+      html += '<dt>' + item[0] + '</dt><dd>' + val.replace(/</g, '&lt;') + '</dd>';
+    });
+    html += '</dl>';
+
+    box.innerHTML = hasValue ? html : '<p class="shop-register-page__summary-empty">입력 내용을 확인해 주세요.</p>';
+  }
+
+  function initShopDetailGallery() {
+    var hero = qs('#shopDetailHeroImg');
+    if (!hero) return;
+
+    qsa('.shop-detail-page__thumb').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var src = btn.getAttribute('data-gallery-src');
+        if (src) hero.src = src;
+        qsa('.shop-detail-page__thumb').forEach(function (b) {
+          b.classList.toggle('is-active', b === btn);
+        });
+      });
+    });
+  }
+
+  function initPhotoPreview() {
+    document.addEventListener('change', function (e) {
+      var input = e.target;
+      if (!input.matches('[data-photo-preview], [data-photo-input]')) return;
+
+      var slot = input.closest('.community-write-page__photo-slot, .shop-register-page__photo');
+      if (!slot) return;
+
+      var preview = qs('.community-write-page__photo-preview', slot);
+      if (!preview || !input.files || !input.files[0]) return;
+
+      var reader = new FileReader();
+      reader.onload = function (ev) {
+        preview.src = ev.target.result;
+        preview.hidden = false;
+        var placeholder = qs('.community-write-page__photo-placeholder', slot);
+        if (placeholder) placeholder.style.display = 'none';
+      };
+      reader.readAsDataURL(input.files[0]);
+    });
   }
 
   /* Auth member type → mb_1 */
@@ -144,6 +222,8 @@
     initMemberType();
     initReviewModal();
     initShopSave();
+    initShopDetailGallery();
+    initPhotoPreview();
   });
 
   function initReviewModal() {

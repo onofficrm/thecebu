@@ -19,6 +19,25 @@ if (!function_exists('eottae_on_register_after')) {
 }
 add_event('register_form_update_after', 'eottae_on_register_after', 10, 2);
 
+if (!function_exists('eottae_on_shop_write_before')) {
+    function eottae_on_shop_write_before($board, $wr_id, $w, $qstr)
+    {
+        if (empty($board['bo_table']) || $board['bo_table'] !== eottae_shop_table()) {
+            return;
+        }
+
+        $ca = isset($_POST['ca_name']) ? trim((string) $_POST['ca_name']) : '';
+        $wr1 = isset($_POST['wr_1']) ? trim((string) $_POST['wr_1']) : '';
+
+        if ($ca !== '' && $wr1 === '') {
+            $_POST['wr_1'] = $ca;
+        } elseif ($wr1 !== '' && $ca === '') {
+            $_POST['ca_name'] = $wr1;
+        }
+    }
+}
+add_event('write_update_before', 'eottae_on_shop_write_before', 10, 4);
+
 if (eottae_should_load_assets()) {
     add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae.css">', 5);
     add_javascript('<script src="'.G5_JS_URL.'/eottae.js" defer></script>', 20);
