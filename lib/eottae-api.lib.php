@@ -354,6 +354,92 @@ if (!function_exists('eottae_api_get_community_home')) {
     }
 }
 
+if (!function_exists('eottae_api_youtube_table')) {
+    function eottae_api_youtube_table()
+    {
+        return defined('EOTTae_YOUTUBE_TABLE') ? EOTTae_YOUTUBE_TABLE : 'youtube';
+    }
+}
+
+if (!function_exists('eottae_api_youtube_board_ready')) {
+    function eottae_api_youtube_board_ready()
+    {
+        global $g5;
+
+        $bo_table = eottae_api_youtube_table();
+        $row = sql_fetch(" select count(*) as cnt from {$g5['board_table']} where bo_table = '".sql_escape_string($bo_table)."' ");
+
+        return !empty($row['cnt']);
+    }
+}
+
+if (!function_exists('eottae_api_format_youtube_row')) {
+    function eottae_api_format_youtube_row($row)
+    {
+        if (!is_array($row) || empty($row['wr_id'])) {
+            return null;
+        }
+
+        if (!function_exists('g5b_youtube_id_from_write')) {
+            include_once G5_SKIN_PATH.'/board/_inc/g5b-youtube.php';
+        }
+
+        $bo_table = eottae_api_youtube_table();
+        $wr_id = (int) $row['wr_id'];
+        $datetime = isset($row['wr_datetime']) ? $row['wr_datetime'] : '';
+        $video_id = g5b_youtube_id_from_write($row);
+        $thumb = $video_id ? g5b_youtube_thumb_url($video_id) : '';
+        $category = isset($row['ca_name']) && $row['ca_name'] !== '' ? get_text($row['ca_name']) : '정보';
+        $channel = function_exists('g5b_youtube_channel_label') ? g5b_youtube_channel_label($row) : '';
+
+        return array(
+            'wr_id'    => $wr_id,
+            'board'    => $category,
+            'title'    => isset($row['wr_subject']) ? get_text($row['wr_subject']) : '',
+            'comments' => isset($row['wr_comment']) ? (int) $row['wr_comment'] : 0,
+            'views'    => isset($row['wr_hit']) ? (int) $row['wr_hit'] : 0,
+            'datetime' => $datetime,
+            'time'     => eottae_api_relative_time_label($datetime),
+            'is_new'   => strtotime($datetime) ? (G5_SERVER_TIME - strtotime($datetime)) < 86400 : false,
+            'is_hot'   => false,
+            'url'      => G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$wr_id,
+            'thumb'    => $thumb,
+            'channel'  => $channel,
+            'video_id' => $video_id,
+        );
+    }
+}
+
+if (!function_exists('eottae_api_get_youtube_posts')) {
+    function eottae_api_get_youtube_posts($limit = 9)
+    {
+        global $g5;
+
+        if (!eottae_api_youtube_board_ready()) {
+            return array();
+        }
+
+        $limit = max(1, min(20, (int) $limit));
+        $bo_table = eottae_api_youtube_table();
+        $write_table = $g5['write_prefix'].$bo_table;
+
+        $result = sql_query(" select wr_id, ca_name, wr_subject, wr_comment, wr_hit, wr_datetime, wr_1, wr_2, wr_name
+            from {$write_table}
+            where wr_is_comment = 0
+            order by wr_id desc
+            limit {$limit} ");
+        $items = array();
+        while ($row = sql_fetch_array($result)) {
+            $formatted = eottae_api_format_youtube_row($row);
+            if ($formatted) {
+                $items[] = $formatted;
+            }
+        }
+
+        return $items;
+    }
+}
+
 if (!function_exists('eottae_api_get_home_bundle')) {
     function eottae_api_get_home_bundle()
     {
@@ -361,9 +447,11 @@ if (!function_exists('eottae_api_get_home_bundle')) {
             'featured_shops' => eottae_api_get_featured_shops(4),
             'events'         => eottae_api_get_events(4),
             'community'      => eottae_api_get_community_home(),
+            'youtube'        => eottae_api_get_youtube_posts(9),
             'urls'           => array(
                 'shop'      => G5_BBS_URL.'/board.php?bo_table='.EOTTae_SHOP_TABLE,
                 'community' => G5_BBS_URL.'/board.php?bo_table='.EOTTae_COMMUNITY_TABLE,
+                'youtube'   => G5_BBS_URL.'/board.php?bo_table='.eottae_api_youtube_table(),
                 'mypage'    => G5_URL.'/page/eottae-mypage.php',
             ),
         );

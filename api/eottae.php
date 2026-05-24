@@ -52,6 +52,14 @@ switch ($action) {
         ));
         break;
 
+    case 'youtube':
+        $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 9;
+        eottae_api_json(array(
+            'success' => true,
+            'items'   => eottae_api_get_youtube_posts($limit),
+        ));
+        break;
+
     case 'home':
     default:
         eottae_api_json(array(
