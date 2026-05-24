@@ -8,6 +8,7 @@ g5_page_start('이벤트·프로모션');
 ?>
 
 <main class="mypage-subpage">
+    <?php eottae_render_mypage_back(); ?>
     <h1 class="mypage-subpage__title">이벤트·프로모션</h1>
 
     <?php if (empty($events)) { ?>

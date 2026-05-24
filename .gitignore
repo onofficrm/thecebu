@@ -3,5 +3,6 @@
 data/dbconfig.local.php
 _site.config.local.php
 _BUILDER_INPUT/
+dist/
 .env
 .env.*

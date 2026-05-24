@@ -37,7 +37,18 @@ if (!function_exists('eottae_review_card_html')) {
         }
 
         $show_reply_btn = !empty($opts['show_reply_btn']);
-        $review_url = G5_BBS_URL.'/board.php?bo_table='.eottae_review_table().'&wr_id='.$review['wr_id'];
+        $reply_token = isset($opts['reply_token']) ? (string) $opts['reply_token'] : '';
+        $shop_wr_id = isset($opts['shop_wr_id']) ? (int) $opts['shop_wr_id'] : (int) ($review['shop_id'] ?? 0);
+        $has_biz_reply = false;
+        if (!empty($review['replies'])) {
+            foreach ($review['replies'] as $reply_row) {
+                if (!empty($reply_row['is_biz'])) {
+                    $has_biz_reply = true;
+                    break;
+                }
+            }
+        }
+        $show_reply_form = $show_reply_btn && !$has_biz_reply && $reply_token !== '' && $shop_wr_id > 0;
 
         ob_start();
         ?>
@@ -89,9 +100,16 @@ if (!function_exists('eottae_review_card_html')) {
                 <?php } ?>
             </div>
             <?php } ?>
-            <?php if ($show_reply_btn) { ?>
+            <?php if ($show_reply_form) { ?>
             <footer class="review-card__foot">
-                <a href="<?php echo $review_url; ?>#bo_vc_w" class="review-card__reply-link">답변 작성</a>
+                <form class="review-card__reply-form" method="post" action="/proc/eottae-review-reply.php" data-review-reply-form>
+                    <input type="hidden" name="review_wr_id" value="<?php echo (int) $review['wr_id']; ?>">
+                    <input type="hidden" name="shop_wr_id" value="<?php echo $shop_wr_id; ?>">
+                    <input type="hidden" name="eottae_review_reply_token" value="<?php echo get_text($reply_token); ?>">
+                    <label class="sound_only" for="review-reply-<?php echo (int) $review['wr_id']; ?>">사업자 답변</label>
+                    <textarea id="review-reply-<?php echo (int) $review['wr_id']; ?>" name="content" required minlength="2" maxlength="500" rows="3" placeholder="고객 리뷰에 답변을 남겨 주세요."></textarea>
+                    <button type="submit" class="review-card__reply-submit">답변 등록</button>
+                </form>
             </footer>
             <?php } ?>
         </article>

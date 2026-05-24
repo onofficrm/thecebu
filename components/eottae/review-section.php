@@ -19,7 +19,9 @@ if (!function_exists('eottae_review_section_html')) {
         $return_url = G5_BBS_URL.'/board.php?bo_table='.EOTTae_SHOP_TABLE.'&wr_id='.$shop_wr_id;
         $login_url = eottae_login_url($return_url);
         $token = eottae_review_token(true);
-        $show_biz_reply = $is_biz;
+        $reply_token = eottae_review_reply_token(true);
+        $owns_shop = $is_member && $is_biz && eottae_business_owns_shop($member['mb_id'], $shop_wr_id);
+        $show_biz_reply = $owns_shop;
 
         ob_start();
         ?>
@@ -61,7 +63,11 @@ if (!function_exists('eottae_review_section_html')) {
             <?php } else { ?>
             <div class="review-summary__list">
                 <?php foreach ($reviews as $review) {
-                    echo eottae_review_card_html($review, array('show_reply_btn' => $show_biz_reply));
+                    echo eottae_review_card_html($review, array(
+                        'show_reply_btn' => $show_biz_reply,
+                        'reply_token' => $reply_token,
+                        'shop_wr_id' => $shop_wr_id,
+                    ));
                 } ?>
             </div>
             <?php } ?>

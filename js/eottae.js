@@ -264,6 +264,7 @@
     initShopGeocode();
     initMemberType();
     initReviewModal();
+    initReviewReply();
     initShopSave();
     initShopDetailGallery();
     initPhotoPreview();
@@ -332,6 +333,40 @@
           });
       });
     }
+  }
+
+  function initReviewReply() {
+    document.addEventListener('submit', function (e) {
+      var form = e.target.closest('[data-review-reply-form]');
+      if (!form) return;
+      e.preventDefault();
+
+      var submitBtn = qs('.review-card__reply-submit', form);
+      if (submitBtn) submitBtn.disabled = true;
+
+      fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        credentials: 'same-origin',
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data.success) {
+            if (data.redirect_url) {
+              window.location.href = data.redirect_url;
+            } else {
+              window.location.reload();
+            }
+            return;
+          }
+          alert(data.message || '답변 등록에 실패했습니다.');
+          if (submitBtn) submitBtn.disabled = false;
+        })
+        .catch(function () {
+          alert('네트워크 오류가 발생했습니다.');
+          if (submitBtn) submitBtn.disabled = false;
+        });
+    });
   }
 
   function initShopSave() {

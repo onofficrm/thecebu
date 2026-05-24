@@ -403,6 +403,68 @@ if (!function_exists('eottae_get_member_reviews')) {
     }
 }
 
+if (!function_exists('eottae_review_reply_token')) {
+    function eottae_review_reply_token($regenerate = false)
+    {
+        $key = 'eottae_review_reply_token';
+        $token = get_session($key);
+        if ($regenerate || $token === '' || $token === null) {
+            $token = md5(uniqid((string) mt_rand(), true));
+            set_session($key, $token);
+        }
+
+        return $token;
+    }
+}
+
+if (!function_exists('eottae_business_owns_shop')) {
+    function eottae_business_owns_shop($mb_id, $shop_wr_id)
+    {
+        global $g5;
+
+        $mb_id = sql_escape_string((string) $mb_id);
+        $shop_wr_id = (int) $shop_wr_id;
+        if ($mb_id === '' || $shop_wr_id < 1) {
+            return false;
+        }
+
+        $shop_table = $g5['write_prefix'].EOTTae_SHOP_TABLE;
+        $row = sql_fetch(" select wr_id from {$shop_table}
+            where wr_id = '{$shop_wr_id}' and mb_id = '{$mb_id}' limit 1 ");
+
+        return !empty($row['wr_id']);
+    }
+}
+
+if (!function_exists('eottae_review_has_business_reply')) {
+    function eottae_review_has_business_reply($review_wr_id, $mb_id = '')
+    {
+        global $g5;
+
+        $review_wr_id = (int) $review_wr_id;
+        if ($review_wr_id < 1) {
+            return false;
+        }
+
+        $write_table = eottae_review_write_table();
+        $mb_filter = '';
+        if ($mb_id !== '') {
+            $mb_filter = " and mb_id = '".sql_escape_string((string) $mb_id)."' ";
+        }
+
+        $result = sql_query(" select mb_id from {$write_table}
+            where wr_is_comment = 1 and wr_parent = '{$review_wr_id}' {$mb_filter} ");
+        while ($row = sql_fetch_array($result)) {
+            $member_row = function_exists('get_member') ? get_member($row['mb_id']) : array('mb_id' => $row['mb_id']);
+            if (eottae_is_business_member($member_row)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
 if (!function_exists('eottae_review_token')) {
     function eottae_review_token($regenerate = false)
     {

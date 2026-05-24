@@ -62,6 +62,9 @@ if (!$eottae_hide_g5_aside) {
 
 <!-- 하단 시작 { -->
 <div id="ft" class="site-footer-wrap">
+<?php if ($eottae_hide_g5_aside) {
+    include G5_PATH.'/components/eottae/site-footer.php';
+} else { ?>
     <div class="site-g5-widgets site-g5-widgets--tail">
         <?php echo latest('notice', 'notice', 4, 13); ?>
         <?php echo visit(); ?>
@@ -138,6 +141,7 @@ if (!$eottae_hide_g5_aside) {
             </p>
         </div>
     </footer>
+<?php } ?>
 </div>
 
 <?php
