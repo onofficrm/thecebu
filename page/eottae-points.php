@@ -53,7 +53,7 @@ g5_page_start('포인트');
     <?php } ?>
 
     <p style="margin-top:16px;font-size:12px;color:var(--eottae-muted)">
-        리뷰 작성 포인트 자동 지급은 3차 개발에서 적용됩니다.
+        업체 리뷰 작성 시 기본 <?php echo number_format(defined('EOTTae_REVIEW_POINT_BASE') ? EOTTae_REVIEW_POINT_BASE : 30); ?>P, 사진 첨부 시 추가 <?php echo number_format(defined('EOTTae_REVIEW_POINT_PHOTO') ? EOTTae_REVIEW_POINT_PHOTO : 20); ?>P가 자동 지급됩니다.
     </p>
 </main>
 

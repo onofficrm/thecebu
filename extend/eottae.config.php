@@ -30,3 +30,19 @@ if (!defined('EOTTae_EVENT_TABLE')) {
 if (!defined('EOTTae_MEMBER_SKIN')) {
     define('EOTTae_MEMBER_SKIN', 'eottae');
 }
+
+if (!defined('EOTTae_REVIEW_POINT_BASE')) {
+    define('EOTTae_REVIEW_POINT_BASE', 30);
+}
+
+if (!defined('EOTTae_REVIEW_POINT_PHOTO')) {
+    define('EOTTae_REVIEW_POINT_PHOTO', 20);
+}
+
+if (!defined('EOTTae_WELCOME_COUPON_CODE')) {
+    define('EOTTae_WELCOME_COUPON_CODE', 'welcome');
+}
+
+if (!defined('EOTTae_REVIEW_COUPON_CODE')) {
+    define('EOTTae_REVIEW_COUPON_CODE', 'review_bonus');
+}

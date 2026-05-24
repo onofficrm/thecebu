@@ -697,6 +697,106 @@ if (!function_exists('eottae_get_events')) {
     }
 }
 
+if (!function_exists('eottae_grant_review_points')) {
+    /**
+     * 리뷰 작성 포인트 지급 (기본 + 사진 보너스)
+     *
+     * @return array{total:int, base:int, photo:int}
+     */
+    function eottae_grant_review_points($mb_id, $review_wr_id, $shop_name, $has_photo = false)
+    {
+        global $config;
+
+        $review_wr_id = (int) $review_wr_id;
+        $base = defined('EOTTae_REVIEW_POINT_BASE') ? (int) EOTTae_REVIEW_POINT_BASE : 30;
+        $photo = defined('EOTTae_REVIEW_POINT_PHOTO') ? (int) EOTTae_REVIEW_POINT_PHOTO : 20;
+        $bo_table = eottae_review_table();
+        $shop_label = $shop_name !== '' ? get_text($shop_name) : '업체';
+
+        $granted = array('total' => 0, 'base' => 0, 'photo' => 0);
+        if ($review_wr_id < 1 || $mb_id === '' || empty($config['cf_use_point'])) {
+            return $granted;
+        }
+
+        if ($base > 0) {
+            $result = insert_point(
+                $mb_id,
+                $base,
+                $shop_label.' 리뷰 작성',
+                $bo_table,
+                (string) $review_wr_id,
+                'write'
+            );
+            if ($result === 1) {
+                $granted['base'] = $base;
+                $granted['total'] += $base;
+            }
+        }
+
+        if ($has_photo && $photo > 0) {
+            $result = insert_point(
+                $mb_id,
+                $photo,
+                $shop_label.' 리뷰 사진 보너스',
+                $bo_table,
+                (string) $review_wr_id,
+                'photo'
+            );
+            if ($result === 1) {
+                $granted['photo'] = $photo;
+                $granted['total'] += $photo;
+            }
+        }
+
+        return $granted;
+    }
+}
+
+if (!function_exists('eottae_revoke_review_points')) {
+    function eottae_revoke_review_points($mb_id, $review_wr_id)
+    {
+        $review_wr_id = (int) $review_wr_id;
+        if ($review_wr_id < 1 || $mb_id === '') {
+            return false;
+        }
+
+        $bo_table = eottae_review_table();
+        delete_point($mb_id, $bo_table, (string) $review_wr_id, 'write');
+        delete_point($mb_id, $bo_table, (string) $review_wr_id, 'photo');
+
+        return true;
+    }
+}
+
+if (!function_exists('eottae_hide_review')) {
+    function eottae_hide_review($review_wr_id)
+    {
+        global $g5;
+
+        $review_wr_id = (int) $review_wr_id;
+        if ($review_wr_id < 1) {
+            return array('ok' => false, 'message' => '리뷰를 찾을 수 없습니다.');
+        }
+
+        $write_table = eottae_review_write_table();
+        $row = sql_fetch(" select wr_id, mb_id, wr_4 from {$write_table}
+            where wr_id = '{$review_wr_id}' and wr_is_comment = 0 limit 1 ");
+        if (empty($row['wr_id'])) {
+            return array('ok' => false, 'message' => '리뷰를 찾을 수 없습니다.');
+        }
+        if ($row['wr_4'] === 'hidden') {
+            return array('ok' => true, 'message' => '이미 숨김 처리된 리뷰입니다.');
+        }
+
+        sql_query(" update {$write_table} set wr_4 = 'hidden' where wr_id = '{$review_wr_id}' ");
+        if (!empty($row['mb_id'])) {
+            eottae_revoke_review_points($row['mb_id'], $review_wr_id);
+        }
+
+        return array('ok' => true, 'message' => '리뷰가 숨김 처리되었습니다.');
+    }
+}
+
 if (!function_exists('eottae_render_shop_save_button')) {
     function eottae_render_shop_save_button($shop_wr_id, $is_saved = false)
     {

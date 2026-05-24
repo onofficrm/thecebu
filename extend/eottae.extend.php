@@ -5,6 +5,19 @@ if (!defined('_GNUBOARD_')) {
 
 include_once G5_PATH.'/extend/eottae.config.php';
 include_once G5_LIB_PATH.'/eottae.lib.php';
+include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
+
+if (!function_exists('eottae_on_register_after')) {
+    function eottae_on_register_after($mb_id, $w)
+    {
+        if ($w !== '' || $mb_id === '') {
+            return;
+        }
+
+        eottae_coupon_ensure_welcome($mb_id);
+    }
+}
+add_event('register_form_update_after', 'eottae_on_register_after', 10, 2);
 
 if (eottae_should_load_assets()) {
     add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae.css">', 5);

@@ -66,7 +66,7 @@ if (!function_exists('eottae_review_section_html')) {
             </div>
             <?php } ?>
 
-            <p class="review-summary__point-note">리뷰 작성 시 포인트가 지급됩니다. (사진 첨부 시 추가 포인트 — 3차 자동 지급 예정)</p>
+            <p class="review-summary__point-note">리뷰 작성 시 <?php echo number_format(defined('EOTTae_REVIEW_POINT_BASE') ? EOTTae_REVIEW_POINT_BASE : 30); ?>P가 지급됩니다. 사진 첨부 시 추가 <?php echo number_format(defined('EOTTae_REVIEW_POINT_PHOTO') ? EOTTae_REVIEW_POINT_PHOTO : 20); ?>P.</p>
         </section>
 
         <div class="eottae-review-modal" id="eottaeReviewModal" aria-hidden="true">

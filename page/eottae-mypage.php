@@ -7,6 +7,8 @@ if (!$is_member) {
 
 $is_biz = eottae_is_business_member($member);
 $point = isset($member['mb_point']) ? (int) $member['mb_point'] : 0;
+include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
+$coupon_count = eottae_coupon_count_active($member['mb_id']);
 $pending_replies = $is_biz ? eottae_business_pending_replies_count($member['mb_id']) : 0;
 $my_review_count = count(eottae_get_member_reviews($member['mb_id'], 100));
 $saved_count = count(eottae_get_saved_shop_ids($member['mb_id'], 100));
@@ -29,7 +31,7 @@ g5_page_start('마이페이지');
         </a>
         <a href="<?php echo G5_URL; ?>/page/eottae-coupons.php" class="mypage-coupon-summary__box" style="text-decoration:none;color:inherit">
             <p class="mypage-point-summary__label">쿠폰</p>
-            <p class="mypage-point-summary__value">0</p>
+            <p class="mypage-point-summary__value"><?php echo number_format($coupon_count); ?></p>
         </a>
     </section>
 

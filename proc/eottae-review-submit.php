@@ -189,5 +189,22 @@ if (!empty($_FILES['photo']['name']) && is_uploaded_file($_FILES['photo']['tmp_n
 
 set_session('eottae_review_token', '');
 
+include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
+
+$points = eottae_grant_review_points($member['mb_id'], $wr_id, $shop_name, $photo_count > 0);
+
+$message = '리뷰가 등록되었습니다.';
+if ($points['total'] > 0) {
+    $message .= ' (+'.number_format($points['total']).'P)';
+}
+
+$review_count = count(eottae_get_member_reviews($member['mb_id'], 100));
+if ($review_count === 1) {
+    $coupon_result = eottae_coupon_ensure_review_bonus($member['mb_id']);
+    if (!empty($coupon_result['ok']) && empty($coupon_result['duplicate'])) {
+        $message .= ' 첫 리뷰 감사 쿠폰이 발급되었습니다.';
+    }
+}
+
 $redirect = G5_BBS_URL.'/board.php?bo_table='.EOTTae_SHOP_TABLE.'&wr_id='.$shop_wr_id.'#shop-reviews';
-eottae_review_json(true, '리뷰가 등록되었습니다.', $redirect);
+eottae_review_json(true, $message, $redirect);
