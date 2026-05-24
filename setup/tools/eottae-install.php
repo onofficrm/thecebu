@@ -24,6 +24,8 @@ if (!$is_admin || $is_admin !== 'super') {
 $run = isset($_GET['run']) && $_GET['run'] === '1';
 $update_only = isset($_GET['update']) && $_GET['update'] === '1';
 
+define('EOTTAE_SETUP_MINIMAL', true);
+$g5_css_brand = '';
 $g5['title'] = '세부어때 설치';
 include_once(G5_PATH.'/head.php');
 ?>

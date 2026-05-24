@@ -37,8 +37,9 @@ $g5_is_index_page = defined('_INDEX_');
 
     </div>
 <?php
-$eottae_hide_g5_aside = function_exists('eottae_should_load_assets') && eottae_should_load_assets();
-if (!$eottae_hide_g5_aside) {
+$eottae_setup_minimal = defined('EOTTAE_SETUP_MINIMAL') && EOTTAE_SETUP_MINIMAL;
+$eottae_hide_g5_aside = !$eottae_setup_minimal && function_exists('eottae_should_load_assets') && eottae_should_load_assets();
+if (!$eottae_hide_g5_aside && !$eottae_setup_minimal) {
 ?>
     <div id="aside" class="site-aside">
         <div class="site-g5-widgets site-g5-widgets--aside">
@@ -61,6 +62,7 @@ if (!$eottae_hide_g5_aside) {
 <hr>
 
 <!-- 하단 시작 { -->
+<?php if (!$eottae_setup_minimal) { ?>
 <div id="ft" class="site-footer-wrap">
 <?php if ($eottae_hide_g5_aside) {
     include G5_PATH.'/components/eottae/site-footer.php';
@@ -143,18 +145,21 @@ if (!$eottae_hide_g5_aside) {
     </footer>
 <?php } ?>
 </div>
+<?php } ?>
 
 <?php
-if (function_exists('eottae_should_load_assets') && eottae_should_load_assets()) {
+if (!$eottae_setup_minimal && function_exists('eottae_should_load_assets') && eottae_should_load_assets()) {
     eottae_load_component('global-bottom-nav');
     if (function_exists('eottae_global_bottom_nav_html')) {
         echo eottae_global_bottom_nav_html();
     }
 }
 
-include_once(G5_PATH.'/components/floating-buttons.php');
-include_once(G5_PATH.'/components/consult-modal.php');
-include_once(G5_PATH.'/components/popup-banner.php');
+if (!$eottae_setup_minimal) {
+    include_once(G5_PATH.'/components/floating-buttons.php');
+    include_once(G5_PATH.'/components/consult-modal.php');
+    include_once(G5_PATH.'/components/popup-banner.php');
+}
 ?>
 
 <?php

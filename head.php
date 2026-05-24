@@ -1,6 +1,10 @@
 <?php
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
+if (!isset($g5_css_brand)) {
+    $g5_css_brand = '';
+}
+
 if (!isset($site_config) && is_file(G5_PATH.'/_site.config.php')) {
     include_once(G5_PATH.'/_site.config.php');
 }
@@ -43,7 +47,6 @@ if (is_file(G5_PATH.'/components/tracking-body.php')) {
 }
 
 // site_config 브랜드 색 → :root (hex만 허용)
-$g5_css_brand = '';
 if (function_exists('g5site_cfg')) {
     $g5_primary = g5site_cfg('primary_color', '');
     $g5_secondary = g5site_cfg('secondary_color', '');
@@ -111,7 +114,11 @@ if (!is_array($menu_datas_mo) || !count($menu_datas_mo)) {
 
 <!-- 상단 시작 { -->
 <div id="hd">
-<?php if (function_exists('eottae_should_load_assets') && eottae_should_load_assets()) {
+<?php if (defined('EOTTAE_SETUP_MINIMAL') && EOTTAE_SETUP_MINIMAL) { ?>
+    <div class="eottae-setup-hd" style="padding:12px 16px;border-bottom:1px solid #e2e8f0;background:#fff">
+        <a href="<?php echo G5_URL; ?>" style="font-weight:700;color:#0ea5e9;text-decoration:none">← 세부어때 홈</a>
+    </div>
+<?php } elseif (function_exists('eottae_should_load_assets') && eottae_should_load_assets()) {
     include G5_PATH.'/components/eottae/site-header.php';
 } else { ?>
     <header id="siteHeader" class="site-header mobile-header eottae-header">
