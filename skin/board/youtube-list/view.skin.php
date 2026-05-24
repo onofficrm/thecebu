@@ -7,38 +7,29 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
 
 $yt_id = g5b_youtube_id_from_write($view);
 $yt_summary = !empty($view['wr_2']) ? get_text($view['wr_2']) : '';
+$yt_channel = g5b_youtube_channel_label($view);
+$yt_views = g5b_youtube_format_views($view['wr_hit']);
+$yt_rel_time = g5b_youtube_relative_time($view['wr_datetime']);
+$yt_meta_parts = array();
+if ($yt_views !== '') {
+    $yt_meta_parts[] = $yt_views;
+}
+if ($yt_rel_time !== '') {
+    $yt_meta_parts[] = $yt_rel_time;
+}
+$yt_meta_line = implode(' • ', $yt_meta_parts);
+$yt_related = g5b_youtube_get_related_writes($bo_table, (int) $view['wr_id'], 20);
 ?>
 
 <script src="<?php echo G5_JS_URL; ?>/viewimageresize.js"></script>
 
-<article class="board-wrap board-wrap--youtube-list board-view board-view--youtube" id="bo_v" style="width:<?php echo $width; ?>">
+<article class="board-wrap board-wrap--youtube-list board-view board-view--youtube board-yt-watch" id="bo_v" style="width:<?php echo $width; ?>">
 
-    <header class="board-view__head">
-        <h2 class="board-title" id="bo_v_title">
-            <?php if ($category_name) { ?><span class="bo_v_cate board-view__cate"><?php echo $view['ca_name']; ?></span><?php } ?>
-            <span class="bo_v_tit board-title__text"><?php echo cut_str(get_text($view['wr_subject']), 70); ?></span>
-        </h2>
-        <?php if ($yt_summary) { ?><p class="board-view__summary"><?php echo nl2br($yt_summary); ?></p><?php } ?>
-    </header>
-
-    <section class="board-view__meta" id="bo_v_info">
-        <h2 class="sound_only">페이지 정보</h2>
-        <div class="profile_info board-view__author">
-            <div class="pf_img"><?php echo get_member_profile_img($view['mb_id']) ?></div>
-            <div class="profile_info_ct board-view__author-info">
-                <strong class="board-view__name"><?php echo $view['name'] ?></strong>
-                <ul class="board-view__stats">
-                    <li><a href="#bo_vc"><i class="fa fa-commenting-o" aria-hidden="true"></i> <?php echo number_format($view['wr_comment']) ?>건</a></li>
-                    <li><i class="fa fa-eye" aria-hidden="true"></i> <?php echo number_format($view['wr_hit']) ?>회</li>
-                    <li><i class="fa fa-clock-o" aria-hidden="true"></i> <?php echo date('Y-m-d H:i', strtotime($view['wr_datetime'])) ?></li>
-                </ul>
-            </div>
-        </div>
-        <div class="board-actions board-view__actions" id="bo_v_top">
+    <div class="board-yt-watch__toolbar">
+        <a href="<?php echo $list_href ?>" class="board-yt-watch__back btn_b01 btn" title="목록"><i class="fa fa-arrow-left" aria-hidden="true"></i><span class="board-yt-watch__back-label">목록</span></a>
+        <div class="board-yt-watch__toolbar-actions" id="bo_v_top">
             <ul class="btn_bo_user bo_v_com">
-                <li><a href="<?php echo $list_href ?>" class="btn_b01 btn" title="목록"><i class="fa fa-list" aria-hidden="true"></i><span class="sound_only">목록</span></a></li>
-                <?php if ($reply_href) { ?><li><a href="<?php echo $reply_href ?>" class="btn_b01 btn" title="답변"><i class="fa fa-reply" aria-hidden="true"></i><span class="sound_only">답변</span></a></li><?php } ?>
-                <?php if ($write_href) { ?><li><a href="<?php echo $write_href ?>" class="btn_b01 btn" title="글쓰기"><i class="fa fa-pencil" aria-hidden="true"></i><span class="sound_only">글쓰기</span></a></li><?php } ?>
+                <?php if ($write_href) { ?><li><a href="<?php echo $write_href ?>" class="btn_b01 btn" title="글쓰기"><i class="fa fa-video-camera" aria-hidden="true"></i><span class="sound_only">글쓰기</span></a></li><?php } ?>
                 <?php if ($update_href || $delete_href || $copy_href || $move_href || $search_href) { ?>
                 <li>
                     <button type="button" class="btn_more_opt is_view_btn btn_b01 btn" title="옵션"><i class="fa fa-ellipsis-v" aria-hidden="true"></i></button>
@@ -61,90 +52,84 @@ $yt_summary = !empty($view['wr_2']) ? get_text($view['wr_2']) : '';
             });
             </script>
         </div>
-    </section>
+    </div>
 
-    <section class="board-view__body board-view__body--youtube" id="bo_v_atc">
-        <h2 class="sound_only">영상</h2>
-        <div class="board-view__player">
-            <?php
-            if ($yt_id) {
-                echo g5b_youtube_embed_html($yt_id, $view['wr_subject']);
-            } else {
-                echo g5b_youtube_fallback_html();
-            }
-            ?>
+    <div class="board-yt-watch__layout">
+        <div class="board-yt-watch__primary">
+            <section class="board-yt-watch__player-wrap" id="bo_v_atc">
+                <h1 class="sound_only"><?php echo get_text($view['wr_subject']); ?></h1>
+                <div class="board-yt-watch__player">
+                    <?php
+                    if ($yt_id) {
+                        echo g5b_youtube_embed_html($yt_id, $view['wr_subject']);
+                    } else {
+                        echo g5b_youtube_fallback_html();
+                    }
+                    ?>
+                </div>
+            </section>
+
+            <header class="board-yt-watch__head">
+                <h2 class="board-yt-watch__title" id="bo_v_title">
+                    <?php if ($category_name) { ?><span class="board-yt-watch__cate"><?php echo $view['ca_name']; ?></span><?php } ?>
+                    <span class="board-yt-watch__title-text"><?php echo get_text($view['wr_subject']); ?></span>
+                </h2>
+            </header>
+
+            <section class="board-yt-watch__meta-row" id="bo_v_info">
+                <div class="board-yt-watch__channel">
+                    <?php echo g5b_youtube_avatar_html($yt_channel, 'board-yt-watch__avatar'); ?>
+                    <div class="board-yt-watch__channel-text">
+                        <strong class="board-yt-watch__channel-name"><?php echo $yt_channel !== '' ? htmlspecialchars($yt_channel, ENT_QUOTES, 'UTF-8') : get_text($view['name']); ?></strong>
+                        <?php if ($yt_meta_line) { ?><span class="board-yt-watch__stats"><?php echo htmlspecialchars($yt_meta_line, ENT_QUOTES, 'UTF-8'); ?></span><?php } ?>
+                    </div>
+                </div>
+                <div class="board-yt-watch__share" id="bo_v_share">
+                    <?php include_once(G5_SNS_PATH.'/view.sns.skin.php'); ?>
+                    <?php if ($scrap_href) { ?><a href="<?php echo $scrap_href; ?>" target="_blank" class="btn btn_b03 board-yt-watch__scrap" onclick="win_scrap(this.href); return false;"><i class="fa fa-bookmark" aria-hidden="true"></i> 스크랩</a><?php } ?>
+                </div>
+            </section>
+
+            <?php if ($yt_summary || trim($view['content'])) { ?>
+            <section class="board-yt-watch__desc">
+                <?php if ($yt_summary) { ?><p class="board-yt-watch__summary"><?php echo nl2br($yt_summary); ?></p><?php } ?>
+                <?php if (trim($view['content'])) { ?>
+                <div id="bo_v_con" class="board-yt-watch__content"><?php echo get_view_thumbnail($view['content']); ?></div>
+                <?php } ?>
+            </section>
+            <?php } ?>
+
+            <?php if ($good_href || $nogood_href) { ?>
+            <div id="bo_v_act" class="board-yt-watch__vote">
+                <?php if ($good_href) { ?><a href="<?php echo $good_href.'&amp;'.$qstr ?>" id="good_button" class="bo_v_good"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i><strong><?php echo number_format($view['wr_good']) ?></strong></a><?php } ?>
+                <?php if ($nogood_href) { ?><a href="<?php echo $nogood_href.'&amp;'.$qstr ?>" id="nogood_button" class="bo_v_nogood"><i class="fa fa-thumbs-o-down" aria-hidden="true"></i><strong><?php echo number_format($view['wr_nogood']) ?></strong></a><?php } ?>
+            </div>
+            <?php } ?>
+
+            <section class="board-yt-watch__comments-wrap">
+                <?php include_once(G5_BBS_PATH.'/view_comment.php'); ?>
+            </section>
         </div>
 
-        <div class="board-view__share" id="bo_v_share">
-            <?php include_once(G5_SNS_PATH.'/view.sns.skin.php'); ?>
-            <?php if ($scrap_href) { ?><a href="<?php echo $scrap_href; ?>" target="_blank" class="btn btn_b03" onclick="win_scrap(this.href); return false;"><i class="fa fa-bookmark" aria-hidden="true"></i> 스크랩</a><?php } ?>
-        </div>
-
-        <?php if (trim($view['content'])) { ?>
-        <div class="board-view__content-wrap">
-            <h3 class="board-view__section-title">상세 내용</h3>
-            <div id="bo_v_con" class="board-view__content"><?php echo get_view_thumbnail($view['content']); ?></div>
-        </div>
-        <?php } ?>
-
-        <?php if ($good_href || $nogood_href) { ?>
-        <div id="bo_v_act" class="board-view__vote">
-            <?php if ($good_href) { ?><a href="<?php echo $good_href.'&amp;'.$qstr ?>" id="good_button" class="bo_v_good"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i><strong><?php echo number_format($view['wr_good']) ?></strong></a><?php } ?>
-            <?php if ($nogood_href) { ?><a href="<?php echo $nogood_href.'&amp;'.$qstr ?>" id="nogood_button" class="bo_v_nogood"><i class="fa fa-thumbs-o-down" aria-hidden="true"></i><strong><?php echo number_format($view['wr_nogood']) ?></strong></a><?php } ?>
-        </div>
-        <?php } ?>
-    </section>
-
-    <?php
-    $cnt = 0;
-    if (!empty($view['file']['count'])) {
-        for ($i=0; $i<count($view['file']); $i++) {
-            if (!empty($view['file'][$i]['source']) && empty($view['file'][$i]['view'])) $cnt++;
-        }
-    }
-    ?>
-    <?php if ($cnt) { ?>
-    <section id="bo_v_file" class="board-view__files">
-        <h3 class="board-view__section-title">첨부파일</h3>
-        <ul>
-        <?php for ($i=0; $i<count($view['file']); $i++) {
-            if (!empty($view['file'][$i]['source']) && empty($view['file'][$i]['view'])) {
-        ?>
-            <li><a href="<?php echo $view['file'][$i]['href']; ?>" class="view_file_download"><strong><?php echo $view['file'][$i]['source'] ?></strong></a></li>
-        <?php } } ?>
-        </ul>
-    </section>
-    <?php } ?>
-
-    <?php if (isset($view['link']) && array_filter($view['link'])) { ?>
-    <section id="bo_v_link" class="board-view__links">
-        <h3 class="board-view__section-title">관련링크</h3>
-        <ul>
-        <?php for ($i=1; $i<=count($view['link']); $i++) {
-            if (!empty($view['link'][$i])) {
-        ?>
-            <li><a href="<?php echo $view['link_href'][$i] ?>" target="_blank" rel="noopener noreferrer"><?php echo cut_str($view['link'][$i], 70); ?></a></li>
-        <?php } } ?>
-        </ul>
-    </section>
-    <?php } ?>
-
-    <?php if ($prev_href || $next_href) { ?>
-    <nav class="bo_v_nb board-view__nav">
-        <ul>
-            <?php if ($prev_href) { ?><li class="btn_prv"><span class="nb_tit">이전글</span><a href="<?php echo $prev_href ?>"><?php echo $prev_wr_subject;?></a></li><?php } ?>
-            <?php if ($next_href) { ?><li class="btn_next"><span class="nb_tit">다음글</span><a href="<?php echo $next_href ?>"><?php echo $next_wr_subject;?></a></li><?php } ?>
-        </ul>
-    </nav>
-    <?php } ?>
+        <aside class="board-yt-watch__sidebar" aria-label="다른 영상">
+            <h2 class="board-yt-watch__sidebar-title">다른 영상</h2>
+            <?php if (empty($yt_related)) { ?>
+            <p class="board-yt-watch__sidebar-empty">다른 영상이 없습니다.</p>
+            <?php } else { ?>
+            <ul class="board-yt-sidebar">
+                <?php foreach ($yt_related as $yt_row) {
+                    echo g5b_youtube_sidebar_item_html($yt_row, $bo_table, (int) $view['wr_id']);
+                } ?>
+            </ul>
+            <?php } ?>
+        </aside>
+    </div>
 
     <?php
     if ($yt_id) {
         g5b_youtube_print_video_schema($view, $yt_id);
     }
     ?>
-
-    <?php include_once(G5_BBS_PATH.'/view_comment.php'); ?>
 </article>
 
 <script>

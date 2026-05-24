@@ -94,6 +94,7 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
                 <a href="<?php echo $list[$i]['href'] ?>" class="board-yt-card__link">
                     <span class="board-yt-card__media">
                         <span class="board-yt-card__thumb"><?php echo $thumb_html; ?></span>
+                        <?php echo g5b_youtube_duration_badge_html($list[$i]); ?>
                         <?php if ($list[$i]['is_notice']) { ?><span class="board-yt-card__badge board-yt-card__badge--notice">공지</span><?php } ?>
                         <?php if ($list[$i]['icon_new']) { ?><span class="board-yt-card__badge board-yt-card__badge--new">NEW</span><?php } ?>
                     </span>

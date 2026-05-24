@@ -879,6 +879,12 @@ if (!function_exists('eottae_seed_insert_youtube')) {
         $ca_name = sql_escape_string(isset($data['ca_name']) ? $data['ca_name'] : '정보');
         $wr_1 = sql_escape_string($watch_url);
         $wr_2 = sql_escape_string($summary);
+        $duration_sec = 0;
+        if (function_exists('g5b_youtube_fetch_duration_seconds')) {
+            include_once G5_SKIN_PATH.'/board/_inc/g5b-youtube.php';
+            $duration_sec = g5b_youtube_fetch_duration_seconds($video_id);
+        }
+        $wr_3 = sql_escape_string($duration_sec > 0 ? (string) $duration_sec : '');
         $mb_id = sql_escape_string(isset($data['mb_id']) ? $data['mb_id'] : 'admin');
         $wr_name = sql_escape_string(isset($data['wr_name']) ? $data['wr_name'] : '세부어때');
         $wr_seo_title = sql_escape_string('yt-'.$video_id);
@@ -905,7 +911,7 @@ if (!function_exists('eottae_seed_insert_youtube')) {
             wr_hit = 0,
             wr_1 = '{$wr_1}',
             wr_2 = '{$wr_2}',
-            wr_3 = '', wr_4 = '', wr_5 = '',
+            wr_3 = '{$wr_3}', wr_4 = '', wr_5 = '',
             wr_6 = '', wr_7 = '', wr_8 = '', wr_9 = '', wr_10 = '' ";
         sql_query($sql);
 

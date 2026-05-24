@@ -105,6 +105,203 @@ function g5b_youtube_embed_url($video_id)
 }
 
 /**
+ * wr_3 재생 시간(초) → 정수
+ */
+function g5b_youtube_duration_seconds($write)
+{
+    if (!is_array($write) || !isset($write['wr_3'])) {
+        return 0;
+    }
+
+    $raw = trim((string) $write['wr_3']);
+    if ($raw === '' || !preg_match('/^\d+$/', $raw)) {
+        return 0;
+    }
+
+    return max(0, (int) $raw);
+}
+
+/**
+ * 초 → YouTube 스타일 표기 (예: 1:23:45, 12:49)
+ */
+function g5b_youtube_format_duration($seconds)
+{
+    $seconds = max(0, (int) $seconds);
+    if ($seconds <= 0) {
+        return '';
+    }
+
+    $h = (int) floor($seconds / 3600);
+    $m = (int) floor(($seconds % 3600) / 60);
+    $s = $seconds % 60;
+
+    if ($h > 0) {
+        return $h.':'.sprintf('%02d', $m).':'.sprintf('%02d', $s);
+    }
+
+    return $m.':'.sprintf('%02d', $s);
+}
+
+/**
+ * YouTube watch 페이지에서 lengthSeconds 추출 (API 키 불필요)
+ */
+function g5b_youtube_fetch_duration_seconds($video_id)
+{
+    $video_id = g5b_youtube_sanitize_id($video_id);
+    if (!$video_id) {
+        return 0;
+    }
+
+    $url = 'https://www.youtube.com/watch?v='.$video_id;
+    $ctx = stream_context_create(array(
+        'http' => array(
+            'timeout' => 10,
+            'ignore_errors' => true,
+            'header' => "User-Agent: Mozilla/5.0 (compatible; thecebu/1.0)\r\nAccept-Language: ko-KR,ko;q=0.9\r\n",
+        ),
+        'ssl' => array(
+            'verify_peer' => true,
+            'verify_peer_name' => true,
+        ),
+    ));
+
+    $html = @file_get_contents($url, false, $ctx);
+    if ($html === false || $html === '') {
+        return 0;
+    }
+
+    if (preg_match('/"lengthSeconds"\s*:\s*"(\d+)"/', $html, $m)) {
+        return max(0, (int) $m[1]);
+    }
+    if (preg_match('/"approxDurationMs"\s*:\s*"(\d+)"/', $html, $m)) {
+        return max(0, (int) round(((int) $m[1]) / 1000));
+    }
+
+    return 0;
+}
+
+/**
+ * 글에 재생 시간 저장 (wr_3, 초 단위)
+ */
+function g5b_youtube_save_duration($bo_table, $wr_id, $video_id = '')
+{
+    global $g5;
+
+    $bo_table = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
+    $wr_id = (int) $wr_id;
+    if ($bo_table === '' || $wr_id < 1) {
+        return false;
+    }
+
+    if ($video_id === '') {
+        $write_table = $g5['write_prefix'].$bo_table;
+        $row = sql_fetch(" select wr_1, wr_content from {$write_table} where wr_id = '{$wr_id}' and wr_is_comment = 0 limit 1 ");
+        if (!is_array($row)) {
+            return false;
+        }
+        $video_id = g5b_youtube_id_from_write($row);
+    }
+
+    $seconds = g5b_youtube_fetch_duration_seconds($video_id);
+    if ($seconds <= 0) {
+        return false;
+    }
+
+    $write_table = $g5['write_prefix'].$bo_table;
+    sql_query(" update {$write_table} set wr_3 = '{$seconds}' where wr_id = '{$wr_id}' ");
+
+    return true;
+}
+
+/**
+ * 관련 영상 목록 (글보기 사이드바)
+ */
+function g5b_youtube_get_related_writes($bo_table, $exclude_wr_id, $limit = 20)
+{
+    global $g5;
+
+    $bo_table = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
+    $exclude_wr_id = (int) $exclude_wr_id;
+    $limit = max(1, min(30, (int) $limit));
+    if ($bo_table === '') {
+        return array();
+    }
+
+    $write_table = $g5['write_prefix'].$bo_table;
+    $result = sql_query(" select wr_id, ca_name, wr_subject, wr_hit, wr_datetime, wr_1, wr_2, wr_3, wr_name
+        from {$write_table}
+        where wr_is_comment = 0 and wr_id != '{$exclude_wr_id}'
+        order by wr_id desc
+        limit {$limit} ");
+    $items = array();
+    while ($row = sql_fetch_array($result)) {
+        $items[] = $row;
+    }
+
+    return $items;
+}
+
+/**
+ * 썸네일 duration 배지 HTML
+ */
+function g5b_youtube_duration_badge_html($write, $class = 'board-yt-duration')
+{
+    $label = g5b_youtube_format_duration(g5b_youtube_duration_seconds($write));
+    if ($label === '') {
+        return '';
+    }
+
+    return '<span class="'.htmlspecialchars($class, ENT_QUOTES, 'UTF-8').'">'
+        .htmlspecialchars($label, ENT_QUOTES, 'UTF-8').'</span>';
+}
+
+/**
+ * 사이드바 추천 영상 카드 HTML
+ */
+function g5b_youtube_sidebar_item_html($row, $bo_table, $current_wr_id = 0)
+{
+    if (!is_array($row) || empty($row['wr_id'])) {
+        return '';
+    }
+
+    $wr_id = (int) $row['wr_id'];
+    if ($current_wr_id > 0 && $wr_id === (int) $current_wr_id) {
+        return '';
+    }
+
+    $yt_id = g5b_youtube_id_from_write($row);
+    $href = get_pretty_url($bo_table, $wr_id);
+    $title = isset($row['wr_subject']) ? get_text(strip_tags($row['wr_subject'])) : '';
+    $channel = g5b_youtube_channel_label($row);
+    $views = g5b_youtube_format_views(isset($row['wr_hit']) ? $row['wr_hit'] : 0);
+    $rel_time = g5b_youtube_relative_time(isset($row['wr_datetime']) ? $row['wr_datetime'] : '');
+    $meta_parts = array();
+    if ($channel !== '') {
+        $meta_parts[] = $channel;
+    }
+    if ($views !== '') {
+        $meta_parts[] = $views;
+    }
+    if ($rel_time !== '') {
+        $meta_parts[] = $rel_time;
+    }
+    $meta_line = implode(' • ', $meta_parts);
+
+    $thumb_html = g5b_youtube_thumb_html($yt_id, $title);
+    $duration_html = g5b_youtube_duration_badge_html($row, 'board-yt-duration board-yt-duration--sidebar');
+
+    return '<li class="board-yt-sidebar-item">'
+        .'<a href="'.htmlspecialchars($href, ENT_QUOTES, 'UTF-8').'" class="board-yt-sidebar-item__link">'
+        .'<span class="board-yt-sidebar-item__media">'.$thumb_html.$duration_html.'</span>'
+        .'<span class="board-yt-sidebar-item__info">'
+        .'<span class="board-yt-sidebar-item__title">'.htmlspecialchars($title, ENT_QUOTES, 'UTF-8').'</span>'
+        .($meta_line !== '' ? '<span class="board-yt-sidebar-item__meta">'.htmlspecialchars($meta_line, ENT_QUOTES, 'UTF-8').'</span>' : '')
+        .'</span>'
+        .'</a>'
+        .'</li>';
+}
+
+/**
  * Schema·외부 링크용 watch URL (영상 ID만 사용)
  */
 function g5b_youtube_watch_url($video_id)

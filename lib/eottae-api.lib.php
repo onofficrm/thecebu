@@ -389,6 +389,7 @@ if (!function_exists('eottae_api_format_youtube_row')) {
         $datetime = isset($row['wr_datetime']) ? $row['wr_datetime'] : '';
         $video_id = g5b_youtube_id_from_write($row);
         $thumb = $video_id ? g5b_youtube_thumb_url($video_id) : '';
+        $duration_sec = g5b_youtube_duration_seconds($row);
         $category = isset($row['ca_name']) && $row['ca_name'] !== '' ? get_text($row['ca_name']) : '정보';
         $channel = function_exists('g5b_youtube_channel_label') ? g5b_youtube_channel_label($row) : '';
 
@@ -406,6 +407,8 @@ if (!function_exists('eottae_api_format_youtube_row')) {
             'thumb'    => $thumb,
             'channel'  => $channel,
             'video_id' => $video_id,
+            'duration' => $duration_sec,
+            'duration_label' => g5b_youtube_format_duration($duration_sec),
         );
     }
 }
@@ -423,7 +426,7 @@ if (!function_exists('eottae_api_get_youtube_posts')) {
         $bo_table = eottae_api_youtube_table();
         $write_table = $g5['write_prefix'].$bo_table;
 
-        $result = sql_query(" select wr_id, ca_name, wr_subject, wr_comment, wr_hit, wr_datetime, wr_1, wr_2, wr_name
+        $result = sql_query(" select wr_id, ca_name, wr_subject, wr_comment, wr_hit, wr_datetime, wr_1, wr_2, wr_3, wr_name
             from {$write_table}
             where wr_is_comment = 0
             order by wr_id desc

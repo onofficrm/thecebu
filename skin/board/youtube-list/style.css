@@ -345,6 +345,235 @@
   margin-top: 2rem;
 }
 
+/* 재생 시간 배지 */
+.board-yt-duration {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  z-index: 3;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.82);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+
+.board-yt-card__media {
+  position: relative;
+}
+
+/* ── 글보기 (YouTube watch 레이아웃) ── */
+.board-yt-watch {
+  max-width: none;
+}
+
+.board-yt-watch__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.board-yt-watch__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.board-yt-watch__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 402px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.board-yt-watch__primary {
+  min-width: 0;
+}
+
+.board-yt-watch__player-wrap {
+  margin-bottom: 0.75rem;
+}
+
+.board-yt-watch__player .board-yt-embed,
+.board-yt-watch__player .board-yt-embed__ratio {
+  border-radius: 12px;
+}
+
+.board-yt-watch__title {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--yt-text);
+}
+
+.board-yt-watch__cate {
+  display: inline-block;
+  margin-right: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #cc0000;
+}
+
+.board-yt-watch__meta-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.board-yt-watch__channel {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.board-yt-watch__channel-text {
+  min-width: 0;
+}
+
+.board-yt-watch__channel-name {
+  display: block;
+  font-size: 0.9375rem;
+  color: var(--yt-text);
+}
+
+.board-yt-watch__stats {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.8125rem;
+  color: var(--yt-text-secondary);
+}
+
+.board-yt-watch__desc {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.board-yt-watch__summary,
+.board-yt-watch__content {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--yt-text);
+}
+
+.board-yt-watch__comments-wrap {
+  margin-top: 1.5rem;
+}
+
+.board-yt-watch__comments-wrap .cmt_btn {
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.75rem 0;
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: transparent;
+  text-align: left;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--yt-text);
+}
+
+.board-yt-watch__comments-wrap #bo_vc {
+  margin-top: 0.5rem;
+}
+
+.board-yt-watch__sidebar {
+  position: sticky;
+  top: 1rem;
+}
+
+.board-yt-watch__sidebar-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--yt-text);
+}
+
+.board-yt-watch__sidebar-empty {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--yt-text-secondary);
+}
+
+.board-yt-sidebar {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.board-yt-sidebar-item__link {
+  display: flex;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.board-yt-sidebar-item__media {
+  position: relative;
+  flex-shrink: 0;
+  width: 168px;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+}
+
+.board-yt-sidebar-item__media .board-yt-thumb {
+  height: 100%;
+  border-radius: 0;
+}
+
+.board-yt-duration--sidebar {
+  font-size: 0.6875rem;
+  line-height: 1.1rem;
+}
+
+.board-yt-sidebar-item__info {
+  flex: 1;
+  min-width: 0;
+  padding-top: 0.1rem;
+}
+
+.board-yt-sidebar-item__title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--yt-text);
+}
+
+.board-yt-sidebar-item__meta {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--yt-text-secondary);
+}
+
+.board-yt-sidebar-item__link:hover .board-yt-sidebar-item__title {
+  color: var(--yt-text);
+}
+
 /* 글쓰기 */
 .board-write-form__youtube .board-write-form__yt-guide {
   margin-top: var(--space-sm, 0.5rem);
@@ -443,6 +672,14 @@
 @media (max-width: 1199px) {
   .board-yt-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .board-yt-watch__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .board-yt-watch__sidebar {
+    position: static;
   }
 }
 

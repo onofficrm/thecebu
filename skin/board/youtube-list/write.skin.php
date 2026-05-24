@@ -100,7 +100,7 @@ $yt_summary = isset($wr_2) ? get_text($wr_2) : '';
             · https://www.youtube.com/shorts/VIDEO_ID<br>
             · https://m.youtube.com/watch?v=VIDEO_ID<br>
             · 11자 영상 ID만 입력 (예: <code>dQw4w9WgXcQ</code>)<br>
-            <span class="board-write-form__yt-warn">형식이 맞지 않으면 목록·글보기에서 영상이 표시되지 않습니다.</span>
+            <span class="board-write-form__yt-warn">형식이 맞지 않으면 목록·글보기에서 영상이 표시되지 않습니다. 저장 시 재생 시간이 <code>wr_3</code>에 자동 저장됩니다.</span>
         </p>
     </div>
 

@@ -57,6 +57,32 @@ if (!function_exists('eottae_on_shop_write_after')) {
 }
 add_event('write_update_after', 'eottae_on_shop_write_after', 10, 5);
 
+if (!function_exists('eottae_is_youtube_board')) {
+    function eottae_is_youtube_board($bo_table)
+    {
+        $bo_table = (string) $bo_table;
+        $youtube = defined('EOTTae_YOUTUBE_TABLE') ? EOTTae_YOUTUBE_TABLE : 'youtube';
+
+        return $bo_table !== '' && $bo_table === $youtube;
+    }
+}
+
+if (!function_exists('eottae_on_youtube_write_after')) {
+    function eottae_on_youtube_write_after($board, $wr_id, $w, $qstr, $redirect_url)
+    {
+        if (empty($board['bo_table']) || !eottae_is_youtube_board($board['bo_table'])) {
+            return;
+        }
+
+        if (!function_exists('g5b_youtube_save_duration')) {
+            include_once G5_SKIN_PATH.'/board/_inc/g5b-youtube.php';
+        }
+
+        g5b_youtube_save_duration($board['bo_table'], (int) $wr_id);
+    }
+}
+add_event('write_update_after', 'eottae_on_youtube_write_after', 20, 5);
+
 if (eottae_should_load_assets()) {
     add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae.css">', 20);
     add_javascript('<script src="'.G5_JS_URL.'/eottae.js" defer></script>', 20);
