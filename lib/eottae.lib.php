@@ -145,12 +145,12 @@ if (!function_exists('eottae_render_inquiry_buttons')) {
 }
 
 if (!function_exists('eottae_render_shop_card')) {
-    function eottae_render_shop_card($list_row, $bo_table = '')
+    function eottae_render_shop_card($list_row, $bo_table = '', $layout = 'grid')
     {
         eottae_load_component('shop-card');
 
         if (function_exists('eottae_shop_card_html')) {
-            echo eottae_shop_card_html($list_row, $bo_table);
+            echo eottae_shop_card_html($list_row, $bo_table, $layout);
         }
     }
 }
@@ -1031,5 +1031,99 @@ if (!function_exists('eottae_community_region_options')) {
     function eottae_community_region_options()
     {
         return array('세부시티', '막탄', 'IT Park', '아얄라', '만다우에', '라푸라푸');
+    }
+}
+
+if (!function_exists('eottae_shop_region_options')) {
+    function eottae_shop_region_options()
+    {
+        return eottae_community_region_options();
+    }
+}
+
+if (!function_exists('eottae_shop_quick_categories')) {
+    function eottae_shop_quick_categories($board)
+    {
+        $items = array(array('slug' => '', 'label' => '전체'));
+        $defaults = array('맛집', '마사지', '렌트카', '투어', '카페', '병원', '학원', '숙소');
+        $board_cats = array();
+
+        if (!empty($board['bo_category_list'])) {
+            $board_cats = array_filter(array_map('trim', explode('|', $board['bo_category_list'])));
+        }
+
+        $merged = array_unique(array_merge($board_cats, $defaults));
+        foreach ($merged as $cat) {
+            if ($cat === '') {
+                continue;
+            }
+            $items[] = array('slug' => $cat, 'label' => $cat);
+        }
+
+        return $items;
+    }
+}
+
+if (!function_exists('eottae_shop_sort_links')) {
+    function eottae_shop_sort_links($current_sst = '')
+    {
+        return array(
+            array('label' => '가까운순', 'sst' => 'near', 'sod' => 'asc', 'disabled' => true),
+            array('label' => '인기순', 'sst' => 'wr_hit', 'sod' => 'desc'),
+            array('label' => '리뷰많은순', 'sst' => 'wr_comment', 'sod' => 'desc'),
+            array('label' => '평점높은순', 'sst' => 'wr_good', 'sod' => 'desc'),
+            array('label' => '최신등록순', 'sst' => 'wr_datetime', 'sod' => 'desc'),
+        );
+    }
+}
+
+if (!function_exists('eottae_shop_is_sort_active')) {
+    function eottae_shop_is_sort_active($link, $current_sst, $current_sod)
+    {
+        if (!empty($link['disabled'])) {
+            return false;
+        }
+        if ($current_sst === '') {
+            return $link['sst'] === 'wr_datetime';
+        }
+
+        return $link['sst'] === $current_sst && ($current_sod === '' || $link['sod'] === $current_sod);
+    }
+}
+
+if (!function_exists('eottae_shop_list_snippet')) {
+    function eottae_shop_list_snippet($content, $len = 90)
+    {
+        return eottae_community_snippet($content, $len);
+    }
+}
+
+if (!function_exists('eottae_shop_map_markers')) {
+    function eottae_shop_map_markers($list, $bo_table = '')
+    {
+        $markers = array();
+        if (!is_array($list)) {
+            return $markers;
+        }
+
+        foreach ($list as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $shop = eottae_shop_from_write($row);
+            if ($shop['lat'] === '' || $shop['lng'] === '') {
+                continue;
+            }
+            $markers[] = array(
+                'wr_id'    => (int) $shop['wr_id'],
+                'name'     => $shop['name'],
+                'category' => $shop['category'],
+                'lat'      => $shop['lat'],
+                'lng'      => $shop['lng'],
+                'url'      => isset($row['href']) ? $row['href'] : G5_BBS_URL.'/board.php?bo_table='.($bo_table !== '' ? $bo_table : (defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop')).'&wr_id='.$shop['wr_id'],
+            );
+        }
+
+        return $markers;
     }
 }

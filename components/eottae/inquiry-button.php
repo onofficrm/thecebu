@@ -58,6 +58,15 @@ if (!function_exists('eottae_inquiry_buttons_html')) {
                 <?php
                 break;
 
+            case 'list':
+                ?>
+                <div class="inquiry-button inquiry-button--list shop-list-card__actions">
+                    <button type="button" class="inquiry-button__btn inquiry-button__btn--inquiry inquiry-button__btn--primary"<?php echo $inquiry_attr; ?> data-inquiry-action="open">문의하기</button>
+                    <a href="<?php echo $map_href; ?>" class="inquiry-button__btn inquiry-button__btn--map inquiry-button__btn--outline" target="_blank" rel="noopener noreferrer">길찾기</a>
+                </div>
+                <?php
+                break;
+
             case 'card':
             default:
                 ?>

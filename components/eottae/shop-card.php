@@ -4,10 +4,14 @@ if (!defined('_GNUBOARD_')) {
 }
 
 if (!function_exists('eottae_shop_card_html')) {
-    function eottae_shop_card_html($row, $bo_table = '')
+    function eottae_shop_card_html($row, $bo_table = '', $layout = 'grid')
     {
         if (!is_array($row)) {
             return '';
+        }
+
+        if ($layout === 'list') {
+            return eottae_shop_list_card_html($row, $bo_table);
         }
 
         if ($bo_table === '') {
@@ -15,16 +19,7 @@ if (!function_exists('eottae_shop_card_html')) {
         }
 
         $shop = eottae_shop_from_write($row);
-        $thumb = '';
-        if (!empty($row['file']['count']) && isset($row['file'][0]['path'], $row['file'][0]['file'])) {
-            $thumb = $row['file'][0]['path'].'/'.$row['file'][0]['file'];
-        } elseif (function_exists('get_list_thumbnail') && !empty($row['bo_table'])) {
-            $t = get_list_thumbnail($row['bo_table'], $row['wr_id'], 400, 300);
-            if (!empty($t['src'])) {
-                $thumb = $t['src'];
-            }
-        }
-
+        $thumb = eottae_shop_card_thumb($row, $bo_table);
         $href = isset($row['href']) ? $row['href'] : G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$shop['wr_id'];
         $status_class = $shop['status'] === '영업중' ? ' shop-card--open' : '';
 
@@ -58,6 +53,96 @@ if (!function_exists('eottae_shop_card_html')) {
                 'address'       => $shop['address'],
             ));
             ?>
+        </article>
+        <?php
+
+        return ob_get_clean();
+    }
+}
+
+if (!function_exists('eottae_shop_card_thumb')) {
+    function eottae_shop_card_thumb($row, $bo_table = '')
+    {
+        if (!is_array($row)) {
+            return '';
+        }
+
+        if ($bo_table === '') {
+            $bo_table = defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop';
+        }
+
+        if (!empty($row['file']['count']) && isset($row['file'][0]['path'], $row['file'][0]['file'])) {
+            return $row['file'][0]['path'].'/'.$row['file'][0]['file'];
+        }
+
+        if (function_exists('get_list_thumbnail')) {
+            $table = !empty($row['bo_table']) ? $row['bo_table'] : $bo_table;
+            $t = get_list_thumbnail($table, $row['wr_id'], 400, 300);
+            if (!empty($t['src'])) {
+                return $t['src'];
+            }
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('eottae_shop_list_card_html')) {
+    function eottae_shop_list_card_html($row, $bo_table = '')
+    {
+        if ($bo_table === '') {
+            $bo_table = defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop';
+        }
+
+        $shop = eottae_shop_from_write($row);
+        $thumb = eottae_shop_card_thumb($row, $bo_table);
+        $href = isset($row['href']) ? $row['href'] : G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$shop['wr_id'];
+        $summary = eottae_get_shop_review_summary((int) $shop['wr_id']);
+        $snippet = eottae_shop_list_snippet(isset($row['wr_content']) ? $row['wr_content'] : '');
+        $is_recommended = $summary['average'] >= 4.5 && $summary['count'] > 0;
+        $is_ad = isset($row['wr_link2']) && stripos((string) $row['wr_link2'], 'ad') !== false;
+
+        ob_start();
+        ?>
+        <article class="shop-list-card">
+            <a href="<?php echo $href; ?>" class="shop-list-card__thumb-wrap">
+                <?php if ($thumb) { ?>
+                <img src="<?php echo $thumb; ?>" alt="<?php echo $shop['name']; ?>" class="shop-list-card__thumb" loading="lazy">
+                <?php } else { ?>
+                <div class="shop-list-card__thumb shop-list-card__thumb--empty" aria-hidden="true"></div>
+                <?php } ?>
+                <?php if ($is_ad) { ?>
+                <span class="shop-list-card__badge shop-list-card__badge--ad">광고</span>
+                <?php } elseif ($is_recommended) { ?>
+                <span class="shop-list-card__badge shop-list-card__badge--pick">추천</span>
+                <?php } ?>
+            </a>
+            <div class="shop-list-card__body">
+                <div class="shop-list-card__tags">
+                    <?php if ($shop['category']) { ?><span class="shop-list-card__tag shop-list-card__tag--cate"><?php echo $shop['category']; ?></span><?php } ?>
+                    <?php if ($shop['region']) { ?><span class="shop-list-card__tag shop-list-card__tag--region"><?php echo $shop['region']; ?></span><?php } ?>
+                    <span class="shop-list-card__distance" data-shop-distance data-lat="<?php echo htmlspecialchars($shop['lat'], ENT_QUOTES, 'UTF-8'); ?>" data-lng="<?php echo htmlspecialchars($shop['lng'], ENT_QUOTES, 'UTF-8'); ?>">
+                        <?php echo $shop['region'] ? get_text($shop['region']) : '세부'; ?>
+                    </span>
+                </div>
+                <h3 class="shop-list-card__title"><a href="<?php echo $href; ?>"><?php echo $shop['name'] ?: get_text($row['subject']); ?></a></h3>
+                <?php if ($snippet !== '') { ?>
+                <p class="shop-list-card__desc"><?php echo $snippet; ?></p>
+                <?php } ?>
+                <p class="shop-list-card__rating">
+                    <span class="shop-list-card__stars">★ <?php echo number_format($summary['average'], 1); ?></span>
+                    <span class="shop-list-card__reviews">리뷰 <?php echo number_format($summary['count']); ?></span>
+                </p>
+                <?php
+                eottae_render_inquiry_buttons('list', array(
+                    'phone'         => $shop['phone'],
+                    'inquiry_code'  => $shop['inquiry_code'],
+                    'lat'           => $shop['lat'],
+                    'lng'           => $shop['lng'],
+                    'address'       => $shop['address'],
+                ));
+                ?>
+            </div>
         </article>
         <?php
 
