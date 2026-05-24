@@ -198,12 +198,15 @@ if (!function_exists('eottae_seed_insert_community_post')) {
         $ca_name = sql_escape_string(isset($data['ca_name']) ? $data['ca_name'] : '정보');
         $mb_id = sql_escape_string('admin');
         $wr_name = sql_escape_string('세부어때');
-        $wr_seo_title = sql_escape_string('welcome-eottae');
+        $wr_seo_title = sql_escape_string(isset($data['wr_seo_title']) ? $data['wr_seo_title'] : 'eottae-'.md5($data['wr_subject']));
+        $wr_hit = isset($data['wr_hit']) ? (int) $data['wr_hit'] : 0;
+        $wr_comment = isset($data['wr_comment']) ? (int) $data['wr_comment'] : 0;
+        $wr_datetime = isset($data['wr_datetime']) ? sql_escape_string($data['wr_datetime']) : G5_TIME_YMDHIS;
 
         $sql = " insert into {$write_table} set
             wr_num = (SELECT IFNULL(MIN(wr_num) - 1, -1) FROM {$write_table} as sq),
             wr_reply = '',
-            wr_comment = 0,
+            wr_comment = '{$wr_comment}',
             ca_name = '{$ca_name}',
             wr_option = 'html1',
             wr_subject = '{$subject}',
@@ -216,9 +219,10 @@ if (!function_exists('eottae_seed_insert_community_post')) {
             wr_name = '{$wr_name}',
             wr_email = '',
             wr_homepage = '',
-            wr_datetime = '".G5_TIME_YMDHIS."',
-            wr_last = '".G5_TIME_YMDHIS."',
+            wr_datetime = '{$wr_datetime}',
+            wr_last = '{$wr_datetime}',
             wr_ip = '127.0.0.1',
+            wr_hit = '{$wr_hit}',
             wr_1 = '', wr_2 = '', wr_3 = '', wr_4 = '', wr_5 = '',
             wr_6 = '', wr_7 = '', wr_8 = '', wr_9 = '', wr_10 = '' ";
         sql_query($sql);
@@ -226,10 +230,165 @@ if (!function_exists('eottae_seed_insert_community_post')) {
         $wr_id = sql_insert_id();
         sql_query(" update {$write_table} set wr_parent = '{$wr_id}' where wr_id = '{$wr_id}' ");
         sql_query(" insert into {$g5['board_new_table']} ( bo_table, wr_id, wr_parent, bn_datetime, mb_id )
-            values ( '{$bo_table}', '{$wr_id}', '{$wr_id}', '".G5_TIME_YMDHIS."', '{$mb_id}' ) ");
+            values ( '{$bo_table}', '{$wr_id}', '{$wr_id}', '{$wr_datetime}', '{$mb_id}' ) ");
         sql_query(" update {$g5['board_table']} set bo_count_write = bo_count_write + 1 where bo_table = '{$bo_table}' ");
 
         return eottae_seed_log('community', $data['wr_subject'].' created');
+    }
+}
+
+if (!function_exists('eottae_seed_community_datetime')) {
+    function eottae_seed_community_datetime($offset_seconds = 0)
+    {
+        return date('Y-m-d H:i:s', G5_SERVER_TIME + (int) $offset_seconds);
+    }
+}
+
+if (!function_exists('eottae_seed_get_sample_community_posts')) {
+    function eottae_seed_get_sample_community_posts()
+    {
+        $img = 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&q=80&w=800';
+        $img2 = 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&q=80&w=800';
+        $img3 = 'https://images.unsplash.com/photo-1544365558-35aa4afcf11f?auto=format&fit=crop&q=80&w=800';
+
+        return array(
+            array(
+                'wr_subject'   => '오늘 막탄 날씨 너무 좋네요~ 호핑 가시는 분들 부럽습니다',
+                'ca_name'      => '자유',
+                'wr_content'   => '<p>막탄 쪽 하늘이 맑아서 바다색이 정말 예쁩니다. 오늘 호핑 나가시는 분들 후기 기대할게요!</p>',
+                'wr_hit'       => 342,
+                'wr_comment'   => 12,
+                'wr_datetime'  => eottae_seed_community_datetime(-7200),
+            ),
+            array(
+                'wr_subject'   => 'IT Park 근처에 늦게까지 하는 약국 있나요?',
+                'ca_name'      => '질문',
+                'wr_content'   => '<p>저녁 9시쯤까지 영업하는 약국 정보 아시는 분 계신가요? IT Park 또는 Ayala 쪽이면 좋겠습니다.</p>',
+                'wr_hit'       => 128,
+                'wr_comment'   => 5,
+                'wr_datetime'  => eottae_seed_community_datetime(-10800),
+            ),
+            array(
+                'wr_subject'   => '귀국 세일) 선풍기, 밥솥, 식탁 일괄 처분합니다',
+                'ca_name'      => '정보',
+                'wr_content'   => '<p>12월 귀국 예정이라 가전·가구 일괄 처분합니다. 막탄 Newtown 픽업 가능, DM 주세요.</p>',
+                'wr_hit'       => 512,
+                'wr_comment'   => 24,
+                'wr_datetime'  => eottae_seed_community_datetime(-18000),
+            ),
+            array(
+                'wr_subject'   => '아얄라 루스탄스 근처 1베드룸 (1년 계약) 양도합니다',
+                'ca_name'      => '후기',
+                'wr_content'   => '<p>루스탄스 Residences 1BR 계약 승계합니다. 관리비·보증금 조건은 댓글 또는 쪽지로 문의해 주세요.</p>',
+                'wr_hit'       => 245,
+                'wr_comment'   => 8,
+                'wr_datetime'  => eottae_seed_community_datetime(-86400),
+            ),
+            array(
+                'wr_subject'   => '새로 오픈한 만다우에 고깃집 다녀왔습니다 (내돈내산)',
+                'ca_name'      => '후기',
+                'wr_content'   => '<p>만다우에 쪽 신규 한식 고깃집 후기입니다. 고기 질은 괜찮고 밑반찬 리필이 빨라서 만족했어요.</p>',
+                'wr_hit'       => 420,
+                'wr_comment'   => 18,
+                'wr_datetime'  => eottae_seed_community_datetime(-90000),
+            ),
+            array(
+                'wr_subject'   => '오늘 아얄라몰 환율 얼마나 되나요?',
+                'ca_name'      => '자유',
+                'wr_content'   => '<p>오후에 환전하려는데 아얄라몰 환전소 기준 대략 얼마인지 공유 부탁드립니다.</p>',
+                'wr_hit'       => 45,
+                'wr_comment'   => 3,
+                'wr_datetime'  => eottae_seed_community_datetime(-600),
+            ),
+            array(
+                'wr_subject'   => '마리바고 블루워터 근처 맛집 추천좀요',
+                'ca_name'      => '질문',
+                'wr_content'   => '<p>주말에 블루워터 쪽 방문 예정인데 근처에서 저녁 먹기 좋은 곳 추천 부탁드려요.</p>',
+                'wr_hit'       => 22,
+                'wr_comment'   => 1,
+                'wr_datetime'  => eottae_seed_community_datetime(-900),
+            ),
+            array(
+                'wr_subject'   => '아이폰 13 프로 맥스 팝니다 (교민장터)',
+                'ca_name'      => '정보',
+                'wr_content'   => '<p>배터리 87%, 케이스·강화유리 포함 45000페소. 세부시티 직거래 가능합니다.</p>',
+                'wr_hit'       => 15,
+                'wr_comment'   => 0,
+                'wr_datetime'  => eottae_seed_community_datetime(-1800),
+            ),
+            array(
+                'wr_subject'   => '막탄 뉴타운 스튜디오 6개월 단기 렌트',
+                'ca_name'      => '후기',
+                'wr_content'   => '<p>6개월 단기 계약 가능한 스튜디오 정보 공유합니다. 관리비 포함 여부는 개별 문의 바랍니다.</p>',
+                'wr_hit'       => 88,
+                'wr_comment'   => 2,
+                'wr_datetime'  => eottae_seed_community_datetime(-3600),
+            ),
+            array(
+                'wr_subject'   => '막탄 호텔 프런트 한국어 가능 스태프 구합니다',
+                'ca_name'      => '구인구직',
+                'wr_content'   => '<p>막탄 4성급 호텔 프런트 데스크 한국어 가능 인력 채용. 비자 조건·급여는 면접 시 안내드립니다.</p>',
+                'wr_hit'       => 156,
+                'wr_comment'   => 6,
+                'wr_datetime'  => eottae_seed_community_datetime(-14400),
+            ),
+            array(
+                'wr_subject'   => '세부 10월 날씨 어떤가요? 건기인지 우기인지 궁금해요',
+                'ca_name'      => '정보',
+                'wr_content'   => '<p>10월 방문 예정인데 우기 말미인지, 비가 자주 오는지 경험담 공유 부탁드립니다.</p>',
+                'wr_hit'       => 42,
+                'wr_comment'   => 3,
+                'wr_datetime'  => eottae_seed_community_datetime(-600),
+            ),
+            array(
+                'wr_subject'   => '막탄 괜찮은 환전소 추천 부탁드립니다 (샹스몰 근처)',
+                'ca_name'      => '정보',
+                'wr_content'   => '<p>샹스몰·세부시티 사이 환전소 중 수수료 괜찮은 곳 추천해 주세요.</p>',
+                'wr_hit'       => 180,
+                'wr_comment'   => 12,
+                'wr_datetime'  => eottae_seed_community_datetime(-3600),
+            ),
+            array(
+                'wr_subject'   => '오슬롭 고래상어 투어 다녀왔습니다',
+                'ca_name'      => '후기',
+                'wr_content'   => '<p><img src="'.$img.'" alt="오슬롭 투어"></p><p>새벽 출발이 힘들었지만 고래상어 스노클링은 정말 인생샷이었습니다. 주의사항 꼭 확인하세요.</p>',
+                'wr_hit'       => 120,
+                'wr_comment'   => 4,
+                'wr_datetime'  => eottae_seed_community_datetime(-5400),
+            ),
+            array(
+                'wr_subject'   => '세부시티 야경 명소 탑스힐',
+                'ca_name'      => '후기',
+                'wr_content'   => '<p><img src="'.$img2.'" alt="탑스힐 야경"></p><p>일몰 30분 전 도착 추천. 카페 테라스 자리가 빨리 찹니다.</p>',
+                'wr_hit'       => 85,
+                'wr_comment'   => 2,
+                'wr_datetime'  => eottae_seed_community_datetime(-10800),
+            ),
+            array(
+                'wr_subject'   => '막탄 샹그릴라 프라이빗 비치',
+                'ca_name'      => '후기',
+                'wr_content'   => '<p><img src="'.$img3.'" alt="샹그릴라 비치"></p><p>비수기라 한적했고 수질도 좋았습니다. 데이유즈 패키지 가성비 괜찮아요.</p>',
+                'wr_hit'       => 240,
+                'wr_comment'   => 7,
+                'wr_datetime'  => eottae_seed_community_datetime(-86400),
+            ),
+        );
+    }
+}
+
+if (!function_exists('eottae_seed_community_samples_run')) {
+    function eottae_seed_community_samples_run()
+    {
+        $logs = array();
+        foreach (eottae_seed_get_sample_community_posts() as $post) {
+            $logs[] = eottae_seed_insert_community_post($post);
+        }
+
+        if (function_exists('run_event')) {
+            run_event('cache_delete', 'board');
+        }
+
+        return $logs;
     }
 }
 
