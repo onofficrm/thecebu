@@ -14,9 +14,7 @@ if (!defined('EOTTae_AD_SHOP_FLAG')) {
 if (!function_exists('eottae_ad_table')) {
     function eottae_ad_table()
     {
-        global $g5;
-
-        return $g5['table_prefix'].'eottae_ad';
+        return G5_TABLE_PREFIX.'eottae_ad';
     }
 }
 
