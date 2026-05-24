@@ -18,8 +18,8 @@ if (!hash_equals('thecebu.co.kr-phase2-20260524', $key)) {
 }
 
 include_once(__DIR__.'/eottae-install.lib.php');
-include_once(__DIR__.'/eottae-seed.lib.php');
 include_once(G5_LIB_PATH.'/eottae.lib.php');
+include_once(__DIR__.'/eottae-seed.lib.php');
 
 header('Content-Type: text/plain; charset=utf-8');
 
