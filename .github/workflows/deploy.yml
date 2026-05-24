@@ -14,11 +14,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Inject Google Maps API key
-        if: ${{ secrets.GOOGLE_MAPS_API_KEY != '' }}
         env:
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
         run: |
-          php -r 'file_put_contents("_site.config.local.php", "<?php\nif (!defined(\"_GNUBOARD_\")) exit;\n\$site_config_override = array(\n    \"google_maps_api_key\" => ".var_export(getenv("GOOGLE_MAPS_API_KEY"), true).",\n);\n");'
+          if [ -n "${GOOGLE_MAPS_API_KEY}" ]; then
+            php -r 'file_put_contents("_site.config.local.php", "<?php\nif (!defined(\"_GNUBOARD_\")) exit;\n\$site_config_override = array(\n    \"google_maps_api_key\" => ".var_export(getenv("GOOGLE_MAPS_API_KEY"), true).",\n);\n");'
+          fi
 
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
