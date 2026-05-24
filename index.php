@@ -5,11 +5,17 @@ define('_INDEX_', true);
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
 // 빌더 bridge 메인 (/_site.config.php → home_builder_bridge_id)
-if (!isset($site_config) && is_file(G5_PATH . '/_site.config.php')) {
+if (is_file(G5_PATH . '/_site.config.php')) {
     include_once(G5_PATH . '/_site.config.php');
 }
 if (function_exists('g5site_cfg')) {
     $thecebu_home_builder_id = g5site_cfg('home_builder_bridge_id', '');
+    if ($thecebu_home_builder_id === '') {
+        $thecebu_import_dir = G5_PLUGIN_PATH . '/onoff-builder-bridge/imports/thecebu-main';
+        if (is_dir($thecebu_import_dir) && is_file($thecebu_import_dir . '/index.html')) {
+            $thecebu_home_builder_id = 'thecebu-main';
+        }
+    }
     if ($thecebu_home_builder_id !== '') {
         $thecebu_home_builder_id = preg_replace('/[^a-z0-9_-]/i', '', $thecebu_home_builder_id);
         if ($thecebu_home_builder_id !== '') {
