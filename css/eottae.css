@@ -105,23 +105,30 @@ body.eottae-page .eottae-gnb-header {
 .eottae-gnb-header__left {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
   min-width: 0;
+  flex: 1;
 }
 
 @media (min-width: 1024px) {
   .eottae-gnb-header__left {
-    gap: 40px;
+    gap: 20px;
   }
 }
 
 .eottae-gnb-header__logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-  color: #0f172a;
-  text-decoration: none;
+  display: none;
+}
+
+@media (min-width: 1280px) {
+  .eottae-gnb-header__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    color: #0f172a;
+    text-decoration: none;
+  }
 }
 
 .eottae-gnb-header__logo-mark {
@@ -148,7 +155,16 @@ body.eottae-page .eottae-gnb-header {
 .eottae-gnb-header__nav {
   display: none;
   align-items: center;
-  gap: 4px;
+  gap: 0;
+  min-width: 0;
+  flex: 1;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.eottae-gnb-header__nav::-webkit-scrollbar {
+  display: none;
 }
 
 @media (min-width: 1024px) {
@@ -160,23 +176,26 @@ body.eottae-page .eottae-gnb-header {
 .eottae-gnb-header__nav-link {
   display: inline-flex;
   align-items: center;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 700;
-  color: #475569;
+  flex-shrink: 0;
+  padding: 8px 10px;
+  border-radius: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
   text-decoration: none;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  white-space: nowrap;
+  transition: color 0.15s ease;
 }
 
 .eottae-gnb-header__nav-link:hover {
-  color: #0f172a;
-  background: #f8fafc;
+  color: var(--eottae-gnb-primary);
+  background: transparent;
 }
 
 .eottae-gnb-header__nav-link.is-active {
-  color: var(--eottae-gnb-primary-dark);
-  background: var(--eottae-gnb-primary-soft);
+  color: var(--eottae-gnb-primary);
+  background: transparent;
+  font-weight: 700;
 }
 
 .eottae-gnb-header__actions {
@@ -268,6 +287,34 @@ body.eottae-page .eottae-gnb-header {
 .eottae-gnb-header__btn--primary:hover {
   background: var(--eottae-gnb-primary-dark);
   border-color: var(--eottae-gnb-primary-dark);
+}
+
+.eottae-gnb-header__btn--text {
+  border: none;
+  background: transparent;
+  color: #334155;
+  padding: 8px 10px;
+  font-weight: 600;
+}
+
+.eottae-gnb-header__btn--text:hover {
+  color: var(--eottae-gnb-primary);
+  background: transparent;
+}
+
+.eottae-gnb-header__btn--register {
+  border: none;
+  background: var(--eottae-gnb-primary);
+  color: #fff;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.eottae-gnb-header__btn--register:hover {
+  background: var(--eottae-gnb-primary-dark);
+  color: #fff;
 }
 
 @media (max-width: 639px) {

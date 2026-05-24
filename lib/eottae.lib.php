@@ -99,6 +99,9 @@ if (!function_exists('eottae_should_load_assets')) {
         }
 
         $bo = isset($_GET['bo_table']) ? preg_replace('/[^a-z0-9_]/', '', $_GET['bo_table']) : '';
+        if ($bo !== '' && function_exists('eottae_gnb_board_tables') && in_array($bo, eottae_gnb_board_tables(), true)) {
+            return true;
+        }
         if (in_array($bo, array(EOTTae_SHOP_TABLE, EOTTae_COMMUNITY_TABLE, EOTTae_REVIEW_TABLE), true)) {
             return true;
         }
@@ -1499,16 +1502,91 @@ if (!function_exists('eottae_community_list_url')) {
     }
 }
 
+if (!function_exists('eottae_shop_board_tables')) {
+    function eottae_shop_board_tables()
+    {
+        return array(
+            eottae_shop_table(),
+            defined('EOTTae_FOOD_TABLE') ? EOTTae_FOOD_TABLE : 'food',
+            defined('EOTTae_MASSAGE_TABLE') ? EOTTae_MASSAGE_TABLE : 'massage',
+            defined('EOTTae_RENTCAR_TABLE') ? EOTTae_RENTCAR_TABLE : 'rentcar',
+            defined('EOTTae_TOUR_TABLE') ? EOTTae_TOUR_TABLE : 'tour',
+        );
+    }
+}
+
+if (!function_exists('eottae_is_shop_board')) {
+    function eottae_is_shop_board($bo_table)
+    {
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+
+        return $bo_table !== '' && in_array($bo_table, eottae_shop_board_tables(), true);
+    }
+}
+
+if (!function_exists('eottae_board_list_url')) {
+    function eottae_board_list_url($bo_table, $params = array())
+    {
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+        if ($bo_table === '') {
+            return G5_BBS_URL.'/board.php';
+        }
+
+        $base = G5_BBS_URL.'/board.php?bo_table='.$bo_table;
+        if (empty($params)) {
+            return $base;
+        }
+
+        return $base.'&'.http_build_query($params);
+    }
+}
+
+if (!function_exists('eottae_shop_write_url')) {
+    function eottae_shop_write_url($bo_table = '')
+    {
+        if ($bo_table === '') {
+            $bo_table = eottae_shop_table();
+        }
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+        if ($bo_table === '') {
+            $bo_table = eottae_shop_table();
+        }
+
+        return G5_BBS_URL.'/write.php?bo_table='.$bo_table;
+    }
+}
+
+if (!function_exists('eottae_gnb_board_tables')) {
+    function eottae_gnb_board_tables()
+    {
+        $tables = eottae_shop_board_tables();
+        $tables[] = eottae_community_board_table();
+        $tables[] = defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people';
+        $tables[] = defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job';
+        $tables[] = defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate';
+        $tables[] = defined('EOTTae_GALLERY_TABLE') ? EOTTae_GALLERY_TABLE : 'gallery';
+        $tables[] = defined('EOTTae_YOUTUBE_TABLE') ? EOTTae_YOUTUBE_TABLE : 'youtube';
+
+        return array_values(array_unique($tables));
+    }
+}
+
 if (!function_exists('eottae_gnb_nav_links')) {
     function eottae_gnb_nav_links()
     {
         return array(
             array('key' => 'home', 'label' => '홈', 'href' => G5_URL.'/'),
-            array('key' => 'shop', 'label' => '내주변', 'href' => eottae_shop_list_url()),
-            array('key' => 'food', 'label' => '맛집', 'href' => eottae_shop_category_url('맛집')),
-            array('key' => 'mart', 'label' => '마트', 'href' => eottae_shop_category_url('마트')),
+            array('key' => 'shop', 'label' => '내주변', 'href' => eottae_board_list_url(eottae_shop_table())),
+            array('key' => 'food', 'label' => '맛집', 'href' => eottae_board_list_url(defined('EOTTae_FOOD_TABLE') ? EOTTae_FOOD_TABLE : 'food')),
+            array('key' => 'massage', 'label' => '마사지', 'href' => eottae_board_list_url(defined('EOTTae_MASSAGE_TABLE') ? EOTTae_MASSAGE_TABLE : 'massage')),
+            array('key' => 'rentcar', 'label' => '렌트카', 'href' => eottae_board_list_url(defined('EOTTae_RENTCAR_TABLE') ? EOTTae_RENTCAR_TABLE : 'rentcar')),
+            array('key' => 'tour', 'label' => '투어', 'href' => eottae_board_list_url(defined('EOTTae_TOUR_TABLE') ? EOTTae_TOUR_TABLE : 'tour')),
             array('key' => 'community', 'label' => '커뮤니티', 'href' => eottae_community_list_url()),
-            array('key' => 'mypage', 'label' => 'MY', 'href' => G5_URL.'/page/eottae-mypage.php'),
+            array('key' => 'people', 'label' => '사람찾기', 'href' => eottae_board_list_url(defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people')),
+            array('key' => 'job', 'label' => '구인구직', 'href' => eottae_board_list_url(defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job')),
+            array('key' => 'estate', 'label' => '부동산', 'href' => eottae_board_list_url(defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate')),
+            array('key' => 'gallery', 'label' => '갤러리', 'href' => eottae_board_list_url(defined('EOTTae_GALLERY_TABLE') ? EOTTae_GALLERY_TABLE : 'gallery')),
+            array('key' => 'youtube', 'label' => '유튜브', 'href' => eottae_board_list_url(defined('EOTTae_YOUTUBE_TABLE') ? EOTTae_YOUTUBE_TABLE : 'youtube')),
         );
     }
 }
@@ -1517,25 +1595,29 @@ if (!function_exists('eottae_gnb_link_is_active')) {
     function eottae_gnb_link_is_active($key)
     {
         $bo = isset($_GET['bo_table']) ? preg_replace('/[^a-z0-9_]/', '', $_GET['bo_table']) : '';
-        $sca = isset($_GET['sca']) ? trim((string) $_GET['sca']) : '';
         $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
-        $script = isset($_SERVER['SCRIPT_NAME']) ? basename($_SERVER['SCRIPT_NAME']) : '';
+
+        $board_map = array(
+            'shop'      => eottae_shop_table(),
+            'food'      => defined('EOTTae_FOOD_TABLE') ? EOTTae_FOOD_TABLE : 'food',
+            'massage'   => defined('EOTTae_MASSAGE_TABLE') ? EOTTae_MASSAGE_TABLE : 'massage',
+            'rentcar'   => defined('EOTTae_RENTCAR_TABLE') ? EOTTae_RENTCAR_TABLE : 'rentcar',
+            'tour'      => defined('EOTTae_TOUR_TABLE') ? EOTTae_TOUR_TABLE : 'tour',
+            'community' => eottae_community_board_table(),
+            'people'    => defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people',
+            'job'       => defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job',
+            'estate'    => defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate',
+            'gallery'   => defined('EOTTae_GALLERY_TABLE') ? EOTTae_GALLERY_TABLE : 'gallery',
+            'youtube'   => defined('EOTTae_YOUTUBE_TABLE') ? EOTTae_YOUTUBE_TABLE : 'youtube',
+        );
 
         switch ($key) {
             case 'home':
                 return defined('_INDEX_');
-            case 'shop':
-                return $bo === eottae_shop_table() && $sca === '';
-            case 'food':
-                return $bo === eottae_shop_table() && ($sca === '맛집' || (isset($_GET['stx']) && $_GET['stx'] === '맛집'));
-            case 'mart':
-                return $bo === eottae_shop_table() && ($sca === '마트' || (isset($_GET['stx']) && $_GET['stx'] === '마트'));
-            case 'community':
-                return $bo === eottae_community_board_table();
             case 'mypage':
-                return strpos($uri, '/page/eottae-') !== false || $script === 'eottae-mypage.php';
+                return strpos($uri, '/page/eottae-') !== false;
             default:
-                return false;
+                return isset($board_map[$key]) && $bo === $board_map[$key];
         }
     }
 }

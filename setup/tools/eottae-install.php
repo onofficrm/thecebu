@@ -30,14 +30,15 @@ include_once(G5_PATH.'/head.php');
 
 <div class="shop-list-page" style="max-width:640px;margin:24px auto">
     <h1 class="shop-list-page__title">세부어때 DB 설치</h1>
-    <p style="color:#64748b;margin-bottom:24px">shop · community 게시판 생성 및 환경설정(테마 해제, 회원스킨 eottae)을 적용합니다.</p>
+    <p style="color:#64748b;margin-bottom:24px">GNB 메뉴용 독립 게시판(shop, food, massage, rentcar, tour, community, people, job, estate, gallery, youtube 등) 생성 및 환경설정을 적용합니다.</p>
 
     <?php if (!$run) { ?>
     <div class="shop-detail-page__info" style="margin-bottom:20px">
         <h2 style="margin:0 0 12px;font-size:1rem">실행 내용</h2>
         <ul style="margin:0;padding-left:1.2rem;line-height:1.8">
-            <li><strong>shop</strong> 게시판 — 스킨 <code>eottae-shop</code>, 여분필드 10개 라벨</li>
-            <li><strong>community</strong> 게시판 — 스킨 <code>eottae-community</code></li>
+            <li><strong>업소형</strong> — shop, food, massage, rentcar, tour (<code>eottae-shop</code>)</li>
+            <li><strong>커뮤니티형</strong> — community, people, job, estate (<code>eottae-community</code>)</li>
+            <li><strong>갤러리/유튜브</strong> — gallery, youtube</li>
             <li>환경설정: <code>cf_theme</code> 비우기, 회원스킨 <code>eottae</code></li>
         </ul>
     </div>
@@ -60,7 +61,13 @@ include_once(G5_PATH.'/head.php');
     <h2 style="font-size:1rem;margin-bottom:12px">확인 URL</h2>
     <ul style="line-height:2">
         <li><a href="<?php echo G5_BBS_URL; ?>/board.php?bo_table=shop">업소 목록 (/bbs/board.php?bo_table=shop)</a></li>
+        <li><a href="<?php echo G5_BBS_URL; ?>/board.php?bo_table=food">맛집</a></li>
         <li><a href="<?php echo G5_BBS_URL; ?>/board.php?bo_table=community">커뮤니티</a></li>
+        <li><a href="<?php echo G5_BBS_URL; ?>/board.php?bo_table=people">사람찾기</a></li>
+        <li><a href="<?php echo G5_BBS_URL; ?>/board.php?bo_table=job">구인구직</a></li>
+        <li><a href="<?php echo G5_BBS_URL; ?>/board.php?bo_table=gallery">갤러리</a></li>
+        <li><a href="<?php echo G5_BBS_URL; ?>/board.php?bo_table=youtube">유튜브</a></li>
+        <li><a href="<?php echo G5_BBS_URL; ?>/write.php?bo_table=shop">업소등록</a></li>
         <li><a href="<?php echo G5_BBS_URL; ?>/login.php">로그인 (eottae 스킨)</a></li>
         <li><a href="<?php echo G5_URL; ?>/page/eottae-mypage.php">마이페이지</a></li>
         <li><a href="<?php echo G5_URL; ?>/">홈</a></li>

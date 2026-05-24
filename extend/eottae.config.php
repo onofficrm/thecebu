@@ -27,6 +27,42 @@ if (!defined('EOTTae_EVENT_TABLE')) {
     define('EOTTae_EVENT_TABLE', 'event');
 }
 
+if (!defined('EOTTae_FOOD_TABLE')) {
+    define('EOTTae_FOOD_TABLE', 'food');
+}
+
+if (!defined('EOTTae_MASSAGE_TABLE')) {
+    define('EOTTae_MASSAGE_TABLE', 'massage');
+}
+
+if (!defined('EOTTae_RENTCAR_TABLE')) {
+    define('EOTTae_RENTCAR_TABLE', 'rentcar');
+}
+
+if (!defined('EOTTae_TOUR_TABLE')) {
+    define('EOTTae_TOUR_TABLE', 'tour');
+}
+
+if (!defined('EOTTae_PEOPLE_TABLE')) {
+    define('EOTTae_PEOPLE_TABLE', 'people');
+}
+
+if (!defined('EOTTae_JOB_TABLE')) {
+    define('EOTTae_JOB_TABLE', 'job');
+}
+
+if (!defined('EOTTae_ESTATE_TABLE')) {
+    define('EOTTae_ESTATE_TABLE', 'estate');
+}
+
+if (!defined('EOTTae_GALLERY_TABLE')) {
+    define('EOTTae_GALLERY_TABLE', 'gallery');
+}
+
+if (!defined('EOTTae_YOUTUBE_TABLE')) {
+    define('EOTTae_YOUTUBE_TABLE', 'youtube');
+}
+
 if (!defined('EOTTae_MEMBER_SKIN')) {
     define('EOTTae_MEMBER_SKIN', 'eottae');
 }

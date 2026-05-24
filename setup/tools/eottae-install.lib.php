@@ -217,48 +217,74 @@ if (!function_exists('eottae_install_update_config')) {
     }
 }
 
+if (!function_exists('eottae_install_shop_board_def')) {
+    function eottae_install_shop_board_def($bo_table, $bo_subject, $bo_order, $category_list = '기타')
+    {
+        return array(
+            'bo_table'         => $bo_table,
+            'bo_subject'       => $bo_subject,
+            'bo_skin'          => 'eottae-shop',
+            'bo_mobile_skin'   => 'eottae-shop',
+            'gr_id'            => 'community',
+            'bo_read_level'    => 1,
+            'bo_write_level'   => 2,
+            'bo_comment_level' => 2,
+            'bo_use_category'  => 1,
+            'bo_category_list' => $category_list,
+            'bo_upload_count'  => 10,
+            'bo_upload_size'   => 10485760,
+            'bo_order'         => (int) $bo_order,
+            'bo_1_subj'        => '카테고리',
+            'bo_2_subj'        => '대표 지역',
+            'bo_3_subj'        => '주소',
+            'bo_4_subj'        => '전화번호',
+            'bo_5_subj'        => '문의코드',
+            'bo_6_subj'        => '영업시간',
+            'bo_7_subj'        => '휴무일',
+            'bo_8_subj'        => '영업상태',
+            'bo_9_subj'        => '위도',
+            'bo_10_subj'       => '경도',
+        );
+    }
+}
+
+if (!function_exists('eottae_install_community_board_def')) {
+    function eottae_install_community_board_def($bo_table, $bo_subject, $bo_order, $category_list, $skin = 'eottae-community')
+    {
+        return array(
+            'bo_table'         => $bo_table,
+            'bo_subject'       => $bo_subject,
+            'bo_skin'          => $skin,
+            'bo_mobile_skin'   => $skin,
+            'gr_id'            => 'community',
+            'bo_read_level'    => 1,
+            'bo_write_level'   => 2,
+            'bo_comment_level' => 2,
+            'bo_use_category'  => 1,
+            'bo_category_list' => $category_list,
+            'bo_upload_count'  => 5,
+            'bo_order'         => (int) $bo_order,
+        );
+    }
+}
+
 if (!function_exists('eottae_install_get_board_defs')) {
     function eottae_install_get_board_defs()
     {
-        return array(
-            array(
-                'bo_table'         => 'shop',
-                'bo_subject'       => '업체·맛집',
-                'bo_skin'          => 'eottae-shop',
-                'bo_mobile_skin'   => 'eottae-shop',
-                'gr_id'            => 'community',
-                'bo_read_level'    => 1,
-                'bo_write_level'   => 2,
-                'bo_comment_level' => 2,
-                'bo_use_category'  => 1,
-                'bo_category_list' => '맛집|카페|미용|병원|마트|숙소|기타',
-                'bo_upload_count'  => 10,
-                'bo_upload_size'   => 10485760,
-                'bo_order'         => 1,
-                'bo_1_subj'        => '카테고리',
-                'bo_2_subj'        => '대표 지역',
-                'bo_3_subj'        => '주소',
-                'bo_4_subj'        => '전화번호',
-                'bo_5_subj'        => '문의코드',
-                'bo_6_subj'        => '영업시간',
-                'bo_7_subj'        => '휴무일',
-                'bo_8_subj'        => '영업상태',
-                'bo_9_subj'        => '위도',
-                'bo_10_subj'       => '경도',
-            ),
-            array(
-                'bo_table'         => 'community',
-                'bo_subject'       => '커뮤니티',
-                'bo_skin'          => 'eottae-community',
-                'bo_mobile_skin'   => 'eottae-community',
-                'gr_id'            => 'community',
-                'bo_read_level'    => 1,
-                'bo_write_level'   => 2,
-                'bo_comment_level' => 2,
-                'bo_use_category'  => 1,
-                'bo_category_list' => '자유|정보|질문|후기|구인구직',
-                'bo_upload_count'  => 5,
-                'bo_order'         => 2,
+        $defs = array(
+            eottae_install_shop_board_def('shop', '업체·내주변', 1, '맛집|카페|미용|병원|마트|숙소|기타'),
+            eottae_install_shop_board_def('food', '맛집', 2, '한식|중식|일식|양식|카페|기타'),
+            eottae_install_shop_board_def('massage', '마사지·스파', 3, '마사지|스파|네일|기타'),
+            eottae_install_shop_board_def('rentcar', '렌트카', 4, '세단|SUV|밴|오토바이|기타'),
+            eottae_install_shop_board_def('tour', '투어·액티비티', 5, '호핑|다이빙|시티투어|기타'),
+            eottae_install_community_board_def('community', '커뮤니티', 10, '자유|정보|질문|후기'),
+            eottae_install_community_board_def('people', '사람찾기', 11, '실종|만남|동행|지인|기타'),
+            eottae_install_community_board_def('job', '구인구직', 12, '구인|구직|알바|기타'),
+            eottae_install_community_board_def('estate', '부동산', 13, '매매|전월세|양도|기타'),
+            eottae_install_community_board_def('gallery', '갤러리', 14, '풍경|맛집|일상|기타', 'gallery-grid'),
+            array_merge(
+                eottae_install_community_board_def('youtube', '유튜브', 15, 'Vlog|맛집|정보|기타', 'youtube-list'),
+                array('bo_1_subj' => '유튜브 URL')
             ),
             array(
                 'bo_table'         => 'inquiry',
@@ -305,9 +331,11 @@ if (!function_exists('eottae_install_get_board_defs')) {
                 'bo_use_category'  => 1,
                 'bo_category_list' => '진행중|예정|종료',
                 'bo_upload_count'  => 3,
-                'bo_order'         => 4,
+                'bo_order'         => 90,
             ),
         );
+
+        return $defs;
     }
 }
 
@@ -359,10 +387,12 @@ if (!function_exists('eottae_install_update_existing_boards')) {
                 "bo_skin = '".sql_escape_string($def['bo_skin'])."'",
                 "bo_mobile_skin = '".sql_escape_string($def['bo_mobile_skin'])."'",
                 "bo_use_category = '".(int) $def['bo_use_category']."'",
-                "bo_category_list = '".sql_escape_string($def['bo_category_list'])."'",
             );
+            if (isset($def['bo_category_list'])) {
+                $sets[] = "bo_category_list = '".sql_escape_string($def['bo_category_list'])."'";
+            }
 
-            if ($bo_table === 'shop') {
+            if (function_exists('eottae_is_shop_board') && eottae_is_shop_board($bo_table)) {
                 for ($i = 1; $i <= 10; $i++) {
                     $key = 'bo_'.$i.'_subj';
                     if (isset($def[$key])) {

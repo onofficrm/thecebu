@@ -22,7 +22,7 @@ add_event('register_form_update_after', 'eottae_on_register_after', 10, 2);
 if (!function_exists('eottae_on_shop_write_before')) {
     function eottae_on_shop_write_before($board, $wr_id, $w, $qstr)
     {
-        if (empty($board['bo_table']) || $board['bo_table'] !== eottae_shop_table()) {
+        if (empty($board['bo_table']) || !eottae_is_shop_board($board['bo_table'])) {
             return;
         }
 
