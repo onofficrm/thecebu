@@ -25,6 +25,26 @@ body.eottae-page {
   color: var(--eottae-text);
 }
 
+body.eottae-page #container_wr {
+  display: block;
+  max-width: none;
+  gap: 0;
+}
+
+body.eottae-page #container {
+  width: 100%;
+  max-width: none;
+  float: none;
+}
+
+body.eottae-page #container_title {
+  display: none;
+}
+
+body.eottae-page .site-aside {
+  display: none !important;
+}
+
 /* ── Header ── */
 .site-header.eottae-header,
 #siteHeader.mobile-header {
@@ -982,13 +1002,13 @@ body.eottae-page {
 .community-page {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 12px 16px 24px;
 }
 
 .community-page__layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 20px;
   align-items: start;
 }
 
@@ -997,7 +1017,7 @@ body.eottae-page {
 }
 
 .community-hero {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .community-hero__inner {
@@ -1006,7 +1026,7 @@ body.eottae-page {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  padding: 28px 28px 24px;
+  padding: 22px 24px 20px;
   border-radius: 20px;
   background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 55%, #e0f2fe 100%);
   border: 1px solid #bfdbfe;
@@ -1361,9 +1381,11 @@ body.eottae-page {
 
 /* Sidebar */
 .community-sidebar {
+  position: sticky;
+  top: calc(var(--eottae-header-h) + 12px);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .community-sidebar__card {

@@ -36,12 +36,17 @@ $g5_is_index_page = defined('_INDEX_');
 ?>
 
     </div>
+<?php
+$eottae_hide_g5_aside = function_exists('eottae_should_load_assets') && eottae_should_load_assets();
+if (!$eottae_hide_g5_aside) {
+?>
     <div id="aside" class="site-aside">
         <div class="site-g5-widgets site-g5-widgets--aside">
             <?php echo outlogin(); ?>
             <?php echo poll(); ?>
         </div>
     </div>
+<?php } ?>
 </div>
 
 </div>

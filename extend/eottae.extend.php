@@ -41,6 +41,12 @@ add_event('write_update_before', 'eottae_on_shop_write_before', 10, 4);
 if (eottae_should_load_assets()) {
     add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae.css">', 5);
     add_javascript('<script src="'.G5_JS_URL.'/eottae.js" defer></script>', 20);
+    if (!isset($g5['body_script'])) {
+        $g5['body_script'] = '';
+    }
+    if (strpos($g5['body_script'], 'eottae-page') === false) {
+        $g5['body_script'] .= ' class="eottae-page"';
+    }
 }
 
 if (isset($board) && is_array($board) && isset($board['bo_skin'])) {

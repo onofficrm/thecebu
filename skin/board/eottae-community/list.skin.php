@@ -103,8 +103,8 @@ $list_base = get_pretty_url($bo_table);
         <?php
         for ($i = 0; $i < count($list); $i++) {
             $item = $list[$i];
-            $is_notice = !empty($item['is_notice']) || $ca_name === '공지';
             $ca_name = isset($item['ca_name']) ? get_text($item['ca_name']) : '';
+            $is_notice = !empty($item['is_notice']) || $ca_name === '공지';
             $region = isset($item['wr_1']) ? get_text($item['wr_1']) : '';
             $snippet = eottae_community_snippet(isset($item['wr_content']) ? $item['wr_content'] : '');
             $thumb = eottae_community_list_thumb($bo_table, (int) $item['wr_id']);
