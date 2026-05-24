@@ -778,3 +778,155 @@ if (!function_exists('eottae_seed_run')) {
         return $logs;
     }
 }
+
+if (!function_exists('eottae_seed_youtube_video_id')) {
+    function eottae_seed_youtube_video_id($url)
+    {
+        if (!function_exists('g5b_youtube_id_from_url')) {
+            include_once G5_SKIN_PATH.'/board/_inc/g5b-youtube.php';
+        }
+
+        return g5b_youtube_id_from_url($url);
+    }
+}
+
+if (!function_exists('eottae_seed_youtube_exists')) {
+    function eottae_seed_youtube_exists($video_id)
+    {
+        global $g5;
+
+        $video_id = preg_replace('/[^a-zA-Z0-9_-]/', '', (string) $video_id);
+        if ($video_id === '') {
+            return false;
+        }
+
+        $bo_table = defined('EOTTae_YOUTUBE_TABLE') ? EOTTae_YOUTUBE_TABLE : 'youtube';
+        $write_table = $g5['write_prefix'].$bo_table;
+        $like = sql_escape_string('%'.$video_id.'%');
+        $row = sql_fetch(" select wr_id from {$write_table} where wr_1 like '{$like}' limit 1 ");
+
+        return !empty($row['wr_id']);
+    }
+}
+
+if (!function_exists('eottae_seed_youtube_oembed')) {
+    function eottae_seed_youtube_oembed($watch_url)
+    {
+        $watch_url = trim((string) $watch_url);
+        if ($watch_url === '') {
+            return null;
+        }
+
+        $api = 'https://www.youtube.com/oembed?format=json&url='.rawurlencode($watch_url);
+        $ctx = stream_context_create(array(
+            'http' => array(
+                'timeout' => 8,
+                'ignore_errors' => true,
+                'header' => "User-Agent: thecebu-seed/1.0\r\n",
+            ),
+        ));
+        $raw = @file_get_contents($api, false, $ctx);
+        if ($raw === false || $raw === '') {
+            return null;
+        }
+
+        $data = json_decode($raw, true);
+
+        return is_array($data) ? $data : null;
+    }
+}
+
+if (!function_exists('eottae_seed_insert_youtube')) {
+    function eottae_seed_insert_youtube($url, $data = array())
+    {
+        global $g5;
+
+        $video_id = eottae_seed_youtube_video_id($url);
+        if ($video_id === '') {
+            return eottae_seed_log('youtube', 'invalid url: '.$url, false);
+        }
+
+        if (eottae_seed_youtube_exists($video_id)) {
+            return eottae_seed_log('youtube', $video_id.' already exists', true);
+        }
+
+        $watch_url = 'https://www.youtube.com/watch?v='.$video_id;
+        $oembed = eottae_seed_youtube_oembed($watch_url);
+
+        $title = isset($data['wr_subject']) ? $data['wr_subject'] : '';
+        if ($title === '' && is_array($oembed) && !empty($oembed['title'])) {
+            $title = $oembed['title'];
+        }
+        if ($title === '') {
+            $title = 'YouTube '.$video_id;
+        }
+
+        $summary = isset($data['wr_2']) ? $data['wr_2'] : '';
+        if ($summary === '' && is_array($oembed) && !empty($oembed['author_name'])) {
+            $summary = $oembed['author_name'].' 채널';
+        }
+
+        $content = isset($data['wr_content']) ? $data['wr_content'] : $title;
+        if ($content === '') {
+            $content = $title;
+        }
+
+        $bo_table = defined('EOTTae_YOUTUBE_TABLE') ? EOTTae_YOUTUBE_TABLE : 'youtube';
+        $write_table = $g5['write_prefix'].$bo_table;
+
+        $subject = sql_escape_string($title);
+        $content_sql = sql_escape_string($content);
+        $ca_name = sql_escape_string(isset($data['ca_name']) ? $data['ca_name'] : '정보');
+        $wr_1 = sql_escape_string($watch_url);
+        $wr_2 = sql_escape_string($summary);
+        $mb_id = sql_escape_string(isset($data['mb_id']) ? $data['mb_id'] : 'admin');
+        $wr_name = sql_escape_string(isset($data['wr_name']) ? $data['wr_name'] : '세부어때');
+        $wr_seo_title = sql_escape_string('yt-'.$video_id);
+
+        $sql = " insert into {$write_table} set
+            wr_num = (SELECT IFNULL(MIN(wr_num) - 1, -1) FROM {$write_table} as sq),
+            wr_reply = '',
+            wr_comment = 0,
+            ca_name = '{$ca_name}',
+            wr_option = 'html1',
+            wr_subject = '{$subject}',
+            wr_content = '{$content_sql}',
+            wr_seo_title = '{$wr_seo_title}',
+            wr_link1 = '',
+            wr_link2 = '',
+            mb_id = '{$mb_id}',
+            wr_password = '',
+            wr_name = '{$wr_name}',
+            wr_email = '',
+            wr_homepage = '',
+            wr_datetime = '".G5_TIME_YMDHIS."',
+            wr_last = '".G5_TIME_YMDHIS."',
+            wr_ip = '127.0.0.1',
+            wr_hit = 0,
+            wr_1 = '{$wr_1}',
+            wr_2 = '{$wr_2}',
+            wr_3 = '', wr_4 = '', wr_5 = '',
+            wr_6 = '', wr_7 = '', wr_8 = '', wr_9 = '', wr_10 = '' ";
+        sql_query($sql);
+
+        $wr_id = sql_insert_id();
+        sql_query(" update {$write_table} set wr_parent = '{$wr_id}' where wr_id = '{$wr_id}' ");
+        sql_query(" insert into {$g5['board_new_table']} ( bo_table, wr_id, wr_parent, bn_datetime, mb_id )
+            values ( '{$bo_table}', '{$wr_id}', '{$wr_id}', '".G5_TIME_YMDHIS."', '{$mb_id}' ) ");
+        sql_query(" update {$g5['board_table']} set bo_count_write = bo_count_write + 1 where bo_table = '{$bo_table}' ");
+
+        return eottae_seed_log('youtube', $title.' ('.$video_id.') created wr_id='.$wr_id);
+    }
+}
+
+if (!function_exists('eottae_seed_youtube_urls')) {
+    function eottae_seed_youtube_urls($urls)
+    {
+        $logs = array();
+        foreach ($urls as $url) {
+            $logs[] = eottae_seed_insert_youtube($url);
+        }
+
+        return $logs;
+    }
+}
