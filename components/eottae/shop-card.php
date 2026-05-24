@@ -101,10 +101,14 @@ if (!function_exists('eottae_shop_list_card_html')) {
         $snippet = eottae_shop_list_snippet(isset($row['wr_content']) ? $row['wr_content'] : '');
         $is_recommended = $summary['average'] >= 4.5 && $summary['count'] > 0;
         $is_ad = isset($row['wr_link2']) && stripos((string) $row['wr_link2'], 'ad') !== false;
+        $distance_label = '';
+        if (isset($row['_eottae_distance_km'])) {
+            $distance_label = eottae_shop_format_distance_km($row['_eottae_distance_km']);
+        }
 
         ob_start();
         ?>
-        <article class="shop-list-card">
+        <article class="shop-list-card" data-shop-card data-wr-id="<?php echo (int) $shop['wr_id']; ?>" data-lat="<?php echo htmlspecialchars($shop['lat'], ENT_QUOTES, 'UTF-8'); ?>" data-lng="<?php echo htmlspecialchars($shop['lng'], ENT_QUOTES, 'UTF-8'); ?>">
             <a href="<?php echo $href; ?>" class="shop-list-card__thumb-wrap">
                 <?php if ($thumb) { ?>
                 <img src="<?php echo $thumb; ?>" alt="<?php echo $shop['name']; ?>" class="shop-list-card__thumb" loading="lazy">
@@ -122,7 +126,13 @@ if (!function_exists('eottae_shop_list_card_html')) {
                     <?php if ($shop['category']) { ?><span class="shop-list-card__tag shop-list-card__tag--cate"><?php echo $shop['category']; ?></span><?php } ?>
                     <?php if ($shop['region']) { ?><span class="shop-list-card__tag shop-list-card__tag--region"><?php echo $shop['region']; ?></span><?php } ?>
                     <span class="shop-list-card__distance" data-shop-distance data-lat="<?php echo htmlspecialchars($shop['lat'], ENT_QUOTES, 'UTF-8'); ?>" data-lng="<?php echo htmlspecialchars($shop['lng'], ENT_QUOTES, 'UTF-8'); ?>">
-                        <?php echo $shop['region'] ? get_text($shop['region']) : '세부'; ?>
+                        <?php
+                        if ($distance_label !== '') {
+                            echo $distance_label;
+                        } else {
+                            echo $shop['region'] ? get_text($shop['region']) : '세부';
+                        }
+                        ?>
                     </span>
                 </div>
                 <h3 class="shop-list-card__title"><a href="<?php echo $href; ?>"><?php echo $shop['name'] ?: get_text($row['subject']); ?></a></h3>

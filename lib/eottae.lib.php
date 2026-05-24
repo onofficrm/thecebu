@@ -1067,13 +1067,113 @@ if (!function_exists('eottae_shop_quick_categories')) {
 if (!function_exists('eottae_shop_sort_links')) {
     function eottae_shop_sort_links($current_sst = '')
     {
+        $maps_enabled = false;
+        if (is_file(G5_PATH.'/components/maps/map-config.php')) {
+            include_once G5_PATH.'/components/maps/map-config.php';
+            $maps_enabled = function_exists('onoff_map_has_api_key') && onoff_map_has_api_key();
+        }
+
         return array(
-            array('label' => '가까운순', 'sst' => 'near', 'sod' => 'asc', 'disabled' => true),
+            array('label' => '가까운순', 'sst' => 'near', 'sod' => 'asc', 'disabled' => !$maps_enabled),
             array('label' => '인기순', 'sst' => 'wr_hit', 'sod' => 'desc'),
             array('label' => '리뷰많은순', 'sst' => 'wr_comment', 'sod' => 'desc'),
             array('label' => '평점높은순', 'sst' => 'wr_good', 'sod' => 'desc'),
             array('label' => '최신등록순', 'sst' => 'wr_datetime', 'sod' => 'desc'),
         );
+    }
+}
+
+if (!function_exists('eottae_shop_user_coords_from_request')) {
+    function eottae_shop_user_coords_from_request()
+    {
+        $lat = isset($_GET['eottae_lat']) ? trim((string) $_GET['eottae_lat']) : '';
+        $lng = isset($_GET['eottae_lng']) ? trim((string) $_GET['eottae_lng']) : '';
+        if ($lat === '' || $lng === '' || !is_numeric($lat) || !is_numeric($lng)) {
+            return null;
+        }
+
+        return array(
+            'lat' => (float) $lat,
+            'lng' => (float) $lng,
+        );
+    }
+}
+
+if (!function_exists('eottae_haversine_km')) {
+    function eottae_haversine_km($lat1, $lng1, $lat2, $lng2)
+    {
+        $r = 6371;
+        $d_lat = deg2rad($lat2 - $lat1);
+        $d_lng = deg2rad($lng2 - $lng1);
+        $a = sin($d_lat / 2) * sin($d_lat / 2)
+            + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($d_lng / 2) * sin($d_lng / 2);
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $r * $c;
+    }
+}
+
+if (!function_exists('eottae_shop_sort_list_by_distance')) {
+    function eottae_shop_sort_list_by_distance(&$list, $user_lat, $user_lng)
+    {
+        if (!is_array($list)) {
+            return;
+        }
+
+        foreach ($list as $idx => $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $shop = eottae_shop_from_write($row);
+            if ($shop['lat'] !== '' && $shop['lng'] !== '' && is_numeric($shop['lat']) && is_numeric($shop['lng'])) {
+                $list[$idx]['_eottae_distance_km'] = eottae_haversine_km(
+                    (float) $user_lat,
+                    (float) $user_lng,
+                    (float) $shop['lat'],
+                    (float) $shop['lng']
+                );
+            } else {
+                $list[$idx]['_eottae_distance_km'] = 99999;
+            }
+        }
+
+        usort($list, function ($a, $b) {
+            $da = isset($a['_eottae_distance_km']) ? (float) $a['_eottae_distance_km'] : 99999;
+            $db = isset($b['_eottae_distance_km']) ? (float) $b['_eottae_distance_km'] : 99999;
+            if ($da === $db) {
+                return 0;
+            }
+
+            return ($da < $db) ? -1 : 1;
+        });
+    }
+}
+
+if (!function_exists('eottae_shop_format_distance_km')) {
+    function eottae_shop_format_distance_km($km)
+    {
+        $km = (float) $km;
+        if ($km >= 99999) {
+            return '';
+        }
+        if ($km < 1) {
+            return (int) round($km * 1000).'m';
+        }
+
+        return number_format($km, 1).'km';
+    }
+}
+
+if (!function_exists('eottae_shop_append_coords_query')) {
+    function eottae_shop_append_coords_query($params = array())
+    {
+        $coords = eottae_shop_user_coords_from_request();
+        if ($coords) {
+            $params['eottae_lat'] = $coords['lat'];
+            $params['eottae_lng'] = $coords['lng'];
+        }
+
+        return $params;
     }
 }
 
@@ -1085,6 +1185,10 @@ if (!function_exists('eottae_shop_is_sort_active')) {
         }
         if ($current_sst === '') {
             return $link['sst'] === 'wr_datetime';
+        }
+
+        if ($link['sst'] === 'near') {
+            return $current_sst === 'near';
         }
 
         return $link['sst'] === $current_sst && ($current_sod === '' || $link['sod'] === $current_sod);

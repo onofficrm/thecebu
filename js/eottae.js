@@ -216,9 +216,52 @@
     });
   }
 
+  /* Shop register geocode */
+  function initShopGeocode() {
+    var btn = qs('#shopGeocodeBtn');
+    if (!btn) return;
+
+    var addressInput = qs('#wr_3');
+    var latInput = qs('#wr_9');
+    var lngInput = qs('#wr_10');
+    var status = qs('#shopGeocodeStatus');
+
+    btn.addEventListener('click', function () {
+      var address = addressInput ? addressInput.value.trim() : '';
+      if (!address) {
+        alert('주소를 입력해 주세요.');
+        return;
+      }
+
+      btn.disabled = true;
+      if (status) status.textContent = '좌표를 찾는 중…';
+
+      var body = new FormData();
+      body.append('address', address);
+
+      fetch('/proc/eottae-geocode.php', { method: 'POST', body: body, credentials: 'same-origin' })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          btn.disabled = false;
+          if (!data.ok) {
+            if (status) status.textContent = '좌표를 찾지 못했습니다. 주소를 확인해 주세요.';
+            return;
+          }
+          if (latInput) latInput.value = data.lat;
+          if (lngInput) lngInput.value = data.lng;
+          if (status) status.textContent = '좌표가 설정되었습니다.';
+        })
+        .catch(function () {
+          btn.disabled = false;
+          if (status) status.textContent = '요청에 실패했습니다.';
+        });
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     document.body.classList.add('eottae-page');
     initShopRegisterWizard();
+    initShopGeocode();
     initMemberType();
     initReviewModal();
     initShopSave();

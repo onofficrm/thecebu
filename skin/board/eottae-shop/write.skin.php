@@ -86,9 +86,11 @@ $region_options = eottae_shop_region_options();
         <div class="eottae-field">
             <label for="wr_3">주소</label>
             <input type="text" name="wr_3" id="wr_3" value="<?php echo $v['wr_3']; ?>" placeholder="상세 주소">
+            <button type="button" class="btn btn--ghost shop-register-page__geocode-btn" id="shopGeocodeBtn">주소로 좌표 찾기</button>
+            <p class="eottae-field__hint" id="shopGeocodeStatus" aria-live="polite"></p>
         </div>
         <details class="shop-register-page__advanced">
-            <summary>좌표 직접 입력 (선택 · 지도 연동 전)</summary>
+            <summary>좌표 직접 입력 (선택)</summary>
             <div class="eottae-field">
                 <label for="wr_9">위도 (Latitude)</label>
                 <input type="text" name="wr_9" id="wr_9" value="<?php echo $v['wr_9']; ?>" placeholder="10.3157">

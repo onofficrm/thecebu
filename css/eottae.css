@@ -761,6 +761,16 @@ body.eottae-page .hd_sch_wr {
   border-radius: 16px;
   background: #fff;
   box-shadow: var(--eottae-shadow-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.shop-list-card.is-map-focus {
+  border-color: #0099ec;
+  box-shadow: 0 0 0 2px rgba(0, 153, 236, 0.15);
+}
+
+.shop-register-page__geocode-btn {
+  margin-top: 8px;
 }
 
 .shop-list-card__thumb-wrap {

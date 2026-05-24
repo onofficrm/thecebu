@@ -10,6 +10,10 @@ $region_options = eottae_shop_region_options();
 $sort_links = eottae_shop_sort_links(isset($sst) ? $sst : '');
 $list_base = get_pretty_url($bo_table);
 $current_region = (isset($sfl) && $sfl === 'wr_2' && !empty($stx)) ? get_text($stx) : '';
+$eottae_user_coords = eottae_shop_user_coords_from_request();
+if (isset($sst) && $sst === 'near' && $eottae_user_coords && is_array($list)) {
+    eottae_shop_sort_list_by_distance($list, $eottae_user_coords['lat'], $eottae_user_coords['lng']);
+}
 $shop_map_markers = eottae_shop_map_markers($list, $bo_table);
 $eottae_maps_enabled = eottae_enqueue_google_maps();
 
@@ -93,7 +97,7 @@ function eottae_shop_build_list_url($bo_table, $params = array())
             <?php foreach ($sort_links as $link) {
                 if (!empty($link['disabled'])) {
                     ?>
-            <span class="shop-near-sort__item is-disabled" title="Google Maps API 연동 후 이용 가능"><?php echo $link['label']; ?></span>
+            <span class="shop-near-sort__item is-disabled" title="Google Maps API 키 설정 후 이용 가능"><?php echo $link['label']; ?></span>
                     <?php
                     continue;
                 }
@@ -105,10 +109,12 @@ function eottae_shop_build_list_url($bo_table, $params = array())
                     $params['sfl'] = 'wr_2';
                     $params['stx'] = $current_region;
                 }
+                $params = eottae_shop_append_coords_query($params);
                 $href = eottae_shop_build_list_url($bo_table, $params);
                 $active = eottae_shop_is_sort_active($link, isset($sst) ? $sst : '', isset($sod) ? $sod : '');
+                $near_attrs = ($link['sst'] === 'near' && !$eottae_user_coords) ? ' data-shop-near-sort' : '';
                 ?>
-            <a href="<?php echo $href; ?>" class="shop-near-sort__item<?php echo $active ? ' is-active' : ''; ?>"><?php echo $link['label']; ?></a>
+            <a href="<?php echo $href; ?>" class="shop-near-sort__item<?php echo $active ? ' is-active' : ''; ?>"<?php echo $near_attrs; ?>><?php echo $link['label']; ?></a>
             <?php } ?>
         </nav>
     </section>
@@ -165,19 +171,48 @@ function fboardlist_submit(f) {
     var geoBtn = document.getElementById('shopNearGeoBtn');
     var mapsEnabled = <?php echo $eottae_maps_enabled ? 'true' : 'false'; ?>;
 
-    function goToCurrentLocation() {
+    function redirectWithCoords(lat, lng, withNear) {
+        var u = new URL(window.location.href);
+        u.searchParams.set('eottae_lat', String(lat));
+        u.searchParams.set('eottae_lng', String(lng));
+        if (withNear) {
+            u.searchParams.set('sst', 'near');
+            u.searchParams.set('sod', 'asc');
+        }
+        window.location.href = u.toString();
+    }
+
+    function requestLocation(withNear) {
         if (!mapsEnabled) {
             alert('Google Maps API 키 설정 후 현재 위치 기반 검색이 가능합니다.');
             return;
         }
-        var locateBtn = document.getElementById('shopMapLocateBtn');
-        if (locateBtn) {
-            locateBtn.click();
+        if (!navigator.geolocation) {
+            alert('현재 위치를 사용할 수 없습니다.');
+            return;
         }
+        navigator.geolocation.getCurrentPosition(
+            function (pos) {
+                redirectWithCoords(pos.coords.latitude, pos.coords.longitude, !!withNear);
+            },
+            function () {
+                alert('위치 권한이 필요합니다.');
+            },
+            { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+        );
     }
 
     if (geoBtn) {
-        geoBtn.addEventListener('click', goToCurrentLocation);
+        geoBtn.addEventListener('click', function () {
+            requestLocation(true);
+        });
     }
+
+    document.querySelectorAll('[data-shop-near-sort]').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+            e.preventDefault();
+            requestLocation(true);
+        });
+    });
 })();
 </script>

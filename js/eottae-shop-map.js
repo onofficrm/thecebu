@@ -80,6 +80,7 @@
     this.zoom = parseInt(root.dataset.mapZoom, 10) || 13;
     this.map = null;
     this.markers = [];
+    this.markerById = {};
     this.infoWindow = null;
   }
 
@@ -98,6 +99,7 @@
     this.infoWindow = new global.google.maps.InfoWindow();
     this.renderMarkers();
     this.bindEvents();
+    this.bindCardSync();
     this.root.classList.add('is-live');
   };
 
@@ -113,6 +115,7 @@
     if (!self.map) return;
 
     self.clearMarkers();
+    self.markerById = {};
     self.locations.forEach(function (loc) {
       var marker = new global.google.maps.Marker({
         position: { lat: loc.lat, lng: loc.lng },
@@ -124,6 +127,9 @@
         self.infoWindow.open(self.map, marker);
       });
       self.markers.push(marker);
+      if (loc.id !== '' && loc.id != null) {
+        self.markerById[String(loc.id)] = marker;
+      }
     });
 
     if (self.locations.length > 1) {
@@ -136,6 +142,45 @@
       self.map.setCenter({ lat: self.locations[0].lat, lng: self.locations[0].lng });
       self.map.setZoom(15);
     }
+  };
+
+  ShopMapPanel.prototype.focusLocationById = function (id) {
+    if (!this.map || id == null || id === '') {
+      return;
+    }
+    var key = String(id);
+    var marker = this.markerById[key];
+    var loc = null;
+    for (var i = 0; i < this.locations.length; i++) {
+      if (String(this.locations[i].id) === key) {
+        loc = this.locations[i];
+        break;
+      }
+    }
+    if (!marker || !loc) {
+      return;
+    }
+    this.map.panTo({ lat: loc.lat, lng: loc.lng });
+    this.map.setZoom(Math.max(this.zoom, 15));
+    global.google.maps.event.trigger(marker, 'click');
+  };
+
+  ShopMapPanel.prototype.bindCardSync = function () {
+    var self = this;
+    var cards = document.querySelectorAll('[data-shop-card]');
+    cards.forEach(function (card) {
+      card.addEventListener('mouseenter', function () {
+        var id = card.getAttribute('data-wr-id');
+        document.querySelectorAll('[data-shop-card].is-map-focus').forEach(function (el) {
+          el.classList.remove('is-map-focus');
+        });
+        card.classList.add('is-map-focus');
+        self.focusLocationById(id);
+      });
+      card.addEventListener('mouseleave', function () {
+        card.classList.remove('is-map-focus');
+      });
+    });
   };
 
   ShopMapPanel.prototype.goToCurrentLocation = function () {
