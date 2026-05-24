@@ -141,12 +141,226 @@ if (!function_exists('eottae_api_get_events')) {
     }
 }
 
+if (!function_exists('eottae_api_community_table')) {
+    function eottae_api_community_table()
+    {
+        return defined('EOTTae_COMMUNITY_TABLE') ? EOTTae_COMMUNITY_TABLE : 'community';
+    }
+}
+
+if (!function_exists('eottae_api_community_board_ready')) {
+    function eottae_api_community_board_ready()
+    {
+        global $g5;
+
+        $bo_table = eottae_api_community_table();
+        $row = sql_fetch(" select count(*) as cnt from {$g5['board_table']} where bo_table = '".sql_escape_string($bo_table)."' ");
+
+        return !empty($row['cnt']);
+    }
+}
+
+if (!function_exists('eottae_api_relative_time_label')) {
+    function eottae_api_relative_time_label($datetime)
+    {
+        $ts = strtotime((string) $datetime);
+        if (!$ts) {
+            return '';
+        }
+
+        $diff = G5_SERVER_TIME - $ts;
+        if ($diff < 60) {
+            return '방금 전';
+        }
+        if ($diff < 3600) {
+            return floor($diff / 60).'분 전';
+        }
+        if ($diff < 86400) {
+            return floor($diff / 3600).'시간 전';
+        }
+        if ($diff < 172800) {
+            return '어제';
+        }
+        if ($diff < 604800) {
+            return floor($diff / 86400).'일 전';
+        }
+
+        return date('Y-m-d', $ts);
+    }
+}
+
+if (!function_exists('eottae_api_format_community_row')) {
+    function eottae_api_format_community_row($row, $with_thumb = false)
+    {
+        if (!is_array($row) || empty($row['wr_id'])) {
+            return null;
+        }
+
+        $bo_table = eottae_api_community_table();
+        $wr_id = (int) $row['wr_id'];
+        $datetime = isset($row['wr_datetime']) ? $row['wr_datetime'] : '';
+        $ts = strtotime($datetime);
+        $is_new = $ts ? (G5_SERVER_TIME - $ts) < 86400 : false;
+        $hit = isset($row['wr_hit']) ? (int) $row['wr_hit'] : 0;
+        $comment = isset($row['wr_comment']) ? (int) $row['wr_comment'] : 0;
+
+        $item = array(
+            'wr_id'     => $wr_id,
+            'board'     => isset($row['ca_name']) ? get_text($row['ca_name']) : '',
+            'title'     => isset($row['wr_subject']) ? get_text($row['wr_subject']) : '',
+            'comments'  => $comment,
+            'views'     => $hit,
+            'datetime'  => $datetime,
+            'time'      => eottae_api_relative_time_label($datetime),
+            'is_new'    => $is_new,
+            'is_hot'    => ($hit >= 100 || $comment >= 10),
+            'url'       => G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$wr_id,
+            'thumb'     => '',
+        );
+
+        if ($with_thumb) {
+            if (!function_exists('get_list_thumbnail')) {
+                include_once G5_LIB_PATH.'/thumbnail.lib.php';
+            }
+            $thumb = get_list_thumbnail($bo_table, $wr_id, 400, 400, false, true);
+            if (!empty($thumb['src'])) {
+                $item['thumb'] = $thumb['src'];
+            }
+        }
+
+        return $item;
+    }
+}
+
+if (!function_exists('eottae_api_get_community_posts')) {
+    function eottae_api_get_community_posts($limit = 4, $category = '', $order = 'latest', $with_thumb = false)
+    {
+        global $g5;
+
+        if (!eottae_api_community_board_ready()) {
+            return array();
+        }
+
+        $limit = max(1, min(20, (int) $limit));
+        $bo_table = eottae_api_community_table();
+        $write_table = $g5['write_prefix'].$bo_table;
+        $where = " wr_is_comment = 0 ";
+        if ($category !== '') {
+            $category = sql_escape_string($category);
+            $where .= " and ca_name = '{$category}' ";
+        }
+
+        switch ($order) {
+            case 'hit':
+                $order_sql = ' wr_hit desc, wr_id desc ';
+                break;
+            case 'comment':
+                $order_sql = ' wr_comment desc, wr_id desc ';
+                break;
+            default:
+                $order_sql = ' wr_id desc ';
+                break;
+        }
+
+        $result = sql_query(" select wr_id, ca_name, wr_subject, wr_comment, wr_hit, wr_datetime, wr_file
+            from {$write_table}
+            where {$where}
+            order by {$order_sql}
+            limit {$limit} ");
+        $items = array();
+        while ($row = sql_fetch_array($result)) {
+            $formatted = eottae_api_format_community_row($row, $with_thumb);
+            if ($formatted) {
+                $items[] = $formatted;
+            }
+        }
+
+        return $items;
+    }
+}
+
+if (!function_exists('eottae_api_get_community_gallery')) {
+    function eottae_api_get_community_gallery($limit = 6)
+    {
+        global $g5;
+
+        if (!eottae_api_community_board_ready()) {
+            return array();
+        }
+
+        $limit = max(1, min(20, (int) $limit));
+        $bo_table = eottae_api_community_table();
+        $write_table = $g5['write_prefix'].$bo_table;
+
+        $result = sql_query(" select wr_id, ca_name, wr_subject, wr_comment, wr_hit, wr_datetime, wr_file
+            from {$write_table}
+            where wr_is_comment = 0 and wr_file > 0
+            order by wr_id desc
+            limit {$limit} ");
+        $items = array();
+        while ($row = sql_fetch_array($result)) {
+            $formatted = eottae_api_format_community_row($row, true);
+            if ($formatted && $formatted['thumb'] !== '') {
+                $items[] = $formatted;
+            }
+        }
+
+        if (count($items) >= $limit) {
+            return $items;
+        }
+
+        $need = $limit - count($items);
+        $exclude = array();
+        foreach ($items as $item) {
+            $exclude[] = (int) $item['wr_id'];
+        }
+        $exclude_sql = '';
+        if (!empty($exclude)) {
+            $exclude_sql = ' and wr_id not in ('.implode(',', $exclude).') ';
+        }
+
+        $result = sql_query(" select wr_id, ca_name, wr_subject, wr_comment, wr_hit, wr_datetime, wr_file
+            from {$write_table}
+            where wr_is_comment = 0 {$exclude_sql}
+            order by wr_id desc
+            limit {$need} ");
+        while ($row = sql_fetch_array($result)) {
+            $formatted = eottae_api_format_community_row($row, true);
+            if ($formatted) {
+                $items[] = $formatted;
+            }
+        }
+
+        return $items;
+    }
+}
+
+if (!function_exists('eottae_api_get_community_home')) {
+    function eottae_api_get_community_home()
+    {
+        $categories = array('자유', '질문', '정보', '구인구직', '후기');
+        $by_category = array();
+        foreach ($categories as $cat) {
+            $by_category[$cat] = eottae_api_get_community_posts(4, $cat);
+        }
+
+        return array(
+            'hit'         => eottae_api_get_community_posts(4, '', 'hit'),
+            'comment'     => eottae_api_get_community_posts(4, '', 'comment'),
+            'latest'      => eottae_api_get_community_posts(4, '', 'latest'),
+            'by_category' => $by_category,
+            'gallery'     => eottae_api_get_community_gallery(6),
+        );
+    }
+}
+
 if (!function_exists('eottae_api_get_home_bundle')) {
     function eottae_api_get_home_bundle()
     {
         return array(
             'featured_shops' => eottae_api_get_featured_shops(4),
             'events'         => eottae_api_get_events(4),
+            'community'      => eottae_api_get_community_home(),
             'urls'           => array(
                 'shop'      => G5_BBS_URL.'/board.php?bo_table='.EOTTae_SHOP_TABLE,
                 'community' => G5_BBS_URL.'/board.php?bo_table='.EOTTae_COMMUNITY_TABLE,

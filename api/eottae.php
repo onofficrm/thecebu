@@ -45,6 +45,13 @@ switch ($action) {
         ));
         break;
 
+    case 'community':
+        eottae_api_json(array(
+            'success' => true,
+            'data'    => eottae_api_get_community_home(),
+        ));
+        break;
+
     case 'home':
     default:
         eottae_api_json(array(
