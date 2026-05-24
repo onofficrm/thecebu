@@ -29,7 +29,7 @@ add_stylesheet('<link rel="stylesheet" href="'.$member_skin_url.'/style.css">', 
         <div class="auth-layout__links">
             <a href="<?php echo G5_BBS_URL ?>/register.php">회원가입</a>
             <a href="<?php echo G5_BBS_URL ?>/password_lost.php">비밀번호 찾기</a>
-            <a href="<?php echo G5_BBS_URL ?>/register.php">아이디 찾기</a>
+            <a href="<?php echo G5_BBS_URL ?>/password_lost.php">아이디 찾기</a>
         </div>
     </div>
 </div>

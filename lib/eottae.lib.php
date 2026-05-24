@@ -132,6 +132,10 @@ if (!function_exists('eottae_render_site_header')) {
         }
 
         eottae_prepare_site_header();
+        $eottae_auth = function_exists('eottae_auth_context') ? eottae_auth_context() : array('is_member' => false, 'is_admin' => false, 'member' => array());
+        $is_member = !empty($eottae_auth['is_member']);
+        $is_admin = !empty($eottae_auth['is_admin']) ? $eottae_auth['is_admin'] : '';
+        $member = isset($eottae_auth['member']) ? $eottae_auth['member'] : array();
         include G5_PATH.'/components/eottae/site-header.php';
 
         return true;
@@ -190,6 +194,62 @@ if (!function_exists('eottae_login_url')) {
         }
 
         return $url;
+    }
+}
+
+if (!function_exists('eottae_current_url')) {
+    function eottae_current_url()
+    {
+        if (empty($_SERVER['REQUEST_URI'])) {
+            return G5_URL;
+        }
+
+        $uri = (string) $_SERVER['REQUEST_URI'];
+
+        return (strpos($uri, 'http') === 0) ? $uri : G5_URL.$uri;
+    }
+}
+
+if (!function_exists('eottae_register_url')) {
+    function eottae_register_url()
+    {
+        return G5_BBS_URL.'/register.php';
+    }
+}
+
+if (!function_exists('eottae_password_lost_url')) {
+    function eottae_password_lost_url()
+    {
+        return G5_BBS_URL.'/password_lost.php';
+    }
+}
+
+if (!function_exists('eottae_auth_context')) {
+    /**
+     * include 스코프와 무관하게 로그인 상태를 반환 (헤더·사이드바 공통)
+     */
+    function eottae_auth_context()
+    {
+        global $is_member, $is_admin, $member;
+
+        if ((!is_array($member) || empty($member['mb_id'])) && !empty($_SESSION['ss_mb_id']) && function_exists('get_member')) {
+            $member = get_member($_SESSION['ss_mb_id']);
+        }
+
+        $logged_in = is_array($member) && !empty($member['mb_id']);
+
+        if ($logged_in) {
+            $is_member = true;
+            if ($is_admin === '' || $is_admin === false) {
+                $is_admin = function_exists('is_admin') ? is_admin($member['mb_id']) : '';
+            }
+        }
+
+        return array(
+            'is_member' => $logged_in,
+            'is_admin'  => !empty($is_admin),
+            'member'    => $logged_in ? $member : array(),
+        );
     }
 }
 

@@ -10,8 +10,11 @@ $eottae_footer_shop_url = function_exists('eottae_shop_list_url') ? eottae_shop_
 $eottae_footer_shop_write = G5_BBS_URL.'/write.php?bo_table='.EOTTae_SHOP_TABLE;
 $eottae_footer_community = function_exists('eottae_community_list_url') ? eottae_community_list_url() : G5_BBS_URL.'/board.php?bo_table='.EOTTae_COMMUNITY_TABLE;
 $eottae_footer_inquiry = G5_URL.'/page/eottae-inquiries.php';
-if (!isset($is_member) || !$is_member) {
-    $eottae_footer_inquiry = G5_BBS_URL.'/login.php?url='.urlencode(G5_URL.'/page/eottae-inquiries.php');
+$eottae_footer_auth = function_exists('eottae_auth_context') ? eottae_auth_context() : array('is_member' => !empty($is_member));
+if (empty($eottae_footer_auth['is_member'])) {
+    $eottae_footer_inquiry = function_exists('eottae_login_url')
+        ? eottae_login_url(G5_URL.'/page/eottae-inquiries.php')
+        : G5_BBS_URL.'/login.php?url='.urlencode(G5_URL.'/page/eottae-inquiries.php');
 }
 $eottae_footer_year = date('Y');
 ?>

@@ -3,15 +3,14 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
-global $is_member, $member, $config;
+$eottae_auth = function_exists('eottae_auth_context') ? eottae_auth_context() : array('is_member' => false, 'member' => array());
+$is_member = !empty($eottae_auth['is_member']);
+$member = isset($eottae_auth['member']) ? $eottae_auth['member'] : array();
 
-$eottae_login_return = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : G5_BBS_URL.'/board.php?bo_table='.EOTTae_COMMUNITY_TABLE;
-if (strpos($eottae_login_return, 'http') !== 0) {
-    $eottae_login_return = G5_URL.$eottae_login_return;
-}
-$eottae_login_url = G5_BBS_URL.'/login.php?url='.urlencode($eottae_login_return);
-$eottae_register_url = G5_BBS_URL.'/register.php';
-$eottae_password_url = G5_BBS_URL.'/password_lost.php';
+$eottae_login_return = function_exists('eottae_current_url') ? eottae_current_url() : G5_URL;
+$eottae_login_url = function_exists('eottae_login_url') ? eottae_login_url($eottae_login_return) : G5_BBS_URL.'/login.php';
+$eottae_register_url = function_exists('eottae_register_url') ? eottae_register_url() : G5_BBS_URL.'/register.php';
+$eottae_password_url = function_exists('eottae_password_lost_url') ? eottae_password_lost_url() : G5_BBS_URL.'/password_lost.php';
 $eottae_mypage_url = function_exists('eottae_mypage_url') ? eottae_mypage_url() : G5_URL.'/page/eottae-mypage.php';
 $eottae_profile_url = G5_BBS_URL.'/member_confirm.php?url='.urlencode(G5_BBS_URL.'/register_form.php');
 $eottae_logout_url = G5_BBS_URL.'/logout.php';
