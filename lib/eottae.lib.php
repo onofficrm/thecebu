@@ -818,3 +818,218 @@ if (!function_exists('eottae_render_shop_save_button')) {
         echo '</button>';
     }
 }
+
+if (!function_exists('eottae_community_board_table')) {
+    function eottae_community_board_table($bo_table = '')
+    {
+        if ($bo_table === '') {
+            return defined('EOTTae_COMMUNITY_TABLE') ? EOTTae_COMMUNITY_TABLE : 'community';
+        }
+
+        return preg_replace('/[^a-z0-9_]/', '', $bo_table);
+    }
+}
+
+if (!function_exists('eottae_community_relative_time')) {
+    function eottae_community_relative_time($datetime)
+    {
+        $ts = strtotime((string) $datetime);
+        if (!$ts) {
+            return '';
+        }
+
+        $diff = G5_SERVER_TIME - $ts;
+        if ($diff < 60) {
+            return '방금 전';
+        }
+        if ($diff < 3600) {
+            return floor($diff / 60).'분 전';
+        }
+        if ($diff < 86400) {
+            return floor($diff / 3600).'시간 전';
+        }
+        if ($diff < 172800) {
+            return '어제';
+        }
+        if ($diff < 604800) {
+            return floor($diff / 86400).'일 전';
+        }
+
+        return date('y.m.d', $ts);
+    }
+}
+
+if (!function_exists('eottae_community_snippet')) {
+    function eottae_community_snippet($content, $len = 110)
+    {
+        $text = trim(preg_replace('/\s+/', ' ', strip_tags((string) $content)));
+        if ($text === '') {
+            return '';
+        }
+
+        return cut_str($text, (int) $len, '…');
+    }
+}
+
+if (!function_exists('eottae_community_today_count')) {
+    function eottae_community_today_count($bo_table = '')
+    {
+        global $g5;
+
+        $bo_table = eottae_community_board_table($bo_table);
+        $write_table = $g5['write_prefix'].$bo_table;
+        $today = G5_TIME_YMD.' 00:00:00';
+        $row = sql_fetch(" select count(*) as cnt from {$write_table}
+            where wr_is_comment = 0 and wr_datetime >= '{$today}' ");
+
+        return isset($row['cnt']) ? (int) $row['cnt'] : 0;
+    }
+}
+
+if (!function_exists('eottae_community_category_tabs')) {
+    function eottae_community_category_tabs($board)
+    {
+        global $g5;
+
+        if (empty($board['bo_table'])) {
+            return array();
+        }
+
+        $bo_table = $board['bo_table'];
+        $write_table = $g5['write_prefix'].$bo_table;
+        $total = isset($board['bo_count_write']) ? (int) $board['bo_count_write'] : 0;
+        $tabs = array(
+            array('slug' => '', 'label' => '전체', 'count' => $total),
+        );
+
+        if (!empty($board['bo_use_category']) && !empty($board['bo_category_list'])) {
+            $categories = explode('|', $board['bo_category_list']);
+            foreach ($categories as $cat) {
+                $cat = trim($cat);
+                if ($cat === '') {
+                    continue;
+                }
+                $esc = sql_escape_string($cat);
+                $row = sql_fetch(" select count(*) as cnt from {$write_table}
+                    where wr_is_comment = 0 and ca_name = '{$esc}' ");
+                $tabs[] = array(
+                    'slug'  => $cat,
+                    'label' => $cat,
+                    'count' => isset($row['cnt']) ? (int) $row['cnt'] : 0,
+                );
+            }
+        }
+
+        return $tabs;
+    }
+}
+
+if (!function_exists('eottae_community_list_thumb')) {
+    function eottae_community_list_thumb($bo_table, $wr_id)
+    {
+        if (!function_exists('get_list_thumbnail')) {
+            include_once G5_LIB_PATH.'/thumbnail.lib.php';
+        }
+
+        $thumb = get_list_thumbnail($bo_table, (int) $wr_id, 160, 160, false, true);
+
+        return !empty($thumb['src']) ? $thumb['src'] : '';
+    }
+}
+
+if (!function_exists('eottae_community_weekly_popular')) {
+    function eottae_community_weekly_popular($bo_table = '', $limit = 5)
+    {
+        global $g5;
+
+        $bo_table = eottae_community_board_table($bo_table);
+        $write_table = $g5['write_prefix'].$bo_table;
+        $limit = max(1, min(10, (int) $limit));
+        $since = date('Y-m-d H:i:s', G5_SERVER_TIME - (7 * 86400));
+
+        $result = sql_query(" select wr_id, wr_subject, wr_hit, wr_comment, ca_name
+            from {$write_table}
+            where wr_is_comment = 0 and wr_datetime >= '{$since}'
+            order by wr_hit desc, wr_id desc
+            limit {$limit} ");
+        $rows = array();
+        while ($row = sql_fetch_array($result)) {
+            $rows[] = array(
+                'wr_id'    => (int) $row['wr_id'],
+                'subject'  => get_text($row['wr_subject']),
+                'hit'      => (int) $row['wr_hit'],
+                'comment'  => (int) $row['wr_comment'],
+                'category' => get_text($row['ca_name']),
+                'url'      => G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$row['wr_id'],
+            );
+        }
+
+        return $rows;
+    }
+}
+
+if (!function_exists('eottae_community_badge_class')) {
+    function eottae_community_badge_class($ca_name, $is_notice = false)
+    {
+        if ($is_notice) {
+            return 'community-badge--notice';
+        }
+
+        $map = array(
+            '질문'    => 'community-badge--question',
+            '정보'    => 'community-badge--info',
+            '후기'    => 'community-badge--review',
+            '자유'    => 'community-badge--free',
+            '구인구직'=> 'community-badge--job',
+            '공지'    => 'community-badge--notice',
+        );
+
+        return isset($map[$ca_name]) ? $map[$ca_name] : 'community-badge--default';
+    }
+}
+
+if (!function_exists('eottae_community_is_new')) {
+    function eottae_community_is_new($datetime, $hours = 24)
+    {
+        $ts = strtotime((string) $datetime);
+
+        return $ts ? (G5_SERVER_TIME - $ts) < ((int) $hours * 3600) : false;
+    }
+}
+
+if (!function_exists('eottae_community_is_hot')) {
+    function eottae_community_is_hot($hit, $comment, $board = null)
+    {
+        $hit = (int) $hit;
+        $comment = (int) $comment;
+        $hot = 100;
+        if (is_array($board) && !empty($board['bo_hot'])) {
+            $hot = (int) $board['bo_hot'];
+        }
+
+        return $hit >= $hot || $comment >= 10;
+    }
+}
+
+if (!function_exists('eottae_community_sort_options')) {
+    function eottae_community_sort_options($current_sst = '', $current_sod = 'desc')
+    {
+        $options = array(
+            array('label' => '최신순', 'sst' => 'wr_datetime', 'sod' => 'desc'),
+            array('label' => '조회순', 'sst' => 'wr_hit', 'sod' => 'desc'),
+            array('label' => '댓글순', 'sst' => 'wr_comment', 'sod' => 'desc'),
+        );
+        foreach ($options as &$opt) {
+            $opt['active'] = ($current_sst === $opt['sst'] || ($current_sst === '' && $opt['sst'] === 'wr_datetime'));
+        }
+
+        return $options;
+    }
+}
+
+if (!function_exists('eottae_community_region_options')) {
+    function eottae_community_region_options()
+    {
+        return array('세부시티', '막탄', 'IT Park', '아얄라', '만다우에', '라푸라푸');
+    }
+}
