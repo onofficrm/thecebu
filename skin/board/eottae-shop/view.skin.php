@@ -28,7 +28,7 @@ if ($view['file']['count']) {
         <?php if ($shop['status']) { ?><span class="shop-detail-page__badge"><?php echo $shop['status']; ?></span><?php } ?>
     </div>
 
-    <section class="shop-detail-page__info review-summary">
+    <section class="shop-detail-page__info">
         <dl>
             <?php if ($shop['address']) { ?><dt>주소</dt><dd><?php echo $shop['address']; ?></dd><?php } ?>
             <?php if ($shop['phone']) { ?><dt>전화</dt><dd><a href="<?php echo eottae_tel_href($shop['phone']); ?>"><?php echo $shop['phone']; ?></a></dd><?php } ?>
@@ -53,6 +53,8 @@ if ($view['file']['count']) {
     <section class="shop-detail-page__content" id="bo_v_con">
         <?php echo get_view_thumbnail($view['content']); ?>
     </section>
+
+    <?php eottae_render_review_section($view['wr_id'], $view['wr_subject']); ?>
 
     <?php
     eottae_render_inquiry_buttons('mobile-bar', array(

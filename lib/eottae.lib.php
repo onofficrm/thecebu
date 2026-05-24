@@ -99,8 +99,17 @@ if (!function_exists('eottae_should_load_assets')) {
         }
 
         $bo = isset($_GET['bo_table']) ? preg_replace('/[^a-z0-9_]/', '', $_GET['bo_table']) : '';
-        if (in_array($bo, array(EOTTae_SHOP_TABLE, EOTTae_COMMUNITY_TABLE), true)) {
+        if (in_array($bo, array(EOTTae_SHOP_TABLE, EOTTae_COMMUNITY_TABLE, EOTTae_REVIEW_TABLE), true)) {
             return true;
+        }
+
+        if (isset($_SERVER['SCRIPT_FILENAME'])) {
+            $page_scripts = array('eottae-mypage.php', 'eottae-points.php', 'eottae-coupons.php', 'eottae-my-reviews.php');
+            foreach ($page_scripts as $ps) {
+                if (strpos($_SERVER['SCRIPT_FILENAME'], $ps) !== false) {
+                    return true;
+                }
+            }
         }
 
         return false;
@@ -159,5 +168,296 @@ if (!function_exists('eottae_login_url')) {
         }
 
         return $url;
+    }
+}
+
+if (!function_exists('eottae_review_table')) {
+    function eottae_review_table()
+    {
+        return defined('EOTTae_REVIEW_TABLE') ? EOTTae_REVIEW_TABLE : 'review';
+    }
+}
+
+if (!function_exists('eottae_review_from_write')) {
+    function eottae_review_from_write($wr)
+    {
+        if (!is_array($wr)) {
+            return array();
+        }
+
+        $rating = isset($wr['wr_2']) ? (float) $wr['wr_2'] : 0;
+        if ($rating < 1 || $rating > 5) {
+            $rating = 0;
+        }
+
+        return array(
+            'wr_id'       => isset($wr['wr_id']) ? (int) $wr['wr_id'] : 0,
+            'shop_id'     => isset($wr['wr_1']) ? (int) $wr['wr_1'] : 0,
+            'rating'      => $rating,
+            'shop_name'   => isset($wr['wr_3']) ? get_text($wr['wr_3']) : '',
+            'status'      => isset($wr['wr_4']) ? get_text($wr['wr_4']) : 'visible',
+            'photo_count' => isset($wr['wr_5']) ? (int) $wr['wr_5'] : 0,
+            'subject'     => isset($wr['wr_subject']) ? get_text($wr['wr_subject']) : '',
+            'content'     => isset($wr['wr_content']) ? $wr['wr_content'] : '',
+            'author'      => isset($wr['wr_name']) ? get_text($wr['wr_name']) : '',
+            'mb_id'       => isset($wr['mb_id']) ? $wr['mb_id'] : '',
+            'datetime'    => isset($wr['wr_datetime']) ? $wr['wr_datetime'] : '',
+            'datetime_ts' => isset($wr['wr_datetime']) ? strtotime($wr['wr_datetime']) : 0,
+        );
+    }
+}
+
+if (!function_exists('eottae_review_write_table')) {
+    function eottae_review_write_table()
+    {
+        global $g5;
+
+        return $g5['write_prefix'].eottae_review_table();
+    }
+}
+
+if (!function_exists('eottae_get_shop_review_summary')) {
+    function eottae_get_shop_review_summary($shop_wr_id)
+    {
+        global $g5;
+
+        $shop_wr_id = (int) $shop_wr_id;
+        if ($shop_wr_id < 1) {
+            return array('count' => 0, 'average' => 0, 'distribution' => array(5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0));
+        }
+
+        $write_table = eottae_review_write_table();
+        $sql = " select wr_2 from {$write_table}
+            where wr_is_comment = 0
+              and wr_1 = '{$shop_wr_id}'
+              and (wr_4 = '' or wr_4 = 'visible')
+            order by wr_id desc ";
+        $result = sql_query($sql);
+
+        $distribution = array(5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0);
+        $total = 0;
+        $count = 0;
+
+        while ($row = sql_fetch_array($result)) {
+            $star = (int) round((float) $row['wr_2']);
+            if ($star < 1) {
+                $star = 1;
+            }
+            if ($star > 5) {
+                $star = 5;
+            }
+            $distribution[$star]++;
+            $total += (float) $row['wr_2'];
+            $count++;
+        }
+
+        return array(
+            'count'          => $count,
+            'average'        => $count > 0 ? round($total / $count, 1) : 0,
+            'distribution'   => $distribution,
+        );
+    }
+}
+
+if (!function_exists('eottae_get_shop_reviews')) {
+    function eottae_get_shop_reviews($shop_wr_id, $limit = 10, $offset = 0)
+    {
+        global $g5;
+
+        $shop_wr_id = (int) $shop_wr_id;
+        $limit = max(1, min(50, (int) $limit));
+        $offset = max(0, (int) $offset);
+        if ($shop_wr_id < 1) {
+            return array();
+        }
+
+        $write_table = eottae_review_write_table();
+        $sql = " select * from {$write_table}
+            where wr_is_comment = 0
+              and wr_1 = '{$shop_wr_id}'
+              and (wr_4 = '' or wr_4 = 'visible')
+            order by wr_id desc
+            limit {$offset}, {$limit} ";
+        $result = sql_query($sql);
+        $rows = array();
+
+        while ($row = sql_fetch_array($result)) {
+            $review = eottae_review_from_write($row);
+            $review['replies'] = eottae_get_review_replies($review['wr_id']);
+            $review['photos'] = eottae_get_review_photos(eottae_review_table(), $review['wr_id']);
+            $rows[] = $review;
+        }
+
+        return $rows;
+    }
+}
+
+if (!function_exists('eottae_get_review_replies')) {
+    function eottae_get_review_replies($review_wr_id)
+    {
+        global $g5;
+
+        $review_wr_id = (int) $review_wr_id;
+        if ($review_wr_id < 1) {
+            return array();
+        }
+
+        $write_table = eottae_review_write_table();
+        $sql = " select * from {$write_table}
+            where wr_is_comment = 1
+              and wr_parent = '{$review_wr_id}'
+            order by wr_comment asc, wr_id asc ";
+        $result = sql_query($sql);
+        $rows = array();
+
+        while ($row = sql_fetch_array($result)) {
+            $member_row = function_exists('get_member') ? get_member($row['mb_id']) : array('mb_id' => $row['mb_id']);
+            $rows[] = array(
+                'wr_id'    => (int) $row['wr_id'],
+                'content'  => get_text(strip_tags($row['wr_content'])),
+                'author'   => get_text($row['wr_name']),
+                'mb_id'    => isset($row['mb_id']) ? $row['mb_id'] : '',
+                'datetime' => $row['wr_datetime'],
+                'is_biz'   => eottae_is_business_member($member_row),
+            );
+        }
+
+        return $rows;
+    }
+}
+
+if (!function_exists('eottae_get_review_photos')) {
+    function eottae_get_review_photos($bo_table, $wr_id)
+    {
+        global $g5;
+
+        $wr_id = (int) $wr_id;
+        if ($wr_id < 1) {
+            return array();
+        }
+
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', $bo_table);
+        $sql = " select bf_file, bf_source from {$g5['board_file_table']}
+            where bo_table = '{$bo_table}' and wr_id = '{$wr_id}'
+            order by bf_no asc ";
+        $result = sql_query($sql);
+        $photos = array();
+
+        while ($row = sql_fetch_array($result)) {
+            if (empty($row['bf_file'])) {
+                continue;
+            }
+            $photos[] = G5_DATA_URL.'/file/'.$bo_table.'/'.$row['bf_file'];
+        }
+
+        return $photos;
+    }
+}
+
+if (!function_exists('eottae_user_reviewed_shop')) {
+    function eottae_user_reviewed_shop($mb_id, $shop_wr_id)
+    {
+        global $g5;
+
+        $mb_id = sql_escape_string((string) $mb_id);
+        $shop_wr_id = (int) $shop_wr_id;
+        if ($mb_id === '' || $shop_wr_id < 1) {
+            return false;
+        }
+
+        $write_table = eottae_review_write_table();
+        $row = sql_fetch(" select wr_id from {$write_table}
+            where wr_is_comment = 0 and mb_id = '{$mb_id}' and wr_1 = '{$shop_wr_id}' limit 1 ");
+
+        return !empty($row['wr_id']);
+    }
+}
+
+if (!function_exists('eottae_get_member_reviews')) {
+    function eottae_get_member_reviews($mb_id, $limit = 20)
+    {
+        global $g5;
+
+        $mb_id = sql_escape_string((string) $mb_id);
+        $limit = max(1, min(50, (int) $limit));
+        if ($mb_id === '') {
+            return array();
+        }
+
+        $write_table = eottae_review_write_table();
+        $sql = " select * from {$write_table}
+            where wr_is_comment = 0 and mb_id = '{$mb_id}'
+            order by wr_id desc
+            limit {$limit} ";
+        $result = sql_query($sql);
+        $rows = array();
+
+        while ($row = sql_fetch_array($result)) {
+            $rows[] = eottae_review_from_write($row);
+        }
+
+        return $rows;
+    }
+}
+
+if (!function_exists('eottae_review_token')) {
+    function eottae_review_token($regenerate = false)
+    {
+        $key = 'eottae_review_token';
+        $token = get_session($key);
+        if ($regenerate || $token === '' || $token === null) {
+            $token = md5(uniqid((string) mt_rand(), true));
+            set_session($key, $token);
+        }
+
+        return $token;
+    }
+}
+
+if (!function_exists('eottae_render_review_section')) {
+    function eottae_render_review_section($shop_wr_id, $shop_name = '')
+    {
+        eottae_load_component('review-section');
+
+        if (function_exists('eottae_review_section_html')) {
+            echo eottae_review_section_html($shop_wr_id, $shop_name);
+        }
+    }
+}
+
+if (!function_exists('eottae_business_pending_replies_count')) {
+    function eottae_business_pending_replies_count($mb_id)
+    {
+        global $g5;
+
+        $mb_id = sql_escape_string((string) $mb_id);
+        if ($mb_id === '') {
+            return 0;
+        }
+
+        $shop_table = $g5['write_prefix'].EOTTae_SHOP_TABLE;
+        $review_table = eottae_review_write_table();
+
+        $shops = sql_query(" select wr_id from {$shop_table} where mb_id = '{$mb_id}' ");
+        $shop_ids = array();
+        while ($row = sql_fetch_array($shops)) {
+            $shop_ids[] = (int) $row['wr_id'];
+        }
+
+        if (empty($shop_ids)) {
+            return 0;
+        }
+
+        $ids = implode(',', $shop_ids);
+        $row = sql_fetch(" select count(*) as cnt from {$review_table} r
+            where r.wr_is_comment = 0
+              and r.wr_1 in ({$ids})
+              and (r.wr_4 = '' or r.wr_4 = 'visible')
+              and not exists (
+                select 1 from {$review_table} c
+                where c.wr_is_comment = 1 and c.wr_parent = r.wr_id and c.mb_id = '{$mb_id}'
+              ) ");
+
+        return isset($row['cnt']) ? (int) $row['cnt'] : 0;
     }
 }

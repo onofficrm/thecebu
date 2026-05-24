@@ -15,6 +15,14 @@ if (!defined('EOTTae_COMMUNITY_TABLE')) {
     define('EOTTae_COMMUNITY_TABLE', 'community');
 }
 
+if (!defined('EOTTae_REVIEW_TABLE')) {
+    define('EOTTae_REVIEW_TABLE', 'review');
+}
+
+if (!defined('EOTTae_INQUIRY_TABLE')) {
+    define('EOTTae_INQUIRY_TABLE', 'inquiry');
+}
+
 if (!defined('EOTTae_MEMBER_SKIN')) {
     define('EOTTae_MEMBER_SKIN', 'eottae');
 }

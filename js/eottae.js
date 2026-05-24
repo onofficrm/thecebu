@@ -142,5 +142,71 @@
     document.body.classList.add('eottae-page');
     initShopRegisterWizard();
     initMemberType();
+    initReviewModal();
   });
+
+  function initReviewModal() {
+    var modal = qs('#eottaeReviewModal');
+    if (!modal) return;
+
+    var form = qs('#eottaeReviewForm', modal);
+    var ratingInput = qs('#eottaeReviewRating', modal);
+    var starBtns = qsa('.review-write-form__star', modal);
+
+    function setRating(value) {
+      if (ratingInput) ratingInput.value = String(value);
+      starBtns.forEach(function (btn) {
+        var star = parseInt(btn.getAttribute('data-star'), 10);
+        btn.classList.toggle('is-active', star <= value);
+      });
+    }
+
+    setRating(ratingInput ? parseInt(ratingInput.value, 10) || 5 : 5);
+
+    starBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        setRating(parseInt(btn.getAttribute('data-star'), 10));
+      });
+    });
+
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('[data-review-open]')) {
+        e.preventDefault();
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+      }
+      if (e.target.closest('[data-review-close]') || e.target === modal) {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+      }
+    });
+
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var fd = new FormData(form);
+        var submitBtn = qs('.review-write-form__submit', form);
+        if (submitBtn) submitBtn.disabled = true;
+
+        fetch(form.action, { method: 'POST', body: fd, credentials: 'same-origin' })
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (data.success) {
+              if (data.redirect_url) {
+                window.location.href = data.redirect_url;
+              } else {
+                window.location.reload();
+              }
+              return;
+            }
+            alert(data.message || '리뷰 등록에 실패했습니다.');
+            if (submitBtn) submitBtn.disabled = false;
+          })
+          .catch(function () {
+            alert('네트워크 오류가 발생했습니다.');
+            if (submitBtn) submitBtn.disabled = false;
+          });
+      });
+    }
+  }
 })();

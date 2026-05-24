@@ -370,6 +370,111 @@ if (!function_exists('eottae_seed_attach_sample_images')) {
     }
 }
 
+if (!function_exists('eottae_seed_review_board_exists')) {
+    function eottae_seed_review_board_exists()
+    {
+        global $g5;
+        $row = sql_fetch(" select count(*) as cnt from {$g5['board_table']} where bo_table = 'review' ");
+
+        return !empty($row['cnt']);
+    }
+}
+
+if (!function_exists('eottae_seed_insert_review')) {
+    function eottae_seed_insert_review($data)
+    {
+        global $g5;
+
+        if (!eottae_seed_review_board_exists()) {
+            return eottae_seed_log('review', 'review board missing — run install first', false);
+        }
+
+        $bo_table = eottae_review_table();
+        $write_table = $g5['write_prefix'].$bo_table;
+
+        $shop_id = (int) $data['shop_wr_id'];
+        $rating = (int) $data['rating'];
+        $subject = sql_escape_string(isset($data['wr_subject']) ? $data['wr_subject'] : '['.$rating.'점] 리뷰');
+        $content = sql_escape_string($data['wr_content']);
+        $shop_name = sql_escape_string(isset($data['shop_name']) ? $data['shop_name'] : '');
+        $mb_id = sql_escape_string(isset($data['mb_id']) ? $data['mb_id'] : 'admin');
+        $wr_name = sql_escape_string(isset($data['wr_name']) ? $data['wr_name'] : '세부어때');
+
+        $exists = sql_fetch(" select wr_id from {$write_table}
+            where wr_is_comment = 0 and mb_id = '{$mb_id}' and wr_1 = '{$shop_id}' limit 1 ");
+        if (!empty($exists['wr_id'])) {
+            return eottae_seed_log('review', 'shop '.$shop_id.' review exists for '.$mb_id, true);
+        }
+
+        $sql = " insert into {$write_table} set
+            wr_num = (SELECT IFNULL(MIN(wr_num) - 1, -1) FROM {$write_table} as sq),
+            wr_reply = '',
+            wr_comment = 0,
+            ca_name = '',
+            wr_option = '',
+            wr_subject = '{$subject}',
+            wr_content = '{$content}',
+            wr_link1 = '', wr_link2 = '',
+            mb_id = '{$mb_id}',
+            wr_password = '',
+            wr_name = '{$wr_name}',
+            wr_email = '',
+            wr_datetime = '".G5_TIME_YMDHIS."',
+            wr_last = '".G5_TIME_YMDHIS."',
+            wr_ip = '127.0.0.1',
+            wr_1 = '{$shop_id}',
+            wr_2 = '{$rating}',
+            wr_3 = '{$shop_name}',
+            wr_4 = 'visible',
+            wr_5 = '0',
+            wr_6 = '', wr_7 = '', wr_8 = '', wr_9 = '', wr_10 = '' ";
+        sql_query($sql);
+
+        $wr_id = sql_insert_id();
+        sql_query(" update {$write_table} set wr_parent = '{$wr_id}' where wr_id = '{$wr_id}' ");
+        sql_query(" insert into {$g5['board_new_table']} ( bo_table, wr_id, wr_parent, bn_datetime, mb_id )
+            values ( '{$bo_table}', '{$wr_id}', '{$wr_id}', '".G5_TIME_YMDHIS."', '{$mb_id}' ) ");
+        sql_query(" update {$g5['board_table']} set bo_count_write = bo_count_write + 1 where bo_table = '{$bo_table}' ");
+
+        return eottae_seed_log('review', 'shop '.$shop_id.' review seeded (wr_id='.$wr_id.')');
+    }
+}
+
+if (!function_exists('eottae_seed_sample_reviews')) {
+    function eottae_seed_sample_reviews()
+    {
+        return array(
+            eottae_seed_insert_review(array(
+                'shop_wr_id'  => 1,
+                'shop_name'   => 'J Park Korean BBQ IT Park',
+                'rating'      => 5,
+                'wr_subject'  => '[5점] J Park Korean BBQ IT Park 리뷰',
+                'wr_content'  => 'IT Park에서 한식 고기 먹기 좋아요. 직원분들도 친절하고 양도 푸짐합니다.',
+                'mb_id'       => 'seed_review1',
+                'wr_name'     => '세부교민A',
+            )),
+            eottae_seed_insert_review(array(
+                'shop_wr_id'  => 1,
+                'shop_name'   => 'J Park Korean BBQ IT Park',
+                'rating'      => 4,
+                'wr_subject'  => '[4점] J Park Korean BBQ IT Park 리뷰',
+                'wr_content'  => '맛은 좋은데 주말 저녁은 웨이팅이 있어요. 평일 점심 추천합니다.',
+                'mb_id'       => 'seed_review2',
+                'wr_name'     => '맛집탐험가',
+            )),
+            eottae_seed_insert_review(array(
+                'shop_wr_id'  => 2,
+                'shop_name'   => 'Korean Mart Ayala Center Cebu',
+                'rating'      => 5,
+                'wr_subject'  => '[5점] Korean Mart Ayala Center Cebu 리뷰',
+                'wr_content'  => '김치·라면·과자까지 한국 식재료가 잘 갖춰져 있어요. Ayala 쇼핑 후 들르기 좋습니다.',
+                'mb_id'       => 'seed_review3',
+                'wr_name'     => '장보기왕',
+            )),
+        );
+    }
+}
+
 if (!function_exists('eottae_seed_run')) {
     function eottae_seed_run()
     {

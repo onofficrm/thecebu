@@ -7,6 +7,8 @@ if (!$is_member) {
 
 $is_biz = eottae_is_business_member($member);
 $point = isset($member['mb_point']) ? (int) $member['mb_point'] : 0;
+$pending_replies = $is_biz ? eottae_business_pending_replies_count($member['mb_id']) : 0;
+$my_review_count = count(eottae_get_member_reviews($member['mb_id'], 100));
 
 g5_page_start('마이페이지');
 ?>
@@ -19,20 +21,22 @@ g5_page_start('마이페이지');
     </section>
 
     <section class="mypage-point-summary">
-        <div class="mypage-point-summary__box">
+        <a href="<?php echo G5_URL; ?>/page/eottae-points.php" class="mypage-point-summary__box" style="text-decoration:none;color:inherit">
             <p class="mypage-point-summary__label">포인트</p>
             <p class="mypage-point-summary__value"><?php echo number_format($point); ?>P</p>
-        </div>
-        <div class="mypage-coupon-summary__box">
+        </a>
+        <a href="<?php echo G5_URL; ?>/page/eottae-coupons.php" class="mypage-coupon-summary__box" style="text-decoration:none;color:inherit">
             <p class="mypage-coupon-summary__label">쿠폰</p>
             <p class="mypage-coupon-summary__value">0</p>
-        </div>
+        </a>
     </section>
 
     <nav class="mypage-quick-menu" aria-label="마이페이지 메뉴">
-        <a href="<?php echo G5_BBS_URL; ?>/point.php" class="mypage-quick-menu__item">포인트</a>
+        <a href="<?php echo G5_URL; ?>/page/eottae-points.php" class="mypage-quick-menu__item">포인트</a>
+        <a href="<?php echo G5_URL; ?>/page/eottae-coupons.php" class="mypage-quick-menu__item">쿠폰함</a>
+        <a href="<?php echo G5_URL; ?>/page/eottae-my-reviews.php" class="mypage-quick-menu__item">내 리뷰<?php if (!$is_biz && $my_review_count > 0) { ?> (<?php echo $my_review_count; ?>)<?php } ?></a>
         <a href="<?php echo G5_BBS_URL; ?>/board.php?bo_table=<?php echo EOTTae_COMMUNITY_TABLE; ?>" class="mypage-quick-menu__item">내 활동</a>
-        <a href="<?php echo G5_BBS_URL; ?>/board.php?bo_table=<?php echo EOTTae_SHOP_TABLE; ?>" class="mypage-quick-menu__item">저장 업체</a>
+        <a href="<?php echo G5_BBS_URL; ?>/board.php?bo_table=<?php echo EOTTae_SHOP_TABLE; ?>" class="mypage-quick-menu__item">내주변</a>
         <a href="<?php echo G5_BBS_URL; ?>/memo.php" class="mypage-quick-menu__item">쪽지</a>
         <a href="<?php echo G5_BBS_URL; ?>/member_confirm.php?url=<?php echo urlencode(G5_BBS_URL.'/register_form.php'); ?>" class="mypage-quick-menu__item">정보수정</a>
         <a href="<?php echo G5_BBS_URL; ?>/logout.php" class="mypage-quick-menu__item">로그아웃</a>
@@ -41,8 +45,12 @@ g5_page_start('마이페이지');
     <?php if ($is_biz) { ?>
     <section class="business-dashboard">
         <h2 class="business-dashboard__title">사업자 대시보드</h2>
-        <p>내 업체 통계·리뷰 답변 기능은 2차 개발에서 제공됩니다.</p>
-        <a href="<?php echo G5_BBS_URL; ?>/board.php?bo_table=<?php echo EOTTae_SHOP_TABLE; ?>&amp;mode=write" class="eottae-btn-write" style="margin-top:12px;display:inline-flex">업체 등록</a>
+        <?php if ($pending_replies > 0) { ?>
+        <p><strong><?php echo number_format($pending_replies); ?>건</strong>의 리뷰에 답변이 필요합니다.</p>
+        <?php } else { ?>
+        <p>새로운 리뷰 답변 요청이 없습니다.</p>
+        <?php } ?>
+        <a href="<?php echo G5_BBS_URL; ?>/write.php?bo_table=<?php echo EOTTae_SHOP_TABLE; ?>" class="eottae-btn-write" style="margin-top:12px;display:inline-flex">업체 등록</a>
         <?php eottae_render_inquiry_buttons('business', array()); ?>
     </section>
     <?php } ?>
