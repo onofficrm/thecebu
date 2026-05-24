@@ -1,5 +1,12 @@
 [
   {
+    "id": "thecebu-main",
+    "name": "더세부 메인 랜딩",
+    "path": "thecebu-main",
+    "entry": "index.html",
+    "created_at": "2026-05-24 13:57:00"
+  },
+  {
     "id": "sample-landing",
     "name": "[샘플] 랜딩 페이지 (비활성)",
     "path": "sample-landing",

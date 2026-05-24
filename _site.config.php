@@ -8,7 +8,9 @@ if (!defined('_GNUBOARD_')) {
 }
 
 $site_config = array(
-    'site_name'           => '샘플 사이트',
+  /* 홈(/) URL — onoff-builder-bridge 프로젝트 ID (비우면 테마·section 메인 사용) */
+  'home_builder_bridge_id' => 'thecebu-main',
+  'site_name'           => '더세부',
     'site_desc'           => '빌더 디자인 적용이 쉬운 그누보드 베이스 템플릿',
     'company_name'        => '회사명',
     'ceo_name'            => '대표자명',

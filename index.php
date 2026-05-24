@@ -4,6 +4,29 @@ include_once('./_common.php');
 define('_INDEX_', true);
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
+// 빌더 bridge 메인 (/_site.config.php → home_builder_bridge_id)
+if (!isset($site_config) && is_file(G5_PATH . '/_site.config.php')) {
+    include_once(G5_PATH . '/_site.config.php');
+}
+if (function_exists('g5site_cfg')) {
+    $thecebu_home_builder_id = g5site_cfg('home_builder_bridge_id', '');
+    if ($thecebu_home_builder_id !== '') {
+        $thecebu_home_builder_id = preg_replace('/[^a-z0-9_-]/i', '', $thecebu_home_builder_id);
+        if ($thecebu_home_builder_id !== '') {
+            if (!defined('ONOFF_BUILDER_LOADED') && defined('G5_PLUGIN_PATH')) {
+                $thecebu_builder_bootstrap = G5_PLUGIN_PATH . '/onoff-builder-bridge/bootstrap.php';
+                if (is_file($thecebu_builder_bootstrap)) {
+                    include_once $thecebu_builder_bootstrap;
+                }
+            }
+            if (function_exists('onoff_builder_render_import_page')) {
+                onoff_builder_render_import_page($thecebu_home_builder_id);
+                exit;
+            }
+        }
+    }
+}
+
 // 테마 사용 시 테마 index로 위임 (기존 동작 유지)
 if (defined('G5_THEME_PATH')) {
     require_once(G5_THEME_PATH.'/index.php');
