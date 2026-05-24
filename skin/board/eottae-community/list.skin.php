@@ -11,6 +11,7 @@ $sort_options = eottae_community_sort_options(isset($sst) ? $sst : '', isset($so
 $region_options = eottae_community_region_options();
 $current_region = isset($_GET['region']) ? trim($_GET['region']) : '';
 $list_base = get_pretty_url($bo_table);
+$hero = eottae_community_board_hero($board, $sca);
 ?>
 
 <div class="community-page board-wrap board-wrap--eottae-community" id="bo_list" style="width:<?php echo $width; ?>">
@@ -21,9 +22,11 @@ $list_base = get_pretty_url($bo_table);
     <section class="community-hero">
         <div class="community-hero__inner">
             <div class="community-hero__copy">
-                <p class="community-hero__kicker">세부 자유 게시판</p>
-                <h1 class="community-hero__title"><?php echo $sca ? get_text($sca) : '세부 생활정보'; ?></h1>
-                <p class="community-hero__desc">세부 교민과 여행자가 함께 나누는 생생한 로컬 생활정보 게시판입니다.</p>
+                <p class="community-hero__kicker"><?php echo $hero['kicker']; ?></p>
+                <h1 class="community-hero__title"><?php echo $hero['title']; ?></h1>
+                <?php if ($hero['desc'] !== '') { ?>
+                <p class="community-hero__desc"><?php echo $hero['desc']; ?></p>
+                <?php } ?>
                 <p class="community-hero__stats">
                     <span>전체글 <strong><?php echo number_format($total_count); ?></strong></span>
                     <span class="community-hero__stats-divider">|</span>

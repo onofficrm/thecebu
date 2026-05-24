@@ -252,6 +252,12 @@
         .then(function (data) {
           btn.disabled = false;
           if (!data.ok) {
+            if (data.status === 'REQUEST_DENIED') {
+              if (status) {
+                status.textContent = 'Geocoding API가 비활성화되어 있습니다. Google Cloud Console에서 Geocoding API를 켜 주세요.';
+              }
+              return;
+            }
             if (status) status.textContent = '좌표를 찾지 못했습니다. 주소를 확인해 주세요.';
             return;
           }

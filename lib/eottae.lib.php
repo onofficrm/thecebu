@@ -1506,6 +1506,70 @@ if (!function_exists('eottae_shop_detail_flags')) {
     }
 }
 
+if (!function_exists('eottae_community_board_hero')) {
+    function eottae_community_board_hero($board, $sca = '')
+    {
+        global $bo_table;
+
+        $table = '';
+        if (is_array($board) && !empty($board['bo_table'])) {
+            $table = (string) $board['bo_table'];
+        } elseif (!empty($bo_table)) {
+            $table = (string) $bo_table;
+        }
+
+        $presets = array(
+            'community' => array(
+                'kicker' => '세부 자유 게시판',
+                'title'  => '세부 생활정보',
+                'desc'   => '세부 교민과 여행자가 함께 나누는 생생한 로컬 생활정보 게시판입니다.',
+            ),
+            'people' => array(
+                'kicker' => '사람찾기',
+                'title'  => '실종·만남·동행',
+                'desc'   => '지인 찾기, 동행 모집, 만남 게시글을 올리는 공간입니다.',
+            ),
+            'job' => array(
+                'kicker' => '구인구직',
+                'title'  => '일자리 정보',
+                'desc'   => '세부 지역 구인·구직·알바 정보를 공유하는 게시판입니다.',
+            ),
+            'estate' => array(
+                'kicker' => '부동산',
+                'title'  => '매매·전월세',
+                'desc'   => '세부 부동산 매매, 전·월세, 양도 정보를 나누는 게시판입니다.',
+            ),
+            'event' => array(
+                'kicker' => '이벤트',
+                'title'  => '프로모션·기획전',
+                'desc'   => '업체 이벤트와 세부어때 기획전 소식을 확인하세요.',
+            ),
+            'review' => array(
+                'kicker' => '업체 리뷰',
+                'title'  => '리뷰 모음',
+                'desc'   => '세부 업체에 대한 회원 리뷰를 모아 보는 게시판입니다.',
+            ),
+        );
+
+        if (isset($presets[$table])) {
+            $hero = $presets[$table];
+        } else {
+            $subject = is_array($board) && isset($board['bo_subject']) ? get_text($board['bo_subject']) : '게시판';
+            $hero = array(
+                'kicker' => $subject,
+                'title'  => $subject,
+                'desc'   => '',
+            );
+        }
+
+        if ($sca !== '') {
+            $hero['title'] = get_text($sca);
+        }
+
+        return $hero;
+    }
+}
+
 if (!function_exists('eottae_community_list_url')) {
     function eottae_community_list_url($params = array())
     {

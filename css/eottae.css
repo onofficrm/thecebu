@@ -2352,11 +2352,26 @@ body.eottae-page hr {
 
 @media (max-width: 1024px) {
   .community-page__layout {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
   }
 
   .community-sidebar {
+    display: contents;
+  }
+
+  .community-sidebar__login {
+    order: 1;
+    position: static;
+  }
+
+  .community-page__main {
     order: 2;
+  }
+
+  .community-sidebar__card,
+  .community-sidebar__ad {
+    order: 3;
   }
 }
 
@@ -3812,11 +3827,26 @@ body.eottae-page hr {
 
 @media (max-width: 960px) {
   .community-view-page__layout {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
   }
 
   .community-view-page .community-sidebar {
+    display: contents;
+  }
+
+  .community-view-page .community-sidebar__login {
+    order: 1;
+    position: static;
+  }
+
+  .community-view-page__main {
     order: 2;
+  }
+
+  .community-view-page .community-sidebar__card,
+  .community-view-page .community-sidebar__ad {
+    order: 3;
   }
 }
 
