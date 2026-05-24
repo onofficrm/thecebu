@@ -81,44 +81,60 @@ if (!function_exists('eottae_maps_directions_url')) {
     }
 }
 
-if (!function_exists('eottae_should_load_assets')) {
-    function eottae_should_load_assets()
+if (!function_exists('eottae_use_site_chrome')) {
+    /**
+     * 세부어때 공통 GNB·푸터·eottae.css 적용 여부 (관리자·설치 도구 제외)
+     */
+    function eottae_use_site_chrome()
     {
         if (defined('G5_IS_ADMIN') && G5_IS_ADMIN) {
             return false;
         }
-
-        $script = isset($_SERVER['SCRIPT_NAME']) ? basename($_SERVER['SCRIPT_NAME']) : '';
-        $member_scripts = array('login.php', 'register.php', 'register_form.php', 'register_result.php', 'password_lost.php', 'password_reset.php', 'member_confirm.php');
-        if (in_array($script, $member_scripts, true)) {
-            return true;
+        if (defined('EOTTAE_SETUP_MINIMAL') && EOTTAE_SETUP_MINIMAL) {
+            return false;
         }
 
-        if (isset($_SERVER['SCRIPT_FILENAME']) && strpos($_SERVER['SCRIPT_FILENAME'], 'eottae-mypage.php') !== false) {
-            return true;
-        }
+        return true;
+    }
+}
 
-        $bo = isset($_GET['bo_table']) ? preg_replace('/[^a-z0-9_]/', '', $_GET['bo_table']) : '';
-        if ($bo !== '' && function_exists('eottae_gnb_board_tables') && in_array($bo, eottae_gnb_board_tables(), true)) {
-            return true;
-        }
-        if (in_array($bo, array(EOTTae_SHOP_TABLE, EOTTae_COMMUNITY_TABLE, EOTTae_REVIEW_TABLE), true)) {
-            return true;
-        }
+if (!function_exists('eottae_should_load_assets')) {
+    function eottae_should_load_assets()
+    {
+        return eottae_use_site_chrome();
+    }
+}
 
-        if (isset($_SERVER['SCRIPT_FILENAME'])) {
-            $page_scripts = array(
-                'eottae-mypage.php', 'eottae-points.php', 'eottae-coupons.php', 'eottae-my-reviews.php',
-                'eottae-saved-shops.php', 'eottae-inquiries.php', 'eottae-events.php',
-            );
-            foreach ($page_scripts as $ps) {
-                if (strpos($_SERVER['SCRIPT_FILENAME'], $ps) !== false) {
-                    return true;
-                }
+if (!function_exists('eottae_prepare_site_header')) {
+    /**
+     * site-header.php include 전 공통 변수
+     */
+    function eottae_prepare_site_header()
+    {
+        global $g5_site_title, $config;
+
+        if (!isset($g5_site_title) || $g5_site_title === '') {
+            $g5_site_title = function_exists('g5site_cfg')
+                ? g5site_cfg('site_name', get_text($config['cf_title']))
+                : get_text($config['cf_title']);
+            if ($g5_site_title === '') {
+                $g5_site_title = get_text($config['cf_title']);
             }
         }
+    }
+}
 
-        return false;
+if (!function_exists('eottae_render_site_header')) {
+    function eottae_render_site_header()
+    {
+        if (!is_file(G5_PATH.'/components/eottae/site-header.php')) {
+            return false;
+        }
+
+        eottae_prepare_site_header();
+        include G5_PATH.'/components/eottae/site-header.php';
+
+        return true;
     }
 }
 

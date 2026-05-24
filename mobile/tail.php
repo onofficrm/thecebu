@@ -5,6 +5,11 @@ if(defined('G5_THEME_PATH')) {
     require_once(G5_THEME_PATH.'/tail.php');
     return;
 }
+
+if (function_exists('eottae_use_site_chrome') && eottae_use_site_chrome()) {
+    include_once(G5_PATH.'/tail.php');
+    return;
+}
 ?>
     </div>
 </div>

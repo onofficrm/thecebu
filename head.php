@@ -118,9 +118,8 @@ if (!is_array($menu_datas_mo) || !count($menu_datas_mo)) {
     <div class="eottae-setup-hd" style="padding:12px 16px;border-bottom:1px solid #e2e8f0;background:#fff">
         <a href="<?php echo G5_URL; ?>" style="font-weight:700;color:#0ea5e9;text-decoration:none">← 세부어때 홈</a>
     </div>
-<?php } elseif (function_exists('eottae_should_load_assets') && eottae_should_load_assets()) {
-    include G5_PATH.'/components/eottae/site-header.php';
-} else { ?>
+<?php } elseif (function_exists('eottae_render_site_header') && eottae_render_site_header()) { ?>
+<?php } else { ?>
     <header id="siteHeader" class="site-header mobile-header eottae-header">
         <h1 id="hd_h1" class="sound_only"><?php echo $g5['title']; ?></h1>
         <div id="skip_to_container" class="site-header__skip">

@@ -45,6 +45,40 @@ body.eottae-page .site-aside {
   display: none !important;
 }
 
+body.eottae-page #hd {
+  min-width: 0 !important;
+  height: auto;
+  background: #fff;
+}
+
+body.eottae-page #wrapper,
+body.eottae-page #ft {
+  min-width: 0 !important;
+}
+
+body.eottae-page #hd #hd_wrapper,
+body.eottae-page #hd #hd_define,
+body.eottae-page #hd #hd_qnb,
+body.eottae-page #hd .hd_login {
+  display: none !important;
+}
+
+body.eottae-page #siteHeader.site-header.eottae-gnb-header,
+body.eottae-page #hd .eottae-gnb-header {
+  background: #fff !important;
+  border-bottom: 1px solid #f1f5f9;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+body.eottae-page #siteHeader.site-header {
+  background-color: #fff !important;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+body.eottae-page #hd_login_msg {
+  display: none !important;
+}
+
 /* ── Header ── */
 .site-header.eottae-header,
 #siteHeader.mobile-header {
