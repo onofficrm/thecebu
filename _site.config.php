@@ -70,6 +70,13 @@ $site_config = array(
     'map_placeholder_desc'      => '_site.config.php에서 google_maps_api_key 값을 입력하면 지도가 표시됩니다.',
 );
 
+if (is_file(G5_PATH.'/_site.config.local.php')) {
+    include_once G5_PATH.'/_site.config.local.php';
+    if (isset($site_config_override) && is_array($site_config_override)) {
+        $site_config = array_merge($site_config, $site_config_override);
+    }
+}
+
 /**
  * 설정값 조회 (없거나 비어 있으면 $default)
  *

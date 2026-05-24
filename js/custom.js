@@ -127,6 +127,7 @@
 
     var menu = menus[0];
     var overlay = overlays.length ? overlays[0] : null;
+    var isDropdownMenu = menu.classList.contains('eottae-gnb-header__mobile');
     var isOpen = false;
 
     /**
@@ -142,7 +143,7 @@
         btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
       });
       menu.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
-      G5Template.lockBodyScroll(isOpen);
+      G5Template.lockBodyScroll(isOpen && !isDropdownMenu);
     };
 
     openBtns.forEach(function (btn) {

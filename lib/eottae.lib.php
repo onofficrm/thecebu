@@ -1128,6 +1128,86 @@ if (!function_exists('eottae_shop_map_markers')) {
     }
 }
 
+if (!function_exists('eottae_shop_map_locations_json')) {
+    /**
+     * Google Maps JS용 업체 좌표 JSON
+     *
+     * @param array<int, array<string, mixed>> $markers
+     * @return string
+     */
+    function eottae_shop_map_locations_json($markers)
+    {
+        $locations = array();
+        foreach ((array) $markers as $marker) {
+            if (!is_array($marker)) {
+                continue;
+            }
+            $lat = isset($marker['lat']) ? trim((string) $marker['lat']) : '';
+            $lng = isset($marker['lng']) ? trim((string) $marker['lng']) : '';
+            if ($lat === '' || $lng === '' || !is_numeric($lat) || !is_numeric($lng)) {
+                continue;
+            }
+            $locations[] = array(
+                'id'       => isset($marker['wr_id']) ? (int) $marker['wr_id'] : 0,
+                'name'     => isset($marker['name']) ? (string) $marker['name'] : '',
+                'category' => isset($marker['category']) ? (string) $marker['category'] : '',
+                'lat'      => (float) $lat,
+                'lng'      => (float) $lng,
+                'link'     => isset($marker['url']) ? (string) $marker['url'] : '',
+            );
+        }
+
+        $json = json_encode($locations, JSON_UNESCAPED_UNICODE);
+        if ($json === false) {
+            return '[]';
+        }
+
+        return $json;
+    }
+}
+
+if (!function_exists('eottae_enqueue_google_maps')) {
+    /**
+     * Google Maps API + eottae-shop-map.js 로드
+     *
+     * @return bool API 키가 있어 스크립트를 등록했으면 true
+     */
+    function eottae_enqueue_google_maps()
+    {
+        static $enqueued = false;
+
+        if ($enqueued) {
+            return function_exists('onoff_map_has_api_key') && onoff_map_has_api_key();
+        }
+
+        if (!is_file(G5_PATH.'/components/maps/map-config.php')) {
+            return false;
+        }
+
+        include_once G5_PATH.'/components/maps/map-config.php';
+
+        if (!function_exists('onoff_map_has_api_key') || !onoff_map_has_api_key()) {
+            return false;
+        }
+
+        $cfg = onoff_map_get_config();
+        $key = isset($cfg['api_key']) ? htmlspecialchars($cfg['api_key'], ENT_QUOTES, 'UTF-8') : '';
+        if ($key === '') {
+            return false;
+        }
+
+        add_javascript('<script src="'.G5_JS_URL.'/eottae-shop-map.js"></script>', 25);
+        add_javascript(
+            '<script src="https://maps.googleapis.com/maps/api/js?key='.$key.'&amp;callback=initEottaeShopMaps" defer></script>',
+            5
+        );
+
+        $enqueued = true;
+
+        return true;
+    }
+}
+
 if (!function_exists('eottae_shop_table')) {
     function eottae_shop_table()
     {
@@ -1213,5 +1293,46 @@ if (!function_exists('eottae_community_list_url')) {
         }
 
         return $base.'&'.http_build_query($params);
+    }
+}
+
+if (!function_exists('eottae_gnb_nav_links')) {
+    function eottae_gnb_nav_links()
+    {
+        return array(
+            array('key' => 'home', 'label' => '홈', 'href' => G5_URL.'/'),
+            array('key' => 'shop', 'label' => '내주변', 'href' => eottae_shop_list_url()),
+            array('key' => 'food', 'label' => '맛집', 'href' => eottae_shop_category_url('맛집')),
+            array('key' => 'mart', 'label' => '마트', 'href' => eottae_shop_category_url('마트')),
+            array('key' => 'community', 'label' => '커뮤니티', 'href' => eottae_community_list_url()),
+            array('key' => 'mypage', 'label' => 'MY', 'href' => G5_URL.'/page/eottae-mypage.php'),
+        );
+    }
+}
+
+if (!function_exists('eottae_gnb_link_is_active')) {
+    function eottae_gnb_link_is_active($key)
+    {
+        $bo = isset($_GET['bo_table']) ? preg_replace('/[^a-z0-9_]/', '', $_GET['bo_table']) : '';
+        $sca = isset($_GET['sca']) ? trim((string) $_GET['sca']) : '';
+        $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
+        $script = isset($_SERVER['SCRIPT_NAME']) ? basename($_SERVER['SCRIPT_NAME']) : '';
+
+        switch ($key) {
+            case 'home':
+                return defined('_INDEX_');
+            case 'shop':
+                return $bo === eottae_shop_table() && $sca === '';
+            case 'food':
+                return $bo === eottae_shop_table() && ($sca === '맛집' || (isset($_GET['stx']) && $_GET['stx'] === '맛집'));
+            case 'mart':
+                return $bo === eottae_shop_table() && ($sca === '마트' || (isset($_GET['stx']) && $_GET['stx'] === '마트'));
+            case 'community':
+                return $bo === eottae_community_board_table();
+            case 'mypage':
+                return strpos($uri, '/page/eottae-') !== false || $script === 'eottae-mypage.php';
+            default:
+                return false;
+        }
     }
 }

@@ -11,6 +11,7 @@ $sort_links = eottae_shop_sort_links(isset($sst) ? $sst : '');
 $list_base = get_pretty_url($bo_table);
 $current_region = (isset($sfl) && $sfl === 'wr_2' && !empty($stx)) ? get_text($stx) : '';
 $shop_map_markers = eottae_shop_map_markers($list, $bo_table);
+$eottae_maps_enabled = eottae_enqueue_google_maps();
 
 function eottae_shop_build_list_url($bo_table, $params = array())
 {
@@ -162,27 +163,21 @@ function fboardlist_submit(f) {
 
 (function () {
     var geoBtn = document.getElementById('shopNearGeoBtn');
-    var locateBtn = document.getElementById('shopMapLocateBtn');
-    var msg = 'Google Maps API 연동 후 현재 위치 기반 검색이 가능합니다.';
+    var mapsEnabled = <?php echo $eottae_maps_enabled ? 'true' : 'false'; ?>;
+
+    function goToCurrentLocation() {
+        if (!mapsEnabled) {
+            alert('Google Maps API 키 설정 후 현재 위치 기반 검색이 가능합니다.');
+            return;
+        }
+        var locateBtn = document.getElementById('shopMapLocateBtn');
+        if (locateBtn) {
+            locateBtn.click();
+        }
+    }
 
     if (geoBtn) {
-        geoBtn.addEventListener('click', function () {
-            alert(msg);
-        });
+        geoBtn.addEventListener('click', goToCurrentLocation);
     }
-    if (locateBtn) {
-        locateBtn.addEventListener('click', function () {
-            alert(msg);
-        });
-    }
-
-    document.querySelectorAll('[data-map-pin]').forEach(function (pin) {
-        pin.addEventListener('click', function () {
-            var url = pin.getAttribute('data-url');
-            if (url) {
-                location.href = url;
-            }
-        });
-    });
 })();
 </script>

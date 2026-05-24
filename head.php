@@ -111,6 +111,9 @@ if (!is_array($menu_datas_mo) || !count($menu_datas_mo)) {
 
 <!-- 상단 시작 { -->
 <div id="hd">
+<?php if (function_exists('eottae_should_load_assets') && eottae_should_load_assets()) {
+    include G5_PATH.'/components/eottae/site-header.php';
+} else { ?>
     <header id="siteHeader" class="site-header mobile-header eottae-header">
         <h1 id="hd_h1" class="sound_only"><?php echo $g5['title']; ?></h1>
         <div id="skip_to_container" class="site-header__skip">
@@ -281,6 +284,7 @@ if (!is_array($menu_datas_mo) || !count($menu_datas_mo)) {
         </div>
         <div class="site-header__overlay" aria-hidden="true"></div>
     </header>
+<?php } ?>
 </div>
 
 <script>

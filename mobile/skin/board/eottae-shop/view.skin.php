@@ -2,9 +2,11 @@
 if (!defined('_GNUBOARD_')) exit;
 
 include_once(G5_LIB_PATH.'/thumbnail.lib.php');
+include_once(G5_LIB_PATH.'/eottae.lib.php');
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
 
 $shop = eottae_shop_from_write($view);
+eottae_enqueue_google_maps();
 eottae_track_recent_shop($view['wr_id']);
 $shop_is_saved = $is_member && eottae_is_shop_saved($member['mb_id'], $view['wr_id']);
 $share_url = G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$view['wr_id'];
