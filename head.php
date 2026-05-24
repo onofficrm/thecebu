@@ -111,7 +111,7 @@ if (!is_array($menu_datas_mo) || !count($menu_datas_mo)) {
 
 <!-- 상단 시작 { -->
 <div id="hd">
-    <header id="siteHeader" class="site-header">
+    <header id="siteHeader" class="site-header mobile-header eottae-header">
         <h1 id="hd_h1" class="sound_only"><?php echo $g5['title']; ?></h1>
         <div id="skip_to_container" class="site-header__skip">
             <a href="#container">본문 바로가기</a>
@@ -190,7 +190,7 @@ if (!is_array($menu_datas_mo) || !count($menu_datas_mo)) {
 
                 <ul class="site-header__account hd_login">
                     <?php if ($is_member) { ?>
-                    <li><a href="<?php echo G5_BBS_URL; ?>/member_confirm.php?url=<?php echo G5_BBS_URL; ?>/register_form.php">정보수정</a></li>
+                    <li><a href="<?php echo G5_URL; ?>/page/eottae-mypage.php">MY</a></li>
                     <li><a href="<?php echo G5_BBS_URL; ?>/logout.php">로그아웃</a></li>
                     <?php if ($is_admin) { ?>
                     <li class="tnb_admin"><a href="<?php echo correct_goto_url(G5_ADMIN_URL); ?>">관리자</a></li>

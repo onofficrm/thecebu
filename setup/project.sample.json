@@ -8,6 +8,29 @@
   "notes": "게시판·메뉴 계획표. 실제 DB에 자동 반영하지 않습니다. 관리자에서 수동 생성을 권장합니다.",
   "boards": [
     {
+      "bo_table": "shop",
+      "title": "업체·맛집",
+      "skin": "eottae-shop",
+      "read_level": 1,
+      "write_level": 2,
+      "use_category": true,
+      "use_secret": false,
+      "use_comment": true,
+      "extra_fields": 10,
+      "description": "세부어때 업체 directory — wr_1~10 매핑 (eottae-shop 스킨)"
+    },
+    {
+      "bo_table": "community",
+      "title": "커뮤니티",
+      "skin": "eottae-community",
+      "read_level": 1,
+      "write_level": 2,
+      "use_category": true,
+      "use_secret": false,
+      "use_comment": true,
+      "description": "교민·관광객 커뮤니티 게시판"
+    },
+    {
       "bo_table": "notice",
       "title": "공지사항",
       "skin": "basic-notice",

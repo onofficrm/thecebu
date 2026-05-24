@@ -10,8 +10,8 @@ if (!defined('_GNUBOARD_')) {
 $site_config = array(
   /* 홈(/) URL — onoff-builder-bridge 프로젝트 ID (비우면 테마·section 메인 사용) */
   'home_builder_bridge_id' => 'thecebu-main',
-  'site_name'           => '더세부',
-    'site_desc'           => '빌더 디자인 적용이 쉬운 그누보드 베이스 템플릿',
+  'site_name'           => '세부어때',
+  'site_desc'           => '필리핀 세부 교민·관광객 위치기반 커뮤니티',
     'company_name'        => '회사명',
     'ceo_name'            => '대표자명',
     'business_no'         => '000-00-00000',
@@ -19,7 +19,7 @@ $site_config = array(
     'kakao_url'           => '#',
     'email'               => 'help@example.com',
     'address'             => '주소를 입력하세요',
-    'primary_color'       => '#2563eb',
+    'primary_color'       => '#0ea5e9',
     'secondary_color'     => '#64748b',
     'logo_path'           => '/img/logo/logo.svg',
     'og_image'            => '/img/common/og-image.jpg',

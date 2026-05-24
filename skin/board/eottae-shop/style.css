@@ -1,0 +1,26 @@
+@import url('../../css/eottae.css');
+
+.board-wrap--eottae-shop .board-cate ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+}
+
+.board-wrap--eottae-shop .board-cate a {
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  color: #64748b;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.board-wrap--eottae-shop #bo_cate_on {
+  background: var(--eottae-primary, #0ea5e9);
+  color: #fff;
+}

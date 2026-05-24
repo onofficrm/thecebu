@@ -1,0 +1,8 @@
+@import url('../../css/eottae.css');
+
+.register-form .frm_input,
+.login-form .frm_input,
+.password-find-form .frm_input {
+  width: 100%;
+  box-sizing: border-box;
+}

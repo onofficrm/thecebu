@@ -62,7 +62,7 @@ $g5_is_index_page = defined('_INDEX_');
         <?php echo visit(); ?>
     </div>
 
-    <footer id="siteFooter" class="site-footer">
+    <footer id="siteFooter" class="site-footer eottae-footer">
         <div class="site-footer__inner">
             <div class="site-footer__brand">
                 <h2 class="site-footer__company"><?php echo get_text($g5_footer_company); ?></h2>
@@ -136,6 +136,13 @@ $g5_is_index_page = defined('_INDEX_');
 </div>
 
 <?php
+if (function_exists('eottae_should_load_assets') && eottae_should_load_assets()) {
+    eottae_load_component('global-bottom-nav');
+    if (function_exists('eottae_global_bottom_nav_html')) {
+        echo eottae_global_bottom_nav_html();
+    }
+}
+
 include_once(G5_PATH.'/components/floating-buttons.php');
 include_once(G5_PATH.'/components/consult-modal.php');
 include_once(G5_PATH.'/components/popup-banner.php');
