@@ -18,11 +18,21 @@ if (!defined('_GNUBOARD_')) {
 }
 
 /**
+ * head/tail include 시 그누보드 전역 변수 접근 (함수 스코프 대응)
+ */
+function g5_page_import_globals()
+{
+    global $g5, $config, $member, $is_member, $is_admin, $board, $bo_table, $sca;
+    global $g5_css_brand, $begin_time, $g5_debug;
+}
+
+/**
  * 서브페이지 시작 (head.php)
  * @param string $title 브라우저·container_title용
  */
 function g5_page_start($title)
 {
+    g5_page_import_globals();
     global $g5;
     $g5['title'] = $title;
     include_once(G5_PATH.'/head.php');
@@ -33,5 +43,6 @@ function g5_page_start($title)
  */
 function g5_page_end()
 {
+    g5_page_import_globals();
     include_once(G5_PATH.'/tail.php');
 }

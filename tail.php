@@ -154,7 +154,7 @@ include_once(G5_PATH.'/components/popup-banner.php');
 ?>
 
 <?php
-if ($config['cf_analytics']) {
+if (!empty($config['cf_analytics'])) {
     echo $config['cf_analytics'];
 }
 ?>

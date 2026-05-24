@@ -42,6 +42,19 @@ if (is_file(G5_PATH.'/components/tracking-body.php')) {
     include_once(G5_PATH.'/components/tracking-body.php');
 }
 
+// site_config 브랜드 색 → :root (hex만 허용)
+$g5_css_brand = '';
+if (function_exists('g5site_cfg')) {
+    $g5_primary = g5site_cfg('primary_color', '');
+    $g5_secondary = g5site_cfg('secondary_color', '');
+    if ($g5_primary !== '' && preg_match('/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/', $g5_primary)) {
+        $g5_css_brand .= '--color-primary:'.$g5_primary.';';
+    }
+    if ($g5_secondary !== '' && preg_match('/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/', $g5_secondary)) {
+        $g5_css_brand .= '--color-secondary:'.$g5_secondary.';--color-muted:'.$g5_secondary.';';
+    }
+}
+
 // 템플릿 전용 CSS/JS (default.css·common.js 이후 로드)
 add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/custom.css">', 10);
 if ($g5_css_brand !== '') {
@@ -87,19 +100,6 @@ if ($g5_site_title === '') {
 // 상담문의 URL (메인: contact 섹션 / 그 외: Q&A)
 $g5_inquiry_url = defined('_INDEX_') ? G5_URL.'/#section-contact' : G5_BBS_URL.'/qalist.php';
 $g5_consult_label = function_exists('g5site_cfg') ? g5site_cfg('consultation_text', '상담문의') : '상담문의';
-
-// site_config 브랜드 색 → :root (hex만 허용)
-$g5_css_brand = '';
-if (function_exists('g5site_cfg')) {
-    $g5_primary = g5site_cfg('primary_color', '');
-    $g5_secondary = g5site_cfg('secondary_color', '');
-    if ($g5_primary !== '' && preg_match('/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/', $g5_primary)) {
-        $g5_css_brand .= '--color-primary:'.$g5_primary.';';
-    }
-    if ($g5_secondary !== '' && preg_match('/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/', $g5_secondary)) {
-        $g5_css_brand .= '--color-secondary:'.$g5_secondary.';--color-muted:'.$g5_secondary.';';
-    }
-}
 
 // 메뉴 (PC / 모바일)
 $menu_datas_pc = get_menu_db(0, true);
