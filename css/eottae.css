@@ -4147,3 +4147,16 @@ body.eottae-page hr {
     display: none;
   }
 }
+
+/* 홈 React SPA — 사이드바 광고 캐러셀 */
+.home-ad-carousel {
+  min-height: 220px;
+}
+
+.home-ad-carousel .community-ad-carousel__viewport {
+  min-height: 220px;
+}
+
+.home-ad-carousel .community-ad-carousel__card {
+  min-height: 220px;
+}

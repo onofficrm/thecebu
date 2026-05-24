@@ -68,6 +68,13 @@ switch ($action) {
         ));
         break;
 
+    case 'auth':
+        eottae_api_json(array(
+            'success' => true,
+            'data'    => eottae_api_get_auth_summary(),
+        ));
+        break;
+
     case 'home':
     default:
         eottae_api_json(array(

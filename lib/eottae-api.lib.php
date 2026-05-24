@@ -532,15 +532,65 @@ if (!function_exists('eottae_api_get_gallery_posts')) {
     }
 }
 
+if (!function_exists('eottae_api_get_auth_summary')) {
+    function eottae_api_get_auth_summary()
+    {
+        if (!function_exists('eottae_auth_context')) {
+            include_once G5_LIB_PATH.'/eottae.lib.php';
+        }
+
+        $auth = eottae_auth_context();
+        if (empty($auth['is_member']) || empty($auth['member']['mb_id'])) {
+            return array(
+                'is_member' => false,
+                'login_url' => function_exists('eottae_login_url') ? eottae_login_url(G5_URL) : G5_BBS_URL.'/login.php',
+                'register_url' => function_exists('eottae_register_url') ? eottae_register_url() : G5_BBS_URL.'/register.php',
+                'password_url' => function_exists('eottae_password_lost_url') ? eottae_password_lost_url() : G5_BBS_URL.'/password_lost.php',
+            );
+        }
+
+        $member = $auth['member'];
+        $coupon_count = 0;
+        if (is_file(G5_LIB_PATH.'/eottae-coupon.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
+            if (function_exists('eottae_coupon_count_active')) {
+                $coupon_count = (int) eottae_coupon_count_active($member['mb_id']);
+            }
+        }
+
+        $nick = isset($member['mb_nick']) ? get_text($member['mb_nick']) : '회원';
+        $initial = function_exists('mb_substr') ? mb_substr($nick, 0, 1, 'UTF-8') : substr($nick, 0, 1);
+        $is_biz = function_exists('eottae_is_business_member') && eottae_is_business_member($member);
+
+        return array(
+            'is_member'    => true,
+            'nick'         => $nick,
+            'initial'      => $initial,
+            'member_type'  => $is_biz ? '사업자회원' : '일반회원',
+            'point'        => isset($member['mb_point']) ? (int) $member['mb_point'] : 0,
+            'coupon_count' => $coupon_count,
+            'mypage_url'   => function_exists('eottae_mypage_url') ? eottae_mypage_url() : G5_URL.'/page/eottae-mypage.php',
+            'profile_url'  => G5_BBS_URL.'/member_confirm.php?url='.urlencode(G5_BBS_URL.'/register_form.php'),
+            'logout_url'   => G5_BBS_URL.'/logout.php',
+        );
+    }
+}
+
 if (!function_exists('eottae_api_get_home_bundle')) {
     function eottae_api_get_home_bundle()
     {
+        if (!function_exists('eottae_ad_get_active')) {
+            include_once G5_LIB_PATH.'/eottae-ad.lib.php';
+        }
+
         return array(
             'featured_shops' => eottae_api_get_featured_shops(4),
             'events'         => eottae_api_get_events(4),
             'community'      => eottae_api_get_community_home(),
             'youtube'        => eottae_api_get_youtube_posts(9),
             'gallery_posts'  => eottae_api_get_gallery_posts(27),
+            'auth'           => eottae_api_get_auth_summary(),
+            'ads'            => eottae_ad_get_active(EOTTae_AD_SLOT_SIDEBAR, 10),
             'urls'           => array(
                 'shop'      => G5_BBS_URL.'/board.php?bo_table='.EOTTae_SHOP_TABLE,
                 'community' => G5_BBS_URL.'/board.php?bo_table='.EOTTae_COMMUNITY_TABLE,
