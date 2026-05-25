@@ -34,8 +34,8 @@ if (!function_exists('eottae_public_group_chat_html')) {
                     <div class="public-group-chat__title-row">
                         <span class="public-group-chat__emoji" aria-hidden="true"><?php echo $payload['room_emoji']; ?></span>
                         <div class="public-group-chat__title-wrap">
-                            <h2 class="public-group-chat__title" id="public-group-chat-title">세부톡 · 공개 단체 채팅</h2>
-                            <p class="public-group-chat__desc">회원 누구나 참여하는 실시간 단체 대화</p>
+                            <h2 class="public-group-chat__title" id="public-group-chat-title"><?php echo get_text($payload['room_emoji'].' '.$payload['room_name']); ?></h2>
+                            <p class="public-group-chat__desc">회원 누구나 참여 · AI 도우미가 대화를 돕습니다</p>
                         </div>
                     </div>
                     <div class="public-group-chat__head-actions">

@@ -177,10 +177,21 @@
       classes.push('public-group-chat__message--ai', 'is-talk-ai-message');
     }
 
+    var author = message.is_ai
+      ? (message.ai_display_name || message.author || '어때봇 · AI 도우미')
+      : (message.author || '익명');
+    var badge = message.is_ai
+      ? '<span class="talk-ai-msg__badge talk-ai-msg__badge--sm" aria-label="AI 도우미">'
+        + '<span class="talk-ai-msg__icon" aria-hidden="true">🤖</span>'
+        + '<span class="talk-ai-msg__badge-label">' + esc(author) + '</span>'
+        + '</span>'
+      : '';
+
     return ''
       + '<article class="' + classes.join(' ') + '" data-wr-id="' + esc(message.wr_id) + '">'
       + '<div class="public-group-chat__bubble">'
-      + '<strong class="public-group-chat__author">' + esc(message.author || '익명') + '</strong>'
+      + badge
+      + '<strong class="public-group-chat__author">' + esc(author) + '</strong>'
       + '<p class="public-group-chat__text">' + esc(message.text).replace(/\n/g, '<br>') + '</p>'
       + (message.time_label ? '<time class="public-group-chat__time">' + esc(message.time_label) + '</time>' : '')
       + '</div>'

@@ -3,6 +3,233 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
+if (!function_exists('eottae_talkroom_public_group_super_mb_id')) {
+    function eottae_talkroom_public_group_super_mb_id()
+    {
+        global $config;
+
+        $admin_id = isset($config['cf_admin']) ? preg_replace('/[^a-z0-9_@.-]/i', '', (string) $config['cf_admin']) : '';
+        if ($admin_id !== '') {
+            return $admin_id;
+        }
+
+        global $g5;
+        if (!empty($g5['member_table'])) {
+            $row = sql_fetch("
+                SELECT mb_id
+                FROM {$g5['member_table']}
+                WHERE mb_level = '10'
+                ORDER BY mb_datetime ASC
+                LIMIT 1
+            ", false);
+            if (!empty($row['mb_id'])) {
+                return preg_replace('/[^a-z0-9_@.-]/i', '', (string) $row['mb_id']);
+            }
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('eottae_talkroom_public_group_insert_approved_room')) {
+    /**
+     * 최고관리자 명의로 공개 단체톡방을 즉시 승인 상태로 생성
+     *
+     * @return int|false
+     */
+    function eottae_talkroom_public_group_insert_approved_room($owner_mb_id, $admin_mb_id)
+    {
+        if (!function_exists('eottae_talkroom_table_names')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
+        }
+
+        eottae_talkroom_ensure_schema();
+        eottae_talkroom_upgrade_schema();
+
+        $owner_mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $owner_mb_id);
+        $admin_mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $admin_mb_id);
+        if ($owner_mb_id === '') {
+            return false;
+        }
+        if ($admin_mb_id === '') {
+            $admin_mb_id = $owner_mb_id;
+        }
+
+        $tables = eottae_talkroom_table_names();
+        $now = G5_TIME_YMDHIS;
+        $name = sql_escape_string(eottae_talkroom_public_group_room_name());
+
+        $ok = sql_query("
+            INSERT INTO `{$tables['rooms']}` SET
+                room_name = '{$name}',
+                room_description = '세부어때 홈 히어로 공개 단체 채팅방입니다.',
+                room_detail = '회원 누구나 참여하는 실시간 공개 단체 대화입니다. AI 도우미가 환영·질문·리액션으로 대화를 돕습니다.',
+                category = 'general',
+                emoji = '💬',
+                owner_mb_id = '".sql_escape_string($owner_mb_id)."',
+                status = 'approved',
+                visibility = 'public',
+                join_type = 'open',
+                rules = '예의를 지켜 주세요. 광고·욕설·개인정보 공유는 제한될 수 있습니다.',
+                room_notice = '세부어때 공개 단체톡방에 오신 것을 환영합니다!',
+                contact = '',
+                apply_reason = '홈 히어로 공개 단체톡방 (시스템 자동 개설)',
+                reject_reason = '',
+                created_at = '{$now}',
+                approved_at = '{$now}',
+                approved_by = '".sql_escape_string($admin_mb_id)."',
+                updated_at = '{$now}'
+        ", false);
+
+        if (!$ok) {
+            return false;
+        }
+
+        $room_id = (int) sql_insert_id();
+        if ($room_id < 1) {
+            return false;
+        }
+
+        eottae_talkroom_ensure_owner_member($room_id, $owner_mb_id, $admin_mb_id, $now);
+        eottae_talkroom_write_log($room_id, $admin_mb_id, 'approve', 'room', $room_id, '홈 공개 단체톡방 자동 개설');
+
+        return $room_id;
+    }
+}
+
+if (!function_exists('eottae_talkroom_public_group_ensure_ai')) {
+    function eottae_talkroom_public_group_ensure_ai($room_id, $admin_mb_id = '')
+    {
+        $room_id = (int) $room_id;
+        if ($room_id < 1) {
+            return false;
+        }
+
+        if (!function_exists('eottae_talkroom_ai_ensure_schema')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom-ai.lib.php';
+        }
+        if (!function_exists('eottae_talkroom_ai_save_global_policy')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom-ai-admin.lib.php';
+        }
+
+        eottae_talkroom_ai_ensure_schema();
+        eottae_talkroom_ai_ensure_bot_member('어때봇');
+
+        $admin_mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $admin_mb_id);
+        if ($admin_mb_id === '') {
+            $admin_mb_id = eottae_talkroom_public_group_super_mb_id();
+        }
+
+        $global = eottae_talkroom_ai_get_global_policy();
+        if (empty($global['site_ai_enabled']) || empty($global['owner_config_allowed'])) {
+            eottae_talkroom_ai_save_global_policy(array(
+                'site_ai_enabled'      => 1,
+                'owner_config_allowed' => 1,
+                'site_daily_limit'     => max(50, (int) ($global['site_daily_limit'] ?? 50)),
+            ), $admin_mb_id, true);
+        }
+
+        $settings = array(
+            'ai_enabled'               => 1,
+            'ai_name'                  => '어때봇',
+            'ai_persona'               => 'community_manager',
+            'ai_tone'                  => 'friendly',
+            'quiet_trigger_enabled'    => 1,
+            'daily_question_enabled'   => 1,
+            'welcome_enabled'          => 1,
+            'meetup_suggest_enabled'   => 0,
+            'summary_enabled'          => 1,
+            'reaction_enabled'         => 1,
+            'max_messages_per_day'     => 8,
+            'min_silence_minutes'      => 60,
+            'active_start_time'        => '08:00:00',
+            'active_end_time'          => '23:00:00',
+            'admin_force_disabled'     => 0,
+        );
+
+        $current = eottae_talkroom_ai_get_settings($room_id);
+        if (empty($current['ai_enabled'])) {
+            eottae_talkroom_ai_save_settings($room_id, $settings, $admin_mb_id, true);
+        }
+
+        if (function_exists('eottae_talkroom_ai_ensure_welcome_hub_post')) {
+            eottae_talkroom_ai_ensure_welcome_hub_post($room_id, '어때봇');
+        }
+
+        return true;
+    }
+}
+
+if (!function_exists('eottae_talkroom_public_group_ensure_provisioned')) {
+    /**
+     * 홈 히어로 공개 단체톡방 + AI 설정 자동 준비 (최고관리자 명의)
+     */
+    function eottae_talkroom_public_group_ensure_provisioned()
+    {
+        static $done = false;
+        if ($done) {
+            return;
+        }
+
+        if (!function_exists('eottae_talkroom_table_names')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
+        }
+
+        if (!function_exists('eottae_talkroom_board_exists') || !eottae_talkroom_board_exists()) {
+            return;
+        }
+
+        $done = true;
+
+        $tables = eottae_talkroom_table_names();
+        if (!eottae_talkroom_table_exists($tables['rooms'])) {
+            eottae_talkroom_ensure_schema();
+        }
+
+        $admin_mb_id = eottae_talkroom_public_group_super_mb_id();
+        if ($admin_mb_id === '') {
+            return;
+        }
+
+        $room_id = 0;
+
+        if (defined('EOTTae_PUBLIC_GROUP_TALK_ROOM_ID') && (int) EOTTae_PUBLIC_GROUP_TALK_ROOM_ID > 0) {
+            $room_id = (int) EOTTae_PUBLIC_GROUP_TALK_ROOM_ID;
+            $room = eottae_talkroom_get_operating_room($room_id);
+            if (!$room || ($room['visibility'] ?? '') !== 'public') {
+                $room_id = 0;
+            }
+        }
+
+        if ($room_id < 1) {
+            $name = sql_escape_string(eottae_talkroom_public_group_room_name());
+            $statuses = eottae_talkroom_operating_statuses();
+            $status_sql = array();
+            foreach ($statuses as $status) {
+                $status_sql[] = "'".sql_real_escape_string($status)."'";
+            }
+            $row = sql_fetch("
+                SELECT room_id
+                FROM `{$tables['rooms']}`
+                WHERE room_name = '{$name}'
+                  AND visibility = 'public'
+                  AND status IN (".implode(',', $status_sql).")
+                ORDER BY room_id ASC
+                LIMIT 1
+            ", false);
+            $room_id = !empty($row['room_id']) ? (int) $row['room_id'] : 0;
+        }
+
+        if ($room_id < 1) {
+            $room_id = (int) eottae_talkroom_public_group_insert_approved_room($admin_mb_id, $admin_mb_id);
+        }
+
+        if ($room_id > 0) {
+            eottae_talkroom_public_group_ensure_ai($room_id, $admin_mb_id);
+        }
+    }
+}
+
 if (!function_exists('eottae_talkroom_public_group_room_name')) {
     function eottae_talkroom_public_group_room_name()
     {
@@ -19,6 +246,8 @@ if (!function_exists('eottae_talkroom_public_group_room_id')) {
         if ($resolved !== null) {
             return $resolved;
         }
+
+        eottae_talkroom_public_group_ensure_provisioned();
 
         if (defined('EOTTae_PUBLIC_GROUP_TALK_ROOM_ID') && (int) EOTTae_PUBLIC_GROUP_TALK_ROOM_ID > 0) {
             $resolved = (int) EOTTae_PUBLIC_GROUP_TALK_ROOM_ID;
@@ -134,6 +363,12 @@ if (!function_exists('eottae_talkroom_public_group_format_message')) {
 
         $post_row['is_ai'] = !empty($post_row['is_ai']) ? 1 : 0;
         $post_row['is_mine'] = $viewer_mb_id !== '' && $viewer_mb_id === ($post_row['mb_id'] ?? '');
+        if (!empty($post_row['is_ai'])) {
+            $post_row['author'] = !empty($post_row['ai_display_name'])
+                ? get_text($post_row['ai_display_name'])
+                : get_text($post_row['author'] ?? '어때봇 · AI 도우미');
+            $post_row['ai_display_name'] = $post_row['author'];
+        }
 
         return $post_row;
     }
@@ -361,6 +596,11 @@ if (!function_exists('eottae_talkroom_public_group_send_message')) {
 
         if (function_exists('delete_cache_latest')) {
             delete_cache_latest($bo_table);
+        }
+
+        if (function_exists('eottae_talkroom_ai_schedule_reaction_for_post')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom-ai-reaction.lib.php';
+            eottae_talkroom_ai_schedule_reaction_for_post($wr_id);
         }
 
         $row = sql_fetch(" SELECT wr_id, wr_subject, wr_content, wr_name, wr_datetime, mb_id, wr_3, wr_1
