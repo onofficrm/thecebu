@@ -6610,3 +6610,12 @@ body.eottae-page hr {
 .home-ad-carousel .community-ad-carousel__card {
   min-height: 220px;
 }
+
+/* 홈 React SPA — 추천 인기 업소 캐러셀 */
+.home-featured-shops-carousel {
+  touch-action: pan-y;
+}
+
+.home-featured-shops-carousel .grid {
+  will-change: opacity;
+}

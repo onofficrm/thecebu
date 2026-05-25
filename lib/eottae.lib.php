@@ -617,6 +617,15 @@ if (!function_exists('eottae_builder_inject_logo_script')) {
     }
 }
 
+if (!function_exists('eottae_builder_inject_featured_carousel_script')) {
+    function eottae_builder_inject_featured_carousel_script()
+    {
+        $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-featured-carousel.js' : '/js/eottae-home-featured-carousel.js';
+
+        return '<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
+    }
+}
+
 if (!function_exists('eottae_builder_inject_html')) {
     function eottae_builder_inject_html($html, $id)
     {
@@ -631,16 +640,18 @@ if (!function_exists('eottae_builder_inject_html')) {
             $html = preg_replace('#</head>#i', $head_script.'</head>', $html, 1);
         }
 
-        $script = eottae_builder_inject_logo_script();
-        if ($script === '') {
+        $body_scripts = eottae_builder_inject_logo_script();
+        $body_scripts .= eottae_builder_inject_featured_carousel_script();
+
+        if ($body_scripts === '') {
             return $html;
         }
 
         if (preg_match('#</body>#i', $html)) {
-            return preg_replace('#</body>#i', $script.'</body>', $html, 1);
+            return preg_replace('#</body>#i', $body_scripts.'</body>', $html, 1);
         }
 
-        return $html.$script;
+        return $html.$body_scripts;
     }
 }
 

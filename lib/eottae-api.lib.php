@@ -601,7 +601,7 @@ if (!function_exists('eottae_api_get_home_bundle')) {
         }
 
         return array(
-            'featured_shops' => eottae_api_get_featured_shops(4),
+            'featured_shops' => eottae_api_get_featured_shops(12),
             'events'         => eottae_api_get_events(4),
             'community'      => eottae_api_get_community_home(),
             'youtube'        => eottae_api_get_youtube_posts(9),
