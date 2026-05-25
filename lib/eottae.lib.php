@@ -3495,6 +3495,10 @@ if (!function_exists('eottae_enqueue_google_maps')) {
             return function_exists('onoff_map_has_api_key') && onoff_map_has_api_key();
         }
 
+        if (function_exists('eottae_merge_runtime_secrets')) {
+            eottae_merge_runtime_secrets();
+        }
+
         if (!is_file(G5_PATH.'/components/maps/map-config.php')) {
             return false;
         }
@@ -3523,9 +3527,88 @@ if (!function_exists('eottae_enqueue_google_maps')) {
     }
 }
 
+if (!function_exists('eottae_runtime_secrets_path')) {
+    function eottae_runtime_secrets_path()
+    {
+        if (defined('G5_DATA_PATH')) {
+            return G5_DATA_PATH.'/eottae-secrets.local.php';
+        }
+
+        return G5_PATH.'/data/eottae-secrets.local.php';
+    }
+}
+
+if (!function_exists('eottae_merge_runtime_secrets')) {
+    /**
+     * data/eottae-secrets.local.php 값을 $site_config에 병합
+     */
+    function eottae_merge_runtime_secrets()
+    {
+        static $merged = false;
+
+        if ($merged) {
+            return;
+        }
+        $merged = true;
+
+        global $site_config;
+
+        if (!isset($site_config) || !is_array($site_config)) {
+            $site_config = array();
+        }
+
+        $secret_file = eottae_runtime_secrets_path();
+        if (!is_file($secret_file) || !is_readable($secret_file)) {
+            return;
+        }
+
+        $eottae_secrets_override = null;
+        include $secret_file;
+
+        if (!isset($eottae_secrets_override) || !is_array($eottae_secrets_override)) {
+            return;
+        }
+
+        $site_config = array_merge($site_config, $eottae_secrets_override);
+
+        if (function_exists('onoff_map_clear_config_cache')) {
+            onoff_map_clear_config_cache();
+        }
+    }
+}
+
+if (!function_exists('eottae_map_runtime_diagnostics')) {
+    /**
+     * @return array<string, mixed>
+     */
+    function eottae_map_runtime_diagnostics()
+    {
+        if (function_exists('eottae_merge_runtime_secrets')) {
+            eottae_merge_runtime_secrets();
+        }
+
+        $secret_file = function_exists('eottae_runtime_secrets_path')
+            ? eottae_runtime_secrets_path()
+            : G5_PATH.'/data/eottae-secrets.local.php';
+
+        return array(
+            'secrets_path'      => $secret_file,
+            'secrets_exists'    => is_file($secret_file),
+            'secrets_readable'  => is_file($secret_file) && is_readable($secret_file),
+            'has_api_key'       => function_exists('onoff_map_has_api_key') ? onoff_map_has_api_key() : false,
+            'local_config_path' => G5_PATH.'/_site.config.local.php',
+            'local_config_exists' => is_file(G5_PATH.'/_site.config.local.php'),
+        );
+    }
+}
+
 if (!function_exists('eottae_google_maps_api_key')) {
     function eottae_google_maps_api_key()
     {
+        if (function_exists('eottae_merge_runtime_secrets')) {
+            eottae_merge_runtime_secrets();
+        }
+
         if (!is_file(G5_PATH.'/components/maps/map-config.php')) {
             return '';
         }

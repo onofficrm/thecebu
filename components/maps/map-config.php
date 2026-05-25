@@ -13,15 +13,35 @@ if (!function_exists('g5site_cfg')) {
     }
 }
 
+if (function_exists('eottae_merge_runtime_secrets')) {
+    eottae_merge_runtime_secrets();
+}
+
+if (!function_exists('onoff_map_clear_config_cache')) {
+    function onoff_map_clear_config_cache()
+    {
+        onoff_map_get_config(true);
+    }
+}
+
 /**
  * 지도 설정 배열 반환 (캐시 1회)
  *
+ * @param bool $force_refresh
  * @return array<string, mixed>
  */
 if (!function_exists('onoff_map_get_config')) {
-    function onoff_map_get_config()
+    function onoff_map_get_config($force_refresh = false)
     {
         static $cached = null;
+
+        if (function_exists('eottae_merge_runtime_secrets')) {
+            eottae_merge_runtime_secrets();
+        }
+
+        if ($force_refresh) {
+            $cached = null;
+        }
 
         if ($cached !== null) {
             return $cached;

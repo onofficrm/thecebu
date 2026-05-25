@@ -100,8 +100,9 @@ if (is_file(G5_PATH.'/_site.config.local.php')) {
     }
 }
 
-if (is_file(G5_PATH.'/data/eottae-secrets.local.php')) {
-    include_once G5_PATH.'/data/eottae-secrets.local.php';
+$eottae_secrets_file = (defined('G5_DATA_PATH') ? G5_DATA_PATH : G5_PATH.'/data').'/eottae-secrets.local.php';
+if (is_file($eottae_secrets_file)) {
+    include_once $eottae_secrets_file;
     if (isset($eottae_secrets_override) && is_array($eottae_secrets_override)) {
         $site_config = array_merge($site_config, $eottae_secrets_override);
     }

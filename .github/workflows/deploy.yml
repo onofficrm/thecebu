@@ -51,7 +51,7 @@ jobs:
               );
           }
           PHP
-          if [ -f _deploy_secrets/_site.config.local.php ]; then
+          if [ -f _deploy_secrets/_site.config.local.php ] || [ -f _deploy_secrets/data/eottae-secrets.local.php ]; then
             echo "HAS_DEPLOY_SECRETS=1" >> "$GITHUB_ENV"
           fi
 

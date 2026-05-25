@@ -19,6 +19,10 @@ include_once G5_LIB_PATH.'/eottae-talkroom-ai.lib.php';
 include_once G5_LIB_PATH.'/eottae-talkroom-reads.lib.php';
 include_once G5_LIB_PATH.'/eottae-talkroom-notify.lib.php';
 
+if (function_exists('eottae_merge_runtime_secrets')) {
+    eottae_merge_runtime_secrets();
+}
+
 if (function_exists('eottae_business_coupon_ensure_schema')) {
     eottae_business_coupon_ensure_schema();
 }

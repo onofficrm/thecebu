@@ -45,11 +45,38 @@ $map_use_embed = !$map_has_key && $map_embed_url !== '';
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"
             allowfullscreen></iframe>
+        <?php
+        global $is_admin;
+        if (!empty($is_admin) && function_exists('eottae_map_runtime_diagnostics')) {
+            $map_diag = eottae_map_runtime_diagnostics();
+            ?>
+        <p class="shop-map-panel__placeholder shop-map-panel__placeholder--desc shop-map-panel__admin-hint">
+            관리자: Google Maps API 키가 서버에서 읽히지 않아 임베드 지도만 표시 중입니다.
+            secrets <?php echo !empty($map_diag['secrets_readable']) ? '읽기 가능' : '없음/읽기 불가'; ?>
+            (<?php echo get_text($map_diag['secrets_path']); ?>).
+        </p>
+            <?php
+        }
+        ?>
         <?php } else { ?>
         <p class="shop-map-panel__placeholder"><?php echo get_text($map_cfg['placeholder_title']); ?></p>
         <?php if (!empty($map_cfg['placeholder_desc'])) { ?>
         <p class="shop-map-panel__placeholder shop-map-panel__placeholder--desc"><?php echo get_text($map_cfg['placeholder_desc']); ?></p>
         <?php } ?>
+        <?php
+        global $is_admin;
+        if (!empty($is_admin) && function_exists('eottae_map_runtime_diagnostics')) {
+            $map_diag = eottae_map_runtime_diagnostics();
+            ?>
+        <p class="shop-map-panel__placeholder shop-map-panel__placeholder--desc">
+            관리자 안내:
+            secrets 파일 <?php echo !empty($map_diag['secrets_readable']) ? '읽기 가능' : '없음/읽기 불가'; ?>
+            (<?php echo get_text($map_diag['secrets_path']); ?>).
+            서버 FTP로 업로드 후 새로고침하세요.
+        </p>
+            <?php
+        }
+        ?>
         <?php } ?>
     </div>
     <?php if ($map_has_key) { ?>
