@@ -164,6 +164,32 @@
     restartTimer();
   }
 
+  function hideSidebarLegacyEvents(sidebar) {
+    if (!sidebar) {
+      return null;
+    }
+
+    var headings = sidebar.querySelectorAll('h2, h3');
+    var i;
+    for (i = 0; i < headings.length; i += 1) {
+      if ((headings[i].textContent || '').indexOf('업체 이벤트') === -1) {
+        continue;
+      }
+      var block = headings[i].closest('section') || headings[i].closest('div');
+      if (!block) {
+        block = headings[i].parentElement;
+      }
+      if (block) {
+        block.style.display = 'none';
+        block.setAttribute('data-eottae-legacy-sidebar-events', '1');
+        block.setAttribute('aria-hidden', 'true');
+        return block;
+      }
+    }
+
+    return null;
+  }
+
   function mount() {
     var data = cfg();
     if (!data || !data.events || !data.events.length) {
@@ -175,13 +201,21 @@
       return;
     }
 
+    var legacy = hideSidebarLegacyEvents(sidebar);
+
     var wrap = document.createElement('div');
     wrap.className = 'home-hero-sidebar-events';
     wrap.setAttribute('aria-label', '업체 이벤트 / 기획전');
 
     var banner = buildBanner(data.events, data.list_url || '/page/eottae-events.php');
     wrap.appendChild(banner);
-    sidebar.appendChild(wrap);
+
+    if (legacy && legacy.parentNode) {
+      legacy.parentNode.insertBefore(wrap, legacy);
+    } else {
+      sidebar.appendChild(wrap);
+    }
+
     bindCarousel(banner);
   }
 

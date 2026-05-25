@@ -8124,7 +8124,11 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 }
 
 .home-hero-sidebar-events {
-  margin-top: 12px;
+  margin: 0;
+}
+
+.home-hero-sidebar-events + [data-eottae-legacy-sidebar-events] {
+  display: none !important;
 }
 
 .home-hero-sidebar-events__title {
