@@ -13,9 +13,11 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
 <div class="board-wrap board-wrap--gallery-grid" id="bo_gall" style="width:<?php echo $width; ?>">
 
     <?php if ($is_category) { ?>
-    <nav class="board-cate" id="bo_cate">
+    <nav class="board-cate board-cate--gal" id="bo_cate">
         <h2 class="sound_only"><?php echo $board['bo_subject'] ?> 카테고리</h2>
-        <ul id="bo_cate_ul"><?php echo $category_option ?></ul>
+        <div class="board-cate--gal__scroll">
+            <ul id="bo_cate_ul"><?php echo $category_option ?></ul>
+        </div>
     </nav>
     <?php } ?>
 
@@ -30,16 +32,16 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
     <input type="hidden" name="page" value="<?php echo $page ?>">
     <input type="hidden" name="sw" value="">
 
-    <header class="board-header" id="bo_btn_top">
+    <header class="board-header board-header--gal" id="bo_btn_top">
         <div class="board-header__info" id="bo_list_total">
-            <span class="board-header__count">Total <strong><?php echo number_format($total_count) ?></strong>건</span>
-            <span class="board-header__page"><?php echo $page ?> 페이지</span>
+            <span class="board-header__count sound_only">Total <strong><?php echo number_format($total_count) ?></strong>건</span>
+            <span class="board-header__page sound_only"><?php echo $page ?> 페이지</span>
         </div>
-        <ul class="board-actions btn_bo_user">
+        <ul class="board-actions btn_bo_user board-actions--gal">
             <?php if ($admin_href) { ?><li><a href="<?php echo $admin_href ?>" class="btn_admin btn" title="관리자"><i class="fa fa-cog fa-spin fa-fw" aria-hidden="true"></i><span class="sound_only">관리자</span></a></li><?php } ?>
             <?php if ($rss_href) { ?><li><a href="<?php echo $rss_href ?>" class="btn_b01 btn" title="RSS"><i class="fa fa-rss" aria-hidden="true"></i><span class="sound_only">RSS</span></a></li><?php } ?>
             <li><button type="button" class="btn_bo_sch btn_b01 btn" title="검색"><i class="fa fa-search" aria-hidden="true"></i><span class="sound_only">검색</span></button></li>
-            <?php if ($write_href) { ?><li><a href="<?php echo $write_href ?>" class="board-actions__write btn_b01 btn" title="글쓰기"><i class="fa fa-pencil" aria-hidden="true"></i><span>글쓰기</span></a></li><?php } ?>
+            <?php if ($write_href) { ?><li><a href="<?php echo $write_href ?>" class="board-actions__write btn_b01 btn board-actions--gal__write" title="글쓰기"><i class="fa fa-pencil" aria-hidden="true"></i><span>글쓰기</span></a></li><?php } ?>
             <?php if ($is_admin == 'super' || $is_auth) { ?>
             <li>
                 <button type="button" class="btn_more_opt is_list_btn btn_b01 btn" title="옵션"><i class="fa fa-ellipsis-v" aria-hidden="true"></i></button>
@@ -56,7 +58,7 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
     </header>
 
     <?php if ($is_checkbox) { ?>
-    <div class="board-list__chkall all_chk chk_box" id="gall_allchk">
+    <div class="board-list__chkall all_chk chk_box board-gal-admin-chk" id="gall_allchk">
         <input type="checkbox" id="chkall" onclick="if (this.checked) all_checked(true); else all_checked(false);" class="selec_chk">
         <label for="chkall"><span></span><b>현재 페이지 전체선택</b></label>
     </div>
@@ -73,6 +75,10 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
             $row_class = 'board-list__card';
             if ($list[$i]['is_notice']) $row_class .= ' board-list__card--notice bo_notice';
             if ($wr_id && $wr_id == $list[$i]['wr_id']) $row_class .= ' board-list__card--current';
+            $gal_excerpt = '';
+            if (!empty($list[$i]['list_content']) && !strstr($list[$i]['wr_option'], 'secret')) {
+                $gal_excerpt = cut_str(strip_tags($list[$i]['list_content']), 72, '…');
+            }
         ?>
             <li class="<?php echo $row_class ?>">
                 <article class="board-list__card-inner">
@@ -97,10 +103,14 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
                                 <?php if (isset($list[$i]['icon_secret'])) echo rtrim($list[$i]['icon_secret']); ?>
                                 <span class="board-title__text"><?php echo $list[$i]['subject'] ?></span>
                             </a>
-                            <?php if ($list[$i]['icon_new']) echo '<span class="new_icon board-badge board-badge--new">N</span>'; ?>
+                            <?php if ($list[$i]['icon_new']) echo '<span class="new_icon board-badge board-badge--new">NEW</span>'; ?>
                             <?php if ($list[$i]['comment_cnt']) { ?><span class="cnt_cmt board-list__cmt"><?php echo $list[$i]['wr_comment']; ?></span><?php } ?>
                         </h3>
+                        <?php if ($gal_excerpt !== '') { ?>
+                        <p class="board-list__excerpt"><?php echo get_text($gal_excerpt); ?></p>
+                        <?php } ?>
                         <p class="board-list__meta">
+                            <?php if (!empty($list[$i]['name'])) { ?><span class="board-list__author"><?php echo $list[$i]['name']; ?></span><?php } ?>
                             <time class="board-list__date"><?php echo $list[$i]['datetime2'] ?></time>
                             <span class="board-list__hit"><i class="fa fa-eye" aria-hidden="true"></i> <?php echo number_format($list[$i]['wr_hit']) ?></span>
                         </p>

@@ -168,6 +168,27 @@
     });
   }
 
+  function setAiBtnLabel(btn, text) {
+    if (!btn) return;
+    var label = btn.querySelector('.eottae-ai-btn__label');
+    if (label) {
+      label.textContent = text;
+      return;
+    }
+    btn.textContent = text;
+  }
+
+  function setAiBtnLoading(btn, loading) {
+    if (!btn) return;
+    btn.classList.toggle('is-loading', !!loading);
+    btn.disabled = !!loading;
+  }
+
+  function getAiBtnDefaultLabel(btn) {
+    if (!btn) return '';
+    return btn.getAttribute('data-default-label') || (btn.querySelector('.eottae-ai-btn__label') ? btn.querySelector('.eottae-ai-btn__label').textContent : btn.textContent) || '';
+  }
+
   function shopAiValue(root, selector) {
     var el = qs(selector, root);
     return el ? (el.value || '').trim() : '';
@@ -213,7 +234,8 @@
         form.append('intro', shopAiValue(root, '#wr_content'));
 
         buttons.forEach(function (b) {
-          b.disabled = true;
+          setAiBtnLoading(b, true);
+          setAiBtnLabel(b, 'AI 생성 중…');
         });
         shopSetAiStatus(root, 'AI가 업체 소개와 SEO 문구를 작성 중입니다...', false);
 
@@ -242,7 +264,10 @@
           })
           .finally(function () {
             buttons.forEach(function (b) {
-              b.disabled = false;
+              setAiBtnLoading(b, false);
+              setAiBtnLabel(b, b.getAttribute('data-shop-ai-generate') === 'seo'
+                ? 'AI로 SEO 문구 자동생성'
+                : 'AI로 업체소개·SEO 자동생성');
             });
           });
       });
@@ -264,8 +289,8 @@
 
       var status = qs('[data-map-thumb-ai-status]', root);
       var tmpInput = qs('#eottae_map_thumb_ai_tmp', root);
-      var preview = qs('[data-map-thumb-preview]', root);
-      var previewImg = preview ? qs('img', preview) : null;
+      var previewImg = qs('[data-map-thumb-preview-img]', root);
+      var previewSlot = previewImg ? previewImg.closest('.shop-register-page__photo-slot') : null;
       var fileInput = qs('#eottae_map_thumb', root);
       var form = new FormData();
       form.append('bo_table', shopAiValue(root, 'input[name="bo_table"]') || 'shop');
@@ -275,8 +300,8 @@
       form.append('address', shopAiValue(root, '#wr_3'));
       form.append('intro', shopAiValue(root, '#wr_content'));
 
-      btn.disabled = true;
-      btn.textContent = 'AI 썸네일 생성 중...';
+      setAiBtnLoading(btn, true);
+      setAiBtnLabel(btn, 'AI 썸네일 생성 중…');
       if (status) {
         status.textContent = '지도 마커용 정사각형 썸네일을 생성하고 있습니다.';
         status.classList.remove('is-error');
@@ -295,9 +320,10 @@
           var data = json.data || {};
           if (tmpInput) tmpInput.value = data.tmp || '';
           if (fileInput) fileInput.value = '';
-          if (preview && previewImg && data.url) {
+          if (previewImg && data.url) {
             previewImg.src = data.url + '?v=' + Date.now();
-            preview.hidden = false;
+            previewImg.hidden = false;
+            if (previewSlot) previewSlot.classList.add('has-preview');
           }
           if (status) status.textContent = 'AI 썸네일을 생성했습니다. 다시 생성 버튼을 누르면 새 이미지로 교체됩니다.';
         })
@@ -308,8 +334,8 @@
           }
         })
         .finally(function () {
-          btn.disabled = false;
-          btn.textContent = preview && !preview.hidden ? 'AI 지도 썸네일 다시 생성' : 'AI 지도 썸네일 생성';
+          setAiBtnLoading(btn, false);
+          setAiBtnLabel(btn, previewImg && previewImg.src && !previewImg.hidden ? 'AI 지도 썸네일 다시 생성' : getAiBtnDefaultLabel(btn));
         });
     });
 
@@ -317,10 +343,8 @@
     if (manualInput) {
       manualInput.addEventListener('change', function () {
         var tmpInput = qs('#eottae_map_thumb_ai_tmp', root);
-        var preview = qs('[data-map-thumb-preview]', root);
         if (tmpInput) tmpInput.value = '';
-        if (preview) preview.hidden = true;
-        btn.textContent = 'AI 지도 썸네일 생성';
+        setAiBtnLabel(btn, getAiBtnDefaultLabel(btn));
       });
     }
   }
@@ -378,24 +402,30 @@
   }
 
   function initPhotoPreview() {
-    document.addEventListener('change', function (e) {
-      var input = e.target;
-      if (!input.matches('[data-photo-preview], [data-photo-input]')) return;
-
-      var slot = input.closest('.community-write-page__photo-slot, .shop-register-page__photo');
+    function applyPhotoPreview(input) {
+      var slot = input.closest('.community-write-page__photo-slot, .shop-register-page__photo-slot');
       if (!slot) return;
 
-      var preview = qs('.community-write-page__photo-preview', slot);
-      if (!preview || !input.files || !input.files[0]) return;
+      var preview = qs('.community-write-page__photo-preview, .shop-register-page__photo-preview', slot);
+      if (!preview) return;
+
+      if (!input.files || !input.files[0]) {
+        return;
+      }
 
       var reader = new FileReader();
       reader.onload = function (ev) {
         preview.src = ev.target.result;
         preview.hidden = false;
-        var placeholder = qs('.community-write-page__photo-placeholder', slot);
-        if (placeholder) placeholder.style.display = 'none';
+        slot.classList.add('has-preview');
       };
       reader.readAsDataURL(input.files[0]);
+    }
+
+    document.addEventListener('change', function (e) {
+      var input = e.target;
+      if (!input.matches('[data-photo-preview], [data-photo-input]')) return;
+      applyPhotoPreview(input);
     });
   }
 
@@ -510,6 +540,9 @@
         ? '좌표와 대표 지역이 설정되었습니다.'
         : '좌표가 설정되었습니다.';
     }
+    document.dispatchEvent(new CustomEvent('eottae:shop-coords-updated', {
+      detail: { lat: data.lat, lng: data.lng, source: 'geocode' }
+    }));
   }
 
   function shopGeocodeWithGoogle(address) {
@@ -618,6 +651,144 @@
         runGeocode('auto');
       }
     }
+  }
+
+  function initShopCoordinatePicker() {
+    var mapEl = qs('#shopCoordMap');
+    var details = qs('.shop-register-page__advanced');
+    if (!mapEl || !details) return;
+
+    var latInput = qs('#wr_9');
+    var lngInput = qs('#wr_10');
+    var status = qs('#shopGeocodeStatus');
+    var map = null;
+    var marker = null;
+    var initialized = false;
+
+    function parseCoord(input, fallback) {
+      var n = parseFloat(input && input.value ? input.value : '');
+      return isFinite(n) ? n : fallback;
+    }
+
+    function getDefaultCenter() {
+      return {
+        lat: parseFloat(mapEl.getAttribute('data-default-lat')) || 10.313,
+        lng: parseFloat(mapEl.getAttribute('data-default-lng')) || 123.9174
+      };
+    }
+
+    function getDefaultZoom() {
+      var z = parseInt(mapEl.getAttribute('data-default-zoom'), 10);
+      return isFinite(z) ? z : 14;
+    }
+
+    function formatCoord(value) {
+      return Number(value).toFixed(7);
+    }
+
+    function updateInputs(lat, lng, message) {
+      if (latInput) latInput.value = formatCoord(lat);
+      if (lngInput) lngInput.value = formatCoord(lng);
+      if (status && message) status.textContent = message;
+    }
+
+    function setMarkerPosition(latLng) {
+      if (!marker) {
+        marker = new google.maps.Marker({
+          map: map,
+          position: latLng,
+          draggable: true
+        });
+        marker.addListener('dragend', function () {
+          var pos = marker.getPosition();
+          updateInputs(pos.lat(), pos.lng(), '지도에서 위치를 선택했습니다.');
+        });
+      } else {
+        marker.setPosition(latLng);
+        marker.setMap(map);
+      }
+    }
+
+    function initMap() {
+      if (initialized || !window.google || !google.maps) return;
+      initialized = true;
+
+      var fallback = getDefaultCenter();
+      var lat = parseCoord(latInput, fallback.lat);
+      var lng = parseCoord(lngInput, fallback.lng);
+      var hasCoords = latInput && latInput.value.trim() !== '' && lngInput && lngInput.value.trim() !== '';
+      var center = hasCoords ? { lat: lat, lng: lng } : fallback;
+
+      map = new google.maps.Map(mapEl, {
+        center: center,
+        zoom: hasCoords ? 16 : getDefaultZoom(),
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+        zoomControl: true
+      });
+
+      if (hasCoords) {
+        setMarkerPosition(center);
+      }
+
+      map.addListener('click', function (event) {
+        setMarkerPosition(event.latLng);
+        updateInputs(event.latLng.lat(), event.latLng.lng(), '지도에서 위치를 선택했습니다.');
+      });
+    }
+
+    function refreshMapSize() {
+      if (!map) return;
+      google.maps.event.trigger(map, 'resize');
+      if (marker && marker.getPosition()) {
+        map.panTo(marker.getPosition());
+      } else {
+        map.panTo(map.getCenter());
+      }
+    }
+
+    function ensureMap() {
+      if (window.google && google.maps) {
+        initMap();
+        window.setTimeout(refreshMapSize, 120);
+      }
+    }
+
+    function syncFromInputs() {
+      if (!map || !initialized) return;
+      var lat = parseCoord(latInput, NaN);
+      var lng = parseCoord(lngInput, NaN);
+      if (!isFinite(lat) || !isFinite(lng)) return;
+      var pos = { lat: lat, lng: lng };
+      setMarkerPosition(pos);
+      map.setCenter(pos);
+      map.setZoom(16);
+    }
+
+    details.addEventListener('toggle', function () {
+      if (details.open) {
+        ensureMap();
+      }
+    });
+
+    document.addEventListener('eottae:geocoder-ready', function () {
+      if (details.open) ensureMap();
+    });
+
+    document.addEventListener('eottae:shop-coords-updated', function (event) {
+      if (!event.detail || event.detail.lat == null || event.detail.lng == null) return;
+      if (details.open) ensureMap();
+      if (!map || !initialized) return;
+      var pos = { lat: Number(event.detail.lat), lng: Number(event.detail.lng) };
+      if (!isFinite(pos.lat) || !isFinite(pos.lng)) return;
+      setMarkerPosition(pos);
+      map.setCenter(pos);
+      map.setZoom(16);
+    });
+
+    if (latInput) latInput.addEventListener('change', syncFromInputs);
+    if (lngInput) lngInput.addEventListener('change', syncFromInputs);
   }
 
   function initAdCarousel() {
@@ -1075,6 +1246,7 @@
     document.body.classList.add('eottae-page');
     initShopRegisterWizard();
     initShopGeocode();
+    initShopCoordinatePicker();
     initMemberType();
     initReviewModal();
     initReviewReply();

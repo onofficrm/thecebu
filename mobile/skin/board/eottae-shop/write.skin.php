@@ -3,7 +3,15 @@ if (!defined('_GNUBOARD_')) exit;
 
 include_once(G5_LIB_PATH.'/eottae.lib.php');
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
+if (!function_exists('onoff_map_get_config') && is_file(G5_PATH.'/components/maps/map-config.php')) {
+    include_once G5_PATH.'/components/maps/map-config.php';
+}
+$eottae_write_map_cfg = function_exists('onoff_map_get_config')
+    ? onoff_map_get_config()
+    : array('default_lat' => 10.313, 'default_lng' => 123.9174, 'default_zoom' => 14, 'api_key' => '');
+$eottae_maps_has_key = trim((string) ($eottae_write_map_cfg['api_key'] ?? '')) !== '';
 $eottae_geocoder_script = function_exists('eottae_google_geocoder_script') ? eottae_google_geocoder_script() : '';
+$eottae_ai_btn_icon = '<span class="eottae-ai-btn__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3l1.2 4.2L17.5 8.5l-4.3 1.2L12 14l-1.2-4.3L6.5 8.5l4.3-1.3L12 3z" fill="currentColor" opacity="0.95"/><path d="M5 14l.8 2.8L8.5 17l-2.7.8L5 20.5l-.8-2.7L1.5 17l2.7-.8L5 14z" fill="currentColor" opacity="0.85"/><path d="M19 13l.7 2.3L22 16l-2.3.7L19 19l-.7-2.3L16 16l2.3-.7L19 13z" fill="currentColor" opacity="0.85"/></svg></span>';
 
 $v = array(
     'wr_1'  => isset($write['wr_1']) ? get_text($write['wr_1']) : '',
@@ -118,7 +126,7 @@ $shop_seo_v = function_exists('eottae_shop_seo_resolve_for_write')
         <div class="eottae-field">
             <label for="wr_content">업체 소개</label>
             <textarea name="wr_content" id="wr_content" rows="6" placeholder="업체를 소개해 주세요"><?php echo $content; ?></textarea>
-            <button type="button" class="btn btn--ghost shop-register-page__ai-btn" data-shop-ai-generate="all">AI로 업체소개·SEO 자동생성</button>
+            <button type="button" class="eottae-ai-btn shop-register-page__ai-btn" data-shop-ai-generate="all"><?php echo $eottae_ai_btn_icon; ?><span class="eottae-ai-btn__label">AI로 업체소개·SEO 자동생성</span></button>
             <p class="eottae-field__hint" data-shop-ai-status aria-live="polite">업체명, 카테고리, 주소를 입력한 뒤 누르면 소개와 SEO 문구를 자동으로 채웁니다.</p>
         </div>
     </div>
@@ -142,6 +150,17 @@ $shop_seo_v = function_exists('eottae_shop_seo_resolve_for_write')
             <div class="eottae-field">
                 <label for="wr_10">경도 (Longitude)</label>
                 <input type="text" name="wr_10" id="wr_10" value="<?php echo $v['wr_10']; ?>" placeholder="123.8854">
+            </div>
+            <div id="shopCoordMapWrap" class="shop-register-page__coord-map-wrap">
+                <?php if ($eottae_maps_has_key) { ?>
+                <p class="eottae-field__hint">지도를 클릭하거나 핀을 드래그해 위치를 지정하세요. 위·경도 입력란에 자동 반영됩니다.</p>
+                <div id="shopCoordMap" class="shop-register-page__coord-map" role="application" aria-label="업체 위치 지도"
+                    data-default-lat="<?php echo htmlspecialchars((string) ($eottae_write_map_cfg['default_lat'] ?? '10.313'), ENT_QUOTES, 'UTF-8'); ?>"
+                    data-default-lng="<?php echo htmlspecialchars((string) ($eottae_write_map_cfg['default_lng'] ?? '123.9174'), ENT_QUOTES, 'UTF-8'); ?>"
+                    data-default-zoom="<?php echo (int) ($eottae_write_map_cfg['default_zoom'] ?? 14); ?>"></div>
+                <?php } else { ?>
+                <p class="eottae-field__hint">지도에서 핀을 찍으려면 <code>_site.config.local.php</code>에 <code>google_maps_api_key</code>를 설정해 주세요.</p>
+                <?php } ?>
             </div>
         </details>
     </div>
@@ -221,32 +240,57 @@ $shop_seo_v = function_exists('eottae_shop_seo_resolve_for_write')
     <div class="shop-register-page__panel" data-step="4">
         <h3>5. 이미지 · 메뉴</h3>
         <div class="shop-register-page__photos">
-            <?php for ($i = 0; $i < $file_count; $i++) { ?>
-            <div class="shop-register-page__photo">
-                <label for="bf_file_<?php echo $i + 1; ?>"><?php echo $i === 0 ? '대표 이미지' : '추가 이미지 '.$i; ?></label>
-                <input type="file" name="bf_file[]" id="bf_file_<?php echo $i + 1; ?>" accept="image/*" data-photo-input>
-                <?php if ($w === 'u' && isset($file[$i]['file']) && $file[$i]['file']) { ?>
-                <p class="eottae-field__hint">현재: <?php echo $file[$i]['source']; ?></p>
-                <?php } ?>
-            </div>
+            <p class="shop-register-page__photos-label">업체 이미지 <span>(대표 1장<?php if ($file_count > 1) { ?> · 추가 <?php echo (int) ($file_count - 1); ?>장<?php } ?>)</span></p>
+            <div class="shop-register-page__photo-grid">
+            <?php for ($i = 0; $i < $file_count; $i++) {
+                $is_featured = ($i === 0);
+                $has_existing = ($w === 'u' && isset($file[$i]['file']) && $file[$i]['file']);
+                $existing_url = $has_existing ? $file[$i]['path'].'/'.$file[$i]['file'] : '';
+                $slot_class = 'shop-register-page__photo-slot'.($is_featured ? ' shop-register-page__photo-slot--featured' : '').($has_existing ? ' has-preview' : '');
+                ?>
+                <label class="<?php echo $slot_class; ?>" for="bf_file_<?php echo $i + 1; ?>">
+                    <input type="file" name="bf_file[]" id="bf_file_<?php echo $i + 1; ?>" accept="image/*" class="shop-register-page__photo-input" data-photo-input data-photo-preview>
+                    <span class="shop-register-page__photo-badge"><?php echo $is_featured ? '대표' : '추가 '.$i; ?></span>
+                    <span class="shop-register-page__photo-placeholder" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        <span><?php echo $is_featured ? '대표 이미지' : '사진 추가'; ?></span>
+                    </span>
+                    <img src="<?php echo $has_existing ? get_text($existing_url) : ''; ?>" alt="" class="shop-register-page__photo-preview"<?php echo $has_existing ? '' : ' hidden'; ?>>
+                    <?php if ($has_existing) { ?>
+                    <span class="shop-register-page__photo-name"><?php echo get_text($file[$i]['source']); ?></span>
+                    <span class="shop-register-page__photo-delete" onclick="event.preventDefault(); event.stopPropagation();">
+                        <label><input type="checkbox" name="bf_file_del[<?php echo $i; ?>]" value="1"> 삭제</label>
+                    </span>
+                    <?php } ?>
+                </label>
             <?php } ?>
+            </div>
         </div>
-        <div class="eottae-field">
-            <label for="eottae_map_thumb">지도 표시 썸네일</label>
-            <input type="file" name="eottae_map_thumb" id="eottae_map_thumb" accept="image/*">
-            <input type="hidden" name="eottae_map_thumb_ai_tmp" id="eottae_map_thumb_ai_tmp" value="">
+        <div class="eottae-field shop-register-page__map-thumb-field">
+            <p class="shop-register-page__photos-label">지도 표시 썸네일</p>
             <p class="eottae-field__hint">권장 사이즈: 정사각형 1024×1024px 이상. 지도 마커에서는 원형/작은 이미지로 표시됩니다. 비워 두면 대표 이미지가 사용됩니다.</p>
-            <button type="button" class="btn btn--ghost shop-register-page__ai-btn" data-map-thumb-ai-generate>AI 지도 썸네일 생성</button>
+            <?php
+            $map_thumb_has_existing = !empty($map_thumb['url']);
+            $map_thumb_slot_class = 'shop-register-page__photo-slot shop-register-page__photo-slot--map'.($map_thumb_has_existing ? ' has-preview' : '');
+            ?>
+            <label class="<?php echo $map_thumb_slot_class; ?>" for="eottae_map_thumb">
+                <input type="file" name="eottae_map_thumb" id="eottae_map_thumb" accept="image/*" class="shop-register-page__photo-input" data-photo-preview data-map-thumb-input>
+                <span class="shop-register-page__photo-badge">지도</span>
+                <span class="shop-register-page__photo-placeholder" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    <span>썸네일 추가</span>
+                </span>
+                <img src="<?php echo $map_thumb_has_existing ? get_text($map_thumb['url']) : ''; ?>" alt="" class="shop-register-page__photo-preview" data-map-thumb-preview-img<?php echo $map_thumb_has_existing ? '' : ' hidden'; ?>>
+                <?php if ($map_thumb_has_existing) { ?>
+                <span class="shop-register-page__photo-name"><?php echo get_text($map_thumb['source_name']); ?></span>
+                <span class="shop-register-page__photo-delete" onclick="event.preventDefault(); event.stopPropagation();">
+                    <label><input type="checkbox" name="eottae_map_thumb_del" value="1"> 삭제</label>
+                </span>
+                <?php } ?>
+            </label>
+            <input type="hidden" name="eottae_map_thumb_ai_tmp" id="eottae_map_thumb_ai_tmp" value="">
+            <button type="button" class="eottae-ai-btn shop-register-page__ai-btn" data-map-thumb-ai-generate data-default-label="AI 지도 썸네일 생성"><?php echo $eottae_ai_btn_icon; ?><span class="eottae-ai-btn__label">AI 지도 썸네일 생성</span></button>
             <p class="eottae-field__hint" data-map-thumb-ai-status aria-live="polite"></p>
-            <div class="shop-register-page__map-thumb-preview" data-map-thumb-preview hidden>
-                <img src="" alt="AI 지도 썸네일 미리보기">
-                <span>AI로 생성된 지도 썸네일입니다. 다시 누르면 새 이미지로 교체됩니다.</span>
-            </div>
-            <?php if (!empty($map_thumb['url'])) { ?>
-            <p class="eottae-field__hint">현재 지도 썸네일: <a href="<?php echo $map_thumb['url']; ?>" target="_blank" rel="noopener noreferrer"><?php echo get_text($map_thumb['source_name']); ?></a>
-                <label><input type="checkbox" name="eottae_map_thumb_del" value="1"> 삭제</label>
-            </p>
-            <?php } ?>
         </div>
         <p class="eottae-field__hint">메뉴·가격 정보는 업체 소개 본문에 작성해 주세요.</p>
     </div>
@@ -254,7 +298,7 @@ $shop_seo_v = function_exists('eottae_shop_seo_resolve_for_write')
     <div class="shop-register-page__panel" data-step="5">
         <h3>6. SEO · 검색 노출</h3>
         <p class="eottae-field__hint">업소 상세 페이지에 적용되는 검색·SNS 메타 정보입니다. 비워 두면 업체명·소개 본문에서 자동 생성됩니다.</p>
-        <button type="button" class="btn btn--ghost shop-register-page__ai-btn" data-shop-ai-generate="seo">AI로 SEO 문구 자동생성</button>
+        <button type="button" class="eottae-ai-btn shop-register-page__ai-btn" data-shop-ai-generate="seo"><?php echo $eottae_ai_btn_icon; ?><span class="eottae-ai-btn__label">AI로 SEO 문구 자동생성</span></button>
         <p class="eottae-field__hint" data-shop-ai-status aria-live="polite"></p>
         <div class="eottae-field">
             <label for="eottae_seo_title">SEO 타이틀</label>
