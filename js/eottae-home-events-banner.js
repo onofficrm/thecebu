@@ -179,11 +179,6 @@
     wrap.className = 'home-hero-sidebar-events';
     wrap.setAttribute('aria-label', '업체 이벤트 / 기획전');
 
-    var title = document.createElement('h3');
-    title.className = 'home-hero-sidebar-events__title';
-    title.textContent = '업체 이벤트 / 기획전';
-    wrap.appendChild(title);
-
     var banner = buildBanner(data.events, data.list_url || '/page/eottae-events.php');
     wrap.appendChild(banner);
     sidebar.appendChild(wrap);
