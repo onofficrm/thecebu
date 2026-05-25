@@ -3,6 +3,6 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
-include_once G5_PATH.'/components/eottae/home-community-dual.php';
+include_once G5_PATH.'/components/eottae/plaza-home-feed.php';
 
-echo eottae_home_community_dual_html(5, 20);
+echo eottae_plaza_home_feed_html(5);

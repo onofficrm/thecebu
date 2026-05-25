@@ -1,5 +1,5 @@
 /**
- * 홈 — 세부공개단체톡 실시간 폴링·전송
+ * 홈 히어로 — 검색 아래 세부톡 공개 단체 채팅 + 실시간 폴링
  */
 (function (global) {
   'use strict';
@@ -28,8 +28,80 @@
     });
   }
 
+  function findHeroGrid() {
+    var headings = document.querySelectorAll('h1');
+    var i;
+    for (i = 0; i < headings.length; i += 1) {
+      if ((headings[i].textContent || '').indexOf('세부어때') !== -1) {
+        var section = headings[i].closest('section');
+        if (section && section.parentElement) {
+          return section.parentElement;
+        }
+      }
+    }
+    return null;
+  }
+
+  function findHeroMainColumn(grid) {
+    if (!grid) {
+      return null;
+    }
+
+    var nodes = grid.children;
+    var i;
+    for (i = 0; i < nodes.length; i += 1) {
+      if ((nodes[i].className || '').indexOf('lg:col-span-8') !== -1) {
+        return nodes[i];
+      }
+    }
+
+    return nodes.length ? nodes[0] : null;
+  }
+
+  function findSearchAnchor(mainCol) {
+    if (!mainCol) {
+      return null;
+    }
+
+    var searchBox = mainCol.querySelector('.max-w-2xl');
+    if (!searchBox) {
+      return null;
+    }
+
+    return searchBox.closest('section') || searchBox.parentElement;
+  }
+
   function getSection() {
     return document.getElementById('eottae-home-public-chat');
+  }
+
+  function unwrapPendingSlot(chat) {
+    var pending = chat.closest('.eottae-home-slot-pending');
+    if (pending && pending.parentNode) {
+      pending.parentNode.insertBefore(chat, pending);
+      pending.parentNode.removeChild(pending);
+    }
+  }
+
+  function mountHero() {
+    var chat = getSection();
+    if (!chat || chat.dataset.heroMounted === '1') {
+      return false;
+    }
+
+    var grid = findHeroGrid();
+    var mainCol = findHeroMainColumn(grid);
+    var anchor = findSearchAnchor(mainCol);
+    if (!mainCol || !anchor || !anchor.parentNode) {
+      return false;
+    }
+
+    unwrapPendingSlot(chat);
+    chat.classList.add('public-group-chat--hero');
+    anchor.parentNode.insertBefore(chat, anchor.nextSibling);
+    chat.dataset.heroMounted = '1';
+
+    return true;
   }
 
   function getMessagesEl(section) {
@@ -114,7 +186,7 @@
 
     return fetch(url, {
       credentials: 'same-origin',
-      headers: { 'Accept': 'application/json' },
+      headers: { Accept: 'application/json' },
     })
       .then(parseJsonResponse)
       .then(function (data) {
@@ -150,7 +222,7 @@
       method: 'POST',
       credentials: 'same-origin',
       body: body,
-      headers: { 'Accept': 'application/json' },
+      headers: { Accept: 'application/json' },
     })
       .then(parseJsonResponse)
       .then(function (data) {
@@ -173,10 +245,6 @@
             is_mine: 1,
           }]);
         }
-
-        if (data.member_token) {
-          section.setAttribute('data-member-token', data.member_token);
-        }
       })
       .catch(function (err) {
         window.alert(err && err.message ? err.message : '전송에 실패했습니다.');
@@ -185,40 +253,6 @@
         if (sendBtn) {
           sendBtn.disabled = section.getAttribute('data-can-send') !== '1';
         }
-      });
-  }
-
-  function joinRoom(section, roomId) {
-    var token = section.getAttribute('data-member-token') || '';
-    var body = new FormData();
-    body.append('action', 'join');
-    body.append('room_id', String(roomId));
-    body.append('eottae_talkroom_member_token', token);
-
-    fetch('/proc/eottae-talkroom-member.php', {
-      method: 'POST',
-      credentials: 'same-origin',
-      body: body,
-      headers: { 'Accept': 'application/json' },
-    })
-      .then(parseJsonResponse)
-      .then(function (data) {
-        if (!data || !data.success) {
-          throw new Error((data && data.message) || '참여에 실패했습니다.');
-        }
-        section.setAttribute('data-can-send', '1');
-        section.setAttribute('data-needs-join', '0');
-        var sendBtn = section.querySelector('.public-group-chat__send');
-        if (sendBtn) {
-          sendBtn.disabled = false;
-        }
-        var joinBtn = section.querySelector('[data-public-chat-join]');
-        if (joinBtn && joinBtn.parentNode) {
-          joinBtn.parentNode.removeChild(joinBtn);
-        }
-      })
-      .catch(function (err) {
-        window.alert(err && err.message ? err.message : '참여에 실패했습니다.');
       });
   }
 
@@ -236,15 +270,6 @@
       });
     }
 
-    section.addEventListener('click', function (event) {
-      var joinBtn = event.target.closest('[data-public-chat-join]');
-      if (!joinBtn) {
-        return;
-      }
-      event.preventDefault();
-      joinRoom(section, parseInt(joinBtn.getAttribute('data-public-chat-join'), 10) || 0);
-    });
-
     poll(section);
     global.setInterval(function () {
       poll(section);
@@ -252,13 +277,30 @@
   }
 
   function init() {
-    bindSection(getSection());
+    mountHero();
+    var section = getSection();
+    if (section) {
+      bindSection(section);
+    }
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
+  }
+
+  global.setTimeout(init, 400);
+  global.setTimeout(init, 1200);
+
+  if (typeof MutationObserver !== 'undefined') {
+    var root = document.getElementById('root');
+    if (root) {
+      new MutationObserver(init).observe(root, {
+        childList: true,
+        subtree: true,
+      });
+    }
   }
 
   global.initEottaeHomePublicChat = init;

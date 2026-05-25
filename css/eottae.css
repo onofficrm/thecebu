@@ -7985,13 +7985,14 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 
 /* ── 세부광장 메인 피드 ── */
 .plaza-home-feed {
-  padding: 0;
-  background: transparent;
+  padding: 28px 16px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
 }
 
 .plaza-home-feed__inner {
-  max-width: none;
-  margin: 0;
+  max-width: 720px;
+  margin: 0 auto;
 }
 
 .plaza-home-feed__head {
@@ -8099,7 +8100,33 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   border-color: #7dd3fc;
 }
 
-/* ── 홈 2열: 세부광장 + 세부공개단체톡 ── */
+/* ── 홈 히어로 — 세부톡 공개 단체 채팅 (검색 아래 2열) ── */
+.eottae-home-slot-pending {
+  display: none !important;
+}
+
+.public-group-chat--hero {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.public-group-chat--hero .public-group-chat__inner {
+  min-height: 300px;
+}
+
+.public-group-chat--hero .public-group-chat__panel {
+  min-height: 240px;
+}
+
+.public-group-chat--hero .public-group-chat__messages {
+  max-height: 220px;
+}
+
+.public-group-chat--hero .public-group-chat__footer {
+  margin-top: 10px;
+}
+
+/* ── 홈 2열: 세부광장 + 세부공개단체톡 (레거시, 미사용) ── */
 .home-community-dual {
   padding: 28px 16px 32px;
   background: #f8fafc;

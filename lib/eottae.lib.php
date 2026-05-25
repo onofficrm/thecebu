@@ -918,6 +918,48 @@ if (!function_exists('eottae_builder_inject_home_header_actions_script')) {
     }
 }
 
+if (!function_exists('eottae_builder_inject_home_public_chat')) {
+    function eottae_builder_inject_home_public_chat($html)
+    {
+        if (!is_string($html) || $html === '') {
+            return $html;
+        }
+
+        if (!function_exists('eottae_public_group_chat_html')) {
+            $component = G5_PATH.'/components/eottae/public-group-chat.php';
+            if (is_file($component)) {
+                include_once G5_LIB_PATH.'/eottae-talkroom-public-chat.lib.php';
+                include_once $component;
+            }
+        }
+
+        if (!function_exists('eottae_public_group_chat_html')) {
+            return $html;
+        }
+
+        $chat_html = eottae_public_group_chat_html(20);
+        if ($chat_html === '') {
+            return $html;
+        }
+
+        if (strpos($html, 'id="eottae-home-public-chat"') !== false) {
+            return $html;
+        }
+
+        $chat_html = '<div class="eottae-home-slot-pending">'.$chat_html.'</div>';
+
+        if (preg_match('#(<div\s+id=["\']root["\'][^>]*>\s*</div>)#i', $html)) {
+            $html = preg_replace('#(<div\s+id=["\']root["\'][^>]*>\s*</div>)#i', '$1'.$chat_html, $html, 1);
+        } elseif (preg_match('#</body>#i', $html)) {
+            $html = preg_replace('#</body>#i', $chat_html.'</body>', $html, 1);
+        } else {
+            $html .= $chat_html;
+        }
+
+        return $html;
+    }
+}
+
 if (!function_exists('eottae_builder_inject_home_public_chat_script')) {
     function eottae_builder_inject_home_public_chat_script()
     {
@@ -934,32 +976,27 @@ if (!function_exists('eottae_builder_inject_home_plaza_feed')) {
             return $html;
         }
 
-        if (!function_exists('eottae_home_community_dual_html')) {
-            $component = G5_PATH.'/components/eottae/home-community-dual.php';
+        if (!function_exists('eottae_plaza_home_feed_html')) {
+            $component = G5_PATH.'/components/eottae/plaza-home-feed.php';
             if (is_file($component)) {
                 include_once G5_LIB_PATH.'/eottae-plaza-home-feed.lib.php';
-                include_once G5_PATH.'/components/eottae/plaza-home-feed.php';
-                include_once G5_PATH.'/components/eottae/public-group-chat.php';
                 include_once $component;
             }
         }
 
-        if (!function_exists('eottae_home_community_dual_html')) {
+        if (!function_exists('eottae_plaza_home_feed_html')) {
             return $html;
         }
 
-        $feed_html = eottae_home_community_dual_html(5, 20);
+        $feed_html = eottae_plaza_home_feed_html(5);
         if ($feed_html === '') {
             return $html;
         }
 
         if (preg_match('#(<section[^>]*id=["\']eottae-home-talk-feed["\'][^>]*>.*?</section>)#is', $html, $m)
-            && strpos($html, 'id="eottae-home-community-dual"') === false) {
+            && strpos($html, 'id="eottae-home-plaza-feed"') === false) {
             $html = str_replace($m[0], $m[0].$feed_html, $html);
-        } elseif (preg_match('#(<section[^>]*id=["\']eottae-home-plaza-feed["\'][^>]*>.*?</section>)#is', $html, $m)
-            && strpos($html, 'id="eottae-home-community-dual"') === false) {
-            $html = str_replace($m[0], $feed_html, $html);
-        } elseif (strpos($html, 'id="eottae-home-community-dual"') !== false) {
+        } elseif (preg_match('#(<section[^>]*id=["\']eottae-home-plaza-feed["\'][^>]*>.*?</section>)#is', $html)) {
             return $html;
         } elseif (preg_match('#(<div\s+id=["\']root["\'][^>]*>\s*</div>)#i', $html)) {
             $html = preg_replace('#(<div\s+id=["\']root["\'][^>]*>\s*</div>)#i', '$1'.$feed_html, $html, 1);
@@ -982,6 +1019,7 @@ if (!function_exists('eottae_builder_inject_html')) {
 
         $html = eottae_builder_inject_home_map($html);
         $html = eottae_builder_inject_home_talk_feed($html);
+        $html = eottae_builder_inject_home_public_chat($html);
         $html = eottae_builder_inject_home_plaza_feed($html);
 
         $head_script = eottae_builder_inject_logo_head_script();
