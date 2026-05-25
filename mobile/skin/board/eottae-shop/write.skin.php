@@ -3,7 +3,7 @@ if (!defined('_GNUBOARD_')) exit;
 
 include_once(G5_LIB_PATH.'/eottae.lib.php');
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
-$eottae_maps_enabled = eottae_enqueue_google_geocoder();
+$eottae_geocoder_script = function_exists('eottae_google_geocoder_script') ? eottae_google_geocoder_script() : '';
 
 $v = array(
     'wr_1'  => isset($write['wr_1']) ? get_text($write['wr_1']) : '',
@@ -243,3 +243,4 @@ function fwrite_submit(f) {
     return true;
 }
 </script>
+<?php echo $eottae_geocoder_script; ?>

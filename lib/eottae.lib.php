@@ -1705,48 +1705,41 @@ if (!function_exists('eottae_enqueue_google_maps')) {
     }
 }
 
-if (!function_exists('eottae_enqueue_google_geocoder')) {
-    /**
-     * 업체 등록 등 Geocoding 전용 Maps JS 로드
-     *
-     * @return bool
-     */
-    function eottae_enqueue_google_geocoder()
+if (!function_exists('eottae_google_maps_api_key')) {
+    function eottae_google_maps_api_key()
     {
-        static $enqueued = false;
-
-        if ($enqueued) {
-            return function_exists('onoff_map_has_api_key') && onoff_map_has_api_key();
-        }
-
         if (!is_file(G5_PATH.'/components/maps/map-config.php')) {
-            return false;
+            return '';
         }
 
         include_once G5_PATH.'/components/maps/map-config.php';
 
         if (!function_exists('onoff_map_has_api_key') || !onoff_map_has_api_key()) {
-            return false;
+            return '';
         }
 
         $cfg = onoff_map_get_config();
-        $key = isset($cfg['api_key']) ? htmlspecialchars($cfg['api_key'], ENT_QUOTES, 'UTF-8') : '';
+
+        return isset($cfg['api_key']) ? trim((string) $cfg['api_key']) : '';
+    }
+}
+
+if (!function_exists('eottae_google_geocoder_script')) {
+    /**
+     * 업체 등록 전용 Geocoder 스크립트.
+     * write.php는 head.sub.php가 스킨보다 먼저 출력되므로 add_javascript()가 아닌 스킨에서 직접 출력한다.
+     */
+    function eottae_google_geocoder_script()
+    {
+        $key = eottae_google_maps_api_key();
         if ($key === '') {
-            return false;
+            return '';
         }
 
-        add_javascript(
-            '<script>window.initEottaeGeocoderBootstrap=function(){document.dispatchEvent(new CustomEvent("eottae:geocoder-ready"));};</script>',
-            4
-        );
-        add_javascript(
-            '<script src="https://maps.googleapis.com/maps/api/js?key='.$key.'&amp;callback=initEottaeGeocoderBootstrap" async defer></script>',
-            5
-        );
+        $safe_key = htmlspecialchars($key, ENT_QUOTES, 'UTF-8');
 
-        $enqueued = true;
-
-        return true;
+        return '<script>window.initEottaeGeocoderBootstrap=function(){document.dispatchEvent(new CustomEvent("eottae:geocoder-ready"));};</script>'."\n"
+            .'<script src="https://maps.googleapis.com/maps/api/js?key='.$safe_key.'&amp;callback=initEottaeGeocoderBootstrap" async defer></script>';
     }
 }
 

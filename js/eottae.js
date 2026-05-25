@@ -299,10 +299,10 @@
   function shopGeocodeErrorMessage(data) {
     var status = data && data.status ? data.status : '';
     if (status === 'REQUEST_DENIED') {
-      return 'Geocoding API 키를 확인해 주세요. Maps JavaScript API·Geocoding API 활성화 및 HTTP 리퍼러(thecebu.co.kr) 허용이 필요합니다.';
+      return '좌표 API 권한을 확인하지 못했습니다. 대표 지역은 주소로 자동 설정되며, 좌표는 필요 시 직접 입력할 수 있습니다.';
     }
     if (status === 'OVER_QUERY_LIMIT') {
-      return 'Geocoding API 사용 한도를 초과했습니다. 잠시 후 다시 시도해 주세요.';
+      return '좌표 API 사용량이 많습니다. 대표 지역은 주소로 자동 설정되며, 좌표는 필요 시 직접 입력할 수 있습니다.';
     }
     if (data && data.message) {
       return data.message;
@@ -352,19 +352,12 @@
     });
   }
 
-  function shopGeocodeWithServer(address) {
-    var body = new FormData();
-    body.append('address', address);
-    return fetch('/proc/eottae-geocode.php', { method: 'POST', body: body, credentials: 'same-origin' })
-      .then(function (res) { return res.json(); });
-  }
-
   function shopRunGeocode(address) {
     return shopGeocodeWithGoogle(address).then(function (data) {
       if (data.ok || data.status !== 'MAPS_NOT_READY') {
         return data;
       }
-      return shopGeocodeWithServer(address);
+      return { ok: false, status: 'MAPS_NOT_READY' };
     });
   }
 
@@ -401,6 +394,8 @@
           btn.disabled = false;
           if (!data.ok) {
             if (shopApplyRegionFromAddress(address, regionInput, regionDisplay, status)) {
+              if (latInput && !latInput.value) latInput.value = '';
+              if (lngInput && !lngInput.value) lngInput.value = '';
               return;
             }
             if (status) status.textContent = shopGeocodeErrorMessage(data);
