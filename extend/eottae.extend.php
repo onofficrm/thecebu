@@ -419,6 +419,49 @@ if (!function_exists('eottae_talkroom_load_ui_assets')) {
 
 eottae_talkroom_load_ui_assets();
 
+if (!function_exists('eottae_talkroom_admin_shell_scripts')) {
+    function eottae_talkroom_admin_shell_scripts()
+    {
+        return array(
+            'eottae-admin-talk-applies.php',
+            'eottae-admin-talk-rooms.php',
+            'eottae-admin-talk-detail.php',
+            'eottae-admin-talk-kicked.php',
+            'eottae-admin-talk-reports.php',
+            'eottae-admin-talk-ai.php',
+            'eottae-admin-talk-ai-logs.php',
+            'eottae-admin-plaza-posts.php',
+            'eottae-admin-plaza-reports.php',
+            'eottae-admin-plaza-ai.php',
+            'eottae-admin-review-deletes.php',
+            'eottae-admin-promo-coupons.php',
+        );
+    }
+}
+
+if (!function_exists('eottae_talkroom_load_admin_shell_assets')) {
+    function eottae_talkroom_load_admin_shell_assets()
+    {
+        static $loaded = false;
+        if ($loaded) {
+            return;
+        }
+
+        $script = basename($_SERVER['SCRIPT_FILENAME'] ?? '');
+        if (!in_array($script, eottae_talkroom_admin_shell_scripts(), true)) {
+            return;
+        }
+
+        $loaded = true;
+
+        if (function_exists('eottae_talkroom_append_body_class')) {
+            eottae_talkroom_append_body_class('talk-admin-shell');
+        }
+    }
+}
+
+eottae_talkroom_load_admin_shell_assets();
+
 if (!function_exists('eottae_talkroom_on_pre_head_ui')) {
     function eottae_talkroom_on_pre_head_ui()
     {
@@ -426,6 +469,14 @@ if (!function_exists('eottae_talkroom_on_pre_head_ui')) {
     }
 }
 add_event('pre_head', 'eottae_talkroom_on_pre_head_ui', 5);
+
+if (!function_exists('eottae_talkroom_on_pre_head_admin_shell')) {
+    function eottae_talkroom_on_pre_head_admin_shell()
+    {
+        eottae_talkroom_load_admin_shell_assets();
+    }
+}
+add_event('pre_head', 'eottae_talkroom_on_pre_head_admin_shell', 6);
 
 if (!function_exists('eottae_talkroom_on_board_head_ui')) {
     function eottae_talkroom_on_board_head_ui($board, $write, $wr_id)

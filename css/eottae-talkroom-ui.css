@@ -1684,3 +1684,75 @@ body.talk-admin-shell .talk-apply-status--rejected {
   }
 }
 
+/* ── 개설 신청 관리 ── */
+body.talk-admin-shell .talk-admin-applies__header .promo-admin-page__desc {
+  margin-bottom: 0;
+}
+
+body.talk-admin-shell .talk-admin-applies__filter {
+  margin: 14px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid #eef2f6;
+}
+
+body.talk-admin-shell .talk-admin-applies__panel {
+  padding: 0;
+  overflow: hidden;
+}
+
+body.talk-admin-shell .talk-admin-applies__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 14px 18px;
+  font-size: 13px;
+  color: #64748b;
+  background: #f8fafc;
+  border-bottom: 1px solid #eef2f6;
+}
+
+body.talk-admin-shell .talk-admin-applies__summary strong {
+  color: #0f172a;
+}
+
+body.talk-admin-shell .talk-admin-applies__summary-pending {
+  font-weight: 700;
+  color: #b45309;
+}
+
+body.talk-admin-shell .talk-admin-applies__empty {
+  padding: 28px 18px 32px;
+  text-align: center;
+}
+
+body.talk-admin-shell .talk-admin-applies__empty-hint {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+body.talk-admin-shell .talk-admin-applies__room {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+body.talk-admin-shell .talk-admin-applies__row.is-pending {
+  background: #fffbeb;
+}
+
+body.talk-admin-shell .talk-admin-applies__row.is-pending:hover {
+  background: #fef3c7;
+}
+
+body.talk-admin-shell .talk-admin-applies__table th:first-child,
+body.talk-admin-shell .talk-admin-applies__table td:first-child {
+  padding-left: 18px;
+}
+
+body.talk-admin-shell .talk-admin-applies__table th:last-child,
+body.talk-admin-shell .talk-admin-applies__table td:last-child {
+  padding-right: 18px;
+}
+

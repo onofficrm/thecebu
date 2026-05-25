@@ -20,8 +20,8 @@ $admin_token = eottae_talkroom_admin_token();
 g5_page_start('개설 신청 관리');
 ?>
 
-<main class="promo-admin-page talk-admin-page">
-    <header class="promo-admin-page__header">
+<main class="promo-admin-page talk-admin-page talk-admin-applies-page">
+    <header class="promo-admin-page__header talk-admin-applies__header">
         <div class="promo-admin-page__header-top">
             <a href="<?php echo eottae_talkroom_list_url(); ?>" class="promo-admin-page__back">← 세부톡방</a>
             <a href="<?php echo G5_ADMIN_URL; ?>/" class="promo-admin-page__back">그누보드 관리자</a>
@@ -34,22 +34,33 @@ g5_page_start('개설 신청 관리');
             <?php } ?>
         </p>
         <?php eottae_talkroom_render_admin_nav('applies'); ?>
+
+        <nav class="talk-admin-filter talk-admin-applies__filter" aria-label="신청 상태 필터">
+            <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>?status=pending" class="talk-admin-filter__item<?php echo $filter === 'pending' ? ' is-active' : ''; ?>">
+                승인대기<?php if ($pending_count > 0) { ?> (<?php echo number_format($pending_count); ?>)<?php } ?>
+            </a>
+            <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>?status=all" class="talk-admin-filter__item<?php echo $filter === 'all' ? ' is-active' : ''; ?>">전체</a>
+            <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>?status=rejected" class="talk-admin-filter__item<?php echo $filter === 'rejected' ? ' is-active' : ''; ?>">반려</a>
+        </nav>
     </header>
 
-    <nav class="talk-admin-filter" aria-label="신청 상태 필터">
-        <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>?status=pending" class="talk-admin-filter__item<?php echo $filter === 'pending' ? ' is-active' : ''; ?>">
-            승인대기<?php if ($pending_count > 0) { ?> (<?php echo number_format($pending_count); ?>)<?php } ?>
-        </a>
-        <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>?status=all" class="talk-admin-filter__item<?php echo $filter === 'all' ? ' is-active' : ''; ?>">전체</a>
-        <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>?status=rejected" class="talk-admin-filter__item<?php echo $filter === 'rejected' ? ' is-active' : ''; ?>">반려</a>
-    </nav>
-
-    <section class="promo-admin-panel talk-admin-panel">
+    <section class="promo-admin-panel talk-admin-panel talk-admin-applies__panel">
         <?php if (empty($applications)) { ?>
-        <p class="promo-admin-empty">표시할 신청 내역이 없습니다.</p>
+        <div class="talk-admin-applies__empty">
+            <p class="promo-admin-empty">표시할 신청 내역이 없습니다.</p>
+            <?php if ($filter === 'pending') { ?>
+            <p class="talk-admin-applies__empty-hint">새 개설 신청이 들어오면 이 목록에 표시됩니다.</p>
+            <?php } ?>
+        </div>
         <?php } else { ?>
+        <div class="talk-admin-applies__summary">
+            <span>총 <strong><?php echo number_format(count($applications)); ?></strong>건</span>
+            <?php if ($filter === 'pending' && $pending_count > 0) { ?>
+            <span class="talk-admin-applies__summary-pending">승인 필요 <?php echo number_format($pending_count); ?>건</span>
+            <?php } ?>
+        </div>
         <div class="talk-admin-table-wrap">
-            <table class="talk-admin-table">
+            <table class="talk-admin-table talk-admin-applies__table">
                 <thead>
                     <tr>
                         <th scope="col">신청일</th>
@@ -64,13 +75,13 @@ g5_page_start('개설 신청 관리');
                 </thead>
                 <tbody>
                     <?php foreach ($applications as $item) { ?>
-                    <tr>
+                    <tr class="talk-admin-applies__row<?php echo $item['status'] === 'pending' ? ' is-pending' : ''; ?>">
                         <td data-label="신청일"><?php echo $item['created_at'] !== '0000-00-00 00:00:00' ? substr($item['created_at'], 0, 16) : '-'; ?></td>
                         <td data-label="신청자">
                             <?php echo $item['owner_nick']; ?><br>
                             <span class="talk-admin-table__sub"><?php echo $item['owner_mb_id']; ?></span>
                         </td>
-                        <td data-label="톡방"><?php echo $item['emoji']; ?> <?php echo $item['room_name']; ?></td>
+                        <td data-label="톡방"><span class="talk-admin-applies__room"><?php echo $item['emoji']; ?> <?php echo $item['room_name']; ?></span></td>
                         <td data-label="카테고리"><?php echo $item['category']; ?></td>
                         <td data-label="공개"><?php echo $item['visibility_label']; ?></td>
                         <td data-label="가입"><?php echo $item['join_type_label']; ?></td>

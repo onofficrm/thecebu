@@ -58,6 +58,10 @@ if (!function_exists('eottae_talkroom_admin_page_assets')) {
                 eottae_talkroom_admin_append_body_class($class);
             }
         }
+
+        if (function_exists('eottae_talkroom_load_admin_shell_assets')) {
+            eottae_talkroom_load_admin_shell_assets();
+        }
     }
 }
 

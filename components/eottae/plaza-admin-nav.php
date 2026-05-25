@@ -3,6 +3,10 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
+if (function_exists('eottae_talkroom_admin_page_assets')) {
+    eottae_talkroom_admin_page_assets();
+}
+
 if (!function_exists('eottae_plaza_render_admin_nav')) {
     function eottae_plaza_render_admin_nav($active = 'posts')
     {
