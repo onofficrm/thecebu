@@ -322,31 +322,33 @@
     }, POLL_MS);
   }
 
-  function init() {
-    mountHero();
-    var section = getSection();
-    if (section) {
-      bindSection(section);
+  function runMount() {
+    if (mountHero()) {
+      var section = getSection();
+      if (section) {
+        bindSection(section);
+      }
+      return true;
     }
+    return false;
+  }
+
+  function init() {
+    var schedule = function () {
+      if (typeof global.eottaeHomeAfterReactReady === 'function') {
+        global.eottaeHomeAfterReactReady(runMount);
+        return;
+      }
+      global.setTimeout(runMount, 1500);
+    };
+
+    schedule();
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
-  }
-
-  global.setTimeout(init, 400);
-  global.setTimeout(init, 1200);
-
-  if (typeof MutationObserver !== 'undefined') {
-    var root = document.getElementById('root');
-    if (root) {
-      new MutationObserver(init).observe(root, {
-        childList: true,
-        subtree: true,
-      });
-    }
   }
 
   global.initEottaeHomePublicChat = init;

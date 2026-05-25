@@ -196,27 +196,31 @@
     }
   }
 
+  var mounted = false;
+
   function mount() {
+    if (mounted) {
+      return true;
+    }
+
     cleanupLegacyHeroTalk();
     hidePlazaSectionThirdColumn();
     mountContentTalk();
+    mounted = true;
+    return true;
   }
 
   function init() {
-    mount();
-    if (typeof MutationObserver === 'undefined') {
+    var run = function () {
+      mount();
+    };
+
+    if (typeof global.eottaeHomeAfterReactReady === 'function') {
+      global.eottaeHomeAfterReactReady(run);
       return;
     }
 
-    var root = document.getElementById('root');
-    if (!root) {
-      return;
-    }
-
-    new MutationObserver(mount).observe(root, {
-      childList: true,
-      subtree: true,
-    });
+    global.setTimeout(run, 1500);
   }
 
   if (document.readyState === 'loading') {
@@ -224,9 +228,6 @@
   } else {
     init();
   }
-
-  global.setTimeout(init, 400);
-  global.setTimeout(init, 1200);
 
   global.initEottaeHomeHeroTalk = init;
 }(window));
