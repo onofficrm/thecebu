@@ -1,5 +1,5 @@
 /**
- * 홈 히어로 — 검색 아래 세부톡 공개 단체 채팅 + 실시간 폴링
+ * 홈(빌더) — 히어로 3열: 검색 | 공개단체채팅 | 로그인+이벤트
  */
 (function (global) {
   'use strict';
@@ -58,17 +58,35 @@
     return nodes.length ? nodes[0] : null;
   }
 
-  function findSearchAnchor(mainCol) {
+  function findHeroSidebarColumn(grid) {
+    if (!grid) {
+      return null;
+    }
+
+    var nodes = grid.children;
+    var i;
+    for (i = 0; i < nodes.length; i += 1) {
+      if ((nodes[i].className || '').indexOf('lg:col-span-4') !== -1) {
+        return nodes[i];
+      }
+    }
+
+    return nodes.length > 1 ? nodes[nodes.length - 1] : null;
+  }
+
+  function hideMainColumnEvents(mainCol) {
     if (!mainCol) {
-      return null;
+      return;
     }
 
-    var searchBox = mainCol.querySelector('.max-w-2xl');
-    if (!searchBox) {
-      return null;
+    var sections = mainCol.querySelectorAll('section');
+    var i;
+    for (i = 0; i < sections.length; i += 1) {
+      var h2 = sections[i].querySelector('h2');
+      if (h2 && (h2.textContent || '').indexOf('업체 이벤트') !== -1) {
+        sections[i].style.display = 'none';
+      }
     }
-
-    return searchBox.closest('section') || searchBox.parentElement;
   }
 
   function getSection() {
@@ -83,6 +101,25 @@
     }
   }
 
+  function cleanupLegacyHeroWidgets(grid) {
+    if (!grid) {
+      return;
+    }
+
+    var legacy = grid.querySelectorAll('[data-eottae-home-plaza-hero], [data-eottae-home-talk-sidebar]');
+    var i;
+    for (i = 0; i < legacy.length; i += 1) {
+      if (legacy[i].parentNode) {
+        legacy[i].parentNode.removeChild(legacy[i]);
+      }
+    }
+
+    var feed = document.getElementById('eottae-home-talk-feed');
+    if (feed && feed.parentNode) {
+      feed.parentNode.removeChild(feed);
+    }
+  }
+
   function mountHero() {
     var chat = getSection();
     if (!chat || chat.dataset.heroMounted === '1') {
@@ -91,16 +128,25 @@
 
     var grid = findHeroGrid();
     var mainCol = findHeroMainColumn(grid);
-    var anchor = findSearchAnchor(mainCol);
-    if (!mainCol || !anchor || !anchor.parentNode) {
+    var sidebar = findHeroSidebarColumn(grid);
+    if (!grid || !mainCol) {
       return false;
     }
 
+    cleanupLegacyHeroWidgets(grid);
+    hideMainColumnEvents(mainCol);
     unwrapPendingSlot(chat);
-    chat.classList.add('public-group-chat--hero');
-    anchor.parentNode.insertBefore(chat, anchor.nextSibling);
-    chat.dataset.heroMounted = '1';
 
+    chat.classList.add('public-group-chat--hero', 'home-hero-chat-column');
+    grid.classList.add('eottae-home-hero-grid--3col');
+
+    if (sidebar) {
+      grid.insertBefore(chat, sidebar);
+    } else {
+      grid.appendChild(chat);
+    }
+
+    chat.dataset.heroMounted = '1';
     return true;
   }
 
@@ -304,4 +350,8 @@
   }
 
   global.initEottaeHomePublicChat = init;
+  global.findEottaeHeroGrid = findHeroGrid;
+  global.findEottaeHeroSidebarColumn = function () {
+    return findHeroSidebarColumn(findHeroGrid());
+  };
 }(window));

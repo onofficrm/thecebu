@@ -850,18 +850,15 @@ if (!function_exists('eottae_builder_inject_home_hero_talk_script')) {
 
         $talk_payload = eottae_talkroom_home_hero_payload(3, 3);
         $talk_payload['variant'] = 'talk';
-        $plaza_payload = eottae_plaza_home_hero_payload(3, 3);
 
         $talk_json = json_encode($talk_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $plaza_json = json_encode($plaza_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if ($talk_json === false || $plaza_json === false) {
+        if ($talk_json === false) {
             return '';
         }
 
         $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-hero-talk.js' : '/js/eottae-home-hero-talk.js';
 
-        return '<script>window.__EOTTae_HOME_HERO_TALK__='.$talk_json.';'
-            .'window.__EOTTae_HOME_HERO_PLAZA__='.$plaza_json.';</script>'
+        return '<script>window.__EOTTae_HOME_HERO_TALK__='.$talk_json.';</script>'
             .'<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
     }
 }
@@ -993,10 +990,7 @@ if (!function_exists('eottae_builder_inject_home_plaza_feed')) {
             return $html;
         }
 
-        if (preg_match('#(<section[^>]*id=["\']eottae-home-talk-feed["\'][^>]*>.*?</section>)#is', $html, $m)
-            && strpos($html, 'id="eottae-home-plaza-feed"') === false) {
-            $html = str_replace($m[0], $m[0].$feed_html, $html);
-        } elseif (preg_match('#(<section[^>]*id=["\']eottae-home-plaza-feed["\'][^>]*>.*?</section>)#is', $html)) {
+        if (preg_match('#(<section[^>]*id=["\']eottae-home-plaza-feed["\'][^>]*>.*?</section>)#is', $html)) {
             return $html;
         } elseif (preg_match('#(<div\s+id=["\']root["\'][^>]*>\s*</div>)#i', $html)) {
             $html = preg_replace('#(<div\s+id=["\']root["\'][^>]*>\s*</div>)#i', '$1'.$feed_html, $html, 1);
@@ -1018,7 +1012,6 @@ if (!function_exists('eottae_builder_inject_html')) {
         }
 
         $html = eottae_builder_inject_home_map($html);
-        $html = eottae_builder_inject_home_talk_feed($html);
         $html = eottae_builder_inject_home_public_chat($html);
         $html = eottae_builder_inject_home_plaza_feed($html);
 
@@ -1034,7 +1027,6 @@ if (!function_exists('eottae_builder_inject_html')) {
         $body_scripts = eottae_builder_inject_featured_carousel_script();
         $body_scripts .= eottae_builder_inject_home_search_script();
         $body_scripts .= eottae_builder_inject_home_hero_talk_script();
-        $body_scripts .= eottae_builder_inject_home_talk_feed_script();
         $body_scripts .= eottae_builder_inject_home_public_chat_script();
         $body_scripts .= eottae_builder_inject_home_events_banner_script();
         $body_scripts .= eottae_builder_inject_home_header_actions_script();

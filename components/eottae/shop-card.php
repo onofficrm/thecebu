@@ -20,6 +20,9 @@ if (!function_exists('eottae_shop_card_html')) {
 
         $shop = eottae_shop_from_write($row, $bo_table);
         $thumb = eottae_shop_card_thumb($row, $bo_table);
+        if ($thumb !== '' && function_exists('eottae_map_public_url')) {
+            $thumb = eottae_map_public_url($thumb);
+        }
         $href = function_exists('eottae_shop_view_url')
             ? eottae_shop_view_url($shop['wr_id'], $bo_table)
             : G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$shop['wr_id'];
@@ -108,6 +111,9 @@ if (!function_exists('eottae_shop_list_card_html')) {
 
         $shop = eottae_shop_from_write($row, $bo_table);
         $thumb = eottae_shop_card_thumb($row, $bo_table);
+        if ($thumb !== '' && function_exists('eottae_map_public_url')) {
+            $thumb = eottae_map_public_url($thumb);
+        }
         $href = function_exists('eottae_shop_view_url')
             ? eottae_shop_view_url($shop['wr_id'], $bo_table)
             : G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$shop['wr_id'];

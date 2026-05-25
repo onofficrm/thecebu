@@ -1,36 +1,10 @@
 /**
- * 홈(빌더) — 히어로 3열: 중간(세부광장 톡방) · 우측(세부톡)
+ * 홈(빌더) — 인기글 행: 조회수급상승 오른쪽 세부톡방 추천
  */
 (function (global) {
   'use strict';
 
-  var VARIANTS = {
-    plaza: {
-      marker: 'data-eottae-home-plaza-hero',
-      ariaLabel: '세부광장 톡방',
-      title: '세부광장',
-      desc: '광장 이야기를 이어갈 톡방',
-      newLabel: '광장 연결 톡방',
-      hotLabel: '지금 뜨는 톡방',
-      moreLabel: '톡방 더보기',
-      panelClass: 'home-hero-talk-rooms home-hero-talk-rooms--plaza lg:col-span-4',
-    },
-    talk: {
-      marker: 'data-eottae-home-talk-sidebar',
-      ariaLabel: '세부톡 추천',
-      title: '세부톡',
-      desc: '지금 활발한 톡방을 만나보세요',
-      newLabel: '신규 톡방',
-      hotLabel: '화제의 톡방',
-      moreLabel: '톡방 더보기',
-      panelClass: 'home-hero-talk-rooms home-hero-talk-rooms--sidebar',
-    },
-  };
-
-  function cfg(key) {
-    if (key === 'plaza') {
-      return global.__EOTTae_HOME_HERO_PLAZA__ || null;
-    }
+  function cfg() {
     return global.__EOTTae_HOME_HERO_TALK__ || null;
   }
 
@@ -47,53 +21,21 @@
     return n.toLocaleString('ko-KR');
   }
 
-  function findHeroGrid() {
-    var headings = document.querySelectorAll('h1');
+  function findPopularRowCard() {
+    var headings = document.querySelectorAll('h3');
     var i;
     for (i = 0; i < headings.length; i += 1) {
-      if ((headings[i].textContent || '').indexOf('세부어때') !== -1) {
-        var section = headings[i].closest('section');
-        if (section && section.parentElement) {
-          return section.parentElement;
+      var text = headings[i].textContent || '';
+      if (text.indexOf('댓글 많은 글') !== -1) {
+        var card = headings[i].closest('div');
+        while (card && card.parentElement) {
+          if ((card.className || '').indexOf('rounded-[20px]') !== -1) {
+            return card;
+          }
+          card = card.parentElement;
         }
       }
     }
-    return null;
-  }
-
-  function findSidebarColumn(grid) {
-    if (!grid) {
-      return null;
-    }
-
-    var nodes = grid.children;
-    var i;
-    for (i = 0; i < nodes.length; i += 1) {
-      if ((nodes[i].className || '').indexOf('lg:col-span-4') !== -1) {
-        return nodes[i];
-      }
-    }
-
-    return nodes.length > 1 ? nodes[nodes.length - 1] : null;
-  }
-
-  function hideSidebarEvents(sidebar) {
-    if (!sidebar || sidebar.dataset.eottaeEventsHidden === '1') {
-      return null;
-    }
-
-    var sections = sidebar.querySelectorAll('section');
-    var i;
-    for (i = 0; i < sections.length; i += 1) {
-      var h2 = sections[i].querySelector('h2');
-      if (h2 && (h2.textContent || '').indexOf('업체 이벤트') !== -1) {
-        sections[i].style.display = 'none';
-        sections[i].setAttribute('data-eottae-hidden-events', '1');
-        sidebar.dataset.eottaeEventsHidden = '1';
-        return sections[i];
-      }
-    }
-
     return null;
   }
 
@@ -143,21 +85,20 @@
     return ''
       + '<section class="home-hero-talk-rooms__block">'
       + '<header class="home-hero-talk-rooms__block-head">'
-      + '<h3 class="home-hero-talk-rooms__block-title">'
+      + '<h4 class="home-hero-talk-rooms__block-title">'
       + '<span class="home-hero-talk-rooms__badge ' + badgeClass + '"></span>'
       + esc(title)
-      + '</h3>'
+      + '</h4>'
       + '</header>'
       + '<ul class="home-hero-talk-rooms__list">' + html + '</ul>'
       + '</section>';
   }
 
-  function buildPanel(data, variantKey) {
-    var variant = VARIANTS[variantKey];
-    var newHtml = renderSection(variant.newLabel, 'home-hero-talk-rooms__badge--new', data.new);
-    var hotHtml = renderSection(variant.hotLabel, 'home-hero-talk-rooms__badge--hot', data.hot);
+  function buildPanel(data) {
+    var newHtml = renderSection('신규 톡방', 'home-hero-talk-rooms__badge--new', data.new);
+    var hotHtml = renderSection('화제의 톡방', 'home-hero-talk-rooms__badge--hot', data.hot);
     var body = newHtml + hotHtml;
-    var listUrl = data.list_url || (variantKey === 'plaza' ? '/talk' : '/talk');
+    var listUrl = data.list_url || '/talk';
     var createUrl = data.create_url || '/page/eottae-talk-create.php';
 
     if (!body) {
@@ -169,79 +110,96 @@
     }
 
     var panel = document.createElement('aside');
-    panel.className = variant.panelClass;
-    panel.setAttribute(variant.marker, '1');
-    panel.setAttribute('aria-label', variant.ariaLabel);
+    panel.className = 'home-hero-talk-rooms home-hero-talk-rooms--content';
+    panel.setAttribute('data-eottae-home-talk-content', '1');
+    panel.setAttribute('aria-label', '세부톡 추천');
     panel.innerHTML = ''
       + '<div class="home-hero-talk-rooms__card">'
-      + '<header class="home-hero-talk-rooms__head">'
-      + '<h2 class="home-hero-talk-rooms__title">' + esc(variant.title) + '</h2>'
-      + '<p class="home-hero-talk-rooms__desc">' + esc(variant.desc) + '</p>'
-      + '</header>'
       + body
       + '<footer class="home-hero-talk-rooms__footer">'
-      + '<a href="' + esc(listUrl) + '" class="home-hero-talk-rooms__more">' + esc(variant.moreLabel) + '</a>'
-      + (variantKey === 'plaza' && data.plaza_url
-        ? '<a href="' + esc(data.plaza_url) + '" class="home-hero-talk-rooms__more home-hero-talk-rooms__more--ghost">세부광장으로</a>'
-        : '')
+      + '<a href="' + esc(listUrl) + '" class="home-hero-talk-rooms__more">톡방 더보기</a>'
       + '</footer>'
       + '</div>';
 
     return panel;
   }
 
-  function mountPlaza() {
-    var data = cfg('plaza');
+  function mountContentTalk() {
+    var data = cfg();
     if (!data) {
       return;
     }
 
-    var grid = findHeroGrid();
-    if (!grid || grid.querySelector('[data-eottae-home-plaza-hero]')) {
+    var card = findPopularRowCard();
+    if (!card || card.querySelector('[data-eottae-home-talk-content]')) {
       return;
     }
 
-    var sidebar = findSidebarColumn(grid);
-    var panel = buildPanel(data, 'plaza');
-    grid.classList.add('eottae-home-hero-grid--3col');
+    var headingWrap = card.querySelector('.flex.items-center.justify-between');
+    if (headingWrap) {
+      var title = headingWrap.querySelector('h3');
+      if (title) {
+        title.textContent = '세부톡';
+      }
+      var more = headingWrap.querySelector('a');
+      if (more && data.list_url) {
+        more.setAttribute('href', data.list_url);
+      }
+    }
 
-    if (sidebar) {
-      grid.insertBefore(panel, sidebar);
-    } else {
-      grid.appendChild(panel);
+    var listContainer = card.querySelector('.flex.flex-col.gap-3\\.5');
+    if (!listContainer) {
+      listContainer = card.querySelector('.flex.flex-col');
+    }
+    if (!listContainer) {
+      return;
+    }
+
+    listContainer.innerHTML = '';
+    listContainer.appendChild(buildPanel(data));
+  }
+
+  function cleanupLegacyHeroTalk() {
+    var legacy = document.querySelectorAll('[data-eottae-home-plaza-hero], [data-eottae-home-talk-sidebar]');
+    var i;
+    for (i = 0; i < legacy.length; i += 1) {
+      if (legacy[i].parentNode) {
+        legacy[i].parentNode.removeChild(legacy[i]);
+      }
+    }
+
+    var feed = document.getElementById('eottae-home-talk-feed');
+    if (feed && feed.parentNode) {
+      feed.parentNode.removeChild(feed);
     }
   }
 
-  function mountTalkSidebar() {
-    var data = cfg('talk');
-    if (!data) {
-      return;
-    }
-
-    var grid = findHeroGrid();
-    if (!grid) {
-      return;
-    }
-
-    var sidebar = findSidebarColumn(grid);
-    if (!sidebar || sidebar.querySelector('[data-eottae-home-talk-sidebar]')) {
-      return;
-    }
-
-    var hiddenEvents = hideSidebarEvents(sidebar);
-    var panel = buildPanel(data, 'talk');
-    grid.classList.add('eottae-home-hero-grid--3col');
-
-    if (hiddenEvents && hiddenEvents.parentNode) {
-      hiddenEvents.parentNode.insertBefore(panel, hiddenEvents);
-    } else {
-      sidebar.appendChild(panel);
+  function hidePlazaSectionThirdColumn() {
+    var headings = document.querySelectorAll('h2, h3');
+    var i;
+    for (i = 0; i < headings.length; i += 1) {
+      var text = (headings[i].textContent || '').replace(/\s+/g, '');
+      if (text.indexOf('세부광장') === -1) {
+        continue;
+      }
+      var section = headings[i].closest('section');
+      if (!section) {
+        continue;
+      }
+      var grids = section.querySelectorAll('.grid');
+      var g;
+      for (g = 0; g < grids.length; g += 1) {
+        if (grids[g].children.length >= 3) {
+          grids[g].children[2].style.display = 'none';
+        }
+      }
     }
   }
 
   function mount() {
-    mountPlaza();
-    mountTalkSidebar();
+    cleanupLegacyHeroTalk();
+    hidePlazaSectionThirdColumn();
+    mountContentTalk();
   }
 
   function init() {
@@ -266,6 +224,9 @@
   } else {
     init();
   }
+
+  global.setTimeout(init, 400);
+  global.setTimeout(init, 1200);
 
   global.initEottaeHomeHeroTalk = init;
 }(window));

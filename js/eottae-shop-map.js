@@ -48,6 +48,23 @@
     };
   }
 
+  function resolveAbsoluteUrl(url) {
+    if (!url) {
+      return '';
+    }
+    var value = String(url);
+    if (/^https?:\/\//i.test(value)) {
+      return value;
+    }
+    if (value.indexOf('//') === 0) {
+      return global.location.protocol + value;
+    }
+    if (value.charAt(0) === '/') {
+      return global.location.origin + value;
+    }
+    return global.location.origin + '/' + value;
+  }
+
   function cardThumbnailById(id) {
     if (id == null || id === '') return '';
     var card = document.querySelector('[data-shop-card][data-wr-id="' + String(id).replace(/"/g, '\\"') + '"]');
@@ -55,7 +72,7 @@
     var img = card.querySelector('.shop-list-card__thumb');
     if (!img || !img.getAttribute) return '';
 
-    return img.getAttribute('src') || '';
+    return img.currentSrc || img.getAttribute('src') || '';
   }
 
   function markerThumbContent(loc) {
@@ -80,6 +97,66 @@
     wrap.appendChild(img);
 
     return wrap;
+  }
+
+  function createShopThumbOverlay(loc, map, panel) {
+    var position = new global.google.maps.LatLng(loc.lat, loc.lng);
+    var overlay = new global.google.maps.OverlayView();
+    var div = null;
+
+    overlay.onAdd = function () {
+      div = markerThumbContent(loc);
+      if (!div) {
+        return;
+      }
+      div.style.position = 'absolute';
+      div.style.cursor = 'pointer';
+      div.style.zIndex = '2';
+      div.addEventListener('click', function (event) {
+        event.preventDefault();
+        openMarkerInfoWindow(panel.infoWindow, map, overlay, loc);
+      });
+      var panes = overlay.getPanes();
+      if (panes && panes.overlayMouseTarget) {
+        panes.overlayMouseTarget.appendChild(div);
+      }
+    };
+
+    overlay.draw = function () {
+      if (!div) {
+        return;
+      }
+      var projection = overlay.getProjection();
+      if (!projection) {
+        return;
+      }
+      var point = projection.fromLatLngToDivPixel(position);
+      if (!point) {
+        return;
+      }
+      var w = div.offsetWidth || 46;
+      var h = div.offsetHeight || 46;
+      div.style.left = Math.round(point.x - w / 2) + 'px';
+      div.style.top = Math.round(point.y - h) + 'px';
+    };
+
+    overlay.onRemove = function () {
+      if (div && div.parentNode) {
+        div.parentNode.removeChild(div);
+      }
+      div = null;
+    };
+
+    overlay.getPosition = function () {
+      return position;
+    };
+
+    overlay.openInfo = function () {
+      openMarkerInfoWindow(panel.infoWindow, map, overlay, loc);
+    };
+
+    overlay.setMap(map);
+    return overlay;
   }
 
   function markerIcon(loc) {
@@ -249,8 +326,10 @@
     this.locations.forEach(function (loc) {
       var cardThumbnail = cardThumbnailById(loc.id);
       if (cardThumbnail) {
-        loc.cardThumbnail = cardThumbnail;
-        loc.thumbnail = cardThumbnail;
+        loc.cardThumbnail = resolveAbsoluteUrl(cardThumbnail);
+        loc.thumbnail = loc.cardThumbnail;
+      } else if (loc.thumbnail) {
+        loc.thumbnail = resolveAbsoluteUrl(loc.thumbnail);
       }
     });
   };
@@ -274,6 +353,7 @@
     this.infoWindow = new global.google.maps.InfoWindow({ maxWidth: 240 });
     this.applyCardThumbnailFallbacks();
     this.renderMarkers();
+    this.bindCardThumbRefresh();
     this.bindEvents();
     this.bindCardSync();
     this.root.classList.add('is-live');
@@ -294,26 +374,19 @@
     self.markerById = {};
     self.locations.forEach(function (loc) {
       var position = { lat: loc.lat, lng: loc.lng };
-      var content = markerThumbContent(loc);
       var marker;
-      if (content && global.google.maps.marker && global.google.maps.marker.AdvancedMarkerElement) {
-        marker = new global.google.maps.marker.AdvancedMarkerElement({
-          position: position,
-          map: self.map,
-          title: loc.name,
-          content: content
-        });
+      if (loc.thumbnail) {
+        marker = createShopThumbOverlay(loc, self.map, self);
       } else {
         marker = new global.google.maps.Marker({
           position: position,
           map: self.map,
-          title: loc.name,
-          icon: markerIcon(loc)
+          title: loc.name
+        });
+        marker.addListener('click', function () {
+          openMarkerInfoWindow(self.infoWindow, self.map, marker, loc);
         });
       }
-      marker.addListener('click', function () {
-        openMarkerInfoWindow(self.infoWindow, self.map, marker, loc);
-      });
       self.markers.push(marker);
       if (loc.id !== '' && loc.id != null) {
         self.markerById[String(loc.id)] = marker;
@@ -356,6 +429,10 @@
     }
     this.map.panTo({ lat: loc.lat, lng: loc.lng });
     this.map.setZoom(Math.max(this.zoom, 15));
+    if (typeof marker.openInfo === 'function') {
+      marker.openInfo();
+      return;
+    }
     global.google.maps.event.trigger(marker, 'click');
   };
 
@@ -412,6 +489,23 @@
     );
   };
 
+  ShopMapPanel.prototype.bindCardThumbRefresh = function () {
+    var self = this;
+    document.querySelectorAll('[data-shop-card] .shop-list-card__thumb').forEach(function (img) {
+      if (img.complete) {
+        return;
+      }
+      img.addEventListener(
+        'load',
+        function () {
+          self.applyCardThumbnailFallbacks();
+          self.renderMarkers();
+        },
+        { once: true }
+      );
+    });
+  };
+
   ShopMapPanel.prototype.bindEvents = function () {
     var self = this;
     if (self.locateBtn) {
@@ -427,7 +521,7 @@
     this.lat = parseNum(root.dataset.mapLat, NaN);
     this.lng = parseNum(root.dataset.mapLng, NaN);
     this.name = root.dataset.mapName || '업체';
-    this.thumbnail = root.dataset.mapThumbnail || '';
+    this.thumbnail = resolveAbsoluteUrl(root.dataset.mapThumbnail || '');
     this.zoom = parseInt(root.dataset.mapZoom, 10) || 15;
     this.map = null;
     this.marker = null;
@@ -453,12 +547,19 @@
       streetViewControl: false,
       fullscreenControl: true
     });
-    this.marker = new global.google.maps.Marker({
-      position: center,
-      map: this.map,
-      title: this.name,
-      icon: markerIcon({ thumbnail: this.thumbnail })
-    });
+    if (this.thumbnail) {
+      this.marker = createShopThumbOverlay(
+        { lat: this.lat, lng: this.lng, thumbnail: this.thumbnail, name: this.name },
+        this.map,
+        { infoWindow: new global.google.maps.InfoWindow({ maxWidth: 240 }) }
+      );
+    } else {
+      this.marker = new global.google.maps.Marker({
+        position: center,
+        map: this.map,
+        title: this.name
+      });
+    }
     this.root.classList.add('is-live');
   };
 

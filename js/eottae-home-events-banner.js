@@ -1,5 +1,5 @@
 /**
- * 홈(빌더) — 업체 이벤트/기획전 배너 (댓글 많은 글 블록)
+ * 홈(빌더) — 업체 이벤트/기획전 배너 (히어로 3열 사이드바)
  */
 (function (global) {
   'use strict';
@@ -30,18 +30,28 @@
     return (d.getMonth() + 1) + '.' + d.getDate();
   }
 
-  function findCommentsBlockCard() {
-    var headings = document.querySelectorAll('h3');
+  function findHeroSidebar() {
+    if (typeof global.findEottaeHeroSidebarColumn === 'function') {
+      return global.findEottaeHeroSidebarColumn();
+    }
+
+    var headings = document.querySelectorAll('h1');
     var i;
     for (i = 0; i < headings.length; i += 1) {
-      if ((headings[i].textContent || '').indexOf('댓글 많은 글') !== -1) {
-        var card = headings[i].closest('div');
-        while (card && card.parentElement) {
-          if ((card.className || '').indexOf('rounded-[20px]') !== -1) {
-            return card;
-          }
-          card = card.parentElement;
+      if ((headings[i].textContent || '').indexOf('세부어때') !== -1) {
+        var section = headings[i].closest('section');
+        var grid = section && section.parentElement;
+        if (!grid) {
+          continue;
         }
+        var nodes = grid.children;
+        var j;
+        for (j = 0; j < nodes.length; j += 1) {
+          if ((nodes[j].className || '').indexOf('lg:col-span-4') !== -1) {
+            return nodes[j];
+          }
+        }
+        return nodes.length > 1 ? nodes[nodes.length - 1] : null;
       }
     }
     return null;
@@ -79,10 +89,10 @@
         ? '<div class="home-events-banner__dots" aria-hidden="true">' + dots + '</div>'
         : '');
 
-  return root;
-}
+    return root;
+  }
 
-function bindCarousel(root) {
+  function bindCarousel(root) {
     if (!root || root.dataset.bound === '1') {
       return;
     }
@@ -160,34 +170,23 @@ function bindCarousel(root) {
       return;
     }
 
-    var card = findCommentsBlockCard();
-    if (!card || card.querySelector('[data-eottae-events-banner]')) {
+    var sidebar = findHeroSidebar();
+    if (!sidebar || sidebar.querySelector('[data-eottae-events-banner]')) {
       return;
     }
 
-    var headingWrap = card.querySelector('.flex.items-center.justify-between');
-    if (headingWrap) {
-      var title = headingWrap.querySelector('h3');
-      if (title) {
-        title.textContent = '업체 이벤트 / 기획전';
-      }
-      var more = headingWrap.querySelector('a');
-      if (more && data.list_url) {
-        more.setAttribute('href', data.list_url);
-      }
-    }
+    var wrap = document.createElement('div');
+    wrap.className = 'home-hero-sidebar-events';
+    wrap.setAttribute('aria-label', '업체 이벤트 / 기획전');
 
-    var listContainer = card.querySelector('.flex.flex-col.gap-3\\.5');
-    if (!listContainer) {
-      listContainer = card.querySelector('.flex.flex-col');
-    }
-    if (!listContainer) {
-      return;
-    }
+    var title = document.createElement('h3');
+    title.className = 'home-hero-sidebar-events__title';
+    title.textContent = '업체 이벤트 / 기획전';
+    wrap.appendChild(title);
 
-    listContainer.innerHTML = '';
     var banner = buildBanner(data.events, data.list_url || '/page/eottae-events.php');
-    listContainer.appendChild(banner);
+    wrap.appendChild(banner);
+    sidebar.appendChild(wrap);
     bindCarousel(banner);
   }
 
@@ -213,6 +212,9 @@ function bindCarousel(root) {
   } else {
     init();
   }
+
+  global.setTimeout(init, 400);
+  global.setTimeout(init, 1200);
 
   global.initEottaeHomeEventsBanner = init;
 }(window));
