@@ -1718,19 +1718,16 @@ body.talk-admin-shell .talk-admin-applies__panel {
   visibility: visible !important;
   opacity: 1 !important;
   min-height: 180px;
-  margin-top: 16px;
+  margin-top: 0;
   padding: 0;
   overflow: visible;
   position: relative;
   z-index: 2;
-  border-top: 1px solid #eef2f6;
-  border-radius: 0 0 18px 18px;
   background: #fff;
 }
 
 body.talk-admin-shell .promo-admin-page__header {
   overflow: visible;
-  padding-bottom: 0;
 }
 
 body.talk-admin-shell .talk-admin-applies__summary {

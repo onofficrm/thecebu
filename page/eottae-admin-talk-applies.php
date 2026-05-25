@@ -25,10 +25,6 @@ if (!is_array($applications)) {
     $applications = array();
 }
 
-if (function_exists('eottae_talkroom_set_admin_applies_context')) {
-    eottae_talkroom_set_admin_applies_context($applications, $filter, $pending_count);
-}
-
 $admin_token = eottae_talkroom_admin_token();
 
 g5_talk_admin_page_start('개설 신청 관리');
@@ -53,6 +49,8 @@ g5_talk_admin_page_start('개설 신청 관리');
         </p>
         <?php eottae_talkroom_render_admin_nav('applies'); ?>
     </header>
+
+    <?php eottae_talkroom_render_admin_applies_panel($applications, $filter, $pending_count); ?>
 </main>
 
 <?php
