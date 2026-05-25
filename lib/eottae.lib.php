@@ -928,6 +928,7 @@ if (!function_exists('eottae_builder_inject_home_plaza_feed')) {
         if (!function_exists('eottae_plaza_home_feed_html')) {
             $component = G5_PATH.'/components/eottae/plaza-home-feed.php';
             if (is_file($component)) {
+                include_once G5_LIB_PATH.'/eottae-plaza-home-feed.lib.php';
                 include_once $component;
             }
         }

@@ -7,6 +7,7 @@ if (!function_exists('eottae_plaza_home_feed_html')) {
     function eottae_plaza_home_feed_html($limit = 5)
     {
         include_once G5_LIB_PATH.'/eottae-plaza.lib.php';
+        include_once G5_LIB_PATH.'/eottae-plaza-home-feed.lib.php';
 
         $feed_context = eottae_plaza_home_feed_context($limit);
         $posts = $feed_context['posts'];
