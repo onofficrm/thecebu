@@ -6,8 +6,14 @@ include_once(G5_LIB_PATH.'/eottae.lib.php');
 include_once(G5_LIB_PATH.'/eottae-shop-owner.lib.php');
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
 
-$shop = eottae_shop_from_write($view);
+$shop = eottae_shop_from_write($view, $bo_table);
+$shop_youtube_id = eottae_shop_youtube_id($shop);
 $shop_sns_links = eottae_shop_sns_links($shop['sns']);
+if ($shop_youtube_id) {
+    $shop_sns_links = array_values(array_filter($shop_sns_links, function ($link) {
+        return ($link['key'] ?? '') !== 'youtube';
+    }));
+}
 eottae_enqueue_google_maps();
 eottae_track_recent_shop($view['wr_id']);
 $shop_is_saved = $is_member && eottae_is_shop_saved($member['mb_id'], $view['wr_id']);
@@ -77,6 +83,13 @@ if (function_exists('eottae_shop_apply_manage_links')) {
             </div>
 
             <section class="shop-detail-page__content" id="bo_v_con">
+                <?php if ($shop_youtube_id) {
+                    include_once(G5_SKIN_PATH.'/board/_inc/g5b-youtube.php');
+                    ?>
+                <div class="shop-detail-page__video" aria-label="소개 영상">
+                    <?php echo g5b_youtube_embed_html($shop_youtube_id, $shop['name'].' 소개 영상'); ?>
+                </div>
+                <?php } ?>
                 <?php echo get_view_thumbnail($view['content']); ?>
             </section>
 

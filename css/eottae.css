@@ -1601,6 +1601,23 @@ body.eottae-page hr {
   margin-bottom: 8px;
 }
 
+.shop-detail-page__video {
+  margin: 0 0 1rem;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+.shop-detail-page__video .board-yt-embed,
+.shop-detail-page__video .board-yt-embed__ratio {
+  margin: 0;
+  border-radius: 12px;
+}
+
+.shop-detail-page__video .board-yt-embed__ratio {
+  padding-bottom: 56.25%;
+}
+
 .shop-detail-page__footer {
   margin-top: 24px;
 }

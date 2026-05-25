@@ -231,6 +231,7 @@
         form.append('tiktok', shopAiValue(root, '#eottae_sns_tiktok'));
         form.append('facebook', shopAiValue(root, '#eottae_sns_facebook'));
         form.append('naver_blog', shopAiValue(root, '#eottae_sns_naver_blog'));
+        form.append('youtube', shopAiValue(root, '#eottae_sns_youtube'));
         form.append('intro', shopAiValue(root, '#wr_content'));
 
         buttons.forEach(function (b) {
@@ -363,6 +364,7 @@
       ['틱톡', qs('#eottae_sns_tiktok', root)],
       ['페이스북', qs('#eottae_sns_facebook', root)],
       ['네이버블로그', qs('#eottae_sns_naver_blog', root)],
+      ['유튜브', qs('#eottae_sns_youtube', root)],
       ['영업시간', qs('#wr_6', root)],
       ['영업상태', qs('#wr_8', root)],
       ['SEO 타이틀', qs('#eottae_seo_title', root)],

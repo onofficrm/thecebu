@@ -28,15 +28,102 @@ if (!function_exists('eottae_is_business_member')) {
     }
 }
 
+if (!function_exists('eottae_shop_resolve_inquiry_code')) {
+    /**
+     * 업체 문의 연결 코드 — 등록자 입력 없이 wr_id 기준 자동 생성
+     */
+    function eottae_shop_resolve_inquiry_code($wr, $bo_table = '')
+    {
+        if (!is_array($wr)) {
+            return '';
+        }
+
+        $manual = isset($wr['wr_5']) ? trim((string) $wr['wr_5']) : '';
+        if ($manual !== '') {
+            return get_text($manual);
+        }
+
+        $wr_id = isset($wr['wr_id']) ? (int) $wr['wr_id'] : 0;
+        if ($wr_id < 1) {
+            return '';
+        }
+
+        if ($bo_table === '' && !empty($wr['bo_table'])) {
+            $bo_table = (string) $wr['bo_table'];
+        }
+        if ($bo_table === '') {
+            $bo_table = defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop';
+        }
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', $bo_table);
+
+        return 'shop-'.$bo_table.'-'.$wr_id;
+    }
+}
+
+if (!function_exists('eottae_shop_ensure_inquiry_code')) {
+    /** 문의 연결 코드가 비어 있으면 shop-{게시판}-{글번호} 로 자동 저장 */
+    function eottae_shop_ensure_inquiry_code($bo_table, $wr_id)
+    {
+        global $g5;
+
+        $wr_id = (int) $wr_id;
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+        if ($wr_id < 1 || $bo_table === '') {
+            return;
+        }
+
+        $write_table = $g5['write_prefix'].$bo_table;
+        $row = sql_fetch(" select wr_5 from {$write_table} where wr_id = '{$wr_id}' ");
+        if (!$row || trim((string) $row['wr_5']) !== '') {
+            return;
+        }
+
+        $code = 'shop-'.$bo_table.'-'.$wr_id;
+        sql_query(" update {$write_table} set wr_5 = '".sql_escape_string($code)."' where wr_id = '{$wr_id}' ");
+    }
+}
+
+if (!function_exists('eottae_shop_youtube_id')) {
+    function eottae_shop_youtube_id($shop)
+    {
+        if (!is_array($shop)) {
+            return '';
+        }
+
+        $url = '';
+        if (!empty($shop['youtube'])) {
+            $url = trim((string) $shop['youtube']);
+        } elseif (!empty($shop['sns'])) {
+            $url = eottae_shop_sns_value($shop['sns'], 'youtube');
+        }
+
+        if ($url === '') {
+            return '';
+        }
+
+        if (!function_exists('g5b_youtube_id_from_url')) {
+            include_once G5_SKIN_PATH.'/board/_inc/g5b-youtube.php';
+        }
+
+        return g5b_youtube_id_from_url($url);
+    }
+}
+
 if (!function_exists('eottae_shop_from_write')) {
     /**
      * shop 게시판 wr_* → 표준 배열 (명세 매핑)
      */
-    function eottae_shop_from_write($wr)
+    function eottae_shop_from_write($wr, $bo_table = '')
     {
         if (!is_array($wr)) {
             return array();
         }
+
+        if ($bo_table === '' && !empty($wr['bo_table'])) {
+            $bo_table = (string) $wr['bo_table'];
+        }
+
+        $sns_raw = isset($wr['wr_link2']) ? get_text($wr['wr_link2']) : '';
 
         return array(
             'name'          => isset($wr['wr_subject']) ? get_text($wr['wr_subject']) : '',
@@ -44,14 +131,15 @@ if (!function_exists('eottae_shop_from_write')) {
             'region'        => isset($wr['wr_2']) ? get_text($wr['wr_2']) : '',
             'address'       => isset($wr['wr_3']) ? get_text($wr['wr_3']) : '',
             'phone'         => isset($wr['wr_4']) ? get_text($wr['wr_4']) : '',
-            'inquiry_code'  => isset($wr['wr_5']) ? get_text($wr['wr_5']) : '',
+            'inquiry_code'  => eottae_shop_resolve_inquiry_code($wr, $bo_table),
             'hours'         => isset($wr['wr_6']) ? get_text($wr['wr_6']) : '',
             'closed'        => isset($wr['wr_7']) ? get_text($wr['wr_7']) : '',
             'status'        => isset($wr['wr_8']) ? get_text($wr['wr_8']) : '',
             'lat'           => isset($wr['wr_9']) ? get_text($wr['wr_9']) : '',
             'lng'           => isset($wr['wr_10']) ? get_text($wr['wr_10']) : '',
             'website'       => isset($wr['wr_link1']) ? get_text($wr['wr_link1']) : '',
-            'sns'           => isset($wr['wr_link2']) ? get_text($wr['wr_link2']) : '',
+            'youtube'       => eottae_shop_sns_value($sns_raw, 'youtube'),
+            'sns'           => $sns_raw,
             'content'       => isset($wr['wr_content']) ? $wr['wr_content'] : '',
             'wr_id'         => isset($wr['wr_id']) ? (int) $wr['wr_id'] : 0,
         );
@@ -80,6 +168,7 @@ if (!function_exists('eottae_shop_sns_links')) {
             'tiktok' => '틱톡',
             'facebook' => '페이스북',
             'naver_blog' => '네이버블로그',
+            'youtube' => '유튜브',
             'sns' => 'SNS',
         );
 
@@ -1948,7 +2037,7 @@ if (!function_exists('eottae_shop_prepare_write_post')) {
         }
         $sns_payload = array();
         $has_sns_fields = false;
-        foreach (array('instagram', 'tiktok', 'facebook', 'naver_blog') as $sns_key) {
+        foreach (array('instagram', 'tiktok', 'facebook', 'naver_blog', 'youtube') as $sns_key) {
             $post_key = 'eottae_sns_'.$sns_key;
             if (isset($_POST[$post_key])) {
                 $has_sns_fields = true;

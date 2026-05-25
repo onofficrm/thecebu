@@ -7,6 +7,7 @@ include_once(G5_SKIN_PATH.'/board/_inc/g5b-thumb.php');
 $gal_w = (int)$board['bo_gallery_width'] > 0 ? (int)$board['bo_gallery_width'] : 360;
 $gal_h = (int)$board['bo_gallery_height'] > 0 ? (int)$board['bo_gallery_height'] : 270;
 
+include_once(G5_SKIN_PATH.'/board/_inc/g5b-media-board-assets.php');
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
 ?>
 

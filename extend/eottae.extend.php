@@ -139,6 +139,10 @@ if (!function_exists('eottae_on_shop_write_after')) {
         if (function_exists('eottae_shop_map_thumb_save_from_upload')) {
             eottae_shop_map_thumb_save_from_upload($board['bo_table'], (int) $wr_id);
         }
+
+        if (function_exists('eottae_shop_ensure_inquiry_code')) {
+            eottae_shop_ensure_inquiry_code($board['bo_table'], (int) $wr_id);
+        }
     }
 }
 add_event('write_update_after', 'eottae_on_shop_write_after', 10, 5);
@@ -275,3 +279,84 @@ if (isset($board) && is_array($board) && isset($board['bo_skin'])) {
         add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/g5b-board.css">', 4);
     }
 }
+
+if (!function_exists('eottae_is_media_board_table')) {
+    function eottae_is_media_board_table($bo_table)
+    {
+        $bo_table = (string) $bo_table;
+        if ($bo_table === '') {
+            return false;
+        }
+        if (defined('EOTTae_GALLERY_TABLE') && $bo_table === EOTTae_GALLERY_TABLE) {
+            return true;
+        }
+        if (defined('EOTTae_YOUTUBE_TABLE') && $bo_table === EOTTae_YOUTUBE_TABLE) {
+            return true;
+        }
+
+        return in_array($bo_table, array('gallery', 'youtube'), true);
+    }
+}
+
+if (!function_exists('eottae_is_media_board')) {
+    function eottae_is_media_board($board)
+    {
+        return is_array($board) && !empty($board['bo_table']) && eottae_is_media_board_table($board['bo_table']);
+    }
+}
+
+if (!function_exists('eottae_ensure_media_board_skins')) {
+    /** gallery/youtube 게시판이 구형 스킨이면 모던 목록 스킨으로 자동 교체 */
+    function eottae_ensure_media_board_skins()
+    {
+        static $done = false;
+        if ($done) {
+            return;
+        }
+        $done = true;
+
+        global $g5, $board;
+
+        $targets = array(
+            'gallery' => array('skin' => 'gallery-grid', 'mobile' => 'gallery-grid'),
+            'youtube' => array('skin' => 'youtube-list', 'mobile' => 'youtube-list'),
+        );
+
+        foreach ($targets as $bo_table => $skins) {
+            $row = sql_fetch(" select bo_skin, bo_mobile_skin from {$g5['board_table']} where bo_table = '".sql_escape_string($bo_table)."' ");
+            if (!$row) {
+                continue;
+            }
+            if ($row['bo_skin'] === $skins['skin'] && $row['bo_mobile_skin'] === $skins['mobile']) {
+                continue;
+            }
+
+            sql_query(" update {$g5['board_table']} set
+                bo_skin = '".sql_escape_string($skins['skin'])."',
+                bo_mobile_skin = '".sql_escape_string($skins['mobile'])."'
+                where bo_table = '".sql_escape_string($bo_table)."' ");
+
+            if (is_array($board) && isset($board['bo_table']) && $board['bo_table'] === $bo_table) {
+                $board['bo_skin'] = $skins['skin'];
+                $board['bo_mobile_skin'] = $skins['mobile'];
+            }
+        }
+    }
+}
+
+if (!function_exists('eottae_load_media_board_assets')) {
+    function eottae_load_media_board_assets()
+    {
+        global $board;
+
+        if (!eottae_is_media_board($board)) {
+            return;
+        }
+
+        eottae_ensure_media_board_skins();
+
+        add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/g5b-board.css">', 4);
+        add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-media-boards.css?v=2">', 30);
+    }
+}
+add_event('board_head_before', 'eottae_load_media_board_assets', 5);

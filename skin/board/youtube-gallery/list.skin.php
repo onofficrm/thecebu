@@ -2,6 +2,7 @@
 if (!defined('_GNUBOARD_')) exit;
 
 include_once(G5_SKIN_PATH.'/board/_inc/g5b-youtube.php');
+include_once(G5_SKIN_PATH.'/board/_inc/g5b-media-board-assets.php');
 
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
 ?>

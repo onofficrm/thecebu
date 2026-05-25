@@ -57,6 +57,7 @@ $closed_day_options = array(
     '비정기 휴무',
 );
 $sns_values = array(
+    'youtube' => eottae_shop_sns_value($v['wr_link2'], 'youtube'),
     'instagram' => eottae_shop_sns_value($v['wr_link2'], 'instagram'),
     'tiktok' => eottae_shop_sns_value($v['wr_link2'], 'tiktok'),
     'facebook' => eottae_shop_sns_value($v['wr_link2'], 'facebook'),
@@ -166,21 +167,21 @@ $shop_seo_v = function_exists('eottae_shop_seo_resolve_for_write')
     </div>
 
     <div class="shop-register-page__panel" data-step="2">
-        <h3>3. 연락처 · 문의 연결</h3>
+        <h3>3. 연락처 · SNS</h3>
         <div class="eottae-field">
             <label for="wr_4">전화번호</label>
             <input type="tel" name="wr_4" id="wr_4" value="<?php echo $v['wr_4']; ?>" placeholder="032-123-4567">
-        </div>
-        <div class="eottae-field">
-            <label for="wr_5">문의 연결 코드</label>
-            <input type="text" name="wr_5" id="wr_5" value="<?php echo $v['wr_5']; ?>" placeholder="shop-code (영문·숫자)">
-            <p class="eottae-field__hint">고객 화면에는 '문의하기'로만 표시됩니다.</p>
         </div>
         <div class="eottae-field">
             <label for="wr_link1">홈페이지 URL</label>
             <input type="url" name="wr_link1" id="wr_link1" value="<?php echo $v['wr_link1']; ?>">
         </div>
         <input type="hidden" name="wr_link2" id="wr_link2" value="<?php echo $v['wr_link2']; ?>">
+        <div class="eottae-field">
+            <label for="eottae_sns_youtube">유튜브 소개 영상 URL <span class="board-write-form__optional">(선택)</span></label>
+            <input type="url" name="eottae_sns_youtube" id="eottae_sns_youtube" value="<?php echo $sns_values['youtube']; ?>" placeholder="https://www.youtube.com/watch?v=...">
+            <p class="eottae-field__hint">등록하면 업체 상세 페이지 업체소개 영역에 영상이 표시됩니다.</p>
+        </div>
         <div class="shop-register-page__sns-grid">
             <div class="eottae-field">
                 <label for="eottae_sns_instagram">인스타그램 URL</label>

@@ -51,6 +51,7 @@ LIB_FILES=(
 
 CSS_FILES=(
   css/eottae.css
+  css/eottae-media-boards.css
   css/g5b-board.css
   css/custom.css
 )
