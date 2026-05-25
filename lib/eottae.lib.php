@@ -581,10 +581,31 @@ if (!function_exists('eottae_builder_inject_home_map')) {
     }
 }
 
+if (!function_exists('eottae_builder_logo_url')) {
+    function eottae_builder_logo_url()
+    {
+        return eottae_site_logo_url('logo_path');
+    }
+}
+
+if (!function_exists('eottae_builder_inject_logo_head_script')) {
+    function eottae_builder_inject_logo_head_script()
+    {
+        $logo = eottae_builder_logo_url();
+        if ($logo === '') {
+            return '';
+        }
+
+        $logo_js = json_encode($logo, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        return '<script>window.__EOTTae_LOGO__='.$logo_js.';</script>';
+    }
+}
+
 if (!function_exists('eottae_builder_inject_logo_script')) {
     function eottae_builder_inject_logo_script()
     {
-        $logo = eottae_site_logo_url('logo_path');
+        $logo = eottae_builder_logo_url();
         if ($logo === '') {
             return '';
         }
@@ -592,7 +613,7 @@ if (!function_exists('eottae_builder_inject_logo_script')) {
         $logo_js = json_encode($logo, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $home_js = json_encode((defined('G5_URL') ? G5_URL : '').'/', JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-        return '<script>(function(){var LOGO='.$logo_js.';var HOME='.$home_js.';function normalizePath(href){if(!href){return"";}try{var url=new URL(href,window.location.origin);var path=url.pathname.replace(/\\/+$/,"");return path===""?"/":path;}catch(e){return href;}}function isHomeLogoAnchor(a){if(!a||!a.closest("header")){return false;}var href=a.getAttribute("href")||"";if(href===HOME||href===HOME.replace(/\\/+$/, "")+"/"){return true;}return normalizePath(href)==="/";}function applyLogo(){document.querySelectorAll("header a[href]").forEach(function(a){if(!isHomeLogoAnchor(a)){return;}a.classList.add("eottae-gnb-header__logo");a.setAttribute("data-eottae-logo-link","1");var img=a.querySelector("img[data-eottae-logo]");if(img&&img.getAttribute("src")===LOGO){return;}a.innerHTML=\'<img data-eottae-logo class="eottae-gnb-header__logo-img" src="\'+LOGO+\'" alt="세부어때">\';});}function scheduleApply(){window.requestAnimationFrame(applyLogo);}applyLogo();if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",applyLogo);}new MutationObserver(scheduleApply).observe(document.documentElement,{childList:true,subtree:true});})();</script>';
+        return '<script>(function(){var LOGO=window.__EOTTae_LOGO__||'.$logo_js.';var HOME='.$home_js.';function normalizePath(href){if(!href){return"";}try{var url=new URL(href,window.location.origin);var path=url.pathname.replace(/\\/+$/,"");return path===""?"/":path;}catch(e){return href;}}function isHomeLogoAnchor(a){if(!a||!a.closest("header")){return false;}var href=a.getAttribute("href")||"";if(href===HOME||href===HOME.replace(/\\/+$/, "")+"/"){return true;}return normalizePath(href)==="/";}function applyLogo(){document.querySelectorAll("header a[href]").forEach(function(a){if(!isHomeLogoAnchor(a)){return;}a.classList.add("eottae-gnb-header__logo");a.setAttribute("data-eottae-logo-link","1");var img=a.querySelector("img[data-eottae-logo]");if(img&&img.getAttribute("src")===LOGO){return;}a.innerHTML=\'<img data-eottae-logo class="eottae-gnb-header__logo-img" src="\'+LOGO+\'" alt="세부어때">\';});}function scheduleApply(){window.requestAnimationFrame(applyLogo);}applyLogo();if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",applyLogo);}new MutationObserver(scheduleApply).observe(document.documentElement,{childList:true,subtree:true});})();</script>';
     }
 }
 
@@ -604,6 +625,11 @@ if (!function_exists('eottae_builder_inject_html')) {
         }
 
         $html = eottae_builder_inject_home_map($html);
+
+        $head_script = eottae_builder_inject_logo_head_script();
+        if ($head_script !== '' && preg_match('#</head>#i', $html)) {
+            $html = preg_replace('#</head>#i', $head_script.'</head>', $html, 1);
+        }
 
         $script = eottae_builder_inject_logo_script();
         if ($script === '') {

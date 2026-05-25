@@ -694,6 +694,10 @@ if (!function_exists('onoff_builder_render_import_page')) {
             }
         }
 
+        if (function_exists('eottae_builder_inject_html')) {
+            $html = eottae_builder_inject_html($html, $id);
+        }
+
         header('Content-Type: text/html; charset=utf-8');
         echo $html;
         exit;
