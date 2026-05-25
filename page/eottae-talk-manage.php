@@ -177,7 +177,7 @@ g5_page_start('톡방 관리');
             </div>
             <div class="talk-apply-form__field talk-apply-form__field--emoji">
                 <label for="talk_manage_emoji">대표 이모지</label>
-                <input type="text" id="talk_manage_emoji" name="emoji" class="talk-apply-form__input talk-apply-form__input--emoji" maxlength="8" value="<?php echo get_text($detail['emoji']); ?>">
+                <input type="text" id="talk_manage_emoji" name="emoji" class="talk-apply-form__input talk-apply-form__input--emoji" maxlength="8" value="<?php echo htmlspecialchars(eottae_talkroom_display_emoji($detail['emoji'], $detail['category_code'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
             </div>
             <div class="talk-apply-form__field">
                 <label for="talk_manage_rules">운영 규칙</label>

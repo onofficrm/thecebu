@@ -864,3 +864,103 @@ if (!function_exists('eottae_plaza_list_home_feed')) {
         return $items;
     }
 }
+
+if (!function_exists('eottae_plaza_home_hero_recent_posts')) {
+    /**
+     * 홈 히어로 — 광장 글 기반 관련 톡방 추천용 최근 글
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    function eottae_plaza_home_hero_recent_posts($limit = 6)
+    {
+        global $g5;
+
+        $limit = max(1, min(10, (int) $limit));
+        $write_table = $g5['write_prefix'].eottae_plaza_board_table();
+        $exists = sql_fetch(" SHOW TABLES LIKE '".sql_escape_string($write_table)."' ", false);
+        if (empty($exists)) {
+            return array();
+        }
+
+        $visible = eottae_plaza_post_visible_sql();
+        $result = sql_query("
+            SELECT wr_id, ca_name, wr_subject, wr_content
+            FROM `{$write_table}`
+            WHERE {$visible}
+            ORDER BY wr_datetime DESC, wr_id DESC
+            LIMIT {$limit}
+        ", false);
+
+        $rows = array();
+        if ($result) {
+            while ($row = sql_fetch_array($result)) {
+                $rows[] = $row;
+            }
+        }
+
+        return $rows;
+    }
+}
+
+if (!function_exists('eottae_plaza_home_hero_payload')) {
+    /**
+     * 홈 히어로 — 세부광장 연결·인기 톡방
+     *
+     * @return array<string, mixed>
+     */
+    function eottae_plaza_home_hero_payload($linked_limit = 3, $hot_limit = 3)
+    {
+        include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
+
+        $linked_limit = max(1, min(6, (int) $linked_limit));
+        $hot_limit = max(1, min(6, (int) $hot_limit));
+        $linked_rows = array();
+        $seen = array();
+
+        foreach (eottae_plaza_home_hero_recent_posts(6) as $post) {
+            foreach (eottae_plaza_related_rooms($post, 2) as $room) {
+                $room_id = (int) ($room['room_id'] ?? 0);
+                if ($room_id < 1 || isset($seen[$room_id])) {
+                    continue;
+                }
+                $seen[$room_id] = true;
+                $linked_rows[] = $room;
+                if (count($linked_rows) >= $linked_limit) {
+                    break 2;
+                }
+            }
+        }
+
+        $pool = eottae_talkroom_list_public_cards(array(
+            'limit' => max(24, $hot_limit + count($linked_rows) + 8),
+            'page'  => 1,
+        ));
+        $hot_pool = array();
+        foreach ($pool as $row) {
+            $room_id = (int) ($row['room_id'] ?? 0);
+            if ($room_id < 1 || isset($seen[$room_id])) {
+                continue;
+            }
+            $hot_pool[] = $row;
+        }
+
+        usort($hot_pool, function ($a, $b) {
+            $score_cmp = eottae_talkroom_home_hero_hot_score($b) <=> eottae_talkroom_home_hero_hot_score($a);
+            if ($score_cmp !== 0) {
+                return $score_cmp;
+            }
+
+            return (int) ($b['post_count'] ?? 0) <=> (int) ($a['post_count'] ?? 0);
+        });
+        $hot_rows = array_slice($hot_pool, 0, $hot_limit);
+
+        return array(
+            'variant'    => 'plaza',
+            'new'        => $linked_rows,
+            'hot'        => $hot_rows,
+            'list_url'   => eottae_plaza_talk_list_url(),
+            'create_url' => eottae_talkroom_create_url(),
+            'plaza_url'  => eottae_plaza_list_url(),
+        );
+    }
+}

@@ -460,6 +460,11 @@ if (!function_exists('eottae_talkroom_upgrade_schema')) {
             sql_query(" ALTER TABLE `{$table}` ADD `room_notice` text NOT NULL AFTER `rules` ", false);
         }
 
+        $emoji_col = sql_fetch(" SHOW COLUMNS FROM `{$table}` LIKE 'emoji' ", false);
+        if (!empty($emoji_col) && stripos((string) ($emoji_col['Type'] ?? ''), 'varchar(16)') !== false) {
+            sql_query(" ALTER TABLE `{$table}` MODIFY `emoji` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' ", false);
+        }
+
         $reports_table = $tables['reports'];
         if (eottae_talkroom_table_exists($reports_table)) {
             $idx = sql_fetch(" SHOW INDEX FROM `{$reports_table}` WHERE Key_name = 'uk_reporter_target' ", false);
@@ -517,11 +522,51 @@ if (!function_exists('eottae_talkroom_sanitize_emoji')) {
     {
         $value = trim(strip_tags((string) $value));
         $value = preg_replace('/[\x00-\x1F\x7F]/u', '', $value);
-        if ($value === '') {
-            return '💬';
-        }
 
         return function_exists('mb_substr') ? mb_substr($value, 0, 8, 'UTF-8') : substr($value, 0, 16);
+    }
+}
+
+if (!function_exists('eottae_talkroom_emoji_is_corrupted')) {
+    function eottae_talkroom_emoji_is_corrupted($value)
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return true;
+        }
+        if (strpos($value, '�') !== false) {
+            return true;
+        }
+        if (preg_match('/^\?+$/u', $value)) {
+            return true;
+        }
+
+        return false;
+    }
+}
+
+if (!function_exists('eottae_talkroom_resolve_emoji')) {
+    function eottae_talkroom_resolve_emoji($value, $category = '')
+    {
+        $value = eottae_talkroom_sanitize_emoji($value);
+        if (!eottae_talkroom_emoji_is_corrupted($value)) {
+            return $value;
+        }
+
+        if (function_exists('eottae_talkroom_apply_ai_default_emoji')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom-apply-ai.lib.php';
+        }
+
+        return function_exists('eottae_talkroom_apply_ai_default_emoji')
+            ? eottae_talkroom_apply_ai_default_emoji($category)
+            : '💬';
+    }
+}
+
+if (!function_exists('eottae_talkroom_display_emoji')) {
+    function eottae_talkroom_display_emoji($value, $category = '')
+    {
+        return eottae_talkroom_resolve_emoji($value, $category);
     }
 }
 
@@ -544,7 +589,7 @@ if (!function_exists('eottae_talkroom_emoji_picker_groups')) {
 if (!function_exists('eottae_talkroom_render_emoji_picker')) {
     function eottae_talkroom_render_emoji_picker($selected = '💬', $input_id = 'talk_emoji')
     {
-        $selected = eottae_talkroom_sanitize_emoji($selected);
+        $selected = eottae_talkroom_display_emoji($selected);
         $input_id = preg_replace('/[^a-z0-9_-]/i', '', (string) $input_id);
         if ($input_id === '') {
             $input_id = 'talk_emoji';
@@ -555,8 +600,8 @@ if (!function_exists('eottae_talkroom_render_emoji_picker')) {
         ?>
         <div class="talk-emoji-picker" data-talk-emoji-picker>
             <div class="talk-emoji-picker__current">
-                <span class="talk-emoji-picker__preview" data-talk-emoji-preview aria-hidden="true"><?php echo get_text($selected); ?></span>
-                <input type="text" id="<?php echo $input_id; ?>" name="emoji" class="talk-apply-form__input talk-apply-form__input--emoji" maxlength="8" placeholder="💬" value="<?php echo get_text($selected); ?>" data-talk-emoji-input autocomplete="off">
+                <span class="talk-emoji-picker__preview" data-talk-emoji-preview aria-hidden="true"><?php echo $selected; ?></span>
+                <input type="text" id="<?php echo $input_id; ?>" name="emoji" class="talk-apply-form__input talk-apply-form__input--emoji" maxlength="8" placeholder="💬" value="<?php echo htmlspecialchars($selected, ENT_QUOTES, 'UTF-8'); ?>" data-talk-emoji-input autocomplete="off">
             </div>
             <p class="talk-apply-form__hint">목록 카드에 표시됩니다. 아래에서 고르거나 직접 입력할 수 있습니다.</p>
             <?php foreach ($groups as $group_label => $emojis) { ?>
@@ -604,7 +649,7 @@ if (!function_exists('eottae_talkroom_parse_apply_input')) {
             'room_description' => eottae_talkroom_clean_text($post['room_description'] ?? '', 500),
             'room_detail'      => eottae_talkroom_clean_text($post['room_detail'] ?? '', 5000),
             'category'         => $category,
-            'emoji'            => eottae_talkroom_sanitize_emoji($post['emoji'] ?? ''),
+            'emoji'            => eottae_talkroom_resolve_emoji($post['emoji'] ?? '', $category),
             'rules'            => eottae_talkroom_clean_text($post['rules'] ?? '', 5000),
             'contact'          => eottae_talkroom_clean_text($post['contact'] ?? '', 255),
             'apply_reason'     => eottae_talkroom_clean_text($post['apply_reason'] ?? '', 2000),
@@ -740,7 +785,7 @@ if (!function_exists('eottae_talkroom_list_my_applications')) {
             while ($row = sql_fetch_array($result)) {
                 $rows[] = array(
                     'room_id'          => (int) $row['room_id'],
-                    'emoji'            => eottae_talkroom_sanitize_emoji($row['emoji'] ?? ''),
+                    'emoji'            => eottae_talkroom_display_emoji($row['emoji'] ?? '', $row['category'] ?? ''),
                     'room_name'        => get_text($row['room_name'] ?? ''),
                     'room_description' => get_text($row['room_description'] ?? ''),
                     'category'         => eottae_talkroom_category_label($row['category'] ?? ''),
@@ -942,10 +987,7 @@ if (!function_exists('eottae_talkroom_format_card')) {
         $room_id = (int) ($row['room_id'] ?? 0);
         $latest_post_at = isset($stats['latest_post_at']) ? (string) $stats['latest_post_at'] : '';
         $updated_at = eottae_talkroom_resolve_updated_at($row, $latest_post_at);
-        $emoji = trim((string) ($row['emoji'] ?? ''));
-        if ($emoji === '') {
-            $emoji = '💬';
-        }
+        $emoji = eottae_talkroom_display_emoji($row['emoji'] ?? '', $row['category'] ?? '');
 
         $owner_nick = trim((string) ($row['owner_nick'] ?? ''));
         if ($owner_nick === '' && !empty($row['owner_mb_id'])) {
@@ -1315,7 +1357,7 @@ if (!function_exists('eottae_talkroom_format_admin_room')) {
             'room_detail'      => get_text($row['room_detail'] ?? ''),
             'category'         => eottae_talkroom_category_label($row['category'] ?? ''),
             'category_code'    => trim((string) ($row['category'] ?? '')),
-            'emoji'            => eottae_talkroom_sanitize_emoji($row['emoji'] ?? ''),
+            'emoji'            => eottae_talkroom_display_emoji($row['emoji'] ?? '', $row['category'] ?? ''),
             'rules'            => get_text($row['rules'] ?? ''),
             'room_notice'      => get_text($row['room_notice'] ?? ''),
             'contact'          => get_text($row['contact'] ?? ''),
@@ -2648,7 +2690,7 @@ if (!function_exists('eottae_talkroom_parse_owner_update_input')) {
         return array(
             'room_description' => eottae_talkroom_clean_text($post['room_description'] ?? '', 500),
             'room_detail'      => eottae_talkroom_clean_text($post['room_detail'] ?? '', 5000),
-            'emoji'            => eottae_talkroom_sanitize_emoji($post['emoji'] ?? ''),
+            'emoji'            => eottae_talkroom_resolve_emoji($post['emoji'] ?? '', isset($post['category']) ? (string) $post['category'] : ''),
             'rules'            => eottae_talkroom_clean_text($post['rules'] ?? '', 5000),
             'contact'          => eottae_talkroom_clean_text($post['contact'] ?? '', 255),
             'join_type'        => $join_type,
@@ -2991,7 +3033,7 @@ if (!function_exists('eottae_talkroom_admin_list_kicked_members')) {
                     'id'             => (int) $row['id'],
                     'room_id'        => (int) $row['room_id'],
                     'room_name'      => get_text($row['room_name'] ?? ''),
-                    'emoji'          => get_text($row['emoji'] ?? ''),
+                    'emoji'          => eottae_talkroom_display_emoji($row['emoji'] ?? ''),
                     'room_status'    => trim((string) ($row['room_status'] ?? '')),
                     'mb_id'          => get_text($row['mb_id'] ?? ''),
                     'mb_nick'        => get_text($target_nick),
@@ -3951,7 +3993,7 @@ if (!function_exists('eottae_talkroom_format_report_row')) {
             'report_id'        => (int) $row['report_id'],
             'room_id'          => $room_id,
             'room_name'        => get_text($room['room_name'] ?? ''),
-            'emoji'            => get_text($room['emoji'] ?? ''),
+            'emoji'            => eottae_talkroom_display_emoji($room['emoji'] ?? ''),
             'target_type'      => trim((string) ($row['target_type'] ?? '')),
             'target_type_label'=> $target_label,
             'target_id'        => (int) ($row['target_id'] ?? 0),

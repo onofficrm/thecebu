@@ -72,7 +72,7 @@ g5_page_start('AI 도우미 설정');
         <?php } ?>
     </p>
     <h1 class="mypage-subpage__title">AI 도우미 설정</h1>
-    <p class="talk-manage-page__intro"><?php echo get_text($detail['emoji']); ?> <?php echo get_text($detail['room_name']); ?> · 오늘 AI 발언 <?php echo number_format($room_today_count); ?> / <?php echo number_format((int) $settings['max_messages_per_day']); ?>회</p>
+    <p class="talk-manage-page__intro"><?php echo eottae_talkroom_display_emoji($detail['emoji'], $detail['category_code'] ?? ''); ?> <?php echo get_text($detail['room_name']); ?> · 오늘 AI 발언 <?php echo number_format($room_today_count); ?> / <?php echo number_format((int) $settings['max_messages_per_day']); ?>회</p>
 
     <section class="promo-admin-panel talk-manage-panel">
         <?php

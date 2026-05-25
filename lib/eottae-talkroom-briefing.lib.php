@@ -255,7 +255,7 @@ if (!function_exists('eottae_talkroom_briefing_top_active_rooms')) {
             $scored[] = array(
                 'room_id'           => $room_id,
                 'room_name'         => get_text($room['room_name'] ?? ''),
-                'emoji'             => get_text(trim((string) ($room['emoji'] ?? '')) !== '' ? $room['emoji'] : '💬'),
+                'emoji'             => eottae_talkroom_display_emoji($room['emoji'] ?? '', $room['category_code'] ?? $room['category'] ?? ''),
                 'activity_score'    => $score,
                 'today_posts'       => $posts,
                 'today_comments'    => $comments,
@@ -344,7 +344,7 @@ if (!function_exists('eottae_talkroom_briefing_format_post_row')) {
             'wr_id'         => $wr_id,
             'room_id'       => $room_id,
             'room_name'     => get_text($row['room_name'] ?? ''),
-            'room_emoji'    => get_text(trim((string) ($row['emoji'] ?? '')) !== '' ? $row['emoji'] : '💬'),
+            'room_emoji'    => eottae_talkroom_display_emoji($row['emoji'] ?? '', $row['category'] ?? ''),
             'subject'       => get_text($row['wr_subject'] ?? ''),
             'author'        => get_text($row['wr_name'] ?? ($row['mb_id'] ?? '')),
             'type_label'    => $type_label,

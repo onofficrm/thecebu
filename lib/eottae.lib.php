@@ -812,7 +812,7 @@ if (!function_exists('eottae_builder_inject_home_talk_feed')) {
             return $html;
         }
 
-        $feed_html = eottae_talkroom_home_feed_html(8);
+        $feed_html = eottae_talkroom_home_feed_html(5);
         if ($feed_html === '') {
             return $html;
         }
@@ -844,16 +844,76 @@ if (!function_exists('eottae_builder_inject_home_hero_talk_script')) {
         if (!function_exists('eottae_talkroom_home_hero_payload')) {
             include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
         }
+        if (!function_exists('eottae_plaza_home_hero_payload')) {
+            include_once G5_LIB_PATH.'/eottae-plaza.lib.php';
+        }
 
-        $payload = eottae_talkroom_home_hero_payload(3, 3);
-        $payload_json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if ($payload_json === false) {
+        $talk_payload = eottae_talkroom_home_hero_payload(3, 3);
+        $talk_payload['variant'] = 'talk';
+        $plaza_payload = eottae_plaza_home_hero_payload(3, 3);
+
+        $talk_json = json_encode($talk_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $plaza_json = json_encode($plaza_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($talk_json === false || $plaza_json === false) {
             return '';
         }
 
         $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-hero-talk.js' : '/js/eottae-home-hero-talk.js';
 
-        return '<script>window.__EOTTae_HOME_HERO_TALK__='.$payload_json.';</script>'
+        return '<script>window.__EOTTae_HOME_HERO_TALK__='.$talk_json.';'
+            .'window.__EOTTae_HOME_HERO_PLAZA__='.$plaza_json.';</script>'
+            .'<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
+    }
+}
+
+if (!function_exists('eottae_builder_inject_home_events_banner_script')) {
+    function eottae_builder_inject_home_events_banner_script()
+    {
+        if (!function_exists('eottae_api_get_events')) {
+            include_once G5_LIB_PATH.'/eottae-api.lib.php';
+        }
+
+        $events = eottae_api_get_events(12);
+        if (empty($events)) {
+            return '';
+        }
+
+        shuffle($events);
+        $count = count($events);
+        $take = max(2, min(5, $count));
+        $events = array_slice($events, 0, $take);
+
+        $payload = array(
+            'events'   => $events,
+            'list_url' => G5_URL.'/page/eottae-events.php',
+        );
+        $payload_json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($payload_json === false) {
+            return '';
+        }
+
+        $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-events-banner.js' : '/js/eottae-home-events-banner.js';
+
+        return '<script>window.__EOTTae_HOME_EVENTS_BANNER__='.$payload_json.';</script>'
+            .'<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
+    }
+}
+
+if (!function_exists('eottae_builder_inject_home_header_actions_script')) {
+    function eottae_builder_inject_home_header_actions_script()
+    {
+        $payload = array(
+            'talk_url'   => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk',
+            'talk_label' => '세부톡',
+        );
+        $payload_json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($payload_json === false) {
+            return '';
+        }
+
+        $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-header-actions.js' : '/js/eottae-home-header-actions.js';
+
+        return '<script>window.__EOTTae_HOME_HEADER_ACTIONS__='.$payload_json.';</script>'
             .'<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
     }
 }
@@ -920,6 +980,8 @@ if (!function_exists('eottae_builder_inject_html')) {
         $body_scripts .= eottae_builder_inject_home_search_script();
         $body_scripts .= eottae_builder_inject_home_hero_talk_script();
         $body_scripts .= eottae_builder_inject_home_talk_feed_script();
+        $body_scripts .= eottae_builder_inject_home_events_banner_script();
+        $body_scripts .= eottae_builder_inject_home_header_actions_script();
 
         if ($body_scripts === '') {
             return $html;

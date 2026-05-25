@@ -284,7 +284,7 @@ if (!function_exists('eottae_talkroom_bookmark_format_row')) {
         $room = array(
             'room_id'    => $room_id,
             'room_name'  => get_text($row['room_name'] ?? ''),
-            'emoji'      => get_text(trim((string) ($row['emoji'] ?? '')) !== '' ? $row['emoji'] : '💬'),
+            'emoji'      => eottae_talkroom_display_emoji($row['emoji'] ?? '', $row['category'] ?? ''),
             'visibility' => trim((string) ($row['visibility'] ?? 'public')),
             'status'     => trim((string) ($row['status'] ?? '')),
             'owner_mb_id'=> trim((string) ($row['owner_mb_id'] ?? '')),

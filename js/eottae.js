@@ -482,7 +482,7 @@
         var value = (input.value || '').trim();
         var preview = qs('[data-talk-emoji-preview]', form);
         if (preview && value) {
-          preview.textContent = value.slice(0, 2);
+          preview.textContent = value;
         }
         qsa('[data-talk-emoji-option]', form).forEach(function (btn) {
           btn.classList.toggle('is-selected', btn.getAttribute('data-talk-emoji-option') === value);

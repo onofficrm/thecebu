@@ -127,7 +127,7 @@ if (!function_exists('eottae_talkroom_dashboard_notice_item_html')) {
         <li class="my-talk-notice__item<?php echo $is_unread ? ' my-talk-notice__item--unread' : ''; ?>" data-my-talk-notice-id="<?php echo (int) ($item['wr_id'] ?? 0); ?>">
             <a href="<?php echo $item['href']; ?>" class="my-talk-notice__link" data-my-talk-notice-link data-room-id="<?php echo (int) ($item['room_id'] ?? 0); ?>">
                 <span class="my-talk-notice__head">
-                    <span class="my-talk-room-badge my-talk-notice__room"><?php echo get_text($item['room_emoji'] ?? '💬'); ?> <?php echo get_text($item['room_name'] ?? ''); ?></span>
+                    <span class="my-talk-room-badge my-talk-notice__room"><?php echo eottae_talkroom_display_emoji($item['room_emoji'] ?? ''); ?> <?php echo get_text($item['room_name'] ?? ''); ?></span>
                     <?php if ($is_unread) { ?>
                     <span class="my-talk-badge my-talk-badge--alert my-talk-notice__unread">미확인</span>
                     <?php } else { ?>
@@ -187,7 +187,7 @@ if (!function_exists('eottae_talkroom_dashboard_meetup_item_html')) {
         <li class="my-talk-meetup__item">
             <article class="my-talk-meetup__inner">
                 <header class="my-talk-meetup__head">
-                    <span class="my-talk-room-badge my-talk-meetup__room"><?php echo get_text($item['room_emoji'] ?? '💬'); ?> <?php echo get_text($item['room_name'] ?? ''); ?></span>
+                    <span class="my-talk-room-badge my-talk-meetup__room"><?php echo eottae_talkroom_display_emoji($item['room_emoji'] ?? ''); ?> <?php echo get_text($item['room_name'] ?? ''); ?></span>
                     <?php if (!empty($item['has_participation'])) { ?>
                     <span class="my-talk-badge my-talk-badge--owner my-talk-meetup__status"><?php echo get_text($item['participation_label'] ?? '참여 의사 있음'); ?></span>
                     <?php } ?>
@@ -265,7 +265,7 @@ if (!function_exists('eottae_talkroom_dashboard_bookmark_item_html')) {
         <li class="my-talk-bookmark__item<?php echo $is_restricted ? ' my-talk-bookmark__item--restricted' : ''; ?>" data-my-talk-bookmark-id="<?php echo $bookmark_id; ?>">
             <article class="my-talk-bookmark__inner">
                 <header class="my-talk-bookmark__head">
-                    <span class="my-talk-room-badge my-talk-bookmark__room"><?php echo get_text($item['room_emoji'] ?? '💬'); ?> <?php echo get_text($item['room_name'] ?? ''); ?></span>
+                    <span class="my-talk-room-badge my-talk-bookmark__room"><?php echo eottae_talkroom_display_emoji($item['room_emoji'] ?? ''); ?> <?php echo get_text($item['room_name'] ?? ''); ?></span>
                     <?php if (!empty($item['status_label'])) { ?>
                     <span class="my-talk-badge my-talk-badge--muted"><?php echo get_text($item['status_label']); ?></span>
                     <?php } ?>
@@ -421,7 +421,7 @@ if (!function_exists('eottae_talkroom_dashboard_owner_card_html')) {
             <article class="my-talk-owner-card__inner">
                 <header class="my-talk-owner-card__head">
                     <div class="my-talk-owner-card__title-row">
-                        <span class="my-talk-room-badge"><?php echo get_text($room['emoji'] ?? '💬'); ?> <?php echo get_text($room['room_name'] ?? ''); ?></span>
+                        <span class="my-talk-room-badge"><?php echo eottae_talkroom_display_emoji($room['emoji'] ?? '', $room['category_code'] ?? ''); ?> <?php echo get_text($room['room_name'] ?? ''); ?></span>
                         <?php if (!empty($room['category_label'])) { ?>
                         <span class="my-talk-owner-card__category"><?php echo get_text($room['category_label']); ?></span>
                         <?php } ?>
@@ -652,7 +652,7 @@ if (!function_exists('eottae_talkroom_render_mypage_dashboard')) {
                     <li class="my-talk-room-card<?php echo $has_unread ? ' my-talk-room-card--unread' : ''; ?>" data-my-talk-room-id="<?php echo (int) ($room['room_id'] ?? 0); ?>">
                         <article class="my-talk-room-card__inner">
                             <header class="my-talk-room-card__head">
-                                <span class="my-talk-room-card__emoji" aria-hidden="true"><?php echo get_text($room['emoji'] ?? '💬'); ?></span>
+                                <span class="my-talk-room-card__emoji" aria-hidden="true"><?php echo eottae_talkroom_display_emoji($room['emoji'] ?? '', $room['category_code'] ?? ''); ?></span>
                                 <div class="my-talk-room-card__titles">
                                     <h3 class="my-talk-room-card__name">
                                         <span class="my-talk-room-badge"><?php echo get_text($room['room_name'] ?? ''); ?></span>

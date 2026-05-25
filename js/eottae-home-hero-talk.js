@@ -1,10 +1,36 @@
 /**
- * 홈(빌더) — 히어로 3열: 신규·화제 톡방 위젯 삽입
+ * 홈(빌더) — 히어로 3열: 중간(세부광장 톡방) · 우측(세부톡)
  */
 (function (global) {
   'use strict';
 
-  function cfg() {
+  var VARIANTS = {
+    plaza: {
+      marker: 'data-eottae-home-plaza-hero',
+      ariaLabel: '세부광장 톡방',
+      title: '세부광장',
+      desc: '광장 이야기를 이어갈 톡방',
+      newLabel: '광장 연결 톡방',
+      hotLabel: '지금 뜨는 톡방',
+      moreLabel: '톡방 더보기',
+      panelClass: 'home-hero-talk-rooms home-hero-talk-rooms--plaza lg:col-span-4',
+    },
+    talk: {
+      marker: 'data-eottae-home-talk-sidebar',
+      ariaLabel: '세부톡 추천',
+      title: '세부톡',
+      desc: '지금 활발한 톡방을 만나보세요',
+      newLabel: '신규 톡방',
+      hotLabel: '화제의 톡방',
+      moreLabel: '톡방 더보기',
+      panelClass: 'home-hero-talk-rooms home-hero-talk-rooms--sidebar',
+    },
+  };
+
+  function cfg(key) {
+    if (key === 'plaza') {
+      return global.__EOTTae_HOME_HERO_PLAZA__ || null;
+    }
     return global.__EOTTae_HOME_HERO_TALK__ || null;
   }
 
@@ -49,6 +75,26 @@
     }
 
     return nodes.length > 1 ? nodes[nodes.length - 1] : null;
+  }
+
+  function hideSidebarEvents(sidebar) {
+    if (!sidebar || sidebar.dataset.eottaeEventsHidden === '1') {
+      return null;
+    }
+
+    var sections = sidebar.querySelectorAll('section');
+    var i;
+    for (i = 0; i < sections.length; i += 1) {
+      var h2 = sections[i].querySelector('h2');
+      if (h2 && (h2.textContent || '').indexOf('업체 이벤트') !== -1) {
+        sections[i].style.display = 'none';
+        sections[i].setAttribute('data-eottae-hidden-events', '1');
+        sidebar.dataset.eottaeEventsHidden = '1';
+        return sections[i];
+      }
+    }
+
+    return null;
   }
 
   function renderRoomItem(room) {
@@ -106,51 +152,57 @@
       + '</section>';
   }
 
-  function buildPanel(data) {
-    var newHtml = renderSection('신규 톡방', 'home-hero-talk-rooms__badge--new', data.new);
-    var hotHtml = renderSection('화제의 톡방', 'home-hero-talk-rooms__badge--hot', data.hot);
+  function buildPanel(data, variantKey) {
+    var variant = VARIANTS[variantKey];
+    var newHtml = renderSection(variant.newLabel, 'home-hero-talk-rooms__badge--new', data.new);
+    var hotHtml = renderSection(variant.hotLabel, 'home-hero-talk-rooms__badge--hot', data.hot);
     var body = newHtml + hotHtml;
+    var listUrl = data.list_url || (variantKey === 'plaza' ? '/talk' : '/talk');
+    var createUrl = data.create_url || '/page/eottae-talk-create.php';
 
     if (!body) {
       body = ''
         + '<div class="home-hero-talk-rooms__empty">'
-        + '<p>아직 공개된 톡방이 없습니다.</p>'
-        + '<a href="' + esc(data.create_url || '/page/eottae-talk-create.php') + '">톡방 만들기</a>'
+        + '<p>아직 표시할 톡방이 없습니다.</p>'
+        + '<a href="' + esc(createUrl) + '">톡방 만들기</a>'
         + '</div>';
     }
 
     var panel = document.createElement('aside');
-    panel.className = 'home-hero-talk-rooms lg:col-span-4';
-    panel.setAttribute('data-eottae-home-talk-hero', '1');
-    panel.setAttribute('aria-label', '세부톡 추천');
+    panel.className = variant.panelClass;
+    panel.setAttribute(variant.marker, '1');
+    panel.setAttribute('aria-label', variant.ariaLabel);
     panel.innerHTML = ''
       + '<div class="home-hero-talk-rooms__card">'
       + '<header class="home-hero-talk-rooms__head">'
-      + '<h2 class="home-hero-talk-rooms__title">세부톡</h2>'
-      + '<p class="home-hero-talk-rooms__desc">지금 활발한 톡방을 만나보세요</p>'
+      + '<h2 class="home-hero-talk-rooms__title">' + esc(variant.title) + '</h2>'
+      + '<p class="home-hero-talk-rooms__desc">' + esc(variant.desc) + '</p>'
       + '</header>'
       + body
       + '<footer class="home-hero-talk-rooms__footer">'
-      + '<a href="' + esc(data.list_url || '/talk') + '" class="home-hero-talk-rooms__more">톡방 더보기</a>'
+      + '<a href="' + esc(listUrl) + '" class="home-hero-talk-rooms__more">' + esc(variant.moreLabel) + '</a>'
+      + (variantKey === 'plaza' && data.plaza_url
+        ? '<a href="' + esc(data.plaza_url) + '" class="home-hero-talk-rooms__more home-hero-talk-rooms__more--ghost">세부광장으로</a>'
+        : '')
       + '</footer>'
       + '</div>';
 
     return panel;
   }
 
-  function mount() {
-    var data = cfg();
+  function mountPlaza() {
+    var data = cfg('plaza');
     if (!data) {
       return;
     }
 
     var grid = findHeroGrid();
-    if (!grid || grid.querySelector('[data-eottae-home-talk-hero]')) {
+    if (!grid || grid.querySelector('[data-eottae-home-plaza-hero]')) {
       return;
     }
 
     var sidebar = findSidebarColumn(grid);
-    var panel = buildPanel(data);
+    var panel = buildPanel(data, 'plaza');
     grid.classList.add('eottae-home-hero-grid--3col');
 
     if (sidebar) {
@@ -158,8 +210,38 @@
     } else {
       grid.appendChild(panel);
     }
+  }
 
-    grid.dataset.eottaeHeroTalkMounted = '1';
+  function mountTalkSidebar() {
+    var data = cfg('talk');
+    if (!data) {
+      return;
+    }
+
+    var grid = findHeroGrid();
+    if (!grid) {
+      return;
+    }
+
+    var sidebar = findSidebarColumn(grid);
+    if (!sidebar || sidebar.querySelector('[data-eottae-home-talk-sidebar]')) {
+      return;
+    }
+
+    var hiddenEvents = hideSidebarEvents(sidebar);
+    var panel = buildPanel(data, 'talk');
+    grid.classList.add('eottae-home-hero-grid--3col');
+
+    if (hiddenEvents && hiddenEvents.parentNode) {
+      hiddenEvents.parentNode.insertBefore(panel, hiddenEvents);
+    } else {
+      sidebar.appendChild(panel);
+    }
+  }
+
+  function mount() {
+    mountPlaza();
+    mountTalkSidebar();
   }
 
   function init() {

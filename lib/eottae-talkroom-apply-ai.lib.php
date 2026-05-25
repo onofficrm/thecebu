@@ -71,8 +71,8 @@ if (!function_exists('eottae_talkroom_apply_ai_parse_input')) {
             'topic_hint'       => function_exists('eottae_talkroom_clean_text')
                 ? eottae_talkroom_clean_text($post['topic_hint'] ?? '', 200)
                 : cut_str(strip_tags((string) ($post['topic_hint'] ?? '')), 200, ''),
-            'emoji'            => function_exists('eottae_talkroom_sanitize_emoji')
-                ? eottae_talkroom_sanitize_emoji($post['emoji'] ?? '')
+            'emoji'            => function_exists('eottae_talkroom_resolve_emoji')
+                ? eottae_talkroom_resolve_emoji($post['emoji'] ?? '', $category)
                 : trim((string) ($post['emoji'] ?? '💬')),
         );
     }
@@ -249,7 +249,7 @@ if (!function_exists('eottae_talkroom_apply_ai_generate_via_api')) {
             'room_description' => isset($generated['room_description']) ? eottae_talkroom_clean_text($generated['room_description'], 500) : '',
             'room_detail'      => isset($generated['room_detail']) ? eottae_talkroom_clean_text($generated['room_detail'], 5000) : '',
             'category'         => $category,
-            'emoji'            => eottae_talkroom_sanitize_emoji($generated['emoji'] ?? ''),
+            'emoji'            => eottae_talkroom_resolve_emoji($generated['emoji'] ?? '', $input['category'] ?? ''),
             'rules'            => isset($generated['rules']) ? eottae_talkroom_clean_text($generated['rules'], 5000) : '',
             'apply_reason'     => isset($generated['apply_reason']) ? eottae_talkroom_clean_text($generated['apply_reason'], 2000) : '',
         );
