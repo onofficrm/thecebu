@@ -364,3 +364,36 @@ add_event('board_head_before', 'eottae_load_media_board_assets', 5);
 if (function_exists('eottae_shop_apply_segment_board_context')) {
     eottae_shop_apply_segment_board_context();
 }
+
+if (!function_exists('eottae_apply_google_oauth_config')) {
+    function eottae_apply_google_oauth_config()
+    {
+        global $config;
+
+        if (!function_exists('g5site_cfg') && is_file(G5_PATH.'/_site.config.php')) {
+            include_once G5_PATH.'/_site.config.php';
+        }
+
+        if (!function_exists('g5site_cfg')) {
+            return;
+        }
+
+        $client_id = g5site_cfg('google_oauth_client_id', '');
+        $client_secret = g5site_cfg('google_oauth_client_secret', '');
+
+        if ($client_id === '' || $client_secret === '') {
+            return;
+        }
+
+        $config['cf_social_login_use'] = 1;
+        $config['cf_google_clientid'] = $client_id;
+        $config['cf_google_secret'] = $client_secret;
+
+        $services = array_filter(array_map('trim', explode(',', (string) $config['cf_social_servicelist'])));
+        if (!in_array('google', $services, true)) {
+            $services[] = 'google';
+            $config['cf_social_servicelist'] = implode(',', $services);
+        }
+    }
+}
+eottae_apply_google_oauth_config();

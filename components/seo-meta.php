@@ -146,6 +146,10 @@ if (!function_exists('g5b_seo_resolve')) {
 
         $company_name = function_exists('g5site_cfg') ? g5site_cfg('company_name', $site_name) : $site_name;
         $logo_url = function_exists('g5site_cfg_url') ? g5site_cfg_url('logo_path', '') : '';
+        $favicon_url = function_exists('g5site_cfg_url') ? g5site_cfg_url('favicon_path', '') : '';
+        $favicon_png_url = function_exists('g5site_cfg_url') ? g5site_cfg_url('favicon_png_path', '') : '';
+        $favicon_16_url = function_exists('g5site_cfg_url') ? g5site_cfg_url('favicon_16_path', '') : '';
+        $apple_touch_icon_url = function_exists('g5site_cfg_url') ? g5site_cfg_url('apple_touch_icon_path', '') : '';
         $phone = function_exists('g5site_cfg') ? g5site_cfg('phone', '') : '';
         $email = function_exists('g5site_cfg') ? g5site_cfg('email', '') : '';
         $address = function_exists('g5site_cfg') ? g5site_cfg('address', '') : '';
@@ -172,6 +176,10 @@ if (!function_exists('g5b_seo_resolve')) {
             'site_name'       => $site_name,
             'company_name'    => $company_name,
             'logo_url'        => $logo_url,
+            'favicon_url'     => $favicon_url,
+            'favicon_png_url' => $favicon_png_url,
+            'favicon_16_url'  => $favicon_16_url,
+            'apple_touch_icon_url' => $apple_touch_icon_url,
             'phone'           => $phone,
             'email'           => $email,
             'address'         => $address,
@@ -197,6 +205,19 @@ if (!function_exists('g5b_seo_build_meta_html')) {
         }
 
         $lines = array();
+
+        if (!empty($data['favicon_url'])) {
+            $lines[] = '<link rel="icon" href="' . g5b_seo_escape($data['favicon_url']) . '" sizes="any">';
+        }
+        if (!empty($data['favicon_png_url'])) {
+            $lines[] = '<link rel="icon" type="image/png" sizes="32x32" href="' . g5b_seo_escape($data['favicon_png_url']) . '">';
+        }
+        if (!empty($data['favicon_16_url'])) {
+            $lines[] = '<link rel="icon" type="image/png" sizes="16x16" href="' . g5b_seo_escape($data['favicon_16_url']) . '">';
+        }
+        if (!empty($data['apple_touch_icon_url'])) {
+            $lines[] = '<link rel="apple-touch-icon" sizes="180x180" href="' . g5b_seo_escape($data['apple_touch_icon_url']) . '">';
+        }
 
         if ($data['description'] !== '') {
             $lines[] = '<meta name="description" content="' . g5b_seo_escape($data['description']) . '">';

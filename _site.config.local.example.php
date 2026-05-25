@@ -12,4 +12,6 @@ $site_config_override = array(
     'ai_generate_api_key' => '',
     'ai_generate_model'   => 'gpt-4o-mini',
     'ai_generate_image_model' => 'gpt-image-1',
+    'google_oauth_client_id' => '',
+    'google_oauth_client_secret' => '',
 );

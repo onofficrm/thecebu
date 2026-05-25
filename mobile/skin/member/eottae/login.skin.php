@@ -39,6 +39,11 @@ $eottae_auth_site_title = isset($g5_site_title) ? get_text($g5_site_title) : '�
         <button type="submit" class="btn_submit">로그인</button>
         </form>
 
+        <?php if (function_exists('get_social_skin_path') && !empty($config['cf_social_login_use'])) { ?>
+        <div class="auth-layout__divider" aria-hidden="true"><span>또는</span></div>
+        <?php @include_once(get_social_skin_path().'/social_login.skin.php'); ?>
+        <?php } ?>
+
         <div class="auth-layout__links">
             <a href="<?php echo G5_BBS_URL ?>/register.php">회원가입</a>
             <a href="<?php echo G5_BBS_URL ?>/password_lost.php">비밀번호 찾기</a>

@@ -602,6 +602,26 @@ if (!function_exists('eottae_builder_inject_logo_head_script')) {
     }
 }
 
+if (!function_exists('eottae_builder_inject_home_search_script')) {
+    function eottae_builder_inject_home_search_script()
+    {
+        $shop_table = function_exists('eottae_shop_table') ? eottae_shop_table() : 'shop';
+        $payload = array(
+            'bbsUrl'    => G5_BBS_URL.'/board.php',
+            'shopTable' => $shop_table,
+        );
+        $payload_json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($payload_json === false) {
+            return '';
+        }
+
+        $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-search.js' : '/js/eottae-home-search.js';
+
+        return '<script>window.__EOTTae_HOME_SEARCH__='.$payload_json.';</script>'
+            .'<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
+    }
+}
+
 if (!function_exists('eottae_builder_inject_featured_carousel_script')) {
     function eottae_builder_inject_featured_carousel_script()
     {
@@ -630,6 +650,7 @@ if (!function_exists('eottae_builder_inject_html')) {
         }
 
         $body_scripts = eottae_builder_inject_featured_carousel_script();
+        $body_scripts .= eottae_builder_inject_home_search_script();
 
         if ($body_scripts === '') {
             return $html;

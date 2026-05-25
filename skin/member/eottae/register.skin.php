@@ -38,6 +38,11 @@ add_stylesheet('<link rel="stylesheet" href="'.$member_skin_url.'/style.css">', 
         <button type="submit" class="btn_submit">다음</button>
         </form>
 
+        <?php if (function_exists('get_social_skin_path') && !empty($config['cf_social_login_use'])) { ?>
+        <div class="auth-layout__divider" aria-hidden="true"><span>또는</span></div>
+        <?php @include_once(get_social_skin_path().'/social_register.skin.php'); ?>
+        <?php } ?>
+
         <div class="auth-layout__links">
             <a href="<?php echo G5_BBS_URL ?>/login.php">이미 계정이 있으신가요? 로그인</a>
         </div>

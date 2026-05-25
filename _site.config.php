@@ -23,6 +23,10 @@ $site_config = array(
     'secondary_color'     => '#64748b',
     'logo_path'           => '/img/logo/cebu-logo-main.png',
     'footer_logo_path'    => '/img/logo/cebu-logo-footer.png',
+    'favicon_path'        => '/img/logo/favicon.ico',
+    'favicon_png_path'    => '/img/logo/favicon-32x32.png',
+    'favicon_16_path'     => '/img/logo/favicon-16x16.png',
+    'apple_touch_icon_path' => '/img/logo/apple-touch-icon.png',
     'og_image'            => '/img/logo/cebu-logo-main.png',
     /* SEO (components/seo-meta.php) */
     'seo_title'           => '',
@@ -78,6 +82,9 @@ $site_config = array(
     'map_unit'                  => 'km',
     'map_placeholder_title'     => 'Google Maps API 키가 설정되지 않았습니다.',
     'map_placeholder_desc'      => '_site.config.php에서 google_maps_api_key 값을 입력하면 지도가 표시됩니다.',
+    /* Google OAuth 로그인 — 키는 _site.config.local.php (Git 제외) */
+    'google_oauth_client_id'     => '',
+    'google_oauth_client_secret' => '',
 );
 
 if (is_file(G5_PATH.'/_site.config.local.php')) {

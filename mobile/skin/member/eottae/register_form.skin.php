@@ -3,6 +3,16 @@ if (!defined('_GNUBOARD_')) exit;
 
 add_stylesheet('<link rel="stylesheet" href="'.$member_skin_url.'/style.css">', 0);
 add_javascript('<script src="'.G5_JS_URL.'/jquery.register_form.js"></script>', 0);
+
+if (!isset($is_use_captcha)) {
+    $is_use_captcha = ($w === '') ? 1 : 0;
+}
+if (!isset($captcha_html)) {
+    $captcha_html = $is_use_captcha ? captcha_html() : '';
+}
+if (!isset($captcha_js)) {
+    $captcha_js = $is_use_captcha ? chk_captcha_js() : '';
+}
 ?>
 
 <div class="auth-layout">

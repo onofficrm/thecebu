@@ -17,9 +17,11 @@ jobs:
         env:
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
         run: |
-          if [ -n "${GOOGLE_MAPS_API_KEY}" ] || [ -n "${OPENAI_API_KEY}" ]; then
-            php -r '$cfg=array(); if(getenv("GOOGLE_MAPS_API_KEY")){$cfg["google_maps_api_key"]=getenv("GOOGLE_MAPS_API_KEY");} if(getenv("OPENAI_API_KEY")){$cfg["ai_generate_enabled"]=true; $cfg["ai_generate_api_key"]=getenv("OPENAI_API_KEY");} file_put_contents("_site.config.local.php", "<?php\nif (!defined(\"_GNUBOARD_\")) exit;\n\$site_config_override = ".var_export($cfg, true).";\n");'
+          if [ -n "${GOOGLE_MAPS_API_KEY}" ] || [ -n "${OPENAI_API_KEY}" ] || [ -n "${GOOGLE_OAUTH_CLIENT_ID}" ]; then
+            php -r '$cfg=array(); if(getenv("GOOGLE_MAPS_API_KEY")){$cfg["google_maps_api_key"]=getenv("GOOGLE_MAPS_API_KEY");} if(getenv("OPENAI_API_KEY")){$cfg["ai_generate_enabled"]=true; $cfg["ai_generate_api_key"]=getenv("OPENAI_API_KEY");} if(getenv("GOOGLE_OAUTH_CLIENT_ID")){$cfg["google_oauth_client_id"]=getenv("GOOGLE_OAUTH_CLIENT_ID");} if(getenv("GOOGLE_OAUTH_CLIENT_SECRET")){$cfg["google_oauth_client_secret"]=getenv("GOOGLE_OAUTH_CLIENT_SECRET");} file_put_contents("_site.config.local.php", "<?php\nif (!defined(\"_GNUBOARD_\")) exit;\n\$site_config_override = ".var_export($cfg, true).";\n");'
           fi
 
       - name: Deploy via FTP
