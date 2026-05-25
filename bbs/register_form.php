@@ -34,6 +34,16 @@ if ($w == "") {
     // 리퍼러 체크
     referer_check();
 
+    $is_eottae_member_skin = isset($member_skin_path) && basename((string) $member_skin_path) === 'eottae';
+    if ($is_eottae_member_skin) {
+        if (empty($_POST['agree'])) {
+            $_POST['agree'] = '1';
+        }
+        if (empty($_POST['agree2'])) {
+            $_POST['agree2'] = '1';
+        }
+    }
+
     if (!isset($_POST['agree']) || !$_POST['agree']) {
         alert('회원가입약관의 내용에 동의하셔야 회원가입 하실 수 있습니다.', G5_BBS_URL.'/register.php');
     }

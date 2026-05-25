@@ -12,12 +12,14 @@ if (!($w == '' || $w == 'u')) {
     alert('w 값이 제대로 넘어오지 않았습니다.');
 }
 
+$is_eottae_member_skin = isset($member_skin_path) && basename((string) $member_skin_path) === 'eottae';
+
 if ($w == 'u' && $is_admin == 'super') {
     if (file_exists(G5_PATH.'/DEMO'))
         alert('데모 화면에서는 하실(보실) 수 없는 작업입니다.');
 }
 
-if (run_replace('register_member_chk_captcha', !chk_captcha(), $w)) {
+if (!$is_eottae_member_skin && run_replace('register_member_chk_captcha', !chk_captcha(), $w)) {
     alert('자동등록방지 숫자가 틀렸습니다.');
 }
 
@@ -63,6 +65,14 @@ $mb_7           = isset($_POST['mb_7'])             ? trim($_POST['mb_7'])      
 $mb_8           = isset($_POST['mb_8'])             ? trim($_POST['mb_8'])           : "";
 $mb_9           = isset($_POST['mb_9'])             ? trim($_POST['mb_9'])           : "";
 $mb_10          = isset($_POST['mb_10'])            ? trim($_POST['mb_10'])          : "";
+
+if ($is_eottae_member_skin) {
+    if ($mb_name === '') {
+        $mb_name = $mb_nick;
+    }
+    $mb_hp = '';
+}
+
 $mb_name        = addslashes(clean_xss_tags(stripslashes($mb_name), 1, 1));
 $mb_email       = get_email_address($mb_email);
 $mb_homepage    = addslashes(clean_xss_tags(stripslashes($mb_homepage), 1, 1));
@@ -139,7 +149,7 @@ if ($w == '' || $w == 'u') {
     if ($w=='') {
         if ($msg = exist_mb_id($mb_id))     alert($msg);
 
-        if (get_session('ss_check_mb_id') != $mb_id || get_session('ss_check_mb_nick') != $mb_nick || get_session('ss_check_mb_email') != $mb_email) {
+        if (!$is_eottae_member_skin && (get_session('ss_check_mb_id') != $mb_id || get_session('ss_check_mb_nick') != $mb_nick || get_session('ss_check_mb_email') != $mb_email)) {
             set_session('ss_check_mb_id', '');
             set_session('ss_check_mb_nick', '');
             set_session('ss_check_mb_email', '');

@@ -3,6 +3,8 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
+global $g5;
+
 $eottae_auth = function_exists('eottae_auth_context') ? eottae_auth_context() : array('is_member' => false, 'is_admin' => false, 'member' => array('mb_id' => '', 'mb_level' => 1, 'mb_point' => 0));
 $is_member = !empty($eottae_auth['is_member']);
 $is_admin = !empty($eottae_auth['is_admin']) ? $eottae_auth['is_admin'] : '';
@@ -45,6 +47,9 @@ $eottae_mypage_href = function_exists('eottae_mypage_url') ? eottae_mypage_url()
 
                     <nav class="eottae-gnb-header__nav" aria-label="메인메뉴">
                         <?php foreach ($eottae_gnb_links as $link) {
+                            if (!empty($link['desktop_action'])) {
+                                continue;
+                            }
                             $active = eottae_gnb_link_is_active($link['key']);
                             $link_class = function_exists('eottae_gnb_nav_link_classes')
                                 ? eottae_gnb_nav_link_classes($link, 'desktop', $active)
@@ -58,6 +63,16 @@ $eottae_mypage_href = function_exists('eottae_mypage_url') ? eottae_mypage_url()
                 </div>
 
                 <div class="eottae-gnb-header__actions">
+                    <?php foreach ($eottae_gnb_links as $link) {
+                        if (empty($link['desktop_action'])) {
+                            continue;
+                        }
+                        $active = eottae_gnb_link_is_active($link['key']);
+                        ?>
+                    <a href="<?php echo $link['href']; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--talk eottae-gnb-header__btn--desktop<?php echo $active ? ' is-active' : ''; ?>">
+                        <?php echo get_text($link['label']); ?>
+                    </a>
+                    <?php } ?>
                     <?php if ($is_member) { ?>
                     <a href="<?php echo $eottae_mypage_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop">MY</a>
                     <?php if ($is_admin) { ?>

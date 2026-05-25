@@ -48,6 +48,40 @@
     };
   }
 
+  function cardThumbnailById(id) {
+    if (id == null || id === '') return '';
+    var card = document.querySelector('[data-shop-card][data-wr-id="' + String(id).replace(/"/g, '\\"') + '"]');
+    if (!card) return '';
+    var img = card.querySelector('.shop-list-card__thumb');
+    if (!img || !img.getAttribute) return '';
+
+    return img.getAttribute('src') || '';
+  }
+
+  function markerThumbContent(loc) {
+    if (!loc.thumbnail) return null;
+
+    var wrap = document.createElement('div');
+    wrap.className = 'shop-map-thumb-marker';
+    wrap.setAttribute('title', loc.name || '');
+
+    var img = document.createElement('img');
+    img.className = 'shop-map-thumb-marker__img';
+    img.src = loc.thumbnail;
+    img.alt = '';
+    img.onerror = function () {
+      if (loc.cardThumbnail && loc.cardThumbnail !== img.src) {
+        img.src = loc.cardThumbnail;
+        return;
+      }
+      wrap.classList.add('is-failed');
+    };
+
+    wrap.appendChild(img);
+
+    return wrap;
+  }
+
   function markerIcon(loc) {
     if (!loc.thumbnail || !global.google || !global.google.maps) return null;
     var size = 42;
@@ -211,6 +245,16 @@
     this.infoWindow = null;
   }
 
+  ShopMapPanel.prototype.applyCardThumbnailFallbacks = function () {
+    this.locations.forEach(function (loc) {
+      var cardThumbnail = cardThumbnailById(loc.id);
+      if (cardThumbnail) {
+        loc.cardThumbnail = cardThumbnail;
+        loc.thumbnail = cardThumbnail;
+      }
+    });
+  };
+
   ShopMapPanel.prototype.init = function () {
     if (!this.canvas || !global.google || !global.google.maps) {
       return;
@@ -228,6 +272,7 @@
       fullscreenControl: true
     });
     this.infoWindow = new global.google.maps.InfoWindow({ maxWidth: 240 });
+    this.applyCardThumbnailFallbacks();
     this.renderMarkers();
     this.bindEvents();
     this.bindCardSync();
@@ -248,12 +293,24 @@
     self.clearMarkers();
     self.markerById = {};
     self.locations.forEach(function (loc) {
-      var marker = new global.google.maps.Marker({
-        position: { lat: loc.lat, lng: loc.lng },
-        map: self.map,
-        title: loc.name,
-        icon: markerIcon(loc)
-      });
+      var position = { lat: loc.lat, lng: loc.lng };
+      var content = markerThumbContent(loc);
+      var marker;
+      if (content && global.google.maps.marker && global.google.maps.marker.AdvancedMarkerElement) {
+        marker = new global.google.maps.marker.AdvancedMarkerElement({
+          position: position,
+          map: self.map,
+          title: loc.name,
+          content: content
+        });
+      } else {
+        marker = new global.google.maps.Marker({
+          position: position,
+          map: self.map,
+          title: loc.name,
+          icon: markerIcon(loc)
+        });
+      }
       marker.addListener('click', function () {
         openMarkerInfoWindow(self.infoWindow, self.map, marker, loc);
       });
