@@ -1013,7 +1013,6 @@ if (!function_exists('eottae_builder_inject_html')) {
 
         $html = eottae_builder_inject_home_map($html);
         $html = eottae_builder_inject_home_public_chat($html);
-        $html = eottae_builder_inject_home_plaza_feed($html);
 
         $head_script = eottae_builder_inject_logo_head_script();
         if ($head_script !== '') {
