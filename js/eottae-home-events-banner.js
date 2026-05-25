@@ -1,11 +1,10 @@
 /**
- * 홈(빌더) — 업체 이벤트/기획전 배너 (히어로 3열 사이드바)
+ * 홈(빌더) — 업체 이벤트/기획전 2행 카드 (히어로 3열 사이드바)
  */
 (function (global) {
   'use strict';
 
-  var AUTOPLAY_MS = 3000;
-  var SWIPE_MIN = 40;
+  var DISPLAY_COUNT = 2;
 
   function cfg() {
     return global.__EOTTae_HOME_EVENTS_BANNER__ || null;
@@ -23,11 +22,17 @@
     if (!value) {
       return '';
     }
-    var d = new Date(String(value).replace(' ', 'T'));
+    var raw = String(value).trim();
+    if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
+      return raw.slice(0, 10);
+    }
+    var d = new Date(raw.replace(' ', 'T'));
     if (Number.isNaN(d.getTime())) {
       return '';
     }
-    return (d.getMonth() + 1) + '.' + d.getDate();
+    var month = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + month + '-' + day;
   }
 
   function normalizeText(value) {
@@ -95,7 +100,7 @@
         continue;
       }
       var block = sidebarChildFromNode(sidebar, headings[i]);
-      if (block && !block.querySelector('[data-eottae-events-banner]')) {
+      if (block && !block.querySelector('[data-eottae-events-stack]')) {
         return block;
       }
     }
@@ -152,120 +157,56 @@
     }
   }
 
-  function buildBanner(events, listUrl) {
-    var slides = '';
-    var dots = '';
+  function buildEventsStack(events, listUrl) {
+    var cards = '';
     var i;
 
-    for (i = 0; i < events.length; i += 1) {
+    for (i = 0; i < events.length && i < DISPLAY_COUNT; i += 1) {
       var event = events[i];
-      slides += ''
-        + '<article class="home-events-banner__slide" data-slide-index="' + i + '">'
-        + '<a href="' + esc(event.url || listUrl) + '" class="home-events-banner__link">'
-        + '<span class="home-events-banner__category">' + esc(event.category || '이벤트') + '</span>'
-        + '<strong class="home-events-banner__subject">' + esc(event.subject || '이벤트') + '</strong>'
-        + (event.content ? '<p class="home-events-banner__desc">' + esc(event.content) + '</p>' : '')
-        + (event.datetime ? '<span class="home-events-banner__date">' + esc(formatDate(event.datetime)) + '</span>' : '')
+      cards += ''
+        + '<article class="home-events-stack__item">'
+        + '<a href="' + esc(event.url || listUrl) + '" class="home-events-stack__link">'
+        + '<div class="home-events-stack__meta">'
+        + '<span class="home-events-stack__badge">' + esc(event.category || '진행중') + '</span>'
+        + (event.datetime ? '<span class="home-events-stack__date">' + esc(formatDate(event.datetime)) + '</span>' : '')
+        + '</div>'
+        + '<strong class="home-events-stack__subject">' + esc(event.subject || '이벤트') + '</strong>'
+        + (event.content ? '<p class="home-events-stack__desc">' + esc(event.content) + '</p>' : '')
         + '</a>'
         + '</article>';
-      dots += ''
-        + '<button type="button" class="home-events-banner__dot' + (i === 0 ? ' is-active' : '') + '"'
-        + ' data-banner-dot="' + i + '" aria-label="' + esc((i + 1) + '번 슬라이드') + '"></button>';
     }
 
     var root = document.createElement('div');
-    root.className = 'home-events-banner';
-    root.setAttribute('data-eottae-events-banner', '1');
+    root.className = 'home-events-stack';
+    root.setAttribute('data-eottae-events-stack', '1');
     root.innerHTML = ''
-      + '<div class="home-events-banner__viewport">'
-      + '<div class="home-events-banner__track">' + slides + '</div>'
+      + '<div class="home-events-stack__head">'
+      + '<span class="home-events-stack__mark" aria-hidden="true"></span>'
+      + '<h2 class="home-events-stack__title">업체 이벤트 / 기획전</h2>'
       + '</div>'
-      + (events.length > 1
-        ? '<div class="home-events-banner__dots" aria-hidden="true">' + dots + '</div>'
-        : '');
+      + '<div class="home-events-stack__list">' + cards + '</div>';
 
     return root;
   }
 
-  function buildWrap(banner) {
+  function buildWrap(stack) {
     var wrap = document.createElement('div');
     wrap.className = 'home-hero-sidebar-events';
     wrap.setAttribute('aria-label', '업체 이벤트 / 기획전');
     wrap.setAttribute('data-eottae-events-banner-mounted', '1');
-    wrap.appendChild(banner);
+    wrap.appendChild(stack);
     return wrap;
   }
 
-  function bindCarousel(root) {
-    if (!root || root.dataset.bound === '1') {
-      return;
-    }
-    root.dataset.bound = '1';
-
-    var track = root.querySelector('.home-events-banner__track');
-    var dots = root.querySelectorAll('[data-banner-dot]');
-    var slides = root.querySelectorAll('.home-events-banner__slide');
-    if (!track || !slides.length) {
+  function replaceCarouselWithStack(sidebar) {
+    if (!sidebar) {
       return;
     }
 
-    var active = 0;
-    var timer = null;
-    var startX = 0;
-    var startY = 0;
-
-    function goTo(index) {
-      active = (index + slides.length) % slides.length;
-      track.style.transform = 'translate3d(-' + (active * 100) + '%, 0, 0)';
-      dots.forEach(function (dot, idx) {
-        dot.classList.toggle('is-active', idx === active);
-      });
+    var carousel = sidebar.querySelector('[data-eottae-events-banner]');
+    if (carousel && carousel.parentNode) {
+      carousel.parentNode.removeChild(carousel);
     }
-
-    function next() {
-      goTo(active + 1);
-    }
-
-    function restartTimer() {
-      if (timer) {
-        clearInterval(timer);
-      }
-      if (slides.length <= 1) {
-        return;
-      }
-      timer = setInterval(next, AUTOPLAY_MS);
-    }
-
-    dots.forEach(function (dot) {
-      dot.addEventListener('click', function () {
-        goTo(Number(dot.getAttribute('data-banner-dot')) || 0);
-        restartTimer();
-      });
-    });
-
-    root.addEventListener('touchstart', function (e) {
-      if (!e.changedTouches || !e.changedTouches.length) {
-        return;
-      }
-      startX = e.changedTouches[0].clientX;
-      startY = e.changedTouches[0].clientY;
-    }, { passive: true });
-
-    root.addEventListener('touchend', function (e) {
-      if (!e.changedTouches || !e.changedTouches.length || slides.length <= 1) {
-        return;
-      }
-      var dx = e.changedTouches[0].clientX - startX;
-      var dy = e.changedTouches[0].clientY - startY;
-      if (Math.abs(dx) < SWIPE_MIN || Math.abs(dx) < Math.abs(dy)) {
-        return;
-      }
-      goTo(dx < 0 ? active + 1 : active - 1);
-      restartTimer();
-    }, { passive: true });
-
-    goTo(0);
-    restartTimer();
   }
 
   function mount() {
@@ -279,21 +220,28 @@
       return false;
     }
 
+    var events = data.events.slice(0, DISPLAY_COUNT);
+    if (!events.length) {
+      return false;
+    }
+
     var existingWrap = sidebar.querySelector('.home-hero-sidebar-events[data-eottae-events-banner-mounted]');
+    if (existingWrap && existingWrap.querySelector('[data-eottae-events-stack]')) {
+      removeDuplicateLegacyEvents(sidebar, existingWrap);
+      replaceCarouselWithStack(sidebar);
+      return true;
+    }
+
     if (existingWrap) {
-      var existingBanner = existingWrap.querySelector('[data-eottae-events-banner]');
-      if (existingBanner) {
-        bindCarousel(existingBanner);
-        removeDuplicateLegacyEvents(sidebar, existingWrap);
-        return true;
-      }
       existingWrap.parentNode.removeChild(existingWrap);
     }
 
+    replaceCarouselWithStack(sidebar);
+
     var legacy = findSidebarLegacyEventsBlock(sidebar);
     var talkBlock = findSidebarTalkBlock(sidebar);
-    var banner = buildBanner(data.events, data.list_url || '/page/eottae-events.php');
-    var wrap = buildWrap(banner);
+    var stack = buildEventsStack(events, data.list_url || '/page/eottae-events.php');
+    var wrap = buildWrap(stack);
 
     if (legacy && legacy.parentNode) {
       legacy.parentNode.replaceChild(wrap, legacy);
@@ -304,7 +252,6 @@
     }
 
     removeDuplicateLegacyEvents(sidebar, wrap);
-    bindCarousel(banner);
     return true;
   }
 
@@ -336,7 +283,11 @@
       scheduled = true;
       global.requestAnimationFrame(function () {
         scheduled = false;
-        if (!root.querySelector('[data-eottae-events-banner-mounted]')) {
+        var sidebar = findHeroSidebar();
+        if (!sidebar) {
+          return;
+        }
+        if (!sidebar.querySelector('[data-eottae-events-stack]')) {
           mount();
         }
       });

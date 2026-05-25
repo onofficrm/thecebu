@@ -876,9 +876,7 @@ if (!function_exists('eottae_builder_inject_home_events_banner_script')) {
         }
 
         shuffle($events);
-        $count = count($events);
-        $take = max(2, min(5, $count));
-        $events = array_slice($events, 0, $take);
+        $events = array_slice($events, 0, 2);
 
         $payload = array(
             'events'   => $events,

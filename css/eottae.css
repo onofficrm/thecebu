@@ -7831,13 +7831,114 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   margin-top: 8px;
 }
 
-/* 홈 — 업체 이벤트 배너 (댓글 많은 글 블록) */
-.home-events-banner {
-  position: relative;
-  border-radius: 18px;
-  overflow: hidden;
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+/* 홈 — 업체 이벤트 / 기획전 2행 카드 (히어로 사이드바) */
+.home-events-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 14px 14px;
+  border-radius: 22px;
+  background: linear-gradient(160deg, #38bdf8 0%, #2563eb 52%, #1d4ed8 100%);
+  border: 1px solid rgba(186, 230, 253, 0.55);
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.22);
   color: #fff;
+}
+
+.home-events-stack__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.home-events-stack__mark {
+  flex: 0 0 auto;
+  width: 4px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.home-events-stack__title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.home-events-stack__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.home-events-stack__item {
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  overflow: hidden;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.home-events-stack__item:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.42);
+}
+
+.home-events-stack__link {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 13px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.home-events-stack__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-events-stack__badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 10px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.home-events-stack__date {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.home-events-stack__subject {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+.home-events-stack__desc {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.88);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.home-events-banner,
+[data-eottae-events-banner] {
+  display: none !important;
 }
 
 .home-events-banner__viewport {
@@ -8232,9 +8333,8 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   color: #0f172a;
 }
 
-.home-hero-sidebar-events .home-events-banner {
-  border-radius: 20px;
-  overflow: hidden;
+.home-hero-sidebar-events .home-events-stack {
+  border-radius: 22px;
 }
 
 .home-hero-talk-rooms--content .home-hero-talk-rooms__card {
