@@ -233,7 +233,9 @@ if (!function_exists('eottae_shop_seo_apply_page')) {
             $page_keywords = $resolved['focus_keyword'];
         }
 
-        if (function_exists('get_pretty_url')) {
+        if (function_exists('eottae_shop_view_url') && eottae_is_shop_board($board['bo_table'])) {
+            $page_canonical = eottae_shop_view_url((int) $write['wr_id'], $board['bo_table']);
+        } elseif (function_exists('get_pretty_url')) {
             $page_canonical = get_pretty_url($board['bo_table'], (int) $write['wr_id']);
         } else {
             $page_canonical = G5_BBS_URL.'/board.php?bo_table='.$board['bo_table'].'&wr_id='.(int) $write['wr_id'];

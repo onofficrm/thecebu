@@ -27,11 +27,11 @@ if (!function_exists('onoff_map_get_config')) {
             return $cached;
         }
 
-        $lat = g5site_cfg('map_default_lat', '10.3157');
-        $lng = g5site_cfg('map_default_lng', '123.8854');
-        $zoom = (int) g5site_cfg('map_default_zoom', '13');
+        $lat = g5site_cfg('map_default_lat', '10.313');
+        $lng = g5site_cfg('map_default_lng', '123.9174');
+        $zoom = (int) g5site_cfg('map_default_zoom', '12');
         if ($zoom < 1 || $zoom > 21) {
-            $zoom = 13;
+            $zoom = 12;
         }
 
         $radius = (float) g5site_cfg('map_default_radius_km', '5');
@@ -46,8 +46,8 @@ if (!function_exists('onoff_map_get_config')) {
 
         $cached = array(
             'api_key'                 => g5site_cfg('google_maps_api_key', ''),
-            'default_lat'             => is_numeric($lat) ? (float) $lat : 10.3157,
-            'default_lng'             => is_numeric($lng) ? (float) $lng : 123.8854,
+            'default_lat'             => is_numeric($lat) ? (float) $lat : 10.313,
+            'default_lng'             => is_numeric($lng) ? (float) $lng : 123.9174,
             'default_zoom'            => $zoom,
             'use_current_location'    => g5site_cfg_bool('map_use_current_location', true),
             'default_radius_km'       => $radius,

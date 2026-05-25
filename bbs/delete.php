@@ -15,6 +15,8 @@ $count_write = $count_comment = 0;
 
 if ($is_admin == 'super') // 최고관리자 통과
     ;
+else if (function_exists('eottae_shop_user_can_manage') && !empty($board['bo_table']) && is_array($write) && eottae_shop_user_can_manage($write, $board['bo_table']))
+    ;
 else if ($is_admin == 'group') { // 그룹관리자
     $mb = get_member($write['mb_id']);
     if ($member['mb_id'] != $group['gr_admin']) // 자신이 관리하는 그룹인가?

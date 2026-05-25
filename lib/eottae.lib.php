@@ -226,12 +226,123 @@ if (!function_exists('eottae_site_logo_url')) {
     }
 }
 
+if (!function_exists('eottae_home_map_center')) {
+    /**
+     * 홈 지도 기본 중심 — 세부시티·라푸라푸(막탄) 일대
+     *
+     * @return array{lat: float, lng: float, zoom: int}
+     */
+    function eottae_home_map_center()
+    {
+        if (is_file(G5_PATH.'/components/maps/map-config.php')) {
+            include_once G5_PATH.'/components/maps/map-config.php';
+            if (function_exists('onoff_map_get_config')) {
+                $cfg = onoff_map_get_config();
+                $zoom = isset($cfg['default_zoom']) ? (int) $cfg['default_zoom'] : 12;
+                if ($zoom < 10 || $zoom > 16) {
+                    $zoom = 12;
+                }
+
+                return array(
+                    'lat'  => isset($cfg['default_lat']) ? (float) $cfg['default_lat'] : 10.313,
+                    'lng'  => isset($cfg['default_lng']) ? (float) $cfg['default_lng'] : 123.9174,
+                    'zoom' => $zoom,
+                );
+            }
+        }
+
+        return array(
+            'lat'  => 10.313,
+            'lng'  => 123.9174,
+            'zoom' => 12,
+        );
+    }
+}
+
+if (!function_exists('eottae_home_map_locations')) {
+    function eottae_home_map_locations($limit = 30)
+    {
+        global $g5;
+
+        if (!function_exists('eottae_shop_table') || !function_exists('eottae_shop_map_markers')) {
+            return array();
+        }
+
+        $bo_table = eottae_shop_table();
+        $write_table = $g5['write_prefix'].$bo_table;
+        $limit = max(1, min(50, (int) $limit));
+        $result = sql_query(" select * from {$write_table}
+            where wr_is_comment = 0
+            order by wr_id desc
+            limit {$limit} ");
+        $rows = array();
+        while ($row = sql_fetch_array($result)) {
+            $rows[] = $row;
+        }
+
+        $markers = eottae_shop_map_markers($rows, $bo_table);
+        if (!function_exists('eottae_shop_map_locations_json')) {
+            return $markers;
+        }
+
+        $json = eottae_shop_map_locations_json($markers);
+        $decoded = json_decode($json, true);
+
+        return is_array($decoded) ? $decoded : array();
+    }
+}
+
+if (!function_exists('eottae_builder_inject_home_map')) {
+    function eottae_builder_inject_home_map($html)
+    {
+        if (!is_string($html) || $html === '') {
+            return $html;
+        }
+
+        if (!function_exists('eottae_google_maps_api_key')) {
+            return $html;
+        }
+
+        $api_key = eottae_google_maps_api_key();
+        if ($api_key === '') {
+            return $html;
+        }
+
+        $center = eottae_home_map_center();
+        $locations = eottae_home_map_locations(30);
+        $payload = array(
+            'lat'       => $center['lat'],
+            'lng'       => $center['lng'],
+            'zoom'      => $center['zoom'],
+            'locations' => $locations,
+        );
+        $payload_json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($payload_json === false) {
+            return $html;
+        }
+
+        $home_map_js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-map.js' : '/js/eottae-home-map.js';
+        $key_esc = htmlspecialchars($api_key, ENT_QUOTES, 'UTF-8');
+        $script = '<script>window.__EOTTae_HOME_MAP__='.$payload_json.';</script>';
+        $script .= '<script src="'.htmlspecialchars($home_map_js, ENT_QUOTES, 'UTF-8').'"></script>';
+        $script .= '<script src="https://maps.googleapis.com/maps/api/js?key='.$key_esc.'&amp;callback=initEottaeHomeMaps" defer></script>';
+
+        if (preg_match('#</body>#i', $html)) {
+            return preg_replace('#</body>#i', $script.'</body>', $html, 1);
+        }
+
+        return $html.$script;
+    }
+}
+
 if (!function_exists('eottae_builder_inject_html')) {
     function eottae_builder_inject_html($html, $id)
     {
         if ($id !== 'thecebu-main' || !is_string($html) || $html === '') {
             return $html;
         }
+
+        $html = eottae_builder_inject_home_map($html);
 
         $logo = eottae_site_logo_url('logo_path');
         if ($logo === '') {
@@ -2153,7 +2264,9 @@ if (!function_exists('eottae_shop_map_markers')) {
                 'lat'      => $lat,
                 'lng'      => $lng,
                 'thumbnail' => $thumbnail,
-                'url'      => isset($row['href']) ? $row['href'] : G5_BBS_URL.'/board.php?bo_table='.($bo_table !== '' ? $bo_table : (defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop')).'&wr_id='.$shop['wr_id'],
+                'url'      => function_exists('eottae_shop_view_url')
+                    ? eottae_shop_view_url($shop['wr_id'], $bo_table !== '' ? $bo_table : eottae_shop_table())
+                    : G5_BBS_URL.'/board.php?bo_table='.($bo_table !== '' ? $bo_table : eottae_shop_table()).'&wr_id='.$shop['wr_id'],
             );
         }
 
@@ -2356,6 +2469,97 @@ if (!function_exists('eottae_shop_list_url')) {
         }
 
         return $base.'&'.http_build_query($params);
+    }
+}
+
+if (!function_exists('eottae_shop_view_url')) {
+    /**
+     * 업체(shop 게시판) 상세 URL — 영카트 /shop/{id} 짧은주소와 충돌하지 않도록 board.php 사용
+     *
+     * @param int|string $wr_id
+     * @param string     $bo_table
+     * @param string     $query_string
+     * @return string
+     */
+    function eottae_shop_view_url($wr_id, $bo_table = '', $query_string = '')
+    {
+        $wr_id = (int) $wr_id;
+        if ($bo_table === '') {
+            $bo_table = eottae_shop_table();
+        }
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+        if ($wr_id < 1 || $bo_table === '') {
+            return G5_BBS_URL.'/board.php';
+        }
+
+        $url = G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$wr_id;
+        if ($query_string !== '') {
+            $qs = ltrim((string) $query_string, '&');
+            if ($qs !== '') {
+                $url .= '&'.$qs;
+            }
+        }
+
+        return $url;
+    }
+}
+
+if (!function_exists('eottae_pretty_shop_board_url')) {
+    /**
+     * get_pretty_url('shop', …) 이 영카트 item.php 로 가는 것을 shop 게시판 URL로 교정
+     */
+    function eottae_pretty_shop_board_url($url, $folder, $no = '', $query_string = '', $action = '')
+    {
+        if (!function_exists('eottae_is_shop_board') || !eottae_is_shop_board($folder)) {
+            return $url;
+        }
+
+        if ($folder !== eottae_shop_table()) {
+            return $url;
+        }
+
+        if ($no !== '' && preg_match('/^(list|type)\-/i', (string) $no)) {
+            return $url;
+        }
+
+        if ($action === 'write') {
+            $write_url = G5_BBS_URL.'/write.php?bo_table='.$folder;
+            if ($query_string !== '') {
+                $qs = ltrim((string) $query_string, '&');
+                if ($qs !== '') {
+                    $write_url .= '&'.$qs;
+                }
+            }
+
+            return $write_url;
+        }
+
+        if ($no !== '' && ctype_digit((string) $no)) {
+            global $g5;
+
+            $wr_id = (int) $no;
+            $write_table = $g5['write_prefix'].$folder;
+            $row = sql_fetch(" select wr_id from {$write_table} where wr_id = '{$wr_id}' and wr_is_comment = 0 limit 1 ");
+            if (!empty($row['wr_id'])) {
+                return eottae_shop_view_url($wr_id, $folder, $query_string);
+            }
+
+            return $url;
+        }
+
+        if ($no === '') {
+            $list_url = G5_BBS_URL.'/board.php?bo_table='.$folder;
+            if ($query_string !== '') {
+                $qs = ltrim((string) $query_string, '&');
+                if ($qs !== '') {
+                    $list_url .= '&'.$qs;
+                }
+            }
+
+            return $list_url;
+        }
+
+        return $url;
     }
 }
 

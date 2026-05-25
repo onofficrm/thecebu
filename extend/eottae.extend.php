@@ -51,6 +51,10 @@ if (!function_exists('eottae_on_register_after')) {
 }
 add_event('register_form_update_after', 'eottae_on_register_after', 10, 2);
 
+if (function_exists('add_replace')) {
+    add_replace('get_pretty_url', 'eottae_pretty_shop_board_url', 5, 5);
+}
+
 if (!function_exists('eottae_on_shop_write_before')) {
     function eottae_on_shop_write_before($board, $wr_id, $w, $qstr)
     {
@@ -168,6 +172,9 @@ if (!function_exists('eottae_on_shop_delete')) {
         eottae_shop_seo_delete($board['bo_table'], (int) $write['wr_id']);
         if (function_exists('eottae_shop_map_thumb_delete')) {
             eottae_shop_map_thumb_delete($board['bo_table'], (int) $write['wr_id']);
+        }
+        if (function_exists('eottae_ad_deactivate_by_shop')) {
+            eottae_ad_deactivate_by_shop($board['bo_table'], (int) $write['wr_id']);
         }
     }
 }

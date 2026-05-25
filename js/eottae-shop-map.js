@@ -106,6 +106,10 @@
     this.map = new global.google.maps.Map(this.canvas, {
       center: this.center,
       zoom: this.zoom,
+      zoomControl: true,
+      zoomControlOptions: {
+        position: global.google.maps.ControlPosition.RIGHT_CENTER
+      },
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: true
@@ -153,6 +157,12 @@
         bounds.extend({ lat: loc.lat, lng: loc.lng });
       });
       self.map.fitBounds(bounds);
+      global.google.maps.event.addListenerOnce(self.map, 'bounds_changed', function () {
+        var maxZoom = Math.max(self.zoom, 12);
+        if (self.map.getZoom() > maxZoom) {
+          self.map.setZoom(maxZoom);
+        }
+      });
     } else if (self.locations.length === 1) {
       self.map.setCenter({ lat: self.locations[0].lat, lng: self.locations[0].lng });
       self.map.setZoom(15);
@@ -266,6 +276,10 @@
     this.map = new global.google.maps.Map(this.canvas, {
       center: center,
       zoom: this.zoom,
+      zoomControl: true,
+      zoomControlOptions: {
+        position: global.google.maps.ControlPosition.RIGHT_CENTER
+      },
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: true

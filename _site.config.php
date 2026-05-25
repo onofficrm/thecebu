@@ -70,9 +70,9 @@ $site_config = array(
     /* 온오프챗봇 (components/onoff-chatbot.php) */
     'onoff_chatbot_enabled'     => true,
     'onoff_chatbot_site_key'    => '967314350ee8ce35058ed2c5d0ed9039b10f200a829089af',
-    'map_default_lat'           => '10.3157',
-    'map_default_lng'           => '123.8854',
-    'map_default_zoom'          => 13,
+    'map_default_lat'           => '10.313',
+    'map_default_lng'           => '123.9174',
+    'map_default_zoom'          => 12,
     'map_use_current_location'  => true,
     'map_default_radius_km'     => 5,
     'map_unit'                  => 'km',

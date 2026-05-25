@@ -58,14 +58,18 @@ CSS_FILES=(
 JS_FILES=(
   js/eottae.js
   js/eottae-shop-map.js
+  js/eottae-home-map.js
 )
 
 PROC_FILES=(
+  proc/_eottae_json_bootstrap.php
   proc/eottae-review-reply.php
   proc/eottae-review-submit.php
   proc/eottae-geocode.php
   proc/eottae-coupon-use.php
   proc/eottae-shop-save.php
+  proc/eottae-shop-ai-generate.php
+  proc/eottae-shop-map-thumb-ai.php
   proc/inquiry-submit.php
 )
 

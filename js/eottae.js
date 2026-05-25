@@ -9,6 +9,20 @@
     return Array.prototype.slice.call((ctx || document).querySelectorAll(sel));
   }
 
+  function parseJsonResponse(res) {
+    return res.text().then(function (text) {
+      var trimmed = (text || '').trim();
+      if (!trimmed) {
+        throw new Error('서버 응답이 비어 있습니다.');
+      }
+      try {
+        return JSON.parse(trimmed);
+      } catch (e) {
+        throw new Error('서버 응답 오류입니다. 잠시 후 다시 시도해 주세요.');
+      }
+    });
+  }
+
   function ensureInquiryModal() {
     var modal = qs('#eottaeInquiryModal');
     if (modal) return modal;
@@ -208,7 +222,7 @@
           credentials: 'same-origin',
           body: form
         })
-          .then(function (res) { return res.json(); })
+          .then(function (res) { return parseJsonResponse(res); })
           .then(function (json) {
             if (!json || !json.success) {
               throw new Error((json && json.message) || 'AI 자동생성에 실패했습니다.');
@@ -273,7 +287,7 @@
         credentials: 'same-origin',
         body: form
       })
-        .then(function (res) { return res.json(); })
+        .then(function (res) { return parseJsonResponse(res); })
         .then(function (json) {
           if (!json || !json.success) {
             throw new Error((json && json.message) || 'AI 썸네일 생성에 실패했습니다.');
@@ -751,7 +765,7 @@
 
     function loadList() {
       return fetch('/proc/eottae-business-snippets.php?action=list', { credentials: 'same-origin' })
-        .then(function (res) { return res.json(); })
+        .then(function (res) { return parseJsonResponse(res); })
         .then(function (json) {
           if (!json || !json.success) {
             throw new Error((json && json.message) || '문구 목록을 불러오지 못했습니다.');
@@ -771,7 +785,7 @@
       fd.append('wr_subject', subject || '');
       fd.append('wr_content', content || '');
       return fetch('/proc/eottae-business-snippets.php', { method: 'POST', body: fd, credentials: 'same-origin' })
-        .then(function (res) { return res.json(); })
+        .then(function (res) { return parseJsonResponse(res); })
         .then(function (json) {
           if (!json || !json.success) {
             throw new Error((json && json.message) || '저장에 실패했습니다.');
@@ -786,7 +800,7 @@
       fd.append('action', 'delete');
       fd.append('snippet_id', String(id));
       fetch('/proc/eottae-business-snippets.php', { method: 'POST', body: fd, credentials: 'same-origin' })
-        .then(function (res) { return res.json(); })
+        .then(function (res) { return parseJsonResponse(res); })
         .then(function (json) {
           if (!json || !json.success) {
             throw new Error((json && json.message) || '삭제에 실패했습니다.');
@@ -806,7 +820,7 @@
       var fd = new FormData();
       fd.append('topic', topic);
       return fetch('/proc/eottae-business-snippet-ai.php', { method: 'POST', body: fd, credentials: 'same-origin' })
-        .then(function (res) { return res.json(); })
+        .then(function (res) { return parseJsonResponse(res); })
         .then(function (json) {
           if (!json || !json.success) {
             throw new Error((json && json.message) || 'AI 생성에 실패했습니다.');
@@ -952,7 +966,7 @@
 
     function loadList() {
       return fetch('/proc/eottae-business-snippets.php?action=list', { credentials: 'same-origin' })
-        .then(function (res) { return res.json(); })
+        .then(function (res) { return parseJsonResponse(res); })
         .then(function (json) {
           if (!json || !json.success) {
             throw new Error((json && json.message) || '문구 목록을 불러오지 못했습니다.');
@@ -978,7 +992,7 @@
       fd.append('wr_subject', subjectInput ? subjectInput.value : '');
       fd.append('wr_content', content);
       return fetch('/proc/eottae-business-snippets.php', { method: 'POST', body: fd, credentials: 'same-origin' })
-        .then(function (res) { return res.json(); })
+        .then(function (res) { return parseJsonResponse(res); })
         .then(function (json) {
           if (!json || !json.success) {
             throw new Error((json && json.message) || '저장에 실패했습니다.');
@@ -994,7 +1008,7 @@
       fd.append('action', 'delete');
       fd.append('snippet_id', String(id));
       fetch('/proc/eottae-business-snippets.php', { method: 'POST', body: fd, credentials: 'same-origin' })
-        .then(function (res) { return res.json(); })
+        .then(function (res) { return parseJsonResponse(res); })
         .then(function (json) {
           if (!json || !json.success) {
             throw new Error((json && json.message) || '삭제에 실패했습니다.');
@@ -1017,7 +1031,7 @@
         var fd = new FormData();
         fd.append('topic', topic);
         fetch('/proc/eottae-business-snippet-ai.php', { method: 'POST', body: fd, credentials: 'same-origin' })
-          .then(function (res) { return res.json(); })
+          .then(function (res) { return parseJsonResponse(res); })
           .then(function (json) {
             if (!json || !json.success) {
               throw new Error((json && json.message) || 'AI 생성에 실패했습니다.');
@@ -1116,7 +1130,7 @@
         if (submitBtn) submitBtn.disabled = true;
 
         fetch(form.action, { method: 'POST', body: fd, credentials: 'same-origin' })
-          .then(function (res) { return res.json(); })
+          .then(function (res) { return parseJsonResponse(res); })
           .then(function (data) {
             if (data.success) {
               if (data.redirect_url) {
@@ -1151,7 +1165,7 @@
         body: new FormData(form),
         credentials: 'same-origin',
       })
-        .then(function (res) { return res.json(); })
+        .then(function (res) { return parseJsonResponse(res); })
         .then(function (data) {
           if (data.success) {
             if (data.redirect_url) {
@@ -1185,7 +1199,7 @@
 
       btn.disabled = true;
       fetch('/proc/eottae-shop-save.php', { method: 'POST', body: fd, credentials: 'same-origin' })
-        .then(function (res) { return res.json(); })
+        .then(function (res) { return parseJsonResponse(res); })
         .then(function (data) {
           btn.disabled = false;
           if (!data.success) {

@@ -3,6 +3,7 @@ if (!defined('_GNUBOARD_')) exit;
 
 include_once(G5_LIB_PATH.'/thumbnail.lib.php');
 include_once(G5_LIB_PATH.'/eottae.lib.php');
+include_once(G5_LIB_PATH.'/eottae-shop-owner.lib.php');
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
 
 $shop = eottae_shop_from_write($view);
@@ -23,6 +24,10 @@ $shop_map = array(
     'thumbnail' => function_exists('eottae_shop_map_thumb_get') ? eottae_shop_map_thumb_get($bo_table, (int) $view['wr_id']) : array(),
 );
 $is_ad = isset($view['wr_link2']) && stripos((string) $view['wr_link2'], 'ad') !== false;
+
+if (function_exists('eottae_shop_apply_manage_links')) {
+    eottae_shop_apply_manage_links($view, $bo_table);
+}
 ?>
 
 <article class="shop-detail-page board-wrap board-wrap--eottae-shop" id="bo_v" style="width:<?php echo $width; ?>">
@@ -124,6 +129,7 @@ $is_ad = isset($view['wr_link2']) && stripos((string) $view['wr_link2'], 'ad') !
         <ul class="board-actions btn_bo_user">
             <?php if ($list_href) { ?><li><a href="<?php echo $list_href; ?>" class="btn_b01 btn">목록</a></li><?php } ?>
             <?php if ($update_href) { ?><li><a href="<?php echo $update_href; ?>" class="btn_b01 btn">수정</a></li><?php } ?>
+            <?php if ($delete_href) { ?><li><a href="<?php echo $delete_href; ?>" class="btn_b01 btn shop-detail-page__btn-delete" onclick="del(this.href); return false;">삭제</a></li><?php } ?>
         </ul>
     </footer>
 </article>

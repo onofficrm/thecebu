@@ -76,6 +76,9 @@ g5_page_start('마이페이지');
                 <li class="business-dashboard__shop-item">
                     <a href="<?php echo $shop_row['view_url']; ?>" class="business-dashboard__shop-name"><?php echo $shop_row['subject']; ?></a>
                     <a href="<?php echo $shop_row['update_url']; ?>" class="business-dashboard__shop-edit">수정</a>
+                    <?php if (!empty($shop_row['delete_url'])) { ?>
+                    <a href="<?php echo $shop_row['delete_url']; ?>" class="business-dashboard__shop-delete" onclick="del(this.href); return false;">삭제</a>
+                    <?php } ?>
                 </li>
                 <?php } ?>
             </ul>

@@ -20,7 +20,9 @@ if (!function_exists('eottae_shop_card_html')) {
 
         $shop = eottae_shop_from_write($row);
         $thumb = eottae_shop_card_thumb($row, $bo_table);
-        $href = isset($row['href']) ? $row['href'] : G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$shop['wr_id'];
+        $href = function_exists('eottae_shop_view_url')
+            ? eottae_shop_view_url($shop['wr_id'], $bo_table)
+            : G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$shop['wr_id'];
         $status_class = $shop['status'] === '영업중' ? ' shop-card--open' : '';
 
         ob_start();
@@ -96,7 +98,9 @@ if (!function_exists('eottae_shop_list_card_html')) {
 
         $shop = eottae_shop_from_write($row);
         $thumb = eottae_shop_card_thumb($row, $bo_table);
-        $href = isset($row['href']) ? $row['href'] : G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$shop['wr_id'];
+        $href = function_exists('eottae_shop_view_url')
+            ? eottae_shop_view_url($shop['wr_id'], $bo_table)
+            : G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$shop['wr_id'];
         $summary = eottae_get_shop_review_summary((int) $shop['wr_id']);
         $snippet = eottae_shop_list_snippet(isset($row['wr_content']) ? $row['wr_content'] : '');
         $is_recommended = $summary['average'] >= 4.5 && $summary['count'] > 0;
