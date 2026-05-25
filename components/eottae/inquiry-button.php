@@ -3,6 +3,22 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
+if (!function_exists('eottae_inquiry_detail_icon_svg')) {
+    function eottae_inquiry_detail_icon_svg($type)
+    {
+        switch ($type) {
+            case 'inquiry':
+                return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path></svg>';
+            case 'share':
+                return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.59 13.51 15.42 17.49"></path><path d="M15.41 6.51 8.59 10.49"></path></svg>';
+            case 'map':
+                return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="3 11 12 2 21 11 21 22 3 22 3 11"></polygon><path d="M9 22V12h6v10"></path></svg>';
+            default:
+                return '';
+        }
+    }
+}
+
 if (!function_exists('eottae_inquiry_buttons_html')) {
     function eottae_inquiry_buttons_html($context, $opts = array())
     {
@@ -23,9 +39,18 @@ if (!function_exists('eottae_inquiry_buttons_html')) {
             case 'detail':
                 ?>
                 <div class="inquiry-button inquiry-button--detail shop-detail-page__actions">
-                    <button type="button" class="inquiry-button__btn inquiry-button__btn--inquiry inquiry-button"<?php echo $inquiry_attr; ?> data-inquiry-action="open">문의하기</button>
-                    <button type="button" class="inquiry-button__btn inquiry-button__btn--share" data-share-url="<?php echo htmlspecialchars($share_url, ENT_QUOTES, 'UTF-8'); ?>">공유하기</button>
-                    <a href="<?php echo $map_href; ?>" class="inquiry-button__btn inquiry-button__btn--map" target="_blank" rel="noopener noreferrer">길찾기</a>
+                    <button type="button" class="inquiry-button__btn inquiry-button__btn--inquiry inquiry-button"<?php echo $inquiry_attr; ?> data-inquiry-action="open">
+                        <span class="inquiry-button__icon"><?php echo eottae_inquiry_detail_icon_svg('inquiry'); ?></span>
+                        <span class="inquiry-button__label">문의하기</span>
+                    </button>
+                    <button type="button" class="inquiry-button__btn inquiry-button__btn--share" data-share-url="<?php echo htmlspecialchars($share_url, ENT_QUOTES, 'UTF-8'); ?>">
+                        <span class="inquiry-button__icon"><?php echo eottae_inquiry_detail_icon_svg('share'); ?></span>
+                        <span class="inquiry-button__label">공유하기</span>
+                    </button>
+                    <a href="<?php echo $map_href; ?>" class="inquiry-button__btn inquiry-button__btn--map" target="_blank" rel="noopener noreferrer">
+                        <span class="inquiry-button__icon"><?php echo eottae_inquiry_detail_icon_svg('map'); ?></span>
+                        <span class="inquiry-button__label">길찾기</span>
+                    </a>
                 </div>
                 <?php
                 break;

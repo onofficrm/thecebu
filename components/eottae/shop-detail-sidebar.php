@@ -68,12 +68,10 @@ $featured = array_slice($featured, 0, 3);
                     <span class="community-sidebar__shop-body">
                         <span class="community-sidebar__shop-title-row">
                             <strong><?php echo get_text($shop_item['name']); ?></strong>
-                            <?php if ($rating > 0) { ?>
-                            <span class="community-sidebar__shop-badge community-sidebar__shop-badge--rating">★ <?php echo number_format($rating, 1); ?></span>
-                            <?php } ?>
-                            <?php if ($review_count > 0) { ?>
-                            <span class="community-sidebar__shop-badge community-sidebar__shop-badge--reviews">리뷰 <?php echo number_format($review_count); ?></span>
-                            <?php } ?>
+                            <span class="community-sidebar__shop-badges">
+                                <span class="community-sidebar__shop-badge community-sidebar__shop-badge--rating">★ <?php echo $rating > 0 ? number_format($rating, 1) : '0.0'; ?></span>
+                                <span class="community-sidebar__shop-badge community-sidebar__shop-badge--reviews">리뷰 <?php echo number_format($review_count); ?></span>
+                            </span>
                         </span>
                         <small><?php echo get_text($shop_item['region']); ?> · <?php echo get_text($shop_item['category']); ?></small>
                     </span>

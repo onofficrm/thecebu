@@ -78,21 +78,27 @@
 
   function markerInfoHtml(loc) {
     var hasThumb = !!loc.thumbnail;
-    var thumb = hasThumb
-      ? '<div class="marker-info-thumb-wrap"><img class="marker-info-thumb" src="' +
-        escapeHtml(loc.thumbnail) +
-        '" alt=""></div>'
-      : '';
-    var badges = markerInfoBadgesHtml(loc);
     var link =
       loc.link && loc.link !== '#'
-        ? '<a href="' + escapeHtml(loc.link) + '" class="marker-info-link">상세보기</a>'
+        ? '<a href="' + escapeHtml(loc.link) + '" class="marker-info-link marker-info-link--btn">상세보기</a>'
         : '';
+    if (hasThumb) {
+      return (
+        '<div class="marker-info marker-info--thumb marker-info--compact">' +
+        '<div class="marker-info-thumb-wrap"><img class="marker-info-thumb" src="' +
+        escapeHtml(loc.thumbnail) +
+        '" alt=""></div>' +
+        '<div class="marker-info-body">' +
+        '<h3 class="marker-info-title">' +
+        escapeHtml(loc.name) +
+        '</h3>' +
+        (link ? '<div class="marker-info-actions">' + link + '</div>' : '') +
+        '</div></div>'
+      );
+    }
+    var badges = markerInfoBadgesHtml(loc);
     return (
-      '<div class="marker-info' +
-      (hasThumb ? ' marker-info--thumb marker-info--compact' : '') +
-      '">' +
-      thumb +
+      '<div class="marker-info">' +
       '<div class="marker-info-body">' +
       '<div class="marker-info-head">' +
       '<h3 class="marker-info-title">' +
@@ -105,7 +111,7 @@
   }
 
   function openMarkerInfoWindow(infoWindow, map, marker, loc) {
-    infoWindow.setOptions({ maxWidth: 320 });
+    infoWindow.setOptions({ maxWidth: 240 });
     infoWindow.setContent(markerInfoHtml(loc));
     infoWindow.open(map, marker);
     global.google.maps.event.addListenerOnce(infoWindow, 'domready', function () {
@@ -161,7 +167,7 @@
       fullscreenControl: true
     });
 
-    this.infoWindow = new global.google.maps.InfoWindow({ maxWidth: 320 });
+    this.infoWindow = new global.google.maps.InfoWindow({ maxWidth: 240 });
     this.renderMarkers();
     this.bindLocateButton();
     this.hostEl.classList.add('eottae-home-map--live');
