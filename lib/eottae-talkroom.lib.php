@@ -1460,7 +1460,7 @@ if (!function_exists('eottae_talkroom_format_admin_room')) {
             'owner_nick'       => get_text($owner_nick),
             'owner_name'       => get_text($row['owner_name'] ?? ''),
             'owner_email'      => get_text($row['owner_email'] ?? ''),
-            'status'           => trim((string) ($row['status'] ?? '')),
+            'status'           => strtolower(trim((string) ($row['status'] ?? ''))),
             'status_label'     => eottae_talkroom_status_label($row['status'] ?? ''),
             'status_class'     => eottae_talkroom_status_class($row['status'] ?? ''),
             'reject_reason'    => get_text($row['reject_reason'] ?? ''),
@@ -1470,6 +1470,78 @@ if (!function_exists('eottae_talkroom_format_admin_room')) {
             'updated_at'       => trim((string) ($row['updated_at'] ?? '')),
             'detail_url'       => eottae_talkroom_admin_detail_url((int) $row['room_id']),
         );
+    }
+}
+
+if (!function_exists('eottae_talkroom_admin_resolve_applications')) {
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    function eottae_talkroom_admin_resolve_applications($status_filter = 'pending', $limit = 200)
+    {
+        $status_filter = trim((string) $status_filter);
+        if ($status_filter === '') {
+            $status_filter = 'pending';
+        }
+
+        $applications = eottae_talkroom_admin_list_applications($status_filter === 'all' ? 'all' : $status_filter, $limit);
+        if (!empty($applications)) {
+            return $applications;
+        }
+
+        if ($status_filter !== 'pending') {
+            return $applications;
+        }
+
+        $applications = eottae_talkroom_admin_list_applications('all', $limit);
+        $applications = array_values(array_filter($applications, function ($item) {
+            return ($item['status'] ?? '') === 'pending';
+        }));
+        if (!empty($applications)) {
+            return $applications;
+        }
+
+        $tables = eottae_talkroom_table_names();
+        if (!eottae_talkroom_table_exists($tables['rooms'])) {
+            return array();
+        }
+
+        $limit = max(1, min(500, (int) $limit));
+        $queries = array(
+            "
+                SELECT *
+                FROM `{$tables['rooms']}`
+                WHERE LOWER(TRIM(status)) = 'pending'
+                ORDER BY created_at DESC, room_id DESC
+                LIMIT {$limit}
+            ",
+            "
+                SELECT *
+                FROM `{$tables['rooms']}`
+                WHERE status = 'pending'
+                ORDER BY created_at DESC, room_id DESC
+                LIMIT {$limit}
+            ",
+        );
+
+        foreach ($queries as $sql) {
+            $result = sql_query($sql, false);
+            if (!$result) {
+                continue;
+            }
+
+            $rows = array();
+            while ($row = sql_fetch_array($result)) {
+                if (is_array($row)) {
+                    $rows[] = eottae_talkroom_format_admin_room($row);
+                }
+            }
+            if (!empty($rows)) {
+                return $rows;
+            }
+        }
+
+        return array();
     }
 }
 
@@ -1495,6 +1567,16 @@ if (!function_exists('eottae_talkroom_admin_list_applications')) {
         }
 
         $fetched = eottae_talkroom_admin_fetch_room_rows($where, $limit, true);
+        if ($fetched === false || ($fetched === array() && $where !== '')) {
+            $simple_where = '';
+            if ($status_filter !== '' && $status_filter !== 'all') {
+                $simple_where = " WHERE r.status = '".sql_escape_string(strtolower($status_filter))."' ";
+            }
+            $retry = eottae_talkroom_admin_fetch_room_rows($simple_where !== '' ? $simple_where : $where, $limit, false);
+            if (is_array($retry)) {
+                $fetched = $retry;
+            }
+        }
         if ($fetched === false) {
             $fetched = eottae_talkroom_admin_fetch_room_rows($where, $limit, false);
         }

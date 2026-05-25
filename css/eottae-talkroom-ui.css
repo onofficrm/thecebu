@@ -1373,6 +1373,9 @@ body.talk-admin-shell #container {
   margin: 0;
   padding: 0;
   float: none;
+  overflow: visible;
+  height: auto;
+  min-height: 0;
 }
 
 body.talk-admin-shell .talk-admin-page {
@@ -1508,11 +1511,33 @@ body.talk-admin-shell .talk-admin-filter__item.is-active {
 
 body.talk-admin-shell .promo-admin-panel {
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
   border-radius: 18px;
   background: #fff;
   border: 1px solid #e2e8f0;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+body.talk-admin-shell .talk-admin-applies__shell {
+  margin-bottom: 16px;
+  padding: 20px 22px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+body.talk-admin-shell .talk-admin-applies__body {
+  display: block !important;
+  clear: both;
+  width: 100%;
+  min-height: 160px;
+  margin: 16px -22px -20px;
+  padding: 0;
+  overflow: visible;
+  border-top: 1px solid #eef2f6;
+  border-radius: 0 0 18px 18px;
+  background: #fff;
 }
 
 body.talk-admin-shell .promo-admin-empty {
@@ -1631,6 +1656,14 @@ body.talk-admin-shell .talk-apply-status--rejected {
     padding: 16px;
   }
 
+  body.talk-admin-shell .talk-admin-applies__shell {
+    padding: 16px;
+  }
+
+  body.talk-admin-shell .talk-admin-applies__body {
+    margin: 16px -16px -16px;
+  }
+
   body.talk-admin-shell .promo-admin-page__title {
     font-size: 1.25rem;
   }
@@ -1689,6 +1722,10 @@ body.talk-admin-shell .talk-admin-applies__header .promo-admin-page__desc {
   margin-bottom: 0;
 }
 
+body.talk-admin-shell .talk-admin-applies__shell .promo-admin-page__desc {
+  margin-bottom: 0;
+}
+
 body.talk-admin-shell .talk-admin-applies__filter {
   display: flex !important;
   flex-wrap: wrap;
@@ -1705,6 +1742,10 @@ body.talk-admin-shell .talk-admin-applies__panel {
   padding: 0;
   overflow: visible;
   visibility: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 body.talk-admin-shell .talk-admin-applies__summary {
