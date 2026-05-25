@@ -3000,15 +3000,13 @@ if (!function_exists('eottae_shop_view_url')) {
 
 if (!function_exists('eottae_pretty_shop_board_url')) {
     /**
-     * get_pretty_url('shop', …) 이 영카트 item.php 로 가는 것을 shop 게시판 URL로 교정
+     * 업체·세그먼트 게시판 URL 교정
+     * - shop: 영카트 /shop/{id} 충돌 방지
+     * - food 등: /food/2 짧은주소가 wr_id=2 로 해석되어 페이지 이동 시 "없는 글" 방지
      */
     function eottae_pretty_shop_board_url($url, $folder, $no = '', $query_string = '', $action = '')
     {
         if (!function_exists('eottae_is_shop_board') || !eottae_is_shop_board($folder)) {
-            return $url;
-        }
-
-        if ($folder !== eottae_shop_table()) {
             return $url;
         }
 
@@ -3028,19 +3026,6 @@ if (!function_exists('eottae_pretty_shop_board_url')) {
             return $write_url;
         }
 
-        if ($no !== '' && ctype_digit((string) $no)) {
-            global $g5;
-
-            $wr_id = (int) $no;
-            $write_table = $g5['write_prefix'].$folder;
-            $row = sql_fetch(" select wr_id from {$write_table} where wr_id = '{$wr_id}' and wr_is_comment = 0 limit 1 ");
-            if (!empty($row['wr_id'])) {
-                return eottae_shop_view_url($wr_id, $folder, $query_string);
-            }
-
-            return $url;
-        }
-
         if ($no === '') {
             $list_url = G5_BBS_URL.'/board.php?bo_table='.$folder;
             if ($query_string !== '') {
@@ -3051,6 +3036,22 @@ if (!function_exists('eottae_pretty_shop_board_url')) {
             }
 
             return $list_url;
+        }
+
+        if ($no !== '' && ctype_digit((string) $no)) {
+            global $g5;
+
+            $wr_id = (int) $no;
+            $storage_bo = function_exists('eottae_shop_storage_bo_table')
+                ? eottae_shop_storage_bo_table($folder)
+                : $folder;
+            $write_table = $g5['write_prefix'].$storage_bo;
+            $row = sql_fetch(" select wr_id from {$write_table} where wr_id = '{$wr_id}' and wr_is_comment = 0 limit 1 ");
+            if (!empty($row['wr_id'])) {
+                return eottae_shop_view_url($wr_id, $folder, $query_string);
+            }
+
+            return $url;
         }
 
         return $url;
@@ -3078,21 +3079,156 @@ if (!function_exists('eottae_shop_category_url')) {
     }
 }
 
+if (!function_exists('eottae_shop_default_cover_url')) {
+    /** 업체 사진이 없을 때 상세 대문(히어로) 기본 이미지 */
+    function eottae_shop_default_cover_url($category = '')
+    {
+        $category = trim((string) $category);
+        $cebu_img = 'https://images.unsplash.com/photo-%s?auto=format&fit=crop&w=1200&q=80';
+        $presets = array(
+            '맛집'   => '1555939594-58d7cb561ad1',
+            '마사지' => '1544161515-4ab6ce6db874',
+            '렌트카' => '1449965408869-aa9dcba15532',
+            '투어'   => '1506905925346-21bda4d32df4',
+        );
+
+        $photo_id = isset($presets[$category]) ? $presets[$category] : '1518509562904-7fc873a70436';
+
+        return sprintf($cebu_img, $photo_id);
+    }
+}
+
+if (!function_exists('eottae_shop_gallery_collect_files')) {
+    function eottae_shop_gallery_collect_files($files, &$images, $append_image)
+    {
+        if (empty($files['count'])) {
+            return;
+        }
+
+        for ($i = 0; $i < (int) $files['count']; $i++) {
+            if (empty($files[$i]['file']) || empty($files[$i]['view'])) {
+                continue;
+            }
+            $append_image(
+                $files[$i]['path'].'/'.$files[$i]['file'],
+                isset($files[$i]['source']) ? get_text($files[$i]['source']) : ''
+            );
+        }
+    }
+}
+
 if (!function_exists('eottae_shop_gallery_images')) {
-    function eottae_shop_gallery_images($view)
+    /**
+     * 업체 상세 갤러리 — 첨부 → 지도 썸네일 → 본문 이미지 → 카테고리 기본 대문
+     *
+     * @param array      $view
+     * @param string     $bo_table
+     * @param array|null $shop
+     */
+    function eottae_shop_gallery_images($view, $bo_table = '', $shop = null)
     {
         $images = array();
-        if (!is_array($view) || empty($view['file']['count'])) {
+        if (!is_array($view) || empty($view['wr_id'])) {
             return $images;
         }
 
-        for ($i = 0; $i < (int) $view['file']['count']; $i++) {
-            if (empty($view['file'][$i]['view'])) {
-                continue;
+        $wr_id = (int) $view['wr_id'];
+        if ($bo_table === '') {
+            $bo_table = !empty($view['bo_table']) ? (string) $view['bo_table'] : '';
+        }
+        if ($bo_table === '' && !empty($GLOBALS['bo_table'])) {
+            $bo_table = (string) $GLOBALS['bo_table'];
+        }
+
+        $view_bo = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+        $storage_bo = function_exists('eottae_shop_storage_bo_table')
+            ? eottae_shop_storage_bo_table($view_bo)
+            : $view_bo;
+
+        $append_image = function ($src, $alt = '', $fallback = false) use (&$images) {
+            $src = trim((string) $src);
+            if ($src === '') {
+                return;
+            }
+            foreach ($images as $img) {
+                if ($img['src'] === $src) {
+                    return;
+                }
             }
             $images[] = array(
-                'src'   => $view['file'][$i]['path'].'/'.$view['file'][$i]['file'],
-                'alt'   => isset($view['file'][$i]['source']) ? get_text($view['file'][$i]['source']) : '',
+                'src'      => $src,
+                'alt'      => (string) $alt,
+                'fallback' => (bool) $fallback,
+            );
+        };
+
+        if (!empty($view['file']['count'])) {
+            eottae_shop_gallery_collect_files($view['file'], $images, $append_image);
+        }
+
+        if (function_exists('get_file')) {
+            $file_tables = array();
+            if ($storage_bo !== '') {
+                $file_tables[] = $storage_bo;
+            }
+            if ($view_bo !== '' && $view_bo !== $storage_bo) {
+                $file_tables[] = $view_bo;
+            }
+            foreach ($file_tables as $file_bo) {
+                if (!empty($images)) {
+                    break;
+                }
+                eottae_shop_gallery_collect_files(get_file($file_bo, $wr_id), $images, $append_image);
+            }
+        }
+
+        if (empty($images) && function_exists('eottae_shop_map_thumb_get')) {
+            $thumb_tables = array();
+            if ($storage_bo !== '') {
+                $thumb_tables[] = $storage_bo;
+            }
+            if ($view_bo !== '' && $view_bo !== $storage_bo) {
+                $thumb_tables[] = $view_bo;
+            }
+            foreach ($thumb_tables as $thumb_bo) {
+                $map_thumb = eottae_shop_map_thumb_get($thumb_bo, $wr_id);
+                if (!empty($map_thumb['url'])) {
+                    $append_image($map_thumb['url']);
+                    break;
+                }
+            }
+        }
+
+        if (empty($images) && $storage_bo !== '' && function_exists('eottae_shop_representative_image_url')) {
+            $representative = eottae_shop_representative_image_url($storage_bo, $wr_id);
+            if ($representative !== '') {
+                $append_image($representative);
+            }
+        }
+
+        if (empty($images) && $storage_bo !== '') {
+            if (!function_exists('get_list_thumbnail')) {
+                include_once G5_LIB_PATH.'/thumbnail.lib.php';
+            }
+            if (function_exists('get_list_thumbnail')) {
+                $thumb = get_list_thumbnail($storage_bo, $wr_id, 1200, 675, false, true);
+                if (!empty($thumb['src'])) {
+                    $append_image($thumb['src'], isset($thumb['alt']) ? $thumb['alt'] : '');
+                }
+            }
+        }
+
+        if (empty($images)) {
+            $category = '';
+            if (is_array($shop) && !empty($shop['category'])) {
+                $category = (string) $shop['category'];
+            } elseif (!empty($view['wr_1'])) {
+                $category = (string) $view['wr_1'];
+            }
+            $append_image(
+                eottae_shop_default_cover_url($category),
+                $category !== '' ? $category : '세부어때',
+                true
             );
         }
 
@@ -3190,14 +3326,10 @@ if (!function_exists('eottae_community_board_hero')) {
 if (!function_exists('eottae_community_list_url')) {
     function eottae_community_list_url($params = array())
     {
-        global $bo_table;
-
         $table = '';
         if (isset($params['bo_table'])) {
             $table = (string) $params['bo_table'];
             unset($params['bo_table']);
-        } elseif (!empty($bo_table)) {
-            $table = (string) $bo_table;
         }
 
         $base = G5_BBS_URL.'/board.php?bo_table='.eottae_community_board_table($table);

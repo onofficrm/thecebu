@@ -3,6 +3,23 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
+if (!function_exists('eottae_review_cards_html')) {
+    function eottae_review_cards_html($reviews, $opts = array())
+    {
+        if (!is_array($reviews) || empty($reviews)) {
+            return '';
+        }
+
+        eottae_load_component('review-card');
+        $html = '';
+        foreach ($reviews as $review) {
+            $html .= eottae_review_card_html($review, $opts);
+        }
+
+        return $html;
+    }
+}
+
 if (!function_exists('eottae_review_section_html')) {
     function eottae_review_section_html($shop_wr_id, $shop_name = '')
     {
@@ -12,8 +29,11 @@ if (!function_exists('eottae_review_section_html')) {
 
         $shop_wr_id = (int) $shop_wr_id;
         $shop_name = $shop_name !== '' ? get_text($shop_name) : '';
+        $review_page_size = defined('EOTTae_REVIEW_LIST_PAGE_SIZE') ? (int) EOTTae_REVIEW_LIST_PAGE_SIZE : 10;
         $summary = eottae_get_shop_review_summary($shop_wr_id);
-        $reviews = eottae_get_shop_reviews($shop_wr_id, 10);
+        $reviews = eottae_get_shop_reviews($shop_wr_id, $review_page_size, 0);
+        $loaded_count = count($reviews);
+        $has_more_reviews = (int) $summary['count'] > $loaded_count;
         $is_biz = $is_member && eottae_is_business_member($member);
         $already_reviewed = $is_member && eottae_user_reviewed_shop($member['mb_id'], $shop_wr_id);
         $return_url = G5_BBS_URL.'/board.php?bo_table='.EOTTae_SHOP_TABLE.'&wr_id='.$shop_wr_id;
@@ -61,15 +81,26 @@ if (!function_exists('eottae_review_section_html')) {
                 <p>첫 번째 리뷰를 남겨 주세요.</p>
             </div>
             <?php } else { ?>
-            <div class="review-summary__list">
-                <?php foreach ($reviews as $review) {
-                    echo eottae_review_card_html($review, array(
-                        'show_reply_btn' => $show_biz_reply,
-                        'reply_token' => $reply_token,
-                        'shop_wr_id' => $shop_wr_id,
-                    ));
-                } ?>
+            <div class="review-summary__list" data-review-list>
+                <?php echo eottae_review_cards_html($reviews, array(
+                    'show_reply_btn' => $show_biz_reply,
+                    'reply_token' => $reply_token,
+                    'shop_wr_id' => $shop_wr_id,
+                )); ?>
             </div>
+            <?php if ($has_more_reviews) { ?>
+            <div class="review-summary__more-wrap">
+                <button type="button"
+                    class="review-summary__more-btn"
+                    data-review-load-more
+                    data-shop-id="<?php echo $shop_wr_id; ?>"
+                    data-offset="<?php echo $loaded_count; ?>"
+                    data-limit="<?php echo $review_page_size; ?>"
+                    data-total="<?php echo (int) $summary['count']; ?>">
+                    리뷰 더보기 (<?php echo number_format($loaded_count); ?>/<?php echo number_format($summary['count']); ?>)
+                </button>
+            </div>
+            <?php } ?>
             <?php } ?>
 
             <p class="review-summary__point-note">리뷰 작성 시 <?php echo number_format(defined('EOTTae_REVIEW_POINT_BASE') ? EOTTae_REVIEW_POINT_BASE : 30); ?>P가 지급됩니다. 사진 첨부 시 추가 <?php echo number_format(defined('EOTTae_REVIEW_POINT_PHOTO') ? EOTTae_REVIEW_POINT_PHOTO : 20); ?>P.</p>

@@ -116,6 +116,10 @@
    * - 열림 상태 class: is-open (메뉴·오버레이)
    * -------------------------------------------------------------------------- */
   G5Template.initMobileMenu = function () {
+    if (document.documentElement.getAttribute('data-eottae-mobile-menu-init') === '1') {
+      return;
+    }
+
     var openBtns = G5Template.qsa('.mobile-menu-btn, .site-header__menu-btn');
     var menus = G5Template.qsa('.mobile-menu, #siteMobileNav');
     var closeBtns = G5Template.qsa('.mobile-menu-close, .site-header__mobile-close');
@@ -124,6 +128,8 @@
     if (!openBtns.length || !menus.length) {
       return;
     }
+
+    document.documentElement.setAttribute('data-eottae-mobile-menu-init', '1');
 
     var menu = menus[0];
     var overlay = overlays.length ? overlays[0] : null;

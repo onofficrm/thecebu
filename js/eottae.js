@@ -1511,14 +1511,96 @@
     loadList();
   }
 
+  function initMobileMenu() {
+    if (document.documentElement.getAttribute('data-eottae-mobile-menu-init') === '1') {
+      return;
+    }
+
+    var openBtns = qsa('.mobile-menu-btn, .site-header__menu-btn, .eottae-gnb-header__menu-btn');
+    var menus = qsa('.mobile-menu, #siteMobileNav');
+    if (!openBtns.length || !menus.length) {
+      return;
+    }
+
+    document.documentElement.setAttribute('data-eottae-mobile-menu-init', '1');
+
+    var menu = menus[0];
+    var overlay = qs('.mobile-menu-overlay, .site-header__overlay, .eottae-gnb-header__overlay');
+    var closeBtns = qsa('.mobile-menu-close, .site-header__mobile-close');
+    var isDropdownMenu = menu.classList.contains('eottae-gnb-header__mobile');
+    var isOpen = false;
+
+    function setOpen(open) {
+      isOpen = !!open;
+      menu.classList.toggle('is-open', isOpen);
+      if (overlay) {
+        overlay.classList.toggle('is-open', isOpen);
+      }
+      openBtns.forEach(function (btn) {
+        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        btn.setAttribute('aria-label', isOpen ? '메뉴 닫기' : '메뉴 열기');
+      });
+      menu.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+      document.body.style.overflow = isOpen && !isDropdownMenu ? 'hidden' : '';
+    }
+
+    openBtns.forEach(function (btn) {
+      btn.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        setOpen(!menu.classList.contains('is-open'));
+      });
+    });
+
+    closeBtns.forEach(function (btn) {
+      btn.addEventListener('click', function (event) {
+        event.preventDefault();
+        setOpen(false);
+      });
+    });
+
+    if (overlay) {
+      overlay.addEventListener('click', function () {
+        setOpen(false);
+      });
+    }
+
+    document.addEventListener('click', function (event) {
+      if (!isOpen) {
+        return;
+      }
+      var target = event.target;
+      if (!(target instanceof Element)) {
+        return;
+      }
+      if (menu.contains(target)) {
+        return;
+      }
+      var clickedOpenBtn = openBtns.some(function (btn) {
+        return btn.contains(target);
+      });
+      if (!clickedOpenBtn) {
+        setOpen(false);
+      }
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && isOpen) {
+        setOpen(false);
+      }
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     document.body.classList.add('eottae-page');
+    initMobileMenu();
     initShopRegisterWizard();
     initShopGeocode();
     initShopCoordinatePicker();
     initMemberType();
     initReviewModal();
     initReviewReply();
+    initReviewLoadMore();
     initShopSave();
     initShopDetailGallery();
     initShopDetailContentEditor();
@@ -1623,6 +1705,64 @@
         .catch(function () {
           alert('네트워크 오류가 발생했습니다.');
           if (submitBtn) submitBtn.disabled = false;
+        });
+    });
+  }
+
+  function initReviewLoadMore() {
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-review-load-more]');
+      if (!btn || btn.disabled) return;
+      e.preventDefault();
+
+      var section = btn.closest('#shop-reviews');
+      var list = section ? qs('[data-review-list]', section) : null;
+      if (!list) return;
+
+      var shopId = btn.getAttribute('data-shop-id');
+      var offset = parseInt(btn.getAttribute('data-offset'), 10) || 0;
+      var limit = parseInt(btn.getAttribute('data-limit'), 10) || 10;
+      var total = parseInt(btn.getAttribute('data-total'), 10) || 0;
+      var label = btn.textContent;
+
+      btn.disabled = true;
+      btn.textContent = '불러오는 중…';
+
+      var url = '/proc/eottae-shop-reviews-more.php?shop_wr_id=' + encodeURIComponent(shopId)
+        + '&offset=' + encodeURIComponent(String(offset))
+        + '&limit=' + encodeURIComponent(String(limit));
+
+      fetch(url, { credentials: 'same-origin' })
+        .then(function (res) { return parseJsonResponse(res); })
+        .then(function (data) {
+          if (!data.success) {
+            throw new Error(data.message || '리뷰를 불러오지 못했습니다.');
+          }
+
+          if (data.html) {
+            list.insertAdjacentHTML('beforeend', data.html);
+          }
+
+          var loaded = typeof data.loaded === 'number' ? data.loaded : offset + limit;
+          btn.setAttribute('data-offset', String(loaded));
+
+          if (data.has_more) {
+            btn.disabled = false;
+            btn.textContent = '리뷰 더보기 (' + loaded.toLocaleString('ko-KR') + '/' + total.toLocaleString('ko-KR') + ')';
+            return;
+          }
+
+          var wrap = btn.closest('.review-summary__more-wrap');
+          if (wrap) {
+            wrap.remove();
+          } else {
+            btn.remove();
+          }
+        })
+        .catch(function (err) {
+          alert(err && err.message ? err.message : '리뷰를 불러오지 못했습니다.');
+          btn.disabled = false;
+          btn.textContent = label;
         });
     });
   }

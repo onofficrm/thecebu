@@ -73,19 +73,19 @@ if (!function_exists('eottae_shop_card_thumb')) {
             $bo_table = defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop';
         }
 
-        if (!empty($row['file']['count']) && isset($row['file'][0]['path'], $row['file'][0]['file'])) {
-            return $row['file'][0]['path'].'/'.$row['file'][0]['file'];
-        }
-
         if (function_exists('get_list_thumbnail')) {
             $table = !empty($row['bo_table']) ? $row['bo_table'] : $bo_table;
             if (function_exists('eottae_shop_storage_bo_table')) {
                 $table = eottae_shop_storage_bo_table($table);
             }
-            $t = get_list_thumbnail($table, $row['wr_id'], 400, 300);
+            $t = get_list_thumbnail($table, $row['wr_id'], 400, 400, false, true);
             if (!empty($t['src'])) {
                 return $t['src'];
             }
+        }
+
+        if (!empty($row['file']['count']) && isset($row['file'][0]['path'], $row['file'][0]['file'])) {
+            return $row['file'][0]['path'].'/'.$row['file'][0]['file'];
         }
 
         if (function_exists('eottae_shop_listing_thumb_url')) {

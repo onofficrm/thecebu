@@ -2,11 +2,24 @@
 if (!defined('_GNUBOARD_')) exit;
 
 add_stylesheet('<link rel="stylesheet" href="'.$member_skin_url.'/style.css">', 0);
+
+$eottae_auth_logo_url = function_exists('eottae_site_logo_url')
+    ? eottae_site_logo_url('logo_path')
+    : (function_exists('g5site_cfg_url') ? g5site_cfg_url('logo_path', '') : '');
+$eottae_auth_site_title = isset($g5_site_title) ? get_text($g5_site_title) : '세부어때';
 ?>
 
 <div class="auth-layout">
     <div class="auth-layout__card login-form">
-        <h1 class="auth-layout__title">세부어때</h1>
+        <h1 class="auth-layout__brand">
+            <a href="<?php echo G5_URL; ?>/" class="auth-layout__logo">
+                <?php if ($eottae_auth_logo_url !== '') { ?>
+                <img src="<?php echo $eottae_auth_logo_url; ?>" alt="<?php echo $eottae_auth_site_title; ?>" class="auth-layout__logo-img">
+                <?php } else { ?>
+                <span class="auth-layout__title"><?php echo $eottae_auth_site_title; ?></span>
+                <?php } ?>
+            </a>
+        </h1>
         <p class="auth-layout__sub">로그인하고 세부 생활 정보를 만나보세요</p>
 
         <form name="flogin" action="<?php echo $login_action_url ?>" onsubmit="return flogin_submit(this);" method="post">

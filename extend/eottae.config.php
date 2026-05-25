@@ -75,6 +75,10 @@ if (!defined('EOTTae_REVIEW_POINT_PHOTO')) {
     define('EOTTae_REVIEW_POINT_PHOTO', 20);
 }
 
+if (!defined('EOTTae_REVIEW_LIST_PAGE_SIZE')) {
+    define('EOTTae_REVIEW_LIST_PAGE_SIZE', 10);
+}
+
 if (!defined('EOTTae_WELCOME_COUPON_CODE')) {
     define('EOTTae_WELCOME_COUPON_CODE', 'welcome');
 }

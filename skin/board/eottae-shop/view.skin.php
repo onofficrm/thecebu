@@ -17,7 +17,7 @@ if ($shop_youtube_id) {
 eottae_track_recent_shop($view['wr_id']);
 $shop_is_saved = $is_member && eottae_is_shop_saved($member['mb_id'], $view['wr_id']);
 $share_url = G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$view['wr_id'];
-$gallery = eottae_shop_gallery_images($view);
+$gallery = eottae_shop_gallery_images($view, $bo_table, $shop);
 $summary = eottae_get_shop_review_summary($view['wr_id']);
 $flags = eottae_shop_detail_flags($shop, $summary);
 $shop_map = array(
@@ -47,10 +47,12 @@ if (function_exists('eottae_shop_apply_manage_links')) {
     <div class="shop-detail-page__layout">
         <main class="shop-detail-page__main">
 
-            <?php if (!empty($gallery)) { ?>
+            <?php if (!empty($gallery)) {
+                $hero_fallback = !empty($gallery[0]['fallback']);
+                ?>
             <div class="shop-detail-page__gallery">
-                <div class="shop-detail-page__hero">
-                    <img src="<?php echo $gallery[0]['src']; ?>" alt="<?php echo $shop['name']; ?>" id="shopDetailHeroImg">
+                <div class="shop-detail-page__hero<?php echo $hero_fallback ? ' shop-detail-page__hero--fallback' : ''; ?>">
+                    <img src="<?php echo $gallery[0]['src']; ?>" alt="<?php echo $shop['name']; ?>" id="shopDetailHeroImg"<?php echo $hero_fallback ? ' data-hero-fallback="1"' : ''; ?>>
                     <?php if ($is_ad) { ?>
                     <span class="shop-detail-page__flag shop-detail-page__flag--ad">광고</span>
                     <?php } elseif ($flags['recommended']) { ?>
