@@ -614,10 +614,10 @@ if (!function_exists('eottae_render_site_header')) {
         }
 
         eottae_prepare_site_header();
-        $eottae_auth = function_exists('eottae_auth_context') ? eottae_auth_context() : array('is_member' => false, 'is_admin' => false, 'member' => array());
+        $eottae_auth = function_exists('eottae_auth_context') ? eottae_auth_context() : array('is_member' => false, 'is_admin' => false, 'member' => array('mb_id' => '', 'mb_level' => 1, 'mb_point' => 0));
         $is_member = !empty($eottae_auth['is_member']);
         $is_admin = !empty($eottae_auth['is_admin']) ? $eottae_auth['is_admin'] : '';
-        $member = isset($eottae_auth['member']) ? $eottae_auth['member'] : array();
+        $member = isset($eottae_auth['member']) ? $eottae_auth['member'] : array('mb_id' => '', 'mb_level' => 1, 'mb_point' => 0);
         include G5_PATH.'/components/eottae/site-header.php';
 
         return true;
@@ -730,7 +730,11 @@ if (!function_exists('eottae_auth_context')) {
         return array(
             'is_member' => $logged_in,
             'is_admin'  => !empty($is_admin),
-            'member'    => $logged_in ? $member : array(),
+            'member'    => $logged_in ? $member : array(
+                'mb_id'    => '',
+                'mb_level' => 1,
+                'mb_point' => 0,
+            ),
         );
     }
 }
@@ -1123,6 +1127,48 @@ if (!function_exists('eottae_shop_representative_image_url')) {
         }
 
         return G5_DATA_URL.'/file/'.$bo_table.'/'.$row['bf_file'];
+    }
+}
+
+if (!function_exists('eottae_shop_listing_thumb_url')) {
+    function eottae_shop_listing_thumb_url($bo_table, $wr_id, $row = null)
+    {
+        $bo_table = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
+        $wr_id = (int) $wr_id;
+        if ($wr_id < 1) {
+            return '';
+        }
+        if ($bo_table === '') {
+            $bo_table = defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop';
+        }
+
+        if (is_array($row) && !empty($row['file'][0]['file']) && !empty($row['file'][0]['path'])) {
+            return $row['file'][0]['path'].'/'.$row['file'][0]['file'];
+        }
+
+        if (function_exists('eottae_shop_map_thumb_get')) {
+            $map_thumb = eottae_shop_map_thumb_get($bo_table, $wr_id);
+            if (!empty($map_thumb['url'])) {
+                return $map_thumb['url'];
+            }
+        }
+
+        $representative = eottae_shop_representative_image_url($bo_table, $wr_id);
+        if ($representative !== '') {
+            return $representative;
+        }
+
+        if (!function_exists('get_list_thumbnail')) {
+            include_once G5_LIB_PATH.'/thumbnail.lib.php';
+        }
+        if (function_exists('get_list_thumbnail')) {
+            $thumb = get_list_thumbnail($bo_table, $wr_id, 200, 200, false, true);
+            if (!empty($thumb['src'])) {
+                return $thumb['src'];
+            }
+        }
+
+        return '';
     }
 }
 

@@ -130,6 +130,12 @@
         contentPane.style.overflow = 'visible';
         contentPane.style.height = 'auto';
       }
+      var position = marker.getPosition && marker.getPosition();
+      if (position) {
+        global.requestAnimationFrame(function () {
+          infoWindow.setPosition(position);
+        });
+      }
     });
   }
 

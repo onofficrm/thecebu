@@ -3,9 +3,9 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
-$eottae_auth = function_exists('eottae_auth_context') ? eottae_auth_context() : array('is_member' => false, 'member' => array());
+$eottae_auth = function_exists('eottae_auth_context') ? eottae_auth_context() : array('is_member' => false, 'member' => array('mb_id' => '', 'mb_level' => 1, 'mb_point' => 0));
 $is_member = !empty($eottae_auth['is_member']);
-$member = isset($eottae_auth['member']) ? $eottae_auth['member'] : array();
+$member = isset($eottae_auth['member']) ? $eottae_auth['member'] : array('mb_id' => '', 'mb_level' => 1, 'mb_point' => 0);
 
 $eottae_login_return = function_exists('eottae_current_url') ? eottae_current_url() : G5_URL;
 $eottae_login_url = function_exists('eottae_login_url') ? eottae_login_url($eottae_login_return) : G5_BBS_URL.'/login.php';

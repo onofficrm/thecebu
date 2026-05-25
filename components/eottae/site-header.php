@@ -3,10 +3,10 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
-$eottae_auth = function_exists('eottae_auth_context') ? eottae_auth_context() : array('is_member' => false, 'is_admin' => false, 'member' => array());
+$eottae_auth = function_exists('eottae_auth_context') ? eottae_auth_context() : array('is_member' => false, 'is_admin' => false, 'member' => array('mb_id' => '', 'mb_level' => 1, 'mb_point' => 0));
 $is_member = !empty($eottae_auth['is_member']);
 $is_admin = !empty($eottae_auth['is_admin']) ? $eottae_auth['is_admin'] : '';
-$member = isset($eottae_auth['member']) ? $eottae_auth['member'] : array();
+$member = isset($eottae_auth['member']) ? $eottae_auth['member'] : array('mb_id' => '', 'mb_level' => 1, 'mb_point' => 0);
 
 $eottae_gnb_links = eottae_gnb_nav_links();
 $eottae_site_title = isset($g5_site_title) ? $g5_site_title : '세부어때';

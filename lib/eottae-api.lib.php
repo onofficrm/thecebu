@@ -29,6 +29,10 @@ if (!function_exists('eottae_api_error')) {
 if (!function_exists('eottae_api_shop_thumb')) {
     function eottae_api_shop_thumb($shop_wr_id)
     {
+        if (function_exists('eottae_shop_listing_thumb_url')) {
+            return eottae_shop_listing_thumb_url(EOTTae_SHOP_TABLE, (int) $shop_wr_id);
+        }
+
         global $g5;
 
         $shop_wr_id = (int) $shop_wr_id;
@@ -48,7 +52,7 @@ if (!function_exists('eottae_api_shop_thumb')) {
                 }
             }
             if (function_exists('get_list_thumbnail')) {
-                $thumb = get_list_thumbnail(EOTTae_SHOP_TABLE, $shop_wr_id, 200, 200);
+                $thumb = get_list_thumbnail(EOTTae_SHOP_TABLE, $shop_wr_id, 200, 200, false, true);
                 if (!empty($thumb['src'])) {
                     return $thumb['src'];
                 }

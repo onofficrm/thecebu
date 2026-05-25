@@ -3,11 +3,15 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
+include_once G5_LIB_PATH.'/thumbnail.lib.php';
+include_once G5_LIB_PATH.'/eottae-api.lib.php';
+
 $exclude_wr_id = isset($shop_detail_sidebar_exclude_wr_id) ? (int) $shop_detail_sidebar_exclude_wr_id : 0;
+$shop_sidebar_table = defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop';
 $featured = function_exists('eottae_api_get_featured_shops') ? eottae_api_get_featured_shops(5) : array();
 if (empty($featured) && function_exists('eottae_shop_from_write')) {
     global $g5;
-    $shop_table = $g5['write_prefix'].EOTTae_SHOP_TABLE;
+    $shop_table = $g5['write_prefix'].$shop_sidebar_table;
     $result = sql_query(" select * from {$shop_table} where wr_is_comment = 0 order by wr_id desc limit 5 ");
     while ($row = sql_fetch_array($result)) {
         if ($exclude_wr_id > 0 && (int) $row['wr_id'] === $exclude_wr_id) {
@@ -31,8 +35,10 @@ if (empty($featured) && function_exists('eottae_shop_from_write')) {
             'region'       => $shop_row['region'],
             'rating'       => $summary['average'],
             'review_count' => $summary['count'],
-            'thumb'        => function_exists('eottae_api_shop_thumb') ? eottae_api_shop_thumb((int) $shop_row['wr_id']) : '',
-            'url'          => G5_BBS_URL.'/board.php?bo_table='.EOTTae_SHOP_TABLE.'&wr_id='.$shop_row['wr_id'],
+            'thumb'        => function_exists('eottae_shop_listing_thumb_url')
+                ? eottae_shop_listing_thumb_url($shop_sidebar_table, (int) $shop_row['wr_id'], $row)
+                : '',
+            'url'          => G5_BBS_URL.'/board.php?bo_table='.$shop_sidebar_table.'&wr_id='.$shop_row['wr_id'],
         );
     }
 } elseif ($exclude_wr_id > 0) {
@@ -44,6 +50,15 @@ if (empty($featured) && function_exists('eottae_shop_from_write')) {
         $filtered[] = $shop_item;
     }
     $featured = $filtered;
+}
+
+foreach ($featured as $idx => $shop_item) {
+    if (!empty($shop_item['thumb'])) {
+        continue;
+    }
+    $featured[$idx]['thumb'] = function_exists('eottae_shop_listing_thumb_url')
+        ? eottae_shop_listing_thumb_url($shop_sidebar_table, (int) ($shop_item['wr_id'] ?? 0))
+        : '';
 }
 
 $featured = array_slice($featured, 0, 3);
@@ -64,7 +79,11 @@ $featured = array_slice($featured, 0, 3);
                 ?>
             <li>
                 <a href="<?php echo $shop_item['url']; ?>" class="community-sidebar__shop">
-                    <span class="community-sidebar__shop-thumb"<?php if ($thumb) { ?> style="background-image:url('<?php echo htmlspecialchars($thumb, ENT_QUOTES, 'UTF-8'); ?>')"<?php } ?>></span>
+                    <span class="community-sidebar__shop-thumb">
+                        <?php if ($thumb) { ?>
+                        <img src="<?php echo htmlspecialchars($thumb, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo get_text($shop_item['name']); ?>" loading="lazy">
+                        <?php } ?>
+                    </span>
                     <span class="community-sidebar__shop-body">
                         <span class="community-sidebar__shop-title-row">
                             <strong><?php echo get_text($shop_item['name']); ?></strong>
