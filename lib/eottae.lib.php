@@ -239,7 +239,7 @@ if (!function_exists('eottae_builder_inject_html')) {
         }
 
         $logo_js = json_encode($logo, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $script = '<script>(function(){var LOGO='.$logo_js.';function applyLogo(){document.querySelectorAll(\'header a[href="/"], header a[href="'.(defined('G5_URL') ? G5_URL : '').'/"]\').forEach(function(a){if(a.querySelector("img[data-eottae-logo]"))return;a.innerHTML=\'<img data-eottae-logo src="\'+LOGO+\'" alt="세부어때" style="height:42px;width:auto;max-width:190px;object-fit:contain;display:block">\';});}if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",applyLogo);}else{applyLogo();}new MutationObserver(applyLogo).observe(document.documentElement,{childList:true,subtree:true});})();</script>';
+        $script = '<script>(function(){var LOGO='.$logo_js.';function applyLogo(){document.querySelectorAll(\'header a[href="/"], header a[href="'.(defined('G5_URL') ? G5_URL : '').'/"]\').forEach(function(a){if(a.querySelector("img[data-eottae-logo]"))return;a.innerHTML=\'<img data-eottae-logo class="eottae-gnb-header__logo-img" src="\'+LOGO+\'" alt="세부어때">\';});}if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",applyLogo);}else{applyLogo();}new MutationObserver(applyLogo).observe(document.documentElement,{childList:true,subtree:true});})();</script>';
 
         if (preg_match('#</body>#i', $html)) {
             return preg_replace('#</body>#i', $script.'</body>', $html, 1);
