@@ -1712,25 +1712,25 @@ body.talk-admin-shell .talk-admin-applies__header .promo-admin-page__desc {
   margin-bottom: 0;
 }
 
-body.talk-admin-shell .talk-admin-applies-page .talk-admin-applies__panel {
+body.talk-admin-shell #talk-admin-applies-panel,
+body.talk-admin-shell .talk-admin-applies__panel {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
-  min-height: 160px;
+  min-height: 180px;
   margin-top: 16px;
   padding: 0;
   overflow: visible;
   position: relative;
-  z-index: 1;
-  border-radius: 18px;
+  z-index: 2;
+  border-top: 1px solid #eef2f6;
+  border-radius: 0 0 18px 18px;
   background: #fff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
 }
 
-body.talk-admin-shell .talk-admin-applies-page .talk-admin-applies__filter {
-  display: flex !important;
-  visibility: visible !important;
+body.talk-admin-shell .promo-admin-page__header {
+  overflow: visible;
+  padding-bottom: 0;
 }
 
 body.talk-admin-shell .talk-admin-applies__summary {

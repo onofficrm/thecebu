@@ -97,6 +97,27 @@ if (!function_exists('eottae_talkroom_render_admin_nav')) {
             <a href="<?php echo eottae_talkroom_ai_logs_url(); ?>" class="talk-admin-nav__item<?php echo $active === 'ai_logs' ? ' is-active' : ''; ?>">AI 발언 로그</a>
         </nav>
         <?php
+        if ($active === 'applies' && function_exists('eottae_talkroom_render_admin_applies_panel')) {
+            $ctx = isset($GLOBALS['eottae_talk_admin_applies_ctx']) && is_array($GLOBALS['eottae_talk_admin_applies_ctx'])
+                ? $GLOBALS['eottae_talk_admin_applies_ctx']
+                : array();
+            eottae_talkroom_render_admin_applies_panel(
+                isset($ctx['applications']) && is_array($ctx['applications']) ? $ctx['applications'] : array(),
+                isset($ctx['filter']) ? (string) $ctx['filter'] : 'pending',
+                isset($ctx['pending_count']) ? (int) $ctx['pending_count'] : 0
+            );
+        }
+    }
+}
+
+if (!function_exists('eottae_talkroom_set_admin_applies_context')) {
+    function eottae_talkroom_set_admin_applies_context($applications, $filter, $pending_count)
+    {
+        $GLOBALS['eottae_talk_admin_applies_ctx'] = array(
+            'applications'  => is_array($applications) ? $applications : array(),
+            'filter'        => trim((string) $filter),
+            'pending_count' => (int) $pending_count,
+        );
     }
 }
 
@@ -168,7 +189,7 @@ if (!function_exists('eottae_talkroom_render_admin_applies_panel')) {
             $filter = 'pending';
         }
         ?>
-        <div class="talk-admin-applies__body" aria-label="개설 신청 목록">
+        <div id="talk-admin-applies-panel" class="promo-admin-panel talk-admin-panel talk-admin-applies__panel" aria-label="개설 신청 목록" style="display:block;min-height:180px;margin-top:16px;padding:0;overflow:visible;border-top:1px solid #eef2f6;border-radius:0 0 18px 18px;">
             <nav class="talk-admin-filter talk-admin-applies__filter" aria-label="신청 상태 필터">
                 <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>?status=pending" class="talk-admin-filter__item<?php echo $filter === 'pending' ? ' is-active' : ''; ?>">
                     승인대기<?php if ($pending_count > 0) { ?> (<?php echo number_format($pending_count); ?>)<?php } ?>
@@ -177,8 +198,7 @@ if (!function_exists('eottae_talkroom_render_admin_applies_panel')) {
                 <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>?status=rejected" class="talk-admin-filter__item<?php echo $filter === 'rejected' ? ' is-active' : ''; ?>">반려</a>
             </nav>
 
-            <div class="talk-admin-applies__panel">
-                <?php if (empty($applications)) { ?>
+            <?php if (empty($applications)) { ?>
                 <div class="talk-admin-applies__empty">
                     <p class="promo-admin-empty">표시할 신청 내역이 없습니다.</p>
                     <?php if ($filter === 'pending' && $pending_count > 0) { ?>
@@ -234,7 +254,6 @@ if (!function_exists('eottae_talkroom_render_admin_applies_panel')) {
                     </table>
                 </div>
                 <?php } ?>
-            </div>
         </div>
         <?php
     }
