@@ -177,6 +177,78 @@ if (!function_exists('eottae_prepare_site_header')) {
     }
 }
 
+if (!function_exists('eottae_site_logo_url')) {
+    /**
+     * site_config·파일 존재 확인 후 로고 URL 반환
+     *
+     * @param string $key logo_path | footer_logo_path
+     * @return string
+     */
+    function eottae_site_logo_url($key = 'logo_path')
+    {
+        global $site_config;
+
+        if (!isset($site_config) && defined('G5_PATH') && is_file(G5_PATH.'/_site.config.php')) {
+            include_once G5_PATH.'/_site.config.php';
+        }
+
+        if (function_exists('g5site_cfg')) {
+            $path = g5site_cfg($key, '');
+            if ($path !== '') {
+                if (preg_match('#^https?://#i', $path)) {
+                    return $path;
+                }
+                $rel = ($path[0] === '/') ? $path : '/'.$path;
+                if (defined('G5_PATH') && is_file(G5_PATH.$rel) && defined('G5_URL')) {
+                    return G5_URL.$rel;
+                }
+                if (function_exists('g5site_cfg_url')) {
+                    return g5site_cfg_url($key, '');
+                }
+            }
+        }
+
+        if (!defined('G5_PATH') || !defined('G5_URL')) {
+            return '';
+        }
+
+        $fallbacks = $key === 'footer_logo_path'
+            ? array('cebu-logo-footer.png', 'cebu-logo-main.png', 'logo.png', 'logo.svg')
+            : array('cebu-logo-main.png', 'logo.png', 'logo.svg');
+
+        foreach ($fallbacks as $file) {
+            if (is_file(G5_PATH.'/img/logo/'.$file)) {
+                return G5_URL.'/img/logo/'.$file;
+            }
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('eottae_builder_inject_html')) {
+    function eottae_builder_inject_html($html, $id)
+    {
+        if ($id !== 'thecebu-main' || !is_string($html) || $html === '') {
+            return $html;
+        }
+
+        $logo = eottae_site_logo_url('logo_path');
+        if ($logo === '') {
+            return $html;
+        }
+
+        $logo_js = json_encode($logo, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $script = '<script>(function(){var LOGO='.$logo_js.';function applyLogo(){document.querySelectorAll(\'header a[href="/"], header a[href="'.(defined('G5_URL') ? G5_URL : '').'/"]\').forEach(function(a){if(a.querySelector("img[data-eottae-logo]"))return;a.innerHTML=\'<img data-eottae-logo src="\'+LOGO+\'" alt="세부어때" style="height:42px;width:auto;max-width:190px;object-fit:contain;display:block">\';});}if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",applyLogo);}else{applyLogo();}new MutationObserver(applyLogo).observe(document.documentElement,{childList:true,subtree:true});})();</script>';
+
+        if (preg_match('#</body>#i', $html)) {
+            return preg_replace('#</body>#i', $script.'</body>', $html, 1);
+        }
+
+        return $html.$script;
+    }
+}
+
 if (!function_exists('eottae_render_site_header')) {
     function eottae_render_site_header()
     {
@@ -494,7 +566,7 @@ if (!function_exists('eottae_shop_map_thumb_table')) {
     {
         global $g5;
 
-        return $g5['table_prefix'].'eottae_shop_map_thumb';
+        return G5_TABLE_PREFIX.'eottae_shop_map_thumb';
     }
 }
 

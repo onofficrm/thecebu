@@ -45,7 +45,9 @@ if (function_exists('eottae_use_site_chrome') && eottae_use_site_chrome() && fun
 
     <div id="hd_wrapper">
 
-        <?php $g5_mobile_logo_url = function_exists('g5site_cfg_url') ? g5site_cfg_url('logo_path', G5_IMG_URL.'/m_logo.png') : G5_IMG_URL.'/m_logo.png'; ?>
+        <?php $g5_mobile_logo_url = function_exists('eottae_site_logo_url')
+            ? eottae_site_logo_url('logo_path')
+            : (function_exists('g5site_cfg_url') ? g5site_cfg_url('logo_path', G5_IMG_URL.'/m_logo.png') : G5_IMG_URL.'/m_logo.png'); ?>
         <div id="logo">
             <a href="<?php echo G5_URL ?>"><img src="<?php echo $g5_mobile_logo_url; ?>" alt="<?php echo $config['cf_title']; ?>"></a>
         </div>

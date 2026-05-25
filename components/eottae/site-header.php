@@ -10,7 +10,9 @@ $member = isset($eottae_auth['member']) ? $eottae_auth['member'] : array();
 
 $eottae_gnb_links = eottae_gnb_nav_links();
 $eottae_site_title = isset($g5_site_title) ? $g5_site_title : '세부어때';
-$eottae_header_logo_url = function_exists('g5site_cfg_url') ? g5site_cfg_url('logo_path', '') : '';
+$eottae_header_logo_url = function_exists('eottae_site_logo_url')
+    ? eottae_site_logo_url('logo_path')
+    : (function_exists('g5site_cfg_url') ? g5site_cfg_url('logo_path', '') : '');
 $eottae_shop_write_url = function_exists('eottae_shop_write_url') ? eottae_shop_write_url() : G5_BBS_URL.'/write.php?bo_table='.EOTTae_SHOP_TABLE;
 $eottae_login_return = function_exists('eottae_current_url') ? eottae_current_url() : G5_URL;
 $eottae_login_href = function_exists('eottae_login_url') ? eottae_login_url($eottae_login_return) : G5_BBS_URL.'/login.php';

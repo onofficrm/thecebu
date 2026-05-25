@@ -4,7 +4,9 @@ if (!defined('_GNUBOARD_')) {
 }
 
 $eottae_footer_title = isset($g5_site_title) ? $g5_site_title : (function_exists('g5site_cfg') ? g5site_cfg('site_name', '세부어때') : '세부어때');
-$eottae_footer_logo_url = function_exists('g5site_cfg_url') ? g5site_cfg_url('footer_logo_path', '') : '';
+$eottae_footer_logo_url = function_exists('eottae_site_logo_url')
+    ? eottae_site_logo_url('footer_logo_path')
+    : (function_exists('g5site_cfg_url') ? g5site_cfg_url('footer_logo_path', '') : '');
 $eottae_footer_tel = function_exists('g5site_cfg') ? g5site_cfg('phone', '0917-123-4567') : '0917-123-4567';
 $eottae_footer_email = function_exists('g5site_cfg') ? g5site_cfg('email', 'help@thecebu.co.kr') : 'help@thecebu.co.kr';
 $eottae_footer_shop_url = function_exists('eottae_shop_list_url') ? eottae_shop_list_url() : G5_BBS_URL.'/board.php?bo_table='.EOTTae_SHOP_TABLE;

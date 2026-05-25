@@ -135,6 +135,9 @@ if (!function_exists('onoff_builder_render_standalone')) {
             if (stripos($html, '<title>') !== false && $title !== '') {
                 $html = preg_replace('#<title>.*?</title>#is', '<title>' . onoff_builder_escape($title) . '</title>', $html, 1);
             }
+            if (function_exists('eottae_builder_inject_html')) {
+                $html = eottae_builder_inject_html($html, $id);
+            }
             echo $html;
             return;
         }
