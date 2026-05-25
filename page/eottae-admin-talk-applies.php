@@ -17,11 +17,32 @@ $applications = eottae_talkroom_admin_list_applications($filter === 'all' ? 'all
 $pending_count = eottae_talkroom_pending_count();
 
 if (empty($applications) && $filter === 'pending' && $pending_count > 0) {
-    $fallback = eottae_talkroom_admin_list_applications('all', 200);
-    $applications = array_values(array_filter($fallback, function ($item) {
-        return ($item['status'] ?? '') === 'pending';
+    $applications = eottae_talkroom_admin_list_applications('all', 200);
+    $applications = array_values(array_filter($applications, function ($item) {
+        return strtolower(trim((string) ($item['status'] ?? ''))) === 'pending';
     }));
 }
+
+if (empty($applications) && $pending_count > 0) {
+    $tables = eottae_talkroom_table_names();
+    if (eottae_talkroom_table_exists($tables['rooms'])) {
+        $result = sql_query("
+            SELECT *
+            FROM `{$tables['rooms']}`
+            WHERE LOWER(TRIM(status)) = 'pending'
+            ORDER BY created_at DESC, room_id DESC
+            LIMIT 200
+        ", false);
+        if ($result) {
+            while ($row = sql_fetch_array($result)) {
+                if (is_array($row)) {
+                    $applications[] = eottae_talkroom_format_admin_room($row);
+                }
+            }
+        }
+    }
+}
+
 $admin_token = eottae_talkroom_admin_token();
 
 g5_talk_admin_page_start('개설 신청 관리');
@@ -43,7 +64,7 @@ g5_talk_admin_page_start('개설 신청 관리');
         <?php eottae_talkroom_render_admin_nav('applies'); ?>
     </header>
 
-    <div class="talk-admin-applies__toolbar">
+    <section class="promo-admin-panel talk-admin-panel talk-admin-applies__panel" aria-label="개설 신청 목록">
         <nav class="talk-admin-filter talk-admin-applies__filter" aria-label="신청 상태 필터">
             <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>?status=pending" class="talk-admin-filter__item<?php echo $filter === 'pending' ? ' is-active' : ''; ?>">
                 승인대기<?php if ($pending_count > 0) { ?> (<?php echo number_format($pending_count); ?>)<?php } ?>
@@ -51,9 +72,7 @@ g5_talk_admin_page_start('개설 신청 관리');
             <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>?status=all" class="talk-admin-filter__item<?php echo $filter === 'all' ? ' is-active' : ''; ?>">전체</a>
             <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>?status=rejected" class="talk-admin-filter__item<?php echo $filter === 'rejected' ? ' is-active' : ''; ?>">반려</a>
         </nav>
-    </div>
 
-    <section class="promo-admin-panel talk-admin-panel talk-admin-applies__panel" aria-label="개설 신청 목록">
         <?php if (empty($applications)) { ?>
         <div class="talk-admin-applies__empty">
             <p class="promo-admin-empty">표시할 신청 내역이 없습니다.</p>

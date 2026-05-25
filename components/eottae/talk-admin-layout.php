@@ -23,12 +23,13 @@ if (!function_exists('eottae_talkroom_admin_shell_css_rules')) {
 .talk-admin-shell-root .talk-admin-nav__item{flex:0 0 auto;display:inline-flex;align-items:center;min-height:38px;padding:0 14px;border-radius:999px;font-size:13px;font-weight:700;text-decoration:none;color:#334155;background:#f8fafc;border:1px solid #e2e8f0;white-space:nowrap}
 .talk-admin-shell-root .talk-admin-nav__item.is-active{color:#fff;background:#0284c7;border-color:#0284c7}
 .talk-admin-shell-root .talk-admin-applies__header .promo-admin-page__desc{margin-bottom:0}
-.talk-admin-shell-root .talk-admin-applies__toolbar{margin-bottom:12px;padding:14px 18px;border-radius:18px;background:#fff;border:1px solid #e2e8f0;box-shadow:0 8px 24px rgba(15,23,42,.06)}
+.talk-admin-shell-root .talk-admin-applies__panel{display:block!important;min-height:120px;margin-top:0;padding:0;overflow:visible;border-radius:18px;background:#fff;border:1px solid #e2e8f0;box-shadow:0 8px 24px rgba(15,23,42,.06)}
+.talk-admin-shell-root .talk-admin-applies-page>.promo-admin-panel,.talk-admin-shell-root .talk-admin-applies__filter,.talk-admin-shell-root .talk-admin-applies__empty,.talk-admin-shell-root .talk-admin-applies__summary,.talk-admin-shell-root .talk-admin-table-wrap{display:block!important;float:none!important;clear:both!important;width:100%!important;visibility:visible!important}
+.talk-admin-shell-root .talk-admin-applies__filter{margin:0;padding:14px 18px;border-bottom:1px solid #eef2f6;background:#f8fafc}
 .talk-admin-shell-root .talk-admin-filter{display:flex;flex-wrap:wrap;gap:8px;margin:0}
 .talk-admin-shell-root .talk-admin-filter__item{display:inline-flex;align-items:center;min-height:36px;padding:0 14px;border-radius:999px;font-size:13px;font-weight:700;text-decoration:none;color:#64748b;background:#f8fafc;border:1px solid #e2e8f0}
 .talk-admin-shell-root .talk-admin-filter__item.is-active{color:#0284c7;background:#f0f9ff;border-color:#7dd3fc}
-.talk-admin-shell-root .talk-admin-applies__panel{display:block;min-height:120px;margin-top:0;padding:0;overflow:hidden;border-radius:18px;background:#fff;border:1px solid #e2e8f0;box-shadow:0 8px 24px rgba(15,23,42,.06)}
-.talk-admin-shell-root .promo-admin-panel{padding:0;overflow:hidden;border-radius:18px;background:#fff;border:1px solid #e2e8f0;box-shadow:0 8px 24px rgba(15,23,42,.06)}
+.talk-admin-shell-root .promo-admin-panel{padding:0;overflow:visible;border-radius:18px;background:#fff;border:1px solid #e2e8f0;box-shadow:0 8px 24px rgba(15,23,42,.06)}
 .talk-admin-shell-root .promo-admin-panel__title{margin:0 0 16px;padding:20px 22px 0;font-size:1rem;font-weight:800;color:#0f172a}
 .talk-admin-shell-root .promo-admin-empty{margin:0;padding:48px 20px;text-align:center;color:#64748b;font-size:14px}
 .talk-admin-shell-root .talk-admin-applies__summary{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:14px 18px;border-bottom:1px solid #eef2f7;font-size:13px;color:#64748b}

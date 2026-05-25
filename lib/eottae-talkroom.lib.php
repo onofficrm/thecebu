@@ -1334,7 +1334,7 @@ if (!function_exists('eottae_talkroom_sql_member_table')) {
 
 if (!function_exists('eottae_talkroom_admin_fetch_room_rows')) {
     /**
-     * @return resource|false
+     * @return array<int, array<string, mixed>>|false
      */
     function eottae_talkroom_admin_fetch_room_rows($where_sql, $limit, $with_member = true)
     {
@@ -1342,27 +1342,46 @@ if (!function_exists('eottae_talkroom_admin_fetch_room_rows')) {
         $limit = max(1, min(500, (int) $limit));
         $order_sql = 'r.created_at DESC, r.room_id DESC';
 
-        if ($with_member) {
-            $member_table = eottae_talkroom_sql_member_table();
-            $sql = "
-                SELECT r.*, m.mb_nick AS owner_nick, m.mb_email AS owner_email, m.mb_name AS owner_name
-                FROM `{$tables['rooms']}` r
-                LEFT JOIN `{$member_table}` m ON m.mb_id = r.owner_mb_id
-                {$where_sql}
-                ORDER BY {$order_sql}
-                LIMIT {$limit}
-            ";
-        } else {
-            $sql = "
-                SELECT r.*, '' AS owner_nick, '' AS owner_email, '' AS owner_name
-                FROM `{$tables['rooms']}` r
-                {$where_sql}
-                ORDER BY {$order_sql}
-                LIMIT {$limit}
-            ";
+        $result = sql_query("
+            SELECT r.*
+            FROM `{$tables['rooms']}` r
+            {$where_sql}
+            ORDER BY {$order_sql}
+            LIMIT {$limit}
+        ", false);
+        if (!$result) {
+            return false;
         }
 
-        return sql_query($sql, false);
+        $rows = array();
+        while ($row = sql_fetch_array($result)) {
+            if (!is_array($row)) {
+                continue;
+            }
+            if ($with_member) {
+                $owner_mb_id = trim((string) ($row['owner_mb_id'] ?? ''));
+                $row['owner_nick'] = '';
+                $row['owner_email'] = '';
+                $row['owner_name'] = '';
+                if ($owner_mb_id !== '') {
+                    $member_table = eottae_talkroom_sql_member_table();
+                    $member = sql_fetch("
+                        SELECT mb_nick, mb_email, mb_name
+                        FROM `{$member_table}`
+                        WHERE mb_id = '".sql_escape_string($owner_mb_id)."'
+                        LIMIT 1
+                    ", false);
+                    if (is_array($member)) {
+                        $row['owner_nick'] = (string) ($member['mb_nick'] ?? '');
+                        $row['owner_email'] = (string) ($member['mb_email'] ?? '');
+                        $row['owner_name'] = (string) ($member['mb_name'] ?? '');
+                    }
+                }
+            }
+            $rows[] = $row;
+        }
+
+        return $rows;
     }
 }
 
@@ -1377,7 +1396,7 @@ if (!function_exists('eottae_talkroom_pending_count')) {
         $row = sql_fetch("
             SELECT COUNT(*) AS cnt
             FROM `{$tables['rooms']}`
-            WHERE TRIM(status) = 'pending'
+            WHERE LOWER(TRIM(status)) = 'pending'
         ", false);
 
         return (int) ($row['cnt'] ?? 0);
@@ -1471,18 +1490,21 @@ if (!function_exists('eottae_talkroom_admin_list_applications')) {
         if ($status_filter !== '' && $status_filter !== 'all') {
             $allowed = array('pending', 'approved', 'active', 'rejected', 'stopped', 'closed');
             if (in_array($status_filter, $allowed, true)) {
-                $where = " WHERE TRIM(r.status) = '".sql_escape_string($status_filter)."' ";
+                $where = " WHERE LOWER(TRIM(r.status)) = '".sql_escape_string(strtolower($status_filter))."' ";
             }
         }
 
-        $result = eottae_talkroom_admin_fetch_room_rows($where, $limit, true);
-        if (!$result) {
-            $result = eottae_talkroom_admin_fetch_room_rows($where, $limit, false);
+        $fetched = eottae_talkroom_admin_fetch_room_rows($where, $limit, true);
+        if ($fetched === false) {
+            $fetched = eottae_talkroom_admin_fetch_room_rows($where, $limit, false);
+        }
+        if (!is_array($fetched)) {
+            return array();
         }
 
         $rows = array();
-        if ($result) {
-            while ($row = sql_fetch_array($result)) {
+        foreach ($fetched as $row) {
+            if (is_array($row)) {
                 $rows[] = eottae_talkroom_format_admin_room($row);
             }
         }

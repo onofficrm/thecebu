@@ -1690,14 +1690,21 @@ body.talk-admin-shell .talk-admin-applies__header .promo-admin-page__desc {
 }
 
 body.talk-admin-shell .talk-admin-applies__filter {
-  margin: 14px 0 0;
-  padding-top: 14px;
-  border-top: 1px solid #eef2f6;
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 14px 18px;
+  border-top: 0;
+  border-bottom: 1px solid #eef2f6;
+  background: #f8fafc;
 }
 
 body.talk-admin-shell .talk-admin-applies__panel {
+  display: block !important;
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
+  visibility: visible;
 }
 
 body.talk-admin-shell .talk-admin-applies__summary {

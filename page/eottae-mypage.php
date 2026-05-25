@@ -8,6 +8,7 @@ if (!$is_member) {
 include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
 include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
 include_once G5_LIB_PATH.'/eottae-shop-owner.lib.php';
+include_once G5_PATH.'/components/eottae/talk-admin-nav.php';
 
 $is_biz = eottae_is_business_member($member);
 $point = isset($member['mb_point']) ? (int) $member['mb_point'] : 0;
@@ -17,6 +18,10 @@ $my_review_count = count(eottae_get_member_reviews($member['mb_id'], 100));
 $saved_count = count(eottae_get_saved_shop_ids($member['mb_id'], 100));
 $inquiry_count = count(eottae_get_member_inquiries($member['mb_id'], 100));
 $my_shop_posts = $is_biz ? eottae_business_shop_posts($member['mb_id'], 20) : array();
+
+if ($is_admin === 'super') {
+    add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-my-talk.css">', 22);
+}
 
 g5_page_start('마이페이지');
 ?>
@@ -48,9 +53,14 @@ g5_page_start('마이페이지');
         <a href="<?php echo G5_URL; ?>/page/eottae-events.php" class="mypage-quick-menu__item">이벤트</a>
         <a href="<?php echo function_exists('eottae_mypage_talk_url') ? eottae_mypage_talk_url() : G5_URL.'/mypage/talk.php'; ?>" class="mypage-quick-menu__item">내 세부톡방</a>
         <?php if ($is_admin === 'super') {
+            $talk_pending_count = function_exists('eottae_talkroom_pending_count') ? eottae_talkroom_pending_count() : 0;
             $talk_kicked_count = function_exists('eottae_talkroom_admin_kicked_count') ? eottae_talkroom_admin_kicked_count() : 0;
+            $talk_report_pending = function_exists('eottae_talkroom_admin_pending_report_count') ? eottae_talkroom_admin_pending_report_count() : 0;
             ?>
-        <a href="<?php echo function_exists('eottae_talkroom_admin_kicked_url') ? eottae_talkroom_admin_kicked_url() : G5_URL.'/page/eottae-admin-talk-kicked.php'; ?>" class="mypage-quick-menu__item">강퇴 회원 관리<?php if ($talk_kicked_count > 0) { ?> (<?php echo number_format($talk_kicked_count); ?>)<?php } ?></a>
+        <a href="<?php echo function_exists('eottae_talkroom_admin_applies_url') ? eottae_talkroom_admin_applies_url() : G5_URL.'/page/eottae-admin-talk-applies.php'; ?>" class="mypage-quick-menu__item">개설 신청<?php if ($talk_pending_count > 0) { ?> (<?php echo number_format($talk_pending_count); ?>)<?php } ?></a>
+        <a href="<?php echo function_exists('eottae_talkroom_admin_rooms_url') ? eottae_talkroom_admin_rooms_url() : G5_URL.'/page/eottae-admin-talk-rooms.php'; ?>" class="mypage-quick-menu__item">톡방 목록</a>
+        <a href="<?php echo function_exists('eottae_talkroom_admin_kicked_url') ? eottae_talkroom_admin_kicked_url() : G5_URL.'/page/eottae-admin-talk-kicked.php'; ?>" class="mypage-quick-menu__item">강퇴 회원<?php if ($talk_kicked_count > 0) { ?> (<?php echo number_format($talk_kicked_count); ?>)<?php } ?></a>
+        <a href="<?php echo function_exists('eottae_talkroom_admin_reports_url') ? eottae_talkroom_admin_reports_url('pending') : G5_URL.'/page/eottae-admin-talk-reports.php?status=pending'; ?>" class="mypage-quick-menu__item">신고 관리<?php if ($talk_report_pending > 0) { ?> (<?php echo number_format($talk_report_pending); ?>)<?php } ?></a>
         <?php } ?>
         <a href="<?php echo G5_URL; ?>/page/eottae-business-snippets.php" class="mypage-quick-menu__item">홍보 문구</a>
         <?php if ($is_biz) { ?><a href="<?php echo G5_URL; ?>/page/eottae-business-coupons.php" class="mypage-quick-menu__item">쿠폰 발행</a><?php } ?>
@@ -59,6 +69,10 @@ g5_page_start('마이페이지');
         <a href="<?php echo G5_BBS_URL; ?>/member_confirm.php?url=<?php echo urlencode(G5_BBS_URL.'/register_form.php'); ?>" class="mypage-quick-menu__item">정보수정</a>
         <a href="<?php echo G5_BBS_URL; ?>/logout.php" class="mypage-quick-menu__item">로그아웃</a>
     </nav>
+
+    <?php if ($is_admin === 'super') {
+        eottae_talkroom_render_mypage_super_admin_talk_tools(8);
+    } ?>
 
     <?php if ($is_biz) { ?>
     <section class="business-dashboard">

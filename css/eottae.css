@@ -4154,6 +4154,20 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   box-shadow: var(--eottae-shadow-sm);
 }
 
+.mypage-dashboard .my-talk-section--panel {
+  margin-top: 20px;
+  padding: 18px 16px;
+  border-radius: var(--eottae-radius);
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  box-shadow: var(--eottae-shadow-sm);
+}
+
+.mypage-dashboard .my-talk-super-admin {
+  border-color: #bae6fd;
+  background: linear-gradient(180deg, #f0f9ff 0%, #fff 48%);
+}
+
 .business-dashboard {
   margin-top: 20px;
   padding: 20px;
