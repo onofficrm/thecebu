@@ -1338,7 +1338,8 @@ if (!function_exists('eottae_map_public_url')) {
 if (!function_exists('eottae_shop_map_thumb_get')) {
     function eottae_shop_map_thumb_get($bo_table, $wr_id)
     {
-        $bo_table = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
+        $requested_bo_table = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
+        $bo_table = $requested_bo_table;
         if ($bo_table !== '' && function_exists('eottae_shop_storage_bo_table')) {
             $bo_table = eottae_shop_storage_bo_table($bo_table);
         }
@@ -1348,7 +1349,27 @@ if (!function_exists('eottae_shop_map_thumb_get')) {
         }
 
         $table = eottae_shop_map_thumb_table();
-        $row = sql_fetch(" select * from {$table} where bo_table = '".sql_escape_string($bo_table)."' and wr_id = '{$wr_id}' ");
+        $lookup_tables = array($bo_table, $requested_bo_table);
+        if (function_exists('eottae_shop_table')) {
+            $lookup_tables[] = eottae_shop_table();
+        }
+        if (function_exists('eottae_shop_board_tables')) {
+            $lookup_tables = array_merge($lookup_tables, eottae_shop_board_tables());
+        }
+        $lookup_tables = array_values(array_unique(array_filter(array_map(function ($value) {
+            return preg_replace('/[^a-z0-9_]/i', '', (string) $value);
+        }, $lookup_tables))));
+
+        $row = array();
+        foreach ($lookup_tables as $lookup_bo_table) {
+            if ($lookup_bo_table === '') {
+                continue;
+            }
+            $row = sql_fetch(" select * from {$table} where bo_table = '".sql_escape_string($lookup_bo_table)."' and wr_id = '{$wr_id}' ");
+            if (!empty($row['file_name'])) {
+                break;
+            }
+        }
         if (empty($row['file_name'])) {
             return array();
         }
