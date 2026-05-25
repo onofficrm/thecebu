@@ -33,14 +33,17 @@ if (!function_exists('eottae_public_group_chat_html')) {
                 <header class="public-group-chat__head">
                     <div class="public-group-chat__title-row">
                         <span class="public-group-chat__emoji" aria-hidden="true"><?php echo $payload['room_emoji']; ?></span>
-                        <div>
+                        <div class="public-group-chat__title-wrap">
                             <h2 class="public-group-chat__title" id="public-group-chat-title">세부톡 · 공개 단체 채팅</h2>
                             <p class="public-group-chat__desc">회원 누구나 참여하는 실시간 단체 대화</p>
                         </div>
                     </div>
-                    <?php if ((int) $payload['room_id'] > 0) { ?>
-                    <a href="<?php echo $payload['enter_href']; ?>" class="public-group-chat__live-badge">LIVE</a>
-                    <?php } ?>
+                    <div class="public-group-chat__head-actions">
+                        <?php if ((int) $payload['room_id'] > 0) { ?>
+                        <span class="public-group-chat__live-badge" aria-hidden="true">LIVE</span>
+                        <?php } ?>
+                        <a href="<?php echo $payload['enter_href']; ?>" class="public-group-chat__enter">단체톡방 입장</a>
+                    </div>
                 </header>
 
                 <div class="public-group-chat__panel">
@@ -100,9 +103,6 @@ if (!function_exists('eottae_public_group_chat_html')) {
                     <?php } ?>
                 </div>
 
-                <footer class="public-group-chat__footer">
-                    <a href="<?php echo $payload['enter_href']; ?>" class="public-group-chat__more">단체톡방 입장</a>
-                </footer>
             </div>
         </section>
         <?php
