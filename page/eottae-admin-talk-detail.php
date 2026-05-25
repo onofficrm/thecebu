@@ -17,7 +17,7 @@ if (!$room) {
 
 $admin_token = eottae_talkroom_admin_token();
 
-g5_page_start('톡방 신청 상세');
+g5_talk_admin_page_start('톡방 신청 상세');
 ?>
 
 <main class="promo-admin-page talk-admin-page talk-admin-detail-page">
@@ -116,4 +116,4 @@ g5_page_start('톡방 신청 상세');
 
 <?php
 eottae_talkroom_render_admin_actions_script($admin_token);
-g5_page_end();
+g5_talk_admin_page_end();

@@ -460,43 +460,11 @@ if (!function_exists('eottae_talkroom_is_admin_shell_page')) {
 if (!function_exists('eottae_talkroom_admin_shell_inline_css')) {
     function eottae_talkroom_admin_shell_inline_css()
     {
-        return <<<'CSS'
-<style id="eottae-talk-admin-shell-css">
-body.talk-admin-shell{background:#eef2f7;color:#0f172a}
-body.talk-admin-shell #hd,body.talk-admin-shell #container_title,body.talk-admin-shell #ft.site-footer-wrap,body.talk-admin-shell .mobile-bottom-nav--global{display:none!important}
-body.talk-admin-shell #wrapper,body.talk-admin-shell #container_wr,body.talk-admin-shell #container{width:100%!important;max-width:none!important;margin:0!important;padding:0!important;float:none!important;min-width:0!important}
-body.talk-admin-shell .talk-admin-page,body.talk-admin-shell .promo-admin-page{max-width:1120px;margin:0 auto;padding:16px 16px 32px}
-body.talk-admin-shell .promo-admin-page__header{margin-bottom:16px;padding:20px 22px;border-radius:18px;background:#fff;border:1px solid #e2e8f0;box-shadow:0 8px 24px rgba(15,23,42,.06)}
-body.talk-admin-shell .promo-admin-page__header-top{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px}
-body.talk-admin-shell .promo-admin-page__back{display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:999px;background:#f8fafc;border:1px solid #e2e8f0;font-size:12px;font-weight:700;color:#475569;text-decoration:none}
-body.talk-admin-shell .promo-admin-page__title{margin:0 0 8px;font-size:1.5rem;font-weight:800;color:#0f172a}
-body.talk-admin-shell .promo-admin-page__desc{margin:0;font-size:14px;line-height:1.6;color:#64748b}
-body.talk-admin-shell .talk-admin-page__pending{display:inline-flex;align-items:center;margin-left:6px;padding:2px 10px;border-radius:999px;background:#fef3c7;color:#b45309;font-size:12px;font-weight:800}
-body.talk-admin-shell .talk-admin-nav{display:flex;flex-wrap:nowrap;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid #f1f5f9;overflow-x:auto}
-body.talk-admin-shell .talk-admin-nav__item{flex:0 0 auto;display:inline-flex;align-items:center;min-height:38px;padding:0 14px;border-radius:999px;font-size:13px;font-weight:700;text-decoration:none;color:#334155;background:#f8fafc;border:1px solid #e2e8f0}
-body.talk-admin-shell .talk-admin-nav__item.is-active{color:#fff;background:#0284c7;border-color:#0284c7}
-body.talk-admin-shell .talk-admin-filter{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
-body.talk-admin-shell .talk-admin-filter__item{display:inline-flex;align-items:center;min-height:36px;padding:0 14px;border-radius:999px;font-size:13px;font-weight:700;text-decoration:none;color:#64748b;background:#fff;border:1px solid #e2e8f0}
-body.talk-admin-shell .talk-admin-filter__item.is-active{color:#0284c7;background:#f0f9ff;border-color:#7dd3fc}
-body.talk-admin-shell .promo-admin-panel{padding:0;overflow:hidden;border-radius:18px;background:#fff;border:1px solid #e2e8f0;box-shadow:0 8px 24px rgba(15,23,42,.06)}
-body.talk-admin-shell .promo-admin-empty{margin:0;padding:48px 20px;text-align:center;color:#64748b;font-size:14px}
-body.talk-admin-shell .talk-admin-applies__summary{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:14px 18px;border-bottom:1px solid #eef2f7;font-size:13px;color:#64748b}
-body.talk-admin-shell .talk-admin-table-wrap{overflow-x:auto}
-body.talk-admin-shell .talk-admin-table{width:100%;min-width:760px;border-collapse:collapse;font-size:13px}
-body.talk-admin-shell .talk-admin-table th,body.talk-admin-shell .talk-admin-table td{padding:14px 12px;border-bottom:1px solid #eef2f7;text-align:left;vertical-align:middle}
-body.talk-admin-shell .talk-admin-table th{background:#f8fafc;font-size:12px;font-weight:800;color:#64748b;white-space:nowrap}
-body.talk-admin-shell .talk-admin-table__sub{display:block;margin-top:2px;font-size:11px;color:#94a3b8}
-body.talk-admin-shell .talk-admin-table__actions{display:flex;flex-wrap:wrap;gap:6px}
-body.talk-admin-shell .promo-admin-btn{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:0 12px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;font-size:12px;font-weight:700;line-height:1.2;text-decoration:none;color:#334155;cursor:pointer}
-body.talk-admin-shell .promo-admin-btn--primary{background:#0284c7;border-color:#0284c7;color:#fff}
-body.talk-admin-shell .promo-admin-btn--sm{min-height:32px;padding:0 10px}
-body.talk-admin-shell .talk-apply-status{display:inline-flex;align-items:center;min-height:26px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:800}
-body.talk-admin-shell .talk-apply-status--pending{background:#fef3c7;color:#b45309}
-body.talk-admin-shell .talk-apply-status--approved,body.talk-admin-shell .talk-apply-status--active{background:#dcfce7;color:#166534}
-body.talk-admin-shell .talk-apply-status--rejected{background:#fee2e2;color:#991b1b}
-@media (max-width:767px){body.talk-admin-shell .talk-admin-page{padding:12px 12px 24px}body.talk-admin-shell .promo-admin-page__header{padding:16px}body.talk-admin-shell .talk-admin-table thead{display:none}body.talk-admin-shell .talk-admin-table,body.talk-admin-shell .talk-admin-table tbody,body.talk-admin-shell .talk-admin-table tr,body.talk-admin-shell .talk-admin-table td{display:block;width:100%;min-width:0}body.talk-admin-shell .talk-admin-table tr{margin:0 0 12px;padding:14px;border:1px solid #e2e8f0;border-radius:14px;background:#fff}body.talk-admin-shell .talk-admin-table td{padding:6px 0;border:0}body.talk-admin-shell .talk-admin-table td::before{content:attr(data-label) ": ";display:inline-block;min-width:72px;font-weight:800;color:#64748b}body.talk-admin-shell .talk-admin-table td:last-child::before{display:none}body.talk-admin-shell .talk-admin-table td:last-child{margin-top:10px;padding-top:10px;border-top:1px dashed #e2e8f0}}
-</style>
-CSS;
+        if (!function_exists('eottae_talkroom_admin_shell_css_rules')) {
+            include_once G5_PATH.'/components/eottae/talk-admin-layout.php';
+        }
+
+        return '<style id="eottae-talk-admin-shell-css">'.eottae_talkroom_admin_shell_css_rules().'</style>';
     }
 }
 

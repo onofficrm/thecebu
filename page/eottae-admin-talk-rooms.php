@@ -12,7 +12,7 @@ include_once G5_PATH.'/components/eottae/talk-admin-nav.php';
 $rooms = eottae_talkroom_admin_list_rooms(200);
 $admin_token = eottae_talkroom_admin_token();
 
-g5_page_start('톡방 목록 관리');
+g5_talk_admin_page_start('톡방 목록 관리');
 ?>
 
 <main class="promo-admin-page talk-admin-page">
@@ -70,4 +70,4 @@ g5_page_start('톡방 목록 관리');
 
 <?php
 eottae_talkroom_render_admin_actions_script($admin_token);
-g5_page_end();
+g5_talk_admin_page_end();

@@ -14,7 +14,7 @@ $reports = eottae_talkroom_admin_list_reports($status === 'all' ? 'all' : $statu
 $pending_count = eottae_talkroom_admin_pending_report_count();
 $admin_token = eottae_talkroom_admin_token();
 
-g5_page_start('신고 관리');
+g5_talk_admin_page_start('신고 관리');
 ?>
 
 <main class="promo-admin-page talk-admin-page">
@@ -88,4 +88,4 @@ g5_page_start('신고 관리');
 <?php
 eottae_talkroom_render_admin_actions_script($admin_token);
 eottae_talkroom_render_report_handle_script($admin_token, true);
-g5_page_end();
+g5_talk_admin_page_end();

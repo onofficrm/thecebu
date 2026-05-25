@@ -7,6 +7,8 @@ if (!function_exists('eottae_talkroom_ai_admin_url')) {
     include_once G5_LIB_PATH.'/eottae-talkroom-ai.lib.php';
 }
 
+include_once G5_PATH.'/components/eottae/talk-admin-layout.php';
+
 if (!function_exists('eottae_talkroom_admin_append_body_class')) {
     function eottae_talkroom_admin_append_body_class($class)
     {

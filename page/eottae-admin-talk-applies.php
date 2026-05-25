@@ -17,7 +17,7 @@ $applications = eottae_talkroom_admin_list_applications($filter === 'all' ? 'all
 $pending_count = eottae_talkroom_pending_count();
 $admin_token = eottae_talkroom_admin_token();
 
-g5_page_start('개설 신청 관리');
+g5_talk_admin_page_start('개설 신청 관리');
 ?>
 
 <main class="promo-admin-page talk-admin-page talk-admin-applies-page">
@@ -104,4 +104,4 @@ g5_page_start('개설 신청 관리');
 
 <?php
 eottae_talkroom_render_admin_actions_script($admin_token);
-g5_page_end();
+g5_talk_admin_page_end();

@@ -27,7 +27,7 @@ $rooms = eottae_talkroom_ai_admin_list_rooms(200);
 $admin_token = eottae_talkroom_admin_token();
 $total_pages = max(1, (int) ceil($list['total'] / max(1, $list['per_page'])));
 
-g5_page_start('AI 발언 로그');
+g5_talk_admin_page_start('AI 발언 로그');
 ?>
 
 <main class="promo-admin-page talk-admin-page talk-admin-ai-logs-page">
@@ -169,4 +169,4 @@ g5_page_start('AI 발언 로그');
 </script>
 
 <?php
-g5_page_end();
+g5_talk_admin_page_end();

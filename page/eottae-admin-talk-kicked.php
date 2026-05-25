@@ -11,7 +11,7 @@ include_once G5_PATH.'/components/eottae/talk-admin-nav.php';
 $kicked_members = eottae_talkroom_admin_list_kicked_members(300);
 $admin_token = eottae_talkroom_admin_token();
 
-g5_page_start('강퇴 회원 관리');
+g5_talk_admin_page_start('강퇴 회원 관리');
 ?>
 
 <main class="promo-admin-page talk-admin-page">
@@ -69,4 +69,4 @@ g5_page_start('강퇴 회원 관리');
 <?php eottae_talkroom_render_admin_actions_script($admin_token); ?>
 
 <?php
-g5_page_end();
+g5_talk_admin_page_end();

@@ -18,7 +18,7 @@ $site_today_count = eottae_talkroom_ai_get_today_site_message_count();
 $admin_token = eottae_talkroom_admin_token();
 $saved = !empty($_GET['saved']);
 
-g5_page_start('AI 도우미 설정 관리');
+g5_talk_admin_page_start('AI 도우미 설정 관리');
 ?>
 
 <main class="promo-admin-page talk-admin-page talk-admin-ai-page">
@@ -176,4 +176,4 @@ g5_page_start('AI 도우미 설정 관리');
 </script>
 
 <?php
-g5_page_end();
+g5_talk_admin_page_end();
