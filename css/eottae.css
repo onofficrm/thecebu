@@ -7985,13 +7985,13 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 
 /* ── 세부광장 메인 피드 ── */
 .plaza-home-feed {
-  padding: 28px 16px;
-  background: #f8fafc;
+  padding: 0;
+  background: transparent;
 }
 
 .plaza-home-feed__inner {
-  max-width: 720px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
 }
 
 .plaza-home-feed__head {
@@ -8097,6 +8097,293 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 .plaza-home-feed__more:hover {
   background: #e0f2fe;
   border-color: #7dd3fc;
+}
+
+/* ── 홈 2열: 세부광장 + 세부공개단체톡 ── */
+.home-community-dual {
+  padding: 28px 16px 32px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.home-community-dual__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+@media (min-width: 960px) {
+  .home-community-dual__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20px;
+    align-items: stretch;
+  }
+}
+
+.home-community-dual__col {
+  min-width: 0;
+}
+
+.home-community-dual__col--plaza .plaza-home-feed,
+.home-community-dual__col--chat .public-group-chat {
+  height: 100%;
+}
+
+/* ── 세부공개단체톡 (홈 실시간 채팅) ── */
+.public-group-chat {
+  height: 100%;
+}
+
+.public-group-chat__inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 420px;
+}
+
+.public-group-chat__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.public-group-chat__title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.public-group-chat__emoji {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  font-size: 1.25rem;
+}
+
+.public-group-chat__title {
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.public-group-chat__desc {
+  margin: 0;
+  font-size: 0.86rem;
+  color: #64748b;
+}
+
+.public-group-chat__live-badge {
+  flex: 0 0 auto;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  color: #fff;
+  background: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.public-group-chat__panel {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: var(--eottae-shadow-sm, 0 1px 3px rgba(15, 23, 42, 0.06));
+  overflow: hidden;
+}
+
+.public-group-chat__messages {
+  flex: 1 1 auto;
+  min-height: 220px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+}
+
+.public-group-chat__empty {
+  margin: auto 0;
+  text-align: center;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.public-group-chat__message {
+  display: flex;
+}
+
+.public-group-chat__message--mine {
+  justify-content: flex-end;
+}
+
+.public-group-chat__bubble {
+  max-width: 92%;
+  padding: 10px 12px;
+  border-radius: 14px 14px 14px 4px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.public-group-chat__message--mine .public-group-chat__bubble {
+  border-radius: 14px 14px 4px 14px;
+  background: #e0f2fe;
+  border-color: #bae6fd;
+}
+
+.public-group-chat__message--ai .public-group-chat__bubble {
+  background: linear-gradient(180deg, #fafcff 0%, #f0f9ff 100%);
+  border-color: #e0f2fe;
+}
+
+.public-group-chat__author {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #334155;
+}
+
+.public-group-chat__text {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #0f172a;
+  word-break: break-word;
+}
+
+.public-group-chat__time {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.68rem;
+  color: #94a3b8;
+}
+
+.public-group-chat__composer {
+  flex: 0 0 auto;
+  padding: 12px;
+  border-top: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.public-group-chat__composer--login,
+.public-group-chat__composer--disabled {
+  text-align: center;
+}
+
+.public-group-chat__hint {
+  margin: 0 0 10px;
+  font-size: 0.84rem;
+  color: #64748b;
+}
+
+.public-group-chat__input {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 56px;
+  max-height: 120px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.public-group-chat__composer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  justify-content: flex-end;
+}
+
+.public-group-chat__send,
+.public-group-chat__join,
+.public-group-chat__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.public-group-chat__send {
+  color: #fff;
+  background: #0284c7;
+}
+
+.public-group-chat__send:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.public-group-chat__join,
+.public-group-chat__action {
+  color: #0369a1;
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+}
+
+.public-group-chat__footer {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.public-group-chat__more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  color: #b45309;
+  background: #fff;
+  border: 1px solid #fde68a;
+}
+
+.public-group-chat__more:hover {
+  background: #fffbeb;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ── 세부톡방 목록 ── */

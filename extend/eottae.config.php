@@ -94,3 +94,11 @@ if (!defined('EOTTae_TALKROOM_TABLE')) {
 if (!defined('EOTTae_PLAZA_TABLE')) {
     define('EOTTae_PLAZA_TABLE', 'plaza');
 }
+
+if (!defined('EOTTae_PUBLIC_GROUP_TALK_ROOM_ID')) {
+    define('EOTTae_PUBLIC_GROUP_TALK_ROOM_ID', 0);
+}
+
+if (!defined('EOTTae_PUBLIC_GROUP_TALK_ROOM_NAME')) {
+    define('EOTTae_PUBLIC_GROUP_TALK_ROOM_NAME', '세부공개단체톡');
+}
