@@ -195,6 +195,21 @@
         var loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         self.map.setCenter(loc);
         self.map.setZoom(15);
+        if (!self.userMarker) {
+          self.userMarker = new global.google.maps.Marker({
+            map: self.map,
+            title: '내 위치',
+            icon: {
+              path: global.google.maps.SymbolPath.CIRCLE,
+              scale: 8,
+              fillColor: '#0ea5e9',
+              fillOpacity: 1,
+              strokeColor: '#ffffff',
+              strokeWeight: 3
+            }
+          });
+        }
+        self.userMarker.setPosition(loc);
       },
       function () {
         alert('위치 권한이 필요합니다.');

@@ -26,7 +26,7 @@ $map_locations_json = eottae_shop_map_locations_json($markers);
         <?php if ($map_has_key) { ?>
         <div class="shop-map-panel__map" id="shopMapCanvas" role="application" aria-label="업체 지도"></div>
         <?php if (empty($markers)) { ?>
-        <p class="shop-map-panel__placeholder shop-map-panel__placeholder--hint">좌표가 등록된 업체가 없습니다. 업체 등록 시 위도·경도를 입력해 주세요.</p>
+        <p class="shop-map-panel__placeholder shop-map-panel__placeholder--hint">지도에 표시할 업체 좌표를 준비 중입니다. 주소 또는 대표지역이 있는 업체는 자동 보정됩니다.</p>
         <?php } ?>
         <?php } else { ?>
         <p class="shop-map-panel__placeholder"><?php echo get_text($map_cfg['placeholder_title']); ?></p>

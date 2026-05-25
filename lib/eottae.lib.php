@@ -1232,6 +1232,20 @@ if (!function_exists('eottae_shop_region_match_rules')) {
     }
 }
 
+if (!function_exists('eottae_shop_region_default_coords')) {
+    function eottae_shop_region_default_coords()
+    {
+        return array(
+            'IT Park'  => array('lat' => 10.3327, 'lng' => 123.9072),
+            '막탄'     => array('lat' => 10.2956, 'lng' => 123.9736),
+            '아얄라'   => array('lat' => 10.3180, 'lng' => 123.9050),
+            '만다우에' => array('lat' => 10.3403, 'lng' => 123.9416),
+            '라푸라푸' => array('lat' => 10.3103, 'lng' => 123.9494),
+            '세부시티' => array('lat' => 10.3157, 'lng' => 123.8854),
+        );
+    }
+}
+
 if (!function_exists('eottae_shop_detect_region')) {
     /**
      * 주소·Geocoding address_components → 대표 지역(wr_2)
@@ -1281,6 +1295,47 @@ if (!function_exists('eottae_shop_detect_region')) {
         }
 
         return '';
+    }
+}
+
+if (!function_exists('eottae_shop_guess_coords')) {
+    /**
+     * API 좌표가 없을 때 내주변/지도에서 누락되지 않도록 대표지역 중심 좌표를 보정한다.
+     */
+    function eottae_shop_guess_coords($address = '', $region = '')
+    {
+        $region = trim((string) $region);
+        if ($region === '' && $address !== '') {
+            $region = eottae_shop_detect_region($address);
+        }
+
+        $coords = eottae_shop_region_default_coords();
+        if ($region !== '' && isset($coords[$region])) {
+            return $coords[$region];
+        }
+
+        return array();
+    }
+}
+
+if (!function_exists('eottae_shop_apply_fallback_coords_to_post')) {
+    function eottae_shop_apply_fallback_coords_to_post()
+    {
+        $lat = isset($_POST['wr_9']) ? trim((string) $_POST['wr_9']) : '';
+        $lng = isset($_POST['wr_10']) ? trim((string) $_POST['wr_10']) : '';
+        if ($lat !== '' && $lng !== '' && is_numeric($lat) && is_numeric($lng)) {
+            return;
+        }
+
+        $address = isset($_POST['wr_3']) ? trim((string) $_POST['wr_3']) : '';
+        $region = isset($_POST['wr_2']) ? trim((string) $_POST['wr_2']) : '';
+        $coords = eottae_shop_guess_coords($address, $region);
+        if (empty($coords)) {
+            return;
+        }
+
+        $_POST['wr_9'] = (string) $coords['lat'];
+        $_POST['wr_10'] = (string) $coords['lng'];
     }
 }
 
@@ -1442,6 +1497,9 @@ if (!function_exists('eottae_shop_prepare_write_post')) {
         if ($region === '' && $address !== '' && function_exists('eottae_shop_detect_region')) {
             $_POST['wr_2'] = eottae_shop_detect_region($address);
         }
+        if (function_exists('eottae_shop_apply_fallback_coords_to_post')) {
+            eottae_shop_apply_fallback_coords_to_post();
+        }
     }
 }
 
@@ -1518,12 +1576,25 @@ if (!function_exists('eottae_shop_sort_list_by_distance')) {
                 continue;
             }
             $shop = eottae_shop_from_write($row);
-            if ($shop['lat'] !== '' && $shop['lng'] !== '' && is_numeric($shop['lat']) && is_numeric($shop['lng'])) {
+            $lat = $shop['lat'];
+            $lng = $shop['lng'];
+            if (($lat === '' || $lng === '' || !is_numeric($lat) || !is_numeric($lng)) && function_exists('eottae_shop_guess_coords')) {
+                $fallback = eottae_shop_guess_coords($shop['address'], $shop['region']);
+                if (!empty($fallback)) {
+                    $lat = $fallback['lat'];
+                    $lng = $fallback['lng'];
+                    $list[$idx]['wr_9'] = (string) $lat;
+                    $list[$idx]['wr_10'] = (string) $lng;
+                    $list[$idx]['_eottae_coord_fallback'] = true;
+                }
+            }
+
+            if ($lat !== '' && $lng !== '' && is_numeric($lat) && is_numeric($lng)) {
                 $list[$idx]['_eottae_distance_km'] = eottae_haversine_km(
                     (float) $user_lat,
                     (float) $user_lng,
-                    (float) $shop['lat'],
-                    (float) $shop['lng']
+                    (float) $lat,
+                    (float) $lng
                 );
             } else {
                 $list[$idx]['_eottae_distance_km'] = 99999;
@@ -1554,6 +1625,103 @@ if (!function_exists('eottae_shop_format_distance_km')) {
         }
 
         return number_format($km, 1).'km';
+    }
+}
+
+if (!function_exists('eottae_shop_build_nearby_list')) {
+    /**
+     * 가까운순은 그누보드 기본 페이징 결과 안에서만 정렬하면 정확도가 떨어진다.
+     * 필터 조건에 맞는 업체 후보를 넓게 가져와 거리순으로 재구성한다.
+     */
+    function eottae_shop_build_nearby_list($bo_table, $board, $board_skin_url, $user_lat, $user_lng, $args = array())
+    {
+        global $g5, $config;
+
+        $bo_table = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
+        if ($bo_table === '' || !function_exists('eottae_is_shop_board') || !eottae_is_shop_board($bo_table)) {
+            return array();
+        }
+
+        $write_table = $g5['write_prefix'].$bo_table;
+        $exists = sql_fetch(" show tables like '".sql_escape_string($write_table)."' ");
+        if (empty($exists)) {
+            return array();
+        }
+
+        $where = array("wr_is_comment = 0");
+        $sca = isset($args['sca']) ? trim((string) $args['sca']) : '';
+        $sfl = isset($args['sfl']) ? trim((string) $args['sfl']) : '';
+        $stx = isset($args['stx']) ? trim((string) $args['stx']) : '';
+
+        if ($sca !== '') {
+            $where[] = "ca_name = '".sql_escape_string($sca)."'";
+        }
+
+        if ($stx !== '') {
+            $stx_sql = sql_escape_string($stx);
+            if ($sfl === 'wr_2') {
+                $where[] = "wr_2 = '{$stx_sql}'";
+            } elseif ($sfl === 'wr_subject||wr_content') {
+                $where[] = "(wr_subject like '%{$stx_sql}%' or wr_content like '%{$stx_sql}%')";
+            } elseif (in_array($sfl, array('wr_subject', 'wr_content', 'wr_1', 'wr_2', 'wr_3'), true)) {
+                $where[] = "{$sfl} like '%{$stx_sql}%'";
+            }
+        }
+
+        $where_sql = implode(' and ', $where);
+        $count = sql_fetch(" select count(*) as cnt from {$write_table} where {$where_sql} ");
+        $total_count = isset($count['cnt']) ? (int) $count['cnt'] : 0;
+
+        $candidate_limit = min(1000, max(100, $total_count));
+        $result = sql_query(" select * from {$write_table} where {$where_sql} order by wr_id desc limit {$candidate_limit} ", false);
+        if (!$result) {
+            return array();
+        }
+
+        $rows = array();
+        while ($row = sql_fetch_array($result)) {
+            $rows[] = get_list($row, $board, $board_skin_url, G5_IS_MOBILE ? $board['bo_mobile_subject_len'] : $board['bo_subject_len']);
+        }
+
+        eottae_shop_sort_list_by_distance($rows, $user_lat, $user_lng);
+
+        $page = isset($args['page']) ? max(1, (int) $args['page']) : 1;
+        $page_rows = isset($args['page_rows']) ? max(1, (int) $args['page_rows']) : (G5_IS_MOBILE ? (int) $board['bo_mobile_page_rows'] : (int) $board['bo_page_rows']);
+        if ($page_rows < 1) {
+            $page_rows = 15;
+        }
+
+        $from = ($page - 1) * $page_rows;
+        $list = array_slice($rows, $from, $page_rows);
+        $total_page = $page_rows > 0 ? (int) ceil($total_count / $page_rows) : 1;
+
+        $paging_params = array(
+            'sst' => 'near',
+            'sod' => 'asc',
+            'eottae_lat' => $user_lat,
+            'eottae_lng' => $user_lng,
+        );
+        if ($sca !== '') {
+            $paging_params['sca'] = $sca;
+        }
+        if ($stx !== '' && $sfl !== '') {
+            $paging_params['sfl'] = $sfl;
+            $paging_params['stx'] = $stx;
+        }
+
+        $paging_qs = http_build_query($paging_params, '', '&amp;');
+        $pages = get_paging(
+            G5_IS_MOBILE ? $config['cf_mobile_pages'] : $config['cf_write_pages'],
+            $page,
+            max(1, $total_page),
+            get_pretty_url($bo_table, '', $paging_qs.'&amp;page=')
+        );
+
+        return array(
+            'list' => $list,
+            'total_count' => $total_count,
+            'write_pages' => $pages,
+        );
     }
 }
 
@@ -1608,15 +1776,24 @@ if (!function_exists('eottae_shop_map_markers')) {
                 continue;
             }
             $shop = eottae_shop_from_write($row);
-            if ($shop['lat'] === '' || $shop['lng'] === '') {
+            $lat = $shop['lat'];
+            $lng = $shop['lng'];
+            if (($lat === '' || $lng === '' || !is_numeric($lat) || !is_numeric($lng)) && function_exists('eottae_shop_guess_coords')) {
+                $fallback = eottae_shop_guess_coords($shop['address'], $shop['region']);
+                if (!empty($fallback)) {
+                    $lat = $fallback['lat'];
+                    $lng = $fallback['lng'];
+                }
+            }
+            if ($lat === '' || $lng === '' || !is_numeric($lat) || !is_numeric($lng)) {
                 continue;
             }
             $markers[] = array(
                 'wr_id'    => (int) $shop['wr_id'],
                 'name'     => $shop['name'],
                 'category' => $shop['category'],
-                'lat'      => $shop['lat'],
-                'lng'      => $shop['lng'],
+                'lat'      => $lat,
+                'lng'      => $lng,
                 'url'      => isset($row['href']) ? $row['href'] : G5_BBS_URL.'/board.php?bo_table='.($bo_table !== '' ? $bo_table : (defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop')).'&wr_id='.$shop['wr_id'],
             );
         }
@@ -1740,6 +1917,66 @@ if (!function_exists('eottae_google_geocoder_script')) {
 
         return '<script>window.initEottaeGeocoderBootstrap=function(){document.dispatchEvent(new CustomEvent("eottae:geocoder-ready"));};</script>'."\n"
             .'<script src="https://maps.googleapis.com/maps/api/js?key='.$safe_key.'&amp;callback=initEottaeGeocoderBootstrap" async defer></script>';
+    }
+}
+
+if (!function_exists('eottae_shop_backfill_missing_coords')) {
+    /**
+     * 기존 등록 업체 중 좌표가 없는 글을 대표지역/주소 기반 중심 좌표로 보정한다.
+     * 정확 좌표는 업체 수정에서 덮어쓸 수 있고, 이 보정값은 내주변/지도 누락 방지용이다.
+     */
+    function eottae_shop_backfill_missing_coords($limit_per_board = 100)
+    {
+        global $g5;
+
+        if (!function_exists('eottae_shop_board_tables') || !function_exists('eottae_shop_guess_coords')) {
+            return 0;
+        }
+
+        $updated = 0;
+        $limit_per_board = max(1, (int) $limit_per_board);
+        foreach (eottae_shop_board_tables() as $bo_table) {
+            $write_table = $g5['write_prefix'].$bo_table;
+            $exists = sql_fetch(" show tables like '".sql_escape_string($write_table)."' ");
+            if (empty($exists)) {
+                continue;
+            }
+
+            $sql = " select wr_id, wr_2, wr_3
+                from {$write_table}
+                where wr_is_comment = 0
+                  and (wr_9 = '' or wr_10 = '' or wr_9 is null or wr_10 is null)
+                order by wr_id desc
+                limit {$limit_per_board} ";
+            $result = sql_query($sql, false);
+            if (!$result) {
+                continue;
+            }
+
+            while ($row = sql_fetch_array($result)) {
+                $coords = eottae_shop_guess_coords(isset($row['wr_3']) ? $row['wr_3'] : '', isset($row['wr_2']) ? $row['wr_2'] : '');
+                if (empty($coords)) {
+                    continue;
+                }
+
+                $region = isset($row['wr_2']) ? trim((string) $row['wr_2']) : '';
+                if ($region === '' && function_exists('eottae_shop_detect_region')) {
+                    $region = eottae_shop_detect_region(isset($row['wr_3']) ? $row['wr_3'] : '');
+                }
+
+                $sets = array(
+                    "wr_9 = '".sql_escape_string((string) $coords['lat'])."'",
+                    "wr_10 = '".sql_escape_string((string) $coords['lng'])."'",
+                );
+                if ($region !== '') {
+                    $sets[] = "wr_2 = '".sql_escape_string($region)."'";
+                }
+                sql_query(" update {$write_table} set ".implode(', ', $sets)." where wr_id = '".(int) $row['wr_id']."' ");
+                $updated++;
+            }
+        }
+
+        return $updated;
     }
 }
 

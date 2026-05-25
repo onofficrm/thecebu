@@ -18,6 +18,9 @@ if (function_exists('eottae_shop_seo_ensure_table')) {
 if (function_exists('eottae_shop_sync_board_categories')) {
     eottae_shop_sync_board_categories();
 }
+if (function_exists('eottae_shop_backfill_missing_coords')) {
+    eottae_shop_backfill_missing_coords(50);
+}
 
 if (!function_exists('eottae_on_register_after')) {
     function eottae_on_register_after($mb_id, $w)

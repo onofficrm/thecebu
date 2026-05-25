@@ -12,10 +12,24 @@ $list_base = get_pretty_url($bo_table);
 $current_region = (isset($sfl) && $sfl === 'wr_2' && !empty($stx)) ? get_text($stx) : '';
 $eottae_user_coords = eottae_shop_user_coords_from_request();
 if (isset($sst) && $sst === 'near' && $eottae_user_coords && is_array($list)) {
-    eottae_shop_sort_list_by_distance($list, $eottae_user_coords['lat'], $eottae_user_coords['lng']);
+    $nearby = eottae_shop_build_nearby_list($bo_table, $board, $board_skin_url, $eottae_user_coords['lat'], $eottae_user_coords['lng'], array(
+        'sca' => isset($sca) ? $sca : '',
+        'sfl' => isset($sfl) ? $sfl : '',
+        'stx' => isset($stx) ? $stx : '',
+        'page' => isset($page) ? $page : 1,
+        'page_rows' => isset($list_page_rows) ? $list_page_rows : 15,
+    ));
+    if (!empty($nearby)) {
+        $list = $nearby['list'];
+        $total_count = $nearby['total_count'];
+        $write_pages = $nearby['write_pages'];
+    } else {
+        eottae_shop_sort_list_by_distance($list, $eottae_user_coords['lat'], $eottae_user_coords['lng']);
+    }
 }
 $shop_map_markers = eottae_shop_map_markers($list, $bo_table);
 $eottae_maps_enabled = eottae_enqueue_google_maps();
+$eottae_near_enabled = true;
 
 function eottae_shop_build_list_url($bo_table, $params = array())
 {
@@ -95,7 +109,7 @@ function eottae_shop_build_list_url($bo_table, $params = array())
 
         <nav class="shop-near-sort" aria-label="정렬">
             <?php foreach ($sort_links as $link) {
-                if (!empty($link['disabled'])) {
+                if (!empty($link['disabled']) && $link['sst'] !== 'near') {
                     ?>
             <span class="shop-near-sort__item is-disabled" title="Google Maps API 키 설정 후 이용 가능"><?php echo $link['label']; ?></span>
                     <?php
@@ -169,7 +183,7 @@ function fboardlist_submit(f) {
 
 (function () {
     var geoBtn = document.getElementById('shopNearGeoBtn');
-    var mapsEnabled = <?php echo $eottae_maps_enabled ? 'true' : 'false'; ?>;
+    var nearEnabled = <?php echo $eottae_near_enabled ? 'true' : 'false'; ?>;
 
     function redirectWithCoords(lat, lng, withNear) {
         var u = new URL(window.location.href);
@@ -183,8 +197,8 @@ function fboardlist_submit(f) {
     }
 
     function requestLocation(withNear) {
-        if (!mapsEnabled) {
-            alert('Google Maps API 키 설정 후 현재 위치 기반 검색이 가능합니다.');
+        if (!nearEnabled) {
+            alert('현재 위치 기반 검색을 사용할 수 없습니다.');
             return;
         }
         if (!navigator.geolocation) {
