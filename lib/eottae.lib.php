@@ -1246,7 +1246,8 @@ if (!function_exists('eottae_user_reviewed_shop')) {
 
         $write_table = eottae_review_write_table();
         $row = sql_fetch(" select wr_id from {$write_table}
-            where wr_is_comment = 0 and mb_id = '{$mb_id}' and wr_1 = '{$shop_wr_id}' limit 1 ");
+            where wr_is_comment = 0 and mb_id = '{$mb_id}' and wr_1 = '{$shop_wr_id}'
+              and (wr_4 = '' or wr_4 = 'visible') limit 1 ");
 
         return !empty($row['wr_id']);
     }
@@ -1725,7 +1726,7 @@ if (!function_exists('eottae_hide_review')) {
         }
 
         $write_table = eottae_review_write_table();
-        $row = sql_fetch(" select wr_id, mb_id, wr_4 from {$write_table}
+        $row = sql_fetch(" select wr_id, mb_id, wr_1, wr_4 from {$write_table}
             where wr_id = '{$review_wr_id}' and wr_is_comment = 0 limit 1 ");
         if (empty($row['wr_id'])) {
             return array('ok' => false, 'message' => '리뷰를 찾을 수 없습니다.');
@@ -1737,6 +1738,11 @@ if (!function_exists('eottae_hide_review')) {
         sql_query(" update {$write_table} set wr_4 = 'hidden' where wr_id = '{$review_wr_id}' ");
         if (!empty($row['mb_id'])) {
             eottae_revoke_review_points($row['mb_id'], $review_wr_id);
+        }
+
+        $shop_wr_id = (int) $row['wr_1'];
+        if ($shop_wr_id > 0 && function_exists('eottae_sync_shop_review_stats')) {
+            eottae_sync_shop_review_stats($shop_wr_id);
         }
 
         return array('ok' => true, 'message' => '리뷰가 숨김 처리되었습니다.');

@@ -1601,6 +1601,7 @@
     initReviewModal();
     initReviewReply();
     initReviewLoadMore();
+    initReviewDelete();
     initShopSave();
     initShopDetailGallery();
     initShopDetailContentEditor();
@@ -1764,6 +1765,90 @@
           btn.disabled = false;
           btn.textContent = label;
         });
+    });
+  }
+
+  function initReviewDelete() {
+    function postReviewDelete(action, btn) {
+      var reviewId = btn.getAttribute('data-review-id');
+      var shopId = btn.getAttribute('data-shop-id');
+      var token = btn.getAttribute('data-delete-token') || '';
+      var fd = new FormData();
+      fd.append('action', action);
+      fd.append('review_wr_id', reviewId);
+      fd.append('shop_wr_id', shopId);
+      fd.append('eottae_review_delete_token', token);
+
+      btn.disabled = true;
+      return fetch('/proc/eottae-review-delete.php', {
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin',
+      })
+        .then(function (res) { return parseJsonResponse(res); })
+        .then(function (data) {
+          btn.disabled = false;
+          if (!data.success) {
+            alert(data.message || '처리에 실패했습니다.');
+            return;
+          }
+          var card = btn.closest('.review-card');
+          if (card) {
+            card.remove();
+          } else {
+            window.location.reload();
+          }
+        })
+        .catch(function () {
+          btn.disabled = false;
+          alert('네트워크 오류가 발생했습니다.');
+        });
+    }
+
+    document.addEventListener('click', function (e) {
+      var superBtn = e.target.closest('[data-review-super-delete]');
+      if (superBtn) {
+        e.preventDefault();
+        if (!confirm('이 리뷰를 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.')) return;
+        postReviewDelete('super_delete', superBtn);
+        return;
+      }
+
+      var reqBtn = e.target.closest('[data-review-delete-request]');
+      if (reqBtn) {
+        e.preventDefault();
+        var reason = window.prompt('삭제 요청 사유 (선택):', '');
+        if (reason === null) return;
+        var reviewId = reqBtn.getAttribute('data-review-id');
+        var shopId = reqBtn.getAttribute('data-shop-id');
+        var token = reqBtn.getAttribute('data-delete-token') || '';
+        var fd = new FormData();
+        fd.append('action', 'request');
+        fd.append('review_wr_id', reviewId);
+        fd.append('shop_wr_id', shopId);
+        fd.append('eottae_review_delete_token', token);
+        if (reason) fd.append('reason', reason);
+
+        reqBtn.disabled = true;
+        fetch('/proc/eottae-review-delete.php', { method: 'POST', body: fd, credentials: 'same-origin' })
+          .then(function (res) { return parseJsonResponse(res); })
+          .then(function (data) {
+            reqBtn.disabled = false;
+            if (!data.success) {
+              alert(data.message || '요청에 실패했습니다.');
+              return;
+            }
+            alert(data.message || '삭제 요청이 접수되었습니다.');
+            var foot = reqBtn.closest('.review-card__foot');
+            if (foot) {
+              foot.innerHTML = '<span class="review-card__delete-pending">삭제 검토 중</span>';
+            }
+          })
+          .catch(function () {
+            reqBtn.disabled = false;
+            alert('네트워크 오류가 발생했습니다.');
+          });
+      }
     });
   }
 

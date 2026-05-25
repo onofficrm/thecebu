@@ -23,9 +23,11 @@ if (!function_exists('eottae_review_cards_html')) {
 if (!function_exists('eottae_review_section_html')) {
     function eottae_review_section_html($shop_wr_id, $shop_name = '')
     {
-        global $is_member, $member;
+        global $is_member, $member, $is_admin;
 
         eottae_load_component('review-card');
+        include_once G5_LIB_PATH.'/eottae-review-delete.lib.php';
+        eottae_review_delete_ensure_schema();
 
         $shop_wr_id = (int) $shop_wr_id;
         $shop_name = $shop_name !== '' ? get_text($shop_name) : '';
@@ -40,8 +42,22 @@ if (!function_exists('eottae_review_section_html')) {
         $login_url = eottae_login_url($return_url);
         $token = eottae_review_token(true);
         $reply_token = eottae_review_reply_token(true);
+        $delete_token = eottae_review_delete_token(true);
         $owns_shop = $is_member && $is_biz && eottae_business_owns_shop($member['mb_id'], $shop_wr_id);
         $show_biz_reply = $owns_shop;
+        $show_super_delete = $is_admin === 'super';
+        $show_biz_delete_request = $owns_shop && $is_admin !== 'super';
+        $pending_delete_ids = ($show_biz_delete_request || $show_super_delete)
+            ? eottae_review_delete_pending_ids_for_shop($shop_wr_id)
+            : array();
+        $review_card_opts = array(
+            'show_reply_btn' => $show_biz_reply,
+            'reply_token' => $reply_token,
+            'shop_wr_id' => $shop_wr_id,
+            'show_super_delete' => $show_super_delete,
+            'show_biz_delete_request' => $show_biz_delete_request,
+            'delete_token' => $delete_token,
+        );
 
         ob_start();
         ?>
@@ -82,11 +98,13 @@ if (!function_exists('eottae_review_section_html')) {
             </div>
             <?php } else { ?>
             <div class="review-summary__list" data-review-list>
-                <?php echo eottae_review_cards_html($reviews, array(
-                    'show_reply_btn' => $show_biz_reply,
-                    'reply_token' => $reply_token,
-                    'shop_wr_id' => $shop_wr_id,
-                )); ?>
+                <?php
+                foreach ($reviews as $review) {
+                    $card_opts = $review_card_opts;
+                    $card_opts['delete_pending'] = !empty($pending_delete_ids[(int) $review['wr_id']]);
+                    echo eottae_review_card_html($review, $card_opts);
+                }
+                ?>
             </div>
             <?php if ($has_more_reviews) { ?>
             <div class="review-summary__more-wrap">

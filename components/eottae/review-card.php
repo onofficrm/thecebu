@@ -39,6 +39,11 @@ if (!function_exists('eottae_review_card_html')) {
         $show_reply_btn = !empty($opts['show_reply_btn']);
         $reply_token = isset($opts['reply_token']) ? (string) $opts['reply_token'] : '';
         $shop_wr_id = isset($opts['shop_wr_id']) ? (int) $opts['shop_wr_id'] : (int) ($review['shop_id'] ?? 0);
+        $show_super_delete = !empty($opts['show_super_delete']);
+        $show_biz_delete_request = !empty($opts['show_biz_delete_request']);
+        $delete_token = isset($opts['delete_token']) ? (string) $opts['delete_token'] : '';
+        $delete_pending = !empty($opts['delete_pending']);
+        $show_delete_actions = ($show_super_delete || ($show_biz_delete_request && !$delete_pending)) && $delete_token !== '' && $shop_wr_id > 0;
         $has_biz_reply = false;
         if (!empty($review['replies'])) {
             foreach ($review['replies'] as $reply_row) {
@@ -110,6 +115,27 @@ if (!function_exists('eottae_review_card_html')) {
                     <textarea id="review-reply-<?php echo (int) $review['wr_id']; ?>" name="content" required minlength="2" maxlength="500" rows="3" placeholder="고객 리뷰에 답변을 남겨 주세요."></textarea>
                     <button type="submit" class="review-card__reply-submit">답변 등록</button>
                 </form>
+            </footer>
+            <?php } ?>
+            <?php if ($delete_pending || $show_delete_actions) { ?>
+            <footer class="review-card__foot review-card__foot--admin">
+                <?php if ($delete_pending) { ?>
+                <span class="review-card__delete-pending">삭제 검토 중</span>
+                <?php } elseif ($show_super_delete) { ?>
+                <button type="button"
+                    class="review-card__delete-btn review-card__delete-btn--super"
+                    data-review-super-delete
+                    data-review-id="<?php echo (int) $review['wr_id']; ?>"
+                    data-shop-id="<?php echo $shop_wr_id; ?>"
+                    data-delete-token="<?php echo get_text($delete_token); ?>">리뷰 삭제</button>
+                <?php } elseif ($show_biz_delete_request) { ?>
+                <button type="button"
+                    class="review-card__delete-btn review-card__delete-btn--request"
+                    data-review-delete-request
+                    data-review-id="<?php echo (int) $review['wr_id']; ?>"
+                    data-shop-id="<?php echo $shop_wr_id; ?>"
+                    data-delete-token="<?php echo get_text($delete_token); ?>">삭제 요청</button>
+                <?php } ?>
             </footer>
             <?php } ?>
         </article>

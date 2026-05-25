@@ -1598,6 +1598,28 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   background: none;
 }
 
+.shop-map-panel--embed .shop-map-panel__canvas {
+  background: none;
+}
+
+.shop-map-panel__embed {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.shop-map-panel__placeholder--desc {
+  top: auto;
+  bottom: 24%;
+  inset: auto 16px;
+  height: auto;
+  font-size: 13px;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
 .shop-map-panel__map {
   position: absolute;
   inset: 0;
@@ -3791,53 +3813,85 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   display: none;
 }
 
-.auth-layout__card #sns_login .sns-wrap,
-.auth-layout__card #sns_register .sns-wrap {
+/* Google / SNS auth buttons */
+.eottae-social-auth {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   margin: 0;
 }
 
-.auth-layout__card #sns_login .sns-icon,
-.auth-layout__card #sns_register .sns-icon {
+.eottae-google-auth,
+.eottae-social-auth__btn {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 12px;
   width: 100%;
   min-height: 48px;
   margin: 0;
-  padding: 0 16px 0 48px;
+  padding: 0 20px;
   border-radius: var(--eottae-radius-sm);
   text-decoration: none;
   box-sizing: border-box;
-}
-
-.auth-layout__card #sns_login .sns-google,
-.auth-layout__card #sns_register .sns-google {
-  background-color: #fff;
-  color: #1f2937;
-  border: 1px solid #e2e8f0;
-}
-
-.auth-layout__card #sns_login .sns-google .ico,
-.auth-layout__card #sns_register .sns-google .ico {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.auth-layout__card #sns_login .sns-google .txt,
-.auth-layout__card #sns_register .sns-google .txt {
-  position: static;
-  line-height: 1.2;
   font-size: 15px;
-  font-weight: 700;
-  overflow: visible;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  transition: background 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
 }
 
-.auth-layout__card #sns_login .sns-google .txt i,
-.auth-layout__card #sns_register .sns-google .txt i {
-  font-style: normal;
+.eottae-google-auth {
+  background: #fff;
+  color: #3c4043;
+  border: 1px solid #dadce0;
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.06);
+}
+
+.eottae-google-auth:hover {
+  background: #f8faff;
+  border-color: #c6dafc;
+  box-shadow: 0 2px 6px rgba(60, 64, 67, 0.1);
+  color: #202124;
+  text-decoration: none;
+}
+
+.eottae-google-auth:active {
+  background: #f1f3f4;
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.08);
+  transform: translateY(1px);
+}
+
+.eottae-google-auth__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.eottae-google-auth__label {
+  white-space: nowrap;
+}
+
+.eottae-social-auth__btn--naver {
+  background: #03c75a;
+  color: #fff;
+  border: 1px solid #02b351;
+}
+
+.eottae-social-auth__btn--kakao {
+  background: #fee500;
+  color: #191919;
+  border: 1px solid #e5cf00;
+}
+
+.eottae-social-auth__btn--naver:hover,
+.eottae-social-auth__btn--kakao:hover {
+  text-decoration: none;
+  filter: brightness(0.98);
 }
 
 .auth-member-type {
@@ -4438,6 +4492,83 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 .review-card__reply-submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.review-card__foot--admin {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--eottae-border, #e8ecf1);
+}
+
+.review-card__delete-btn {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.review-card__delete-btn--super {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.review-card__delete-btn--request {
+  background: #fff;
+  color: #64748b;
+  border-color: #e2e8f0;
+}
+
+.review-card__delete-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.review-card__delete-pending {
+  font-size: 12px;
+  font-weight: 600;
+  color: #b45309;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.review-delete-admin-page__pending {
+  color: #b45309;
+}
+
+.review-delete-admin-list__review {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #334155;
+}
+
+.review-delete-admin-list__rating {
+  display: inline-block;
+  margin-right: 6px;
+  font-weight: 700;
+  color: var(--eottae-primary, #0d9488);
+}
+
+.review-delete-admin-list__reason {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.event-promo-page__admin-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 8px;
 }
 
 .eottae-review-modal {

@@ -16,6 +16,8 @@ if (!defined('_GNUBOARD_')) {
 }
 
 include_once G5_LIB_PATH.'/eottae.lib.php';
+include_once G5_LIB_PATH.'/eottae-review-delete.lib.php';
+eottae_review_delete_ensure_schema();
 eottae_load_component('review-section');
 
 $shop_wr_id = isset($_GET['shop_wr_id']) ? (int) $_GET['shop_wr_id'] : 0;
@@ -35,24 +37,47 @@ $reviews = eottae_get_shop_reviews($shop_wr_id, $limit, $offset);
 
 $show_biz_reply = false;
 $reply_token = '';
+$delete_token = '';
+$show_super_delete = $is_admin === 'super';
+$show_biz_delete_request = false;
+$pending_delete_ids = array();
+
 if ($is_member && eottae_is_business_member($member) && eottae_business_owns_shop($member['mb_id'], $shop_wr_id)) {
     $show_biz_reply = true;
     $reply_token = eottae_review_reply_token(false);
+    if ($is_admin !== 'super') {
+        $show_biz_delete_request = true;
+        $delete_token = eottae_review_delete_token(false);
+        $pending_delete_ids = eottae_review_delete_pending_ids_for_shop($shop_wr_id);
+    }
+}
+if ($show_super_delete) {
+    $delete_token = eottae_review_delete_token(false);
+    $pending_delete_ids = eottae_review_delete_pending_ids_for_shop($shop_wr_id);
 }
 
 $card_opts = array(
     'show_reply_btn' => $show_biz_reply,
-    'reply_token'      => $reply_token,
-    'shop_wr_id'       => $shop_wr_id,
+    'reply_token' => $reply_token,
+    'shop_wr_id' => $shop_wr_id,
+    'show_super_delete' => $show_super_delete,
+    'show_biz_delete_request' => $show_biz_delete_request,
+    'delete_token' => $delete_token,
 );
 
 $html = '';
 if (function_exists('eottae_review_cards_html')) {
-    $html = eottae_review_cards_html($reviews, $card_opts);
+    foreach ($reviews as $review) {
+        $opts = $card_opts;
+        $opts['delete_pending'] = !empty($pending_delete_ids[(int) $review['wr_id']]);
+        $html .= eottae_review_card_html($review, $opts);
+    }
 } else {
     eottae_load_component('review-card');
     foreach ($reviews as $review) {
-        $html .= eottae_review_card_html($review, $card_opts);
+        $opts = $card_opts;
+        $opts['delete_pending'] = !empty($pending_delete_ids[(int) $review['wr_id']]);
+        $html .= eottae_review_card_html($review, $opts);
     }
 }
 

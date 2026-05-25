@@ -50,5 +50,4 @@ jobs:
             *.log
             .env
             .env.*
-            _site.config.local.php
             data/dbconfig.local.php

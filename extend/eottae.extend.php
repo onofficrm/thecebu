@@ -13,12 +13,16 @@ include_once G5_LIB_PATH.'/eottae-shop-owner.lib.php';
 
 include_once G5_LIB_PATH.'/eottae-business-coupon.lib.php';
 include_once G5_LIB_PATH.'/eottae-promo-coupon.lib.php';
+include_once G5_LIB_PATH.'/eottae-review-delete.lib.php';
 
 if (function_exists('eottae_business_coupon_ensure_schema')) {
     eottae_business_coupon_ensure_schema();
 }
 if (function_exists('eottae_promo_coupon_ensure_schema')) {
     eottae_promo_coupon_ensure_schema();
+}
+if (function_exists('eottae_review_delete_ensure_schema')) {
+    eottae_review_delete_ensure_schema();
 }
 if (function_exists('eottae_ad_ensure_table')) {
     eottae_ad_ensure_table();
@@ -360,6 +364,32 @@ if (!function_exists('eottae_load_media_board_assets')) {
     }
 }
 add_event('board_head_before', 'eottae_load_media_board_assets', 5);
+
+if (!function_exists('eottae_load_shop_board_map_assets')) {
+    function eottae_load_shop_board_map_assets()
+    {
+        global $board;
+
+        if (empty($board['bo_table']) || !function_exists('eottae_is_shop_board') || !eottae_is_shop_board($board['bo_table'])) {
+            return;
+        }
+
+        $wr_id = isset($_GET['wr_id']) ? (int) $_GET['wr_id'] : 0;
+        if ($wr_id > 0) {
+            return;
+        }
+
+        $w = isset($_GET['w']) ? trim((string) $_GET['w']) : '';
+        if ($w !== '') {
+            return;
+        }
+
+        if (function_exists('eottae_enqueue_google_maps')) {
+            eottae_enqueue_google_maps();
+        }
+    }
+}
+add_event('board_head_before', 'eottae_load_shop_board_map_assets', 6);
 
 if (function_exists('eottae_shop_apply_segment_board_context')) {
     eottae_shop_apply_segment_board_context();

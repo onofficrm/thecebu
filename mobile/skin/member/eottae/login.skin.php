@@ -41,7 +41,10 @@ $eottae_auth_site_title = isset($g5_site_title) ? get_text($g5_site_title) : '�
 
         <?php if (function_exists('get_social_skin_path') && !empty($config['cf_social_login_use'])) { ?>
         <div class="auth-layout__divider" aria-hidden="true"><span>또는</span></div>
-        <?php @include_once(get_social_skin_path().'/social_login.skin.php'); ?>
+        <?php
+        eottae_load_component('social-auth');
+        echo eottae_render_social_auth('login', isset($urlencode) ? $urlencode : '');
+        ?>
         <?php } ?>
 
         <div class="auth-layout__links">
