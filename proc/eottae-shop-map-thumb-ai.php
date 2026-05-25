@@ -1,0 +1,126 @@
+<?php
+/**
+ * 업체 등록 — 지도 썸네일 AI 생성
+ */
+include_once dirname(__DIR__).'/common.php';
+include_once G5_LIB_PATH.'/eottae.lib.php';
+
+header('Content-Type: application/json; charset=utf-8');
+
+if (empty($is_member)) {
+    echo json_encode(array('success' => false, 'message' => '로그인 후 이용해 주세요.'), JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+if (!function_exists('g5site_cfg') && is_file(G5_PATH.'/_site.config.php')) {
+    include_once G5_PATH.'/_site.config.php';
+}
+
+$enabled = function_exists('g5site_cfg_bool') ? g5site_cfg_bool('ai_generate_enabled', false) : false;
+$api_key = function_exists('g5site_cfg') ? trim((string) g5site_cfg('ai_generate_api_key', '')) : '';
+$model = function_exists('g5site_cfg') ? trim((string) g5site_cfg('ai_generate_image_model', 'gpt-image-1')) : 'gpt-image-1';
+if ($model === '') {
+    $model = 'gpt-image-1';
+}
+
+if (!$enabled || $api_key === '') {
+    echo json_encode(array('success' => false, 'message' => 'AI 이미지 생성 API 키가 설정되지 않았습니다.'), JSON_UNESCAPED_UNICODE);
+    exit;
+}
+if (!function_exists('curl_init')) {
+    echo json_encode(array('success' => false, 'message' => '서버 PHP cURL 확장이 필요합니다.'), JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$bo_table = isset($_POST['bo_table']) ? preg_replace('/[^a-z0-9_]/i', '', (string) $_POST['bo_table']) : '';
+if ($bo_table === '' || !function_exists('eottae_is_shop_board') || !eottae_is_shop_board($bo_table)) {
+    echo json_encode(array('success' => false, 'message' => '업체 게시판에서만 이용할 수 있습니다.'), JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$name = isset($_POST['name']) ? trim(strip_tags((string) $_POST['name'])) : '';
+$category = isset($_POST['category']) ? trim(strip_tags((string) $_POST['category'])) : '';
+$region = isset($_POST['region']) ? trim(strip_tags((string) $_POST['region'])) : '';
+$address = isset($_POST['address']) ? trim(strip_tags((string) $_POST['address'])) : '';
+$intro = isset($_POST['intro']) ? trim(strip_tags((string) $_POST['intro'])) : '';
+
+if ($name === '') {
+    echo json_encode(array('success' => false, 'message' => '업체명을 먼저 입력해 주세요.'), JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$prompt = "Create a clean square map marker thumbnail for a Cebu local business listing.\n"
+    ."Style: modern travel/local directory thumbnail, photorealistic but polished, bright natural light, no text, no logo, no watermark.\n"
+    ."Composition: centered subject, simple background, readable at small marker size, suitable for Google Maps pin.\n"
+    ."Business name: {$name}\n"
+    ."Category: {$category}\n"
+    ."Region: {$region}\n"
+    ."Address: {$address}\n"
+    ."Description: {$intro}";
+
+$payload = array(
+    'model' => $model,
+    'prompt' => $prompt,
+    'size' => '1024x1024',
+    'n' => 1,
+);
+
+$ch = curl_init('https://api.openai.com/v1/images/generations');
+curl_setopt_array($ch, array(
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_POST => true,
+    CURLOPT_HTTPHEADER => array(
+        'Content-Type: application/json',
+        'Authorization: Bearer '.$api_key,
+    ),
+    CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
+    CURLOPT_TIMEOUT => 60,
+));
+
+$raw = curl_exec($ch);
+$curl_error = curl_error($ch);
+$http_code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+if ($raw === false || $raw === '' || $http_code < 200 || $http_code >= 300) {
+    echo json_encode(array(
+        'success' => false,
+        'message' => 'AI 썸네일 생성에 실패했습니다.',
+        'debug' => $curl_error !== '' ? $curl_error : 'HTTP '.$http_code,
+    ), JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$decoded = json_decode($raw, true);
+$b64 = isset($decoded['data'][0]['b64_json']) ? (string) $decoded['data'][0]['b64_json'] : '';
+if ($b64 === '') {
+    echo json_encode(array('success' => false, 'message' => 'AI 이미지 응답을 해석하지 못했습니다.'), JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$bin = base64_decode($b64, true);
+if ($bin === false || $bin === '') {
+    echo json_encode(array('success' => false, 'message' => 'AI 이미지 변환에 실패했습니다.'), JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$dir = eottae_shop_map_thumb_tmp_dir();
+if (!is_dir($dir)) {
+    @mkdir($dir, G5_DIR_PERMISSION, true);
+    @chmod($dir, G5_DIR_PERMISSION);
+}
+
+$file = 'ai_'.date('YmdHis').'_'.substr(md5(uniqid('', true)), 0, 12).'.png';
+if (@file_put_contents($dir.'/'.$file, $bin) === false) {
+    echo json_encode(array('success' => false, 'message' => 'AI 이미지 저장에 실패했습니다.'), JSON_UNESCAPED_UNICODE);
+    exit;
+}
+@chmod($dir.'/'.$file, G5_FILE_PERMISSION);
+
+echo json_encode(array(
+    'success' => true,
+    'data' => array(
+        'tmp' => $file,
+        'url' => eottae_shop_map_thumb_tmp_url_base().'/'.$file,
+    ),
+), JSON_UNESCAPED_UNICODE);

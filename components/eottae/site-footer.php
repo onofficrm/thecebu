@@ -4,6 +4,7 @@ if (!defined('_GNUBOARD_')) {
 }
 
 $eottae_footer_title = isset($g5_site_title) ? $g5_site_title : (function_exists('g5site_cfg') ? g5site_cfg('site_name', '세부어때') : '세부어때');
+$eottae_footer_logo_url = function_exists('g5site_cfg_url') ? g5site_cfg_url('footer_logo_path', '') : '';
 $eottae_footer_tel = function_exists('g5site_cfg') ? g5site_cfg('phone', '0917-123-4567') : '0917-123-4567';
 $eottae_footer_email = function_exists('g5site_cfg') ? g5site_cfg('email', 'help@thecebu.co.kr') : 'help@thecebu.co.kr';
 $eottae_footer_shop_url = function_exists('eottae_shop_list_url') ? eottae_shop_list_url() : G5_BBS_URL.'/board.php?bo_table='.EOTTae_SHOP_TABLE;
@@ -24,7 +25,13 @@ $eottae_footer_year = date('Y');
         <div class="eottae-gnb-footer__panel">
             <div class="eottae-gnb-footer__grid">
                 <div class="eottae-gnb-footer__brand">
-                    <p class="eottae-gnb-footer__logo"><?php echo get_text($eottae_footer_title); ?></p>
+                    <p class="eottae-gnb-footer__logo">
+                        <?php if ($eottae_footer_logo_url !== '') { ?>
+                        <img src="<?php echo $eottae_footer_logo_url; ?>" alt="<?php echo get_text($eottae_footer_title); ?>" class="eottae-gnb-footer__logo-img">
+                        <?php } else { ?>
+                        <?php echo get_text($eottae_footer_title); ?>
+                        <?php } ?>
+                    </p>
                     <p class="eottae-gnb-footer__desc">필리핀 세부 교민, 사업자, 관광객을 위한 최고의 위치기반 생활정보 커뮤니티 플랫폼.</p>
                 </div>
 
@@ -43,6 +50,8 @@ $eottae_footer_year = date('Y');
                         <li><span>고객센터 <?php echo get_text($eottae_footer_tel); ?></span></li>
                         <li><a href="mailto:<?php echo get_text($eottae_footer_email); ?>"><?php echo get_text($eottae_footer_email); ?></a></li>
                         <li><a href="<?php echo $eottae_footer_inquiry; ?>">문의하기</a></li>
+                        <li><a href="<?php echo G5_URL; ?>/page/eottae-coupon-guide.php">쿠폰 사용 안내</a></li>
+                        <li><a href="<?php echo G5_URL; ?>/page/eottae-business-coupon-guide.php">사업자 쿠폰 발행 안내</a></li>
                     </ul>
                 </div>
             </div>

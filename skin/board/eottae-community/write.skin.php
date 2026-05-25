@@ -6,6 +6,19 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
 
 $community_tabs = eottae_community_category_tabs($board);
 $write_category = $sca !== '' ? $sca : (isset($write['ca_name']) ? get_text($write['ca_name']) : '');
+
+$snippet_prefill_id = 0;
+if ($w !== 'u' && !empty($is_member) && function_exists('eottae_is_business_member') && eottae_is_business_member($member)) {
+    include_once G5_LIB_PATH.'/eottae-business-snippet.lib.php';
+    $snippet_prefill_id = isset($_GET['snippet_id']) ? (int) $_GET['snippet_id'] : 0;
+    if ($snippet_prefill_id > 0) {
+        $snippet_prefill = eottae_business_snippet_get($member['mb_id'], $snippet_prefill_id);
+        if (!empty($snippet_prefill)) {
+            $subject = $snippet_prefill['wr_subject'];
+            $content = $snippet_prefill['wr_content'];
+        }
+    }
+}
 ?>
 
 <div class="community-write-page board-wrap board-wrap--eottae-community" id="bo_w" style="width:<?php echo $width; ?>">
@@ -39,6 +52,8 @@ $write_category = $sca !== '' ? $sca : (isset($write['ca_name']) ? get_text($wri
         </select>
     </div>
     <?php } ?>
+
+    <?php include G5_PATH.'/components/eottae/business-write-snippets.php'; ?>
 
     <div class="community-write-page__field">
         <label for="wr_subject">제목</label>

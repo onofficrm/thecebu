@@ -6,6 +6,7 @@ include_once(G5_LIB_PATH.'/eottae.lib.php');
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
 
 $shop = eottae_shop_from_write($view);
+$shop_sns_links = eottae_shop_sns_links($shop['sns']);
 eottae_enqueue_google_maps();
 eottae_track_recent_shop($view['wr_id']);
 $shop_is_saved = $is_member && eottae_is_shop_saved($member['mb_id'], $view['wr_id']);
@@ -19,6 +20,7 @@ $shop_map = array(
     'address' => $shop['address'],
     'lat'     => $shop['lat'],
     'lng'     => $shop['lng'],
+    'thumbnail' => function_exists('eottae_shop_map_thumb_get') ? eottae_shop_map_thumb_get($bo_table, (int) $view['wr_id']) : array(),
 );
 $is_ad = isset($view['wr_link2']) && stripos((string) $view['wr_link2'], 'ad') !== false;
 ?>
@@ -85,7 +87,7 @@ $is_ad = isset($view['wr_link2']) && stripos((string) $view['wr_link2'], 'ad') !
                     <?php if ($shop['hours']) { ?><div><dt>영업시간</dt><dd><?php echo $shop['hours']; ?></dd></div><?php } ?>
                     <?php if ($shop['closed']) { ?><div><dt>휴무일</dt><dd><?php echo $shop['closed']; ?></dd></div><?php } ?>
                     <?php if ($shop['website']) { ?><div><dt>홈페이지</dt><dd><a href="<?php echo $shop['website']; ?>" target="_blank" rel="noopener noreferrer">바로가기</a></dd></div><?php } ?>
-                    <?php if ($shop['sns'] && stripos($shop['sns'], 'ad') === false) { ?><div><dt>SNS</dt><dd><a href="<?php echo $shop['sns']; ?>" target="_blank" rel="noopener noreferrer">SNS</a></dd></div><?php } ?>
+                    <?php foreach ($shop_sns_links as $sns_link) { ?><div><dt><?php echo $sns_link['label']; ?></dt><dd><a href="<?php echo $sns_link['url']; ?>" target="_blank" rel="noopener noreferrer">바로가기</a></dd></div><?php } ?>
                 </dl>
             </section>
 

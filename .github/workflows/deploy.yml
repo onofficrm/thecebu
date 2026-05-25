@@ -13,12 +13,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Inject Google Maps API key
+      - name: Inject local site config secrets
         env:
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          if [ -n "${GOOGLE_MAPS_API_KEY}" ]; then
-            php -r 'file_put_contents("_site.config.local.php", "<?php\nif (!defined(\"_GNUBOARD_\")) exit;\n\$site_config_override = array(\n    \"google_maps_api_key\" => ".var_export(getenv("GOOGLE_MAPS_API_KEY"), true).",\n);\n");'
+          if [ -n "${GOOGLE_MAPS_API_KEY}" ] || [ -n "${OPENAI_API_KEY}" ]; then
+            php -r '$cfg=array(); if(getenv("GOOGLE_MAPS_API_KEY")){$cfg["google_maps_api_key"]=getenv("GOOGLE_MAPS_API_KEY");} if(getenv("OPENAI_API_KEY")){$cfg["ai_generate_enabled"]=true; $cfg["ai_generate_api_key"]=getenv("OPENAI_API_KEY");} file_put_contents("_site.config.local.php", "<?php\nif (!defined(\"_GNUBOARD_\")) exit;\n\$site_config_override = ".var_export($cfg, true).";\n");'
           fi
 
       - name: Deploy via FTP

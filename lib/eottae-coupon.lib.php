@@ -246,7 +246,9 @@ if (!function_exists('eottae_coupon_get_member_list')) {
             $where .= " and i.ci_status = '{$status}' ";
         }
 
-        $sql = " select i.*, c.cp_code, c.cp_title, c.cp_desc, c.cp_type
+        $sql = " select i.*, c.cp_code, c.cp_title, c.cp_desc, c.cp_type,
+            c.cp_benefit_type, c.cp_percent, c.cp_free_item, c.cp_min_amount,
+            c.cp_condition_menu, c.cp_order_benefit, c.cp_owner_mb_id, c.cp_expires_at
             from {$g5['eottae_coupon_issue_table']} i
             inner join {$g5['eottae_coupon_table']} c on c.cp_id = i.cp_id
             where {$where}
@@ -285,13 +287,24 @@ if (!function_exists('eottae_coupon_use')) {
         if (empty($row['ci_id'])) {
             return array('ok' => false, 'message' => '쿠폰을 찾을 수 없습니다.');
         }
+
+        $coupon = sql_fetch(" select cp_type from {$g5['eottae_coupon_table']} where cp_id = '".(int) $row['cp_id']."' limit 1 ");
+        $cp_type = !empty($coupon['cp_type']) ? (string) $coupon['cp_type'] : '';
+
         if ($row['ci_status'] !== 'active') {
             return array('ok' => false, 'message' => '이미 사용되었거나 만료된 쿠폰입니다.');
+        }
+
+        $extra = '';
+        if ($cp_type === 'business' && function_exists('eottae_business_coupon_ensure_schema')) {
+            eottae_business_coupon_ensure_schema();
+            $extra = ", ci_redeemed_by_mb_id = '{$mb_id}' ";
         }
 
         sql_query(" update {$g5['eottae_coupon_issue_table']} set
             ci_status = 'used',
             ci_used_datetime = '".G5_TIME_YMDHIS."'
+            {$extra}
             where ci_id = '{$ci_id}' and mb_id = '{$mb_id}' ");
 
         return array('ok' => true, 'message' => '쿠폰 사용이 완료되었습니다.');

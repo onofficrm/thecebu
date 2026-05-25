@@ -40,11 +40,24 @@
       category: raw.category || '',
       lat: lat,
       lng: lng,
+      thumbnail: raw.thumbnail || '',
       link: raw.link || raw.url || ''
     };
   }
 
+  function markerIcon(loc) {
+    if (!loc.thumbnail) return null;
+    return {
+      url: loc.thumbnail,
+      scaledSize: new global.google.maps.Size(46, 46),
+      anchor: new global.google.maps.Point(23, 46)
+    };
+  }
+
   function markerInfoHtml(loc) {
+    var thumb = loc.thumbnail
+      ? '<img class="marker-info-thumb" src="' + escapeHtml(loc.thumbnail) + '" alt="">'
+      : '';
     var cat = loc.category
       ? '<p class="marker-info-category">' + escapeHtml(loc.category) + '</p>'
       : '';
@@ -56,6 +69,7 @@
         : '';
     return (
       '<div class="marker-info">' +
+      thumb +
       '<h3 class="marker-info-title">' +
       escapeHtml(loc.name) +
       '</h3>' +
@@ -120,7 +134,8 @@
       var marker = new global.google.maps.Marker({
         position: { lat: loc.lat, lng: loc.lng },
         map: self.map,
-        title: loc.name
+        title: loc.name,
+        icon: markerIcon(loc)
       });
       marker.addListener('click', function () {
         self.infoWindow.setContent(markerInfoHtml(loc));
@@ -233,6 +248,7 @@
     this.lat = parseNum(root.dataset.mapLat, NaN);
     this.lng = parseNum(root.dataset.mapLng, NaN);
     this.name = root.dataset.mapName || '업체';
+    this.thumbnail = root.dataset.mapThumbnail || '';
     this.zoom = parseInt(root.dataset.mapZoom, 10) || 15;
     this.map = null;
     this.marker = null;
@@ -257,7 +273,8 @@
     this.marker = new global.google.maps.Marker({
       position: center,
       map: this.map,
-      title: this.name
+      title: this.name,
+      icon: markerIcon({ thumbnail: this.thumbnail })
     });
     this.root.classList.add('is-live');
   };

@@ -142,7 +142,173 @@
       });
     }
 
+    initShopAiGenerator(root);
+    initShopMapThumbAi(root);
     render();
+  }
+
+  function shopSetAiStatus(root, message, isError) {
+    qsa('[data-shop-ai-status]', root).forEach(function (el) {
+      el.textContent = message || '';
+      el.classList.toggle('is-error', !!isError);
+    });
+  }
+
+  function shopAiValue(root, selector) {
+    var el = qs(selector, root);
+    return el ? (el.value || '').trim() : '';
+  }
+
+  function shopFillAiValue(root, selector, value, overwrite) {
+    var el = qs(selector, root);
+    if (!el || !value) return;
+    if (!overwrite && (el.value || '').trim() !== '') return;
+    el.value = value;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  function initShopAiGenerator(root) {
+    var buttons = qsa('[data-shop-ai-generate]', root);
+    if (!buttons.length || !window.fetch) return;
+
+    buttons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var subject = shopAiValue(root, '#wr_subject');
+        if (!subject) {
+          alert('업체명을 먼저 입력해 주세요.');
+          var subjectInput = qs('#wr_subject', root);
+          if (subjectInput) subjectInput.focus();
+          return;
+        }
+
+        var mode = btn.getAttribute('data-shop-ai-generate') || 'all';
+        var form = new FormData();
+        form.append('bo_table', shopAiValue(root, 'input[name="bo_table"]') || 'shop');
+        form.append('name', subject);
+        form.append('category', shopAiValue(root, '#ca_name'));
+        form.append('region', shopAiValue(root, '#wr_2'));
+        form.append('address', shopAiValue(root, '#wr_3'));
+        form.append('phone', shopAiValue(root, '#wr_4'));
+        form.append('hours', shopAiValue(root, '#wr_6'));
+        form.append('closed', shopAiValue(root, '#wr_7'));
+        form.append('website', shopAiValue(root, '#wr_link1'));
+        form.append('instagram', shopAiValue(root, '#eottae_sns_instagram'));
+        form.append('tiktok', shopAiValue(root, '#eottae_sns_tiktok'));
+        form.append('facebook', shopAiValue(root, '#eottae_sns_facebook'));
+        form.append('naver_blog', shopAiValue(root, '#eottae_sns_naver_blog'));
+        form.append('intro', shopAiValue(root, '#wr_content'));
+
+        buttons.forEach(function (b) {
+          b.disabled = true;
+        });
+        shopSetAiStatus(root, 'AI가 업체 소개와 SEO 문구를 작성 중입니다...', false);
+
+        fetch('/proc/eottae-shop-ai-generate.php', {
+          method: 'POST',
+          credentials: 'same-origin',
+          body: form
+        })
+          .then(function (res) { return res.json(); })
+          .then(function (json) {
+            if (!json || !json.success) {
+              throw new Error((json && json.message) || 'AI 자동생성에 실패했습니다.');
+            }
+            var data = json.data || {};
+            if (mode !== 'seo') {
+              shopFillAiValue(root, '#wr_content', data.intro, true);
+            }
+            shopFillAiValue(root, '#eottae_seo_title', data.seo_title, true);
+            shopFillAiValue(root, '#eottae_seo_intro', data.seo_intro, true);
+            shopFillAiValue(root, '#eottae_seo_description', data.meta_description, true);
+            shopFillAiValue(root, '#eottae_seo_keyword', data.focus_keyword, true);
+            shopSetAiStatus(root, 'AI 문구를 입력했습니다. 등록 전 내용이 맞는지 한 번 확인해 주세요.', false);
+          })
+          .catch(function (err) {
+            shopSetAiStatus(root, err.message || 'AI 자동생성에 실패했습니다.', true);
+          })
+          .finally(function () {
+            buttons.forEach(function (b) {
+              b.disabled = false;
+            });
+          });
+      });
+    });
+  }
+
+  function initShopMapThumbAi(root) {
+    var btn = qs('[data-map-thumb-ai-generate]', root);
+    if (!btn || !window.fetch) return;
+
+    btn.addEventListener('click', function () {
+      var subject = shopAiValue(root, '#wr_subject');
+      if (!subject) {
+        alert('업체명을 먼저 입력해 주세요.');
+        var subjectInput = qs('#wr_subject', root);
+        if (subjectInput) subjectInput.focus();
+        return;
+      }
+
+      var status = qs('[data-map-thumb-ai-status]', root);
+      var tmpInput = qs('#eottae_map_thumb_ai_tmp', root);
+      var preview = qs('[data-map-thumb-preview]', root);
+      var previewImg = preview ? qs('img', preview) : null;
+      var fileInput = qs('#eottae_map_thumb', root);
+      var form = new FormData();
+      form.append('bo_table', shopAiValue(root, 'input[name="bo_table"]') || 'shop');
+      form.append('name', subject);
+      form.append('category', shopAiValue(root, '#ca_name'));
+      form.append('region', shopAiValue(root, '#wr_2'));
+      form.append('address', shopAiValue(root, '#wr_3'));
+      form.append('intro', shopAiValue(root, '#wr_content'));
+
+      btn.disabled = true;
+      btn.textContent = 'AI 썸네일 생성 중...';
+      if (status) {
+        status.textContent = '지도 마커용 정사각형 썸네일을 생성하고 있습니다.';
+        status.classList.remove('is-error');
+      }
+
+      fetch('/proc/eottae-shop-map-thumb-ai.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        body: form
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+          if (!json || !json.success) {
+            throw new Error((json && json.message) || 'AI 썸네일 생성에 실패했습니다.');
+          }
+          var data = json.data || {};
+          if (tmpInput) tmpInput.value = data.tmp || '';
+          if (fileInput) fileInput.value = '';
+          if (preview && previewImg && data.url) {
+            previewImg.src = data.url + '?v=' + Date.now();
+            preview.hidden = false;
+          }
+          if (status) status.textContent = 'AI 썸네일을 생성했습니다. 다시 생성 버튼을 누르면 새 이미지로 교체됩니다.';
+        })
+        .catch(function (err) {
+          if (status) {
+            status.textContent = err.message || 'AI 썸네일 생성에 실패했습니다.';
+            status.classList.add('is-error');
+          }
+        })
+        .finally(function () {
+          btn.disabled = false;
+          btn.textContent = preview && !preview.hidden ? 'AI 지도 썸네일 다시 생성' : 'AI 지도 썸네일 생성';
+        });
+    });
+
+    var manualInput = qs('#eottae_map_thumb', root);
+    if (manualInput) {
+      manualInput.addEventListener('change', function () {
+        var tmpInput = qs('#eottae_map_thumb_ai_tmp', root);
+        var preview = qs('[data-map-thumb-preview]', root);
+        if (tmpInput) tmpInput.value = '';
+        if (preview) preview.hidden = true;
+        btn.textContent = 'AI 지도 썸네일 생성';
+      });
+    }
   }
 
   function updateShopRegisterSummary(root) {
@@ -155,6 +321,10 @@
       ['지역', qs('#wr_2', root)],
       ['주소', qs('#wr_3', root)],
       ['전화', qs('#wr_4', root)],
+      ['인스타그램', qs('#eottae_sns_instagram', root)],
+      ['틱톡', qs('#eottae_sns_tiktok', root)],
+      ['페이스북', qs('#eottae_sns_facebook', root)],
+      ['네이버블로그', qs('#eottae_sns_naver_blog', root)],
       ['영업시간', qs('#wr_6', root)],
       ['영업상태', qs('#wr_8', root)],
       ['SEO 타이틀', qs('#eottae_seo_title', root)],
@@ -494,6 +664,399 @@
     start();
   }
 
+  function initBusinessWriteSnippets() {
+    qsa('[data-business-snippets]').forEach(function (root) {
+      bindBusinessSnippetsPanel(root, {
+        subjectInput: qs('#wr_subject'),
+        contentInput: qs('#wr_content'),
+      });
+    });
+  }
+
+  function bindBusinessSnippetsPanel(root, options) {
+    if (!root || !window.fetch) return;
+
+    options = options || {};
+    var toggle = qs('[data-snippets-toggle]', root);
+    var panel = qs('[data-snippets-panel]', root);
+    var listEl = qs('[data-snippets-list]', root);
+    var emptyEl = qs('[data-snippets-empty]', root);
+    var statusEl = qs('[data-snippets-status]', root);
+    var subjectInput = options.subjectInput || qs('#wr_subject');
+    var contentInput = options.contentInput || qs('#wr_content');
+    var isDesktop = window.matchMedia('(min-width: 768px)').matches;
+
+    function setStatus(msg, isError) {
+      if (!statusEl) return;
+      statusEl.textContent = msg || '';
+      statusEl.classList.toggle('is-error', !!isError);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function truncate(text, len) {
+      text = String(text || '').replace(/\s+/g, ' ').trim();
+      if (text.length <= len) return text;
+      return text.slice(0, len) + '…';
+    }
+
+    function applySnippet(snippet, skipConfirm) {
+      if (!snippet) return;
+      var hasExisting = (subjectInput && subjectInput.value.trim()) || (contentInput && contentInput.value.trim());
+      if (!skipConfirm && hasExisting && !window.confirm('현재 작성 중인 제목·내용을 불러온 문구로 바꿀까요?')) {
+        return;
+      }
+      if (subjectInput) subjectInput.value = snippet.wr_subject || '';
+      if (contentInput) contentInput.value = snippet.wr_content || '';
+      setStatus('문구를 불러왔습니다.', false);
+      if (panel && toggle && !isDesktop) {
+        panel.hidden = true;
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    function renderList(items) {
+      if (!listEl) return;
+      listEl.innerHTML = '';
+      var hasItems = items && items.length;
+      if (emptyEl) emptyEl.hidden = !!hasItems;
+      if (!hasItems) return;
+
+      items.forEach(function (item) {
+        var li = document.createElement('li');
+        li.className = 'business-snippets__item';
+        li.innerHTML =
+          '<button type="button" class="business-snippets__apply" data-snippets-apply>' +
+          '<span class="business-snippets__label">' + escapeHtml(item.label || '홍보 문구') + '</span>' +
+          '<span class="business-snippets__preview">' + escapeHtml(truncate(item.wr_content, isDesktop ? 120 : 60)) + '</span>' +
+          '</button>' +
+          '<button type="button" class="business-snippets__delete" data-snippets-delete>삭제</button>';
+        li.querySelector('[data-snippets-apply]').addEventListener('click', function () {
+          applySnippet(item, false);
+        });
+        li.querySelector('[data-snippets-delete]').addEventListener('click', function (e) {
+          e.stopPropagation();
+          if (!window.confirm('이 홍보 문구를 삭제할까요?')) return;
+          deleteSnippet(item.snippet_id);
+        });
+        listEl.appendChild(li);
+      });
+    }
+
+    function loadList() {
+      return fetch('/proc/eottae-business-snippets.php?action=list', { credentials: 'same-origin' })
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+          if (!json || !json.success) {
+            throw new Error((json && json.message) || '문구 목록을 불러오지 못했습니다.');
+          }
+          renderList(json.data || []);
+        })
+        .catch(function (err) {
+          setStatus(err.message, true);
+        });
+    }
+
+    function saveSnippet(label, subject, content, snippetId) {
+      var fd = new FormData();
+      fd.append('action', 'save');
+      if (snippetId) fd.append('snippet_id', String(snippetId));
+      fd.append('label', label || '');
+      fd.append('wr_subject', subject || '');
+      fd.append('wr_content', content || '');
+      return fetch('/proc/eottae-business-snippets.php', { method: 'POST', body: fd, credentials: 'same-origin' })
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+          if (!json || !json.success) {
+            throw new Error((json && json.message) || '저장에 실패했습니다.');
+          }
+          setStatus('자주 쓰는 문구로 저장했습니다.', false);
+          return loadList();
+        });
+    }
+
+    function deleteSnippet(id) {
+      var fd = new FormData();
+      fd.append('action', 'delete');
+      fd.append('snippet_id', String(id));
+      fetch('/proc/eottae-business-snippets.php', { method: 'POST', body: fd, credentials: 'same-origin' })
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+          if (!json || !json.success) {
+            throw new Error((json && json.message) || '삭제에 실패했습니다.');
+          }
+          setStatus('문구를 삭제했습니다.', false);
+          loadList();
+        })
+        .catch(function (err) {
+          setStatus(err.message, true);
+        });
+    }
+
+    function runAiGenerate(button) {
+      var topic = window.prompt('홍보 주제 (선택, 예: 주말 할인, 신메뉴)', '') || '';
+      button.disabled = true;
+      setStatus('AI가 홍보 문구를 작성 중입니다...', false);
+      var fd = new FormData();
+      fd.append('topic', topic);
+      return fetch('/proc/eottae-business-snippet-ai.php', { method: 'POST', body: fd, credentials: 'same-origin' })
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+          if (!json || !json.success) {
+            throw new Error((json && json.message) || 'AI 생성에 실패했습니다.');
+          }
+          return json.data || {};
+        })
+        .finally(function () {
+          button.disabled = false;
+        });
+    }
+
+    if (toggle && panel) {
+      toggle.addEventListener('click', function () {
+        var open = panel.hidden;
+        panel.hidden = !open;
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) loadList();
+      });
+
+      if (isDesktop) {
+        panel.hidden = false;
+        toggle.setAttribute('aria-expanded', 'true');
+        root.classList.add('is-desktop-open');
+        loadList();
+      }
+    }
+
+    var aiBtn = qs('[data-snippets-ai-generate]', root);
+    if (aiBtn) {
+      aiBtn.addEventListener('click', function () {
+        runAiGenerate(aiBtn)
+          .then(function (data) {
+            if (window.confirm('생성된 문구를 글에 적용할까요?')) {
+              applySnippet(data, true);
+            }
+            if (window.confirm('이 문구를 자주 쓰는 목록에 저장할까요?')) {
+              return saveSnippet(data.label, data.wr_subject, data.wr_content);
+            }
+            setStatus('AI 문구를 생성했습니다.', false);
+          })
+          .catch(function (err) {
+            setStatus(err.message, true);
+          });
+      });
+    }
+
+    var saveBtn = qs('[data-snippets-save-current]', root);
+    if (saveBtn) {
+      saveBtn.addEventListener('click', function () {
+        var content = contentInput ? contentInput.value.trim() : '';
+        if (!content) {
+          alert('저장할 내용을 먼저 입력해 주세요.');
+          if (contentInput) contentInput.focus();
+          return;
+        }
+        var subject = subjectInput ? subjectInput.value.trim() : '';
+        var label = window.prompt('문구 이름 (목록에 표시)', subject || '홍보 문구');
+        if (label === null) return;
+        saveBtn.disabled = true;
+        saveSnippet(label, subject, content)
+          .catch(function (err) { setStatus(err.message, true); })
+          .finally(function () { saveBtn.disabled = false; });
+      });
+    }
+  }
+
+  function initBusinessSnippetsManager() {
+    var root = qs('[data-business-snippets-manager]');
+    if (!root || !window.fetch) return;
+
+    var idInput = qs('#business_snippet_id', root);
+    var labelInput = qs('#business_snippet_label', root);
+    var subjectInput = qs('#business_snippet_subject', root);
+    var contentInput = qs('#business_snippet_content', root);
+    var statusEl = qs('[data-manager-status]', root);
+    var listEl = qs('[data-manager-list]', root);
+    var emptyEl = qs('[data-manager-empty]', root);
+    var writeLink = qs('[data-manager-write-link]', root);
+    var communityWriteBase = writeLink ? writeLink.getAttribute('href') : '';
+
+    function setStatus(msg, isError) {
+      if (!statusEl) return;
+      statusEl.textContent = msg || '';
+      statusEl.classList.toggle('is-error', !!isError);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function resetForm() {
+      if (idInput) idInput.value = '0';
+      if (labelInput) labelInput.value = '';
+      if (subjectInput) subjectInput.value = '';
+      if (contentInput) contentInput.value = '';
+      if (writeLink) writeLink.setAttribute('href', communityWriteBase);
+    }
+
+    function fillForm(item) {
+      if (idInput) idInput.value = String(item.snippet_id || 0);
+      if (labelInput) labelInput.value = item.label || '';
+      if (subjectInput) subjectInput.value = item.wr_subject || '';
+      if (contentInput) contentInput.value = item.wr_content || '';
+      if (writeLink && item.snippet_id) {
+        writeLink.setAttribute('href', communityWriteBase + (communityWriteBase.indexOf('?') >= 0 ? '&' : '?') + 'snippet_id=' + item.snippet_id);
+      }
+    }
+
+    function renderList(items) {
+      if (!listEl) return;
+      listEl.innerHTML = '';
+      var hasItems = items && items.length;
+      if (emptyEl) emptyEl.hidden = !!hasItems;
+      if (!hasItems) return;
+
+      items.forEach(function (item) {
+        var li = document.createElement('li');
+        li.className = 'business-snippets-manager__item';
+        li.innerHTML =
+          '<button type="button" class="business-snippets-manager__pick" data-manager-pick>' +
+          '<strong>' + escapeHtml(item.label || '홍보 문구') + '</strong>' +
+          '<span>' + escapeHtml(item.wr_subject || '') + '</span>' +
+          '</button>' +
+          '<div class="business-snippets-manager__item-actions">' +
+          '<a href="' + escapeHtml(communityWriteBase + (communityWriteBase.indexOf('?') >= 0 ? '&' : '?') + 'snippet_id=' + item.snippet_id) + '" class="business-snippets__btn business-snippets__btn--link">글쓰기</a>' +
+          '<button type="button" class="business-snippets__delete" data-manager-delete>삭제</button>' +
+          '</div>';
+        li.querySelector('[data-manager-pick]').addEventListener('click', function () {
+          fillForm(item);
+          setStatus('문구를 불러왔습니다. 수정 후 저장할 수 있습니다.', false);
+        });
+        li.querySelector('[data-manager-delete]').addEventListener('click', function () {
+          if (!window.confirm('이 홍보 문구를 삭제할까요?')) return;
+          deleteSnippet(item.snippet_id);
+        });
+        listEl.appendChild(li);
+      });
+    }
+
+    function loadList() {
+      return fetch('/proc/eottae-business-snippets.php?action=list', { credentials: 'same-origin' })
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+          if (!json || !json.success) {
+            throw new Error((json && json.message) || '문구 목록을 불러오지 못했습니다.');
+          }
+          renderList(json.data || []);
+        })
+        .catch(function (err) {
+          setStatus(err.message, true);
+        });
+    }
+
+    function saveCurrent() {
+      var content = contentInput ? contentInput.value.trim() : '';
+      if (!content) {
+        alert('내용을 입력해 주세요.');
+        if (contentInput) contentInput.focus();
+        return Promise.resolve();
+      }
+      var fd = new FormData();
+      fd.append('action', 'save');
+      fd.append('snippet_id', idInput ? idInput.value : '0');
+      fd.append('label', labelInput ? labelInput.value : '');
+      fd.append('wr_subject', subjectInput ? subjectInput.value : '');
+      fd.append('wr_content', content);
+      return fetch('/proc/eottae-business-snippets.php', { method: 'POST', body: fd, credentials: 'same-origin' })
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+          if (!json || !json.success) {
+            throw new Error((json && json.message) || '저장에 실패했습니다.');
+          }
+          if (json.data) fillForm(json.data);
+          setStatus('홍보 문구를 저장했습니다.', false);
+          return loadList();
+        });
+    }
+
+    function deleteSnippet(id) {
+      var fd = new FormData();
+      fd.append('action', 'delete');
+      fd.append('snippet_id', String(id));
+      fetch('/proc/eottae-business-snippets.php', { method: 'POST', body: fd, credentials: 'same-origin' })
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+          if (!json || !json.success) {
+            throw new Error((json && json.message) || '삭제에 실패했습니다.');
+          }
+          if (idInput && String(idInput.value) === String(id)) resetForm();
+          setStatus('문구를 삭제했습니다.', false);
+          loadList();
+        })
+        .catch(function (err) {
+          setStatus(err.message, true);
+        });
+    }
+
+    var aiBtn = qs('[data-manager-ai-generate]', root);
+    if (aiBtn) {
+      aiBtn.addEventListener('click', function () {
+        var topic = window.prompt('홍보 주제 (선택, 예: 주말 할인, 신메뉴)', '') || '';
+        aiBtn.disabled = true;
+        setStatus('AI가 홍보 문구를 작성 중입니다...', false);
+        var fd = new FormData();
+        fd.append('topic', topic);
+        fetch('/proc/eottae-business-snippet-ai.php', { method: 'POST', body: fd, credentials: 'same-origin' })
+          .then(function (res) { return res.json(); })
+          .then(function (json) {
+            if (!json || !json.success) {
+              throw new Error((json && json.message) || 'AI 생성에 실패했습니다.');
+            }
+            var data = json.data || {};
+            fillForm(data);
+            if (idInput) idInput.value = '0';
+            setStatus('AI 문구를 생성했습니다. 확인 후 저장해 주세요.', false);
+          })
+          .catch(function (err) {
+            setStatus(err.message, true);
+          })
+          .finally(function () {
+            aiBtn.disabled = false;
+          });
+      });
+    }
+
+    var saveBtn = qs('[data-manager-save]', root);
+    if (saveBtn) {
+      saveBtn.addEventListener('click', function () {
+        saveBtn.disabled = true;
+        saveCurrent()
+          .catch(function (err) { setStatus(err.message, true); })
+          .finally(function () { saveBtn.disabled = false; });
+      });
+    }
+
+    var resetBtn = qs('[data-manager-reset]', root);
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function () {
+        resetForm();
+        setStatus('새 문구 작성을 시작합니다.', false);
+      });
+    }
+
+    loadList();
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     document.body.classList.add('eottae-page');
     initShopRegisterWizard();
@@ -505,6 +1068,8 @@
     initShopDetailGallery();
     initPhotoPreview();
     initAdCarousel();
+    initBusinessWriteSnippets();
+    initBusinessSnippetsManager();
   });
 
   function initReviewModal() {

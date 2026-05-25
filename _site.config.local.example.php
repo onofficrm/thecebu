@@ -8,4 +8,8 @@ if (!defined('_GNUBOARD_')) {
 
 $site_config_override = array(
     'google_maps_api_key' => '',
+    'ai_generate_enabled' => false,
+    'ai_generate_api_key' => '',
+    'ai_generate_model'   => 'gpt-4o-mini',
+    'ai_generate_image_model' => 'gpt-image-1',
 );

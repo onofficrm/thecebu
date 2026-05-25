@@ -55,6 +55,13 @@ if ($is_member && is_array($member)) {
 
         <a href="<?php echo $eottae_mypage_url; ?>" class="community-login-box__cta">MY 바로가기</a>
 
+        <p class="community-login-box__coupon-hint">
+            <a href="<?php echo G5_URL; ?>/page/eottae-coupon-guide.php">쿠폰 사용 방법</a>
+            <?php if ($eottae_member_is_biz) { ?>
+            · <a href="<?php echo G5_URL; ?>/page/eottae-business-coupon-guide.php">쿠폰 발행 안내</a>
+            <?php } ?>
+        </p>
+
         <div class="community-login-box__links">
             <a href="<?php echo $eottae_profile_url; ?>">정보수정</a>
             <span class="community-login-box__divider" aria-hidden="true"></span>

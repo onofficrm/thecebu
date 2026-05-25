@@ -67,6 +67,59 @@ if (!function_exists('eottae_tel_href')) {
     }
 }
 
+if (!function_exists('eottae_shop_sns_links')) {
+    function eottae_shop_sns_links($raw)
+    {
+        $raw = trim((string) $raw);
+        if ($raw === '' || stripos($raw, 'ad') !== false) {
+            return array();
+        }
+
+        $labels = array(
+            'instagram' => '인스타그램',
+            'tiktok' => '틱톡',
+            'facebook' => '페이스북',
+            'naver_blog' => '네이버블로그',
+            'sns' => 'SNS',
+        );
+
+        $decoded = json_decode($raw, true);
+        if (!is_array($decoded)) {
+            return array(array('key' => 'sns', 'label' => $labels['sns'], 'url' => get_text($raw)));
+        }
+
+        $links = array();
+        foreach ($labels as $key => $label) {
+            if ($key === 'sns') {
+                continue;
+            }
+            $url = isset($decoded[$key]) ? trim((string) $decoded[$key]) : '';
+            if ($url !== '') {
+                $links[] = array('key' => $key, 'label' => $label, 'url' => get_text($url));
+            }
+        }
+
+        return $links;
+    }
+}
+
+if (!function_exists('eottae_shop_sns_value')) {
+    function eottae_shop_sns_value($raw, $key)
+    {
+        $raw = trim((string) $raw);
+        $key = (string) $key;
+        if ($raw === '') {
+            return '';
+        }
+        $decoded = json_decode($raw, true);
+        if (is_array($decoded)) {
+            return isset($decoded[$key]) ? get_text($decoded[$key]) : '';
+        }
+
+        return $key === 'instagram' ? get_text($raw) : '';
+    }
+}
+
 if (!function_exists('eottae_maps_directions_url')) {
     function eottae_maps_directions_url($lat, $lng, $address = '')
     {
@@ -436,6 +489,214 @@ if (!function_exists('eottae_get_review_photos')) {
     }
 }
 
+if (!function_exists('eottae_shop_map_thumb_table')) {
+    function eottae_shop_map_thumb_table()
+    {
+        global $g5;
+
+        return $g5['table_prefix'].'eottae_shop_map_thumb';
+    }
+}
+
+if (!function_exists('eottae_shop_map_thumb_ensure_table')) {
+    function eottae_shop_map_thumb_ensure_table()
+    {
+        $table = eottae_shop_map_thumb_table();
+        sql_query(" create table if not exists {$table} (
+            bo_table varchar(20) not null,
+            wr_id int(11) not null,
+            file_name varchar(255) not null,
+            source_name varchar(255) not null,
+            created_at datetime not null,
+            updated_at datetime not null,
+            primary key (bo_table, wr_id)
+        ) ", false);
+    }
+}
+
+if (!function_exists('eottae_shop_map_thumb_dir')) {
+    function eottae_shop_map_thumb_dir()
+    {
+        return G5_DATA_PATH.'/eottae-shop-map-thumb';
+    }
+}
+
+if (!function_exists('eottae_shop_map_thumb_url_base')) {
+    function eottae_shop_map_thumb_url_base()
+    {
+        return G5_DATA_URL.'/eottae-shop-map-thumb';
+    }
+}
+
+if (!function_exists('eottae_shop_map_thumb_tmp_dir')) {
+    function eottae_shop_map_thumb_tmp_dir()
+    {
+        return eottae_shop_map_thumb_dir().'/tmp';
+    }
+}
+
+if (!function_exists('eottae_shop_map_thumb_tmp_url_base')) {
+    function eottae_shop_map_thumb_tmp_url_base()
+    {
+        return eottae_shop_map_thumb_url_base().'/tmp';
+    }
+}
+
+if (!function_exists('eottae_shop_map_thumb_get')) {
+    function eottae_shop_map_thumb_get($bo_table, $wr_id)
+    {
+        $bo_table = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
+        $wr_id = (int) $wr_id;
+        if ($bo_table === '' || $wr_id < 1) {
+            return array();
+        }
+
+        $table = eottae_shop_map_thumb_table();
+        $row = sql_fetch(" select * from {$table} where bo_table = '".sql_escape_string($bo_table)."' and wr_id = '{$wr_id}' ");
+        if (empty($row['file_name'])) {
+            return array();
+        }
+
+        return array(
+            'file_name' => $row['file_name'],
+            'source_name' => isset($row['source_name']) ? $row['source_name'] : '',
+            'url' => eottae_shop_map_thumb_url_base().'/'.$row['file_name'],
+        );
+    }
+}
+
+if (!function_exists('eottae_shop_map_thumb_delete')) {
+    function eottae_shop_map_thumb_delete($bo_table, $wr_id)
+    {
+        $thumb = eottae_shop_map_thumb_get($bo_table, $wr_id);
+        if (!empty($thumb['file_name'])) {
+            @unlink(eottae_shop_map_thumb_dir().'/'.$thumb['file_name']);
+        }
+
+        $table = eottae_shop_map_thumb_table();
+        sql_query(" delete from {$table} where bo_table = '".sql_escape_string((string) $bo_table)."' and wr_id = '".(int) $wr_id."' ", false);
+    }
+}
+
+if (!function_exists('eottae_shop_map_thumb_save_from_upload')) {
+    function eottae_shop_map_thumb_save_from_upload($bo_table, $wr_id)
+    {
+        if (!empty($_POST['eottae_map_thumb_ai_tmp']) && eottae_shop_map_thumb_save_from_tmp($bo_table, $wr_id)) {
+            return;
+        }
+
+        if (empty($_FILES['eottae_map_thumb']['name']) || empty($_FILES['eottae_map_thumb']['tmp_name'])) {
+            if (!empty($_POST['eottae_map_thumb_del'])) {
+                eottae_shop_map_thumb_delete($bo_table, $wr_id);
+            }
+            return;
+        }
+        if (!is_uploaded_file($_FILES['eottae_map_thumb']['tmp_name'])) {
+            return;
+        }
+
+        $info = @getimagesize($_FILES['eottae_map_thumb']['tmp_name']);
+        if (!$info) {
+            return;
+        }
+
+        $ext_map = array(IMAGETYPE_JPEG => 'jpg', IMAGETYPE_PNG => 'png', IMAGETYPE_GIF => 'gif', IMAGETYPE_WEBP => 'webp');
+        $type = isset($info[2]) ? (int) $info[2] : 0;
+        if (empty($ext_map[$type])) {
+            return;
+        }
+
+        $dir = eottae_shop_map_thumb_dir();
+        if (!is_dir($dir)) {
+            @mkdir($dir, G5_DIR_PERMISSION, true);
+            @chmod($dir, G5_DIR_PERMISSION);
+        }
+
+        eottae_shop_map_thumb_delete($bo_table, $wr_id);
+
+        $file_name = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table).'_'.(int) $wr_id.'_'.substr(md5(uniqid('', true)), 0, 12).'.'.$ext_map[$type];
+        if (@move_uploaded_file($_FILES['eottae_map_thumb']['tmp_name'], $dir.'/'.$file_name)) {
+            @chmod($dir.'/'.$file_name, G5_FILE_PERMISSION);
+            $table = eottae_shop_map_thumb_table();
+            $source = sql_escape_string(substr(trim(strip_tags((string) $_FILES['eottae_map_thumb']['name'])), 0, 255));
+            sql_query(" replace into {$table}
+                set bo_table = '".sql_escape_string((string) $bo_table)."',
+                    wr_id = '".(int) $wr_id."',
+                    file_name = '".sql_escape_string($file_name)."',
+                    source_name = '{$source}',
+                    created_at = now(),
+                    updated_at = now() ", false);
+        }
+    }
+}
+
+if (!function_exists('eottae_shop_map_thumb_save_from_tmp')) {
+    function eottae_shop_map_thumb_save_from_tmp($bo_table, $wr_id)
+    {
+        $tmp = isset($_POST['eottae_map_thumb_ai_tmp']) ? basename((string) $_POST['eottae_map_thumb_ai_tmp']) : '';
+        if ($tmp === '' || !preg_match('/^[a-z0-9_.-]+$/i', $tmp)) {
+            return false;
+        }
+
+        $src = eottae_shop_map_thumb_tmp_dir().'/'.$tmp;
+        if (!is_file($src)) {
+            return false;
+        }
+
+        $info = @getimagesize($src);
+        if (!$info) {
+            @unlink($src);
+            return false;
+        }
+
+        $dir = eottae_shop_map_thumb_dir();
+        if (!is_dir($dir)) {
+            @mkdir($dir, G5_DIR_PERMISSION, true);
+            @chmod($dir, G5_DIR_PERMISSION);
+        }
+
+        eottae_shop_map_thumb_delete($bo_table, $wr_id);
+
+        $file_name = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table).'_'.(int) $wr_id.'_ai_'.substr(md5(uniqid('', true)), 0, 12).'.png';
+        if (@rename($src, $dir.'/'.$file_name)) {
+            @chmod($dir.'/'.$file_name, G5_FILE_PERMISSION);
+            $table = eottae_shop_map_thumb_table();
+            sql_query(" replace into {$table}
+                set bo_table = '".sql_escape_string((string) $bo_table)."',
+                    wr_id = '".(int) $wr_id."',
+                    file_name = '".sql_escape_string($file_name)."',
+                    source_name = 'AI 지도 썸네일',
+                    created_at = now(),
+                    updated_at = now() ", false);
+            return true;
+        }
+
+        return false;
+    }
+}
+
+if (!function_exists('eottae_shop_representative_image_url')) {
+    function eottae_shop_representative_image_url($bo_table, $wr_id)
+    {
+        global $g5;
+
+        $bo_table = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
+        $wr_id = (int) $wr_id;
+        if ($bo_table === '' || $wr_id < 1) {
+            return '';
+        }
+
+        $row = sql_fetch(" select bf_file from {$g5['board_file_table']}
+            where bo_table = '".sql_escape_string($bo_table)."' and wr_id = '{$wr_id}' and bf_file <> ''
+            order by bf_no asc limit 1 ");
+        if (empty($row['bf_file'])) {
+            return '';
+        }
+
+        return G5_DATA_URL.'/file/'.$bo_table.'/'.$row['bf_file'];
+    }
+}
+
 if (!function_exists('eottae_user_reviewed_shop')) {
     function eottae_user_reviewed_shop($mb_id, $shop_wr_id)
     {
@@ -497,7 +758,7 @@ if (!function_exists('eottae_review_reply_token')) {
 }
 
 if (!function_exists('eottae_business_owns_shop')) {
-    function eottae_business_owns_shop($mb_id, $shop_wr_id)
+    function eottae_business_owns_shop($mb_id, $shop_wr_id, $bo_table = '')
     {
         global $g5;
 
@@ -507,7 +768,12 @@ if (!function_exists('eottae_business_owns_shop')) {
             return false;
         }
 
-        $shop_table = $g5['write_prefix'].EOTTae_SHOP_TABLE;
+        if ($bo_table === '' || !function_exists('eottae_is_shop_board') || !eottae_is_shop_board($bo_table)) {
+            $bo_table = defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop';
+        }
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+
+        $shop_table = $g5['write_prefix'].$bo_table;
         $row = sql_fetch(" select wr_id from {$shop_table}
             where wr_id = '{$shop_wr_id}' and mb_id = '{$mb_id}' limit 1 ");
 
@@ -1497,6 +1763,18 @@ if (!function_exists('eottae_shop_prepare_write_post')) {
         if ($region === '' && $address !== '' && function_exists('eottae_shop_detect_region')) {
             $_POST['wr_2'] = eottae_shop_detect_region($address);
         }
+        $sns_payload = array();
+        $has_sns_fields = false;
+        foreach (array('instagram', 'tiktok', 'facebook', 'naver_blog') as $sns_key) {
+            $post_key = 'eottae_sns_'.$sns_key;
+            if (isset($_POST[$post_key])) {
+                $has_sns_fields = true;
+            }
+            $sns_payload[$sns_key] = isset($_POST[$post_key]) ? trim(strip_tags((string) $_POST[$post_key])) : '';
+        }
+        if ($has_sns_fields) {
+            $_POST['wr_link2'] = array_filter($sns_payload) ? json_encode($sns_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : '';
+        }
         if (function_exists('eottae_shop_apply_fallback_coords_to_post')) {
             eottae_shop_apply_fallback_coords_to_post();
         }
@@ -1788,12 +2066,21 @@ if (!function_exists('eottae_shop_map_markers')) {
             if ($lat === '' || $lng === '' || !is_numeric($lat) || !is_numeric($lng)) {
                 continue;
             }
+            $marker_bo_table = $bo_table !== '' ? $bo_table : (defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop');
+            $thumb = eottae_shop_map_thumb_get($marker_bo_table, $shop['wr_id']);
+            $thumbnail = !empty($thumb['url']) ? $thumb['url'] : '';
+            if ($thumbnail === '' && !empty($row['file'][0]['file']) && !empty($row['file'][0]['path'])) {
+                $thumbnail = $row['file'][0]['path'].'/'.$row['file'][0]['file'];
+            } elseif ($thumbnail === '') {
+                $thumbnail = eottae_shop_representative_image_url($marker_bo_table, $shop['wr_id']);
+            }
             $markers[] = array(
                 'wr_id'    => (int) $shop['wr_id'],
                 'name'     => $shop['name'],
                 'category' => $shop['category'],
                 'lat'      => $lat,
                 'lng'      => $lng,
+                'thumbnail' => $thumbnail,
                 'url'      => isset($row['href']) ? $row['href'] : G5_BBS_URL.'/board.php?bo_table='.($bo_table !== '' ? $bo_table : (defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop')).'&wr_id='.$shop['wr_id'],
             );
         }
@@ -1828,6 +2115,7 @@ if (!function_exists('eottae_shop_map_locations_json')) {
                 'lat'      => (float) $lat,
                 'lng'      => (float) $lng,
                 'link'     => isset($marker['url']) ? (string) $marker['url'] : '',
+                'thumbnail' => isset($marker['thumbnail']) ? (string) $marker['thumbnail'] : '',
             );
         }
 

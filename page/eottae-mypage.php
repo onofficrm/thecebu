@@ -5,14 +5,17 @@ if (!$is_member) {
     alert('로그인 후 이용해 주세요.', eottae_login_url(G5_URL.'/page/eottae-mypage.php'));
 }
 
+include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
+include_once G5_LIB_PATH.'/eottae-shop-owner.lib.php';
+
 $is_biz = eottae_is_business_member($member);
 $point = isset($member['mb_point']) ? (int) $member['mb_point'] : 0;
-include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
 $coupon_count = eottae_coupon_count_active($member['mb_id']);
 $pending_replies = $is_biz ? eottae_business_pending_replies_count($member['mb_id']) : 0;
 $my_review_count = count(eottae_get_member_reviews($member['mb_id'], 100));
 $saved_count = count(eottae_get_saved_shop_ids($member['mb_id'], 100));
 $inquiry_count = count(eottae_get_member_inquiries($member['mb_id'], 100));
+$my_shop_posts = $is_biz ? eottae_business_shop_posts($member['mb_id'], 20) : array();
 
 g5_page_start('마이페이지');
 ?>
@@ -42,6 +45,9 @@ g5_page_start('마이페이지');
         <a href="<?php echo G5_URL; ?>/page/eottae-saved-shops.php" class="mypage-quick-menu__item">찜·최근<?php if ($saved_count > 0) { ?> (<?php echo $saved_count; ?>)<?php } ?></a>
         <a href="<?php echo G5_URL; ?>/page/eottae-inquiries.php" class="mypage-quick-menu__item">문의<?php if ($inquiry_count > 0) { ?> (<?php echo $inquiry_count; ?>)<?php } ?></a>
         <a href="<?php echo G5_URL; ?>/page/eottae-events.php" class="mypage-quick-menu__item">이벤트</a>
+        <a href="<?php echo G5_URL; ?>/page/eottae-business-snippets.php" class="mypage-quick-menu__item">홍보 문구</a>
+        <?php if ($is_biz) { ?><a href="<?php echo G5_URL; ?>/page/eottae-business-coupons.php" class="mypage-quick-menu__item">쿠폰 발행</a><?php } ?>
+        <a href="<?php echo G5_URL; ?>/page/eottae-coupon-guide.php" class="mypage-quick-menu__item">쿠폰 안내</a>
         <a href="<?php echo G5_BBS_URL; ?>/board.php?bo_table=<?php echo EOTTae_COMMUNITY_TABLE; ?>" class="mypage-quick-menu__item">내 활동</a>
         <a href="<?php echo G5_BBS_URL; ?>/member_confirm.php?url=<?php echo urlencode(G5_BBS_URL.'/register_form.php'); ?>" class="mypage-quick-menu__item">정보수정</a>
         <a href="<?php echo G5_BBS_URL; ?>/logout.php" class="mypage-quick-menu__item">로그아웃</a>
@@ -56,7 +62,25 @@ g5_page_start('마이페이지');
         <p>새로운 리뷰 답변 요청이 없습니다.</p>
         <?php } ?>
         <a href="<?php echo G5_BBS_URL; ?>/write.php?bo_table=<?php echo EOTTae_SHOP_TABLE; ?>" class="eottae-btn-write" style="margin-top:12px;display:inline-flex">업체 등록</a>
+        <a href="<?php echo G5_URL; ?>/page/eottae-business-snippets.php" class="eottae-btn-write" style="margin-top:8px;display:inline-flex">홍보 문구 관리</a>
+        <a href="<?php echo G5_URL; ?>/page/eottae-business-coupons.php" class="eottae-btn-write" style="margin-top:8px;display:inline-flex">쿠폰 발행 관리</a>
+        <a href="<?php echo G5_URL; ?>/page/eottae-business-coupon-guide.php" class="eottae-btn-write" style="margin-top:8px;display:inline-flex">쿠폰 발행 안내</a>
+        <a href="<?php echo G5_BBS_URL; ?>/write.php?bo_table=<?php echo EOTTae_COMMUNITY_TABLE; ?>" class="eottae-btn-write" style="margin-top:8px;display:inline-flex">커뮤니티 글쓰기</a>
         <?php eottae_render_inquiry_buttons('business', array()); ?>
+
+        <?php if (!empty($my_shop_posts)) { ?>
+        <div class="business-dashboard__shops">
+            <h3 class="business-dashboard__shops-title">내 업체</h3>
+            <ul class="business-dashboard__shop-list">
+                <?php foreach ($my_shop_posts as $shop_row) { ?>
+                <li class="business-dashboard__shop-item">
+                    <a href="<?php echo $shop_row['view_url']; ?>" class="business-dashboard__shop-name"><?php echo $shop_row['subject']; ?></a>
+                    <a href="<?php echo $shop_row['update_url']; ?>" class="business-dashboard__shop-edit">수정</a>
+                </li>
+                <?php } ?>
+            </ul>
+        </div>
+        <?php } ?>
     </section>
     <?php } ?>
 </main>

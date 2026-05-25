@@ -242,7 +242,13 @@ if (!function_exists('eottae_shop_seo_apply_page')) {
         if (!function_exists('get_list_thumbnail') && is_file(G5_LIB_PATH.'/thumbnail.lib.php')) {
             include_once G5_LIB_PATH.'/thumbnail.lib.php';
         }
-        if (function_exists('get_list_thumbnail')) {
+        if (function_exists('eottae_shop_map_thumb_get')) {
+            $map_thumb = eottae_shop_map_thumb_get($board['bo_table'], (int) $write['wr_id']);
+            if (!empty($map_thumb['url'])) {
+                $page_og_image = $map_thumb['url'];
+            }
+        }
+        if ($page_og_image === '' && function_exists('get_list_thumbnail')) {
             $thumb = get_list_thumbnail($board['bo_table'], (int) $write['wr_id'], 1200, 630, false, true);
             if (!empty($thumb['src'])) {
                 $page_og_image = $thumb['src'];

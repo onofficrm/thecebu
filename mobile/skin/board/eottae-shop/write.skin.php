@@ -26,6 +26,37 @@ if (!in_array($ca_value, $board_categories, true)) {
 }
 $category_options = eottae_shop_quick_categories($board);
 $shop_region_label = $v['wr_2'] !== '' ? get_text($v['wr_2']) : '';
+$business_hour_options = array(
+    '09:00 - 18:00',
+    '09:00 - 20:00',
+    '09:00 - 22:00',
+    '10:00 - 20:00',
+    '10:00 - 22:00',
+    '11:00 - 23:00',
+    '12:00 - 24:00',
+    '24시간 영업',
+    '예약제 운영',
+);
+$closed_day_options = array(
+    '연중무휴',
+    '매주 월요일',
+    '매주 화요일',
+    '매주 수요일',
+    '매주 목요일',
+    '매주 금요일',
+    '매주 토요일',
+    '매주 일요일',
+    '비정기 휴무',
+);
+$sns_values = array(
+    'instagram' => eottae_shop_sns_value($v['wr_link2'], 'instagram'),
+    'tiktok' => eottae_shop_sns_value($v['wr_link2'], 'tiktok'),
+    'facebook' => eottae_shop_sns_value($v['wr_link2'], 'facebook'),
+    'naver_blog' => eottae_shop_sns_value($v['wr_link2'], 'naver_blog'),
+);
+$map_thumb = ($w === 'u' && !empty($write['wr_id']) && function_exists('eottae_shop_map_thumb_get'))
+    ? eottae_shop_map_thumb_get($bo_table, (int) $write['wr_id'])
+    : array();
 $shop_seo = array();
 if ($w === 'u' && !empty($write['wr_id']) && function_exists('eottae_shop_seo_get')) {
     $shop_seo = eottae_shop_seo_get($bo_table, (int) $write['wr_id']);
@@ -83,9 +114,12 @@ $shop_seo_v = function_exists('eottae_shop_seo_resolve_for_write')
                 <?php } ?>
             </select>
         </div>
+        <?php include G5_PATH.'/components/eottae/shop-owner-assign.php'; ?>
         <div class="eottae-field">
             <label for="wr_content">업체 소개</label>
             <textarea name="wr_content" id="wr_content" rows="6" placeholder="업체를 소개해 주세요"><?php echo $content; ?></textarea>
+            <button type="button" class="btn btn--ghost shop-register-page__ai-btn" data-shop-ai-generate="all">AI로 업체소개·SEO 자동생성</button>
+            <p class="eottae-field__hint" data-shop-ai-status aria-live="polite">업체명, 카테고리, 주소를 입력한 뒤 누르면 소개와 SEO 문구를 자동으로 채웁니다.</p>
         </div>
     </div>
 
@@ -127,9 +161,24 @@ $shop_seo_v = function_exists('eottae_shop_seo_resolve_for_write')
             <label for="wr_link1">홈페이지 URL</label>
             <input type="url" name="wr_link1" id="wr_link1" value="<?php echo $v['wr_link1']; ?>">
         </div>
-        <div class="eottae-field">
-            <label for="wr_link2">SNS URL</label>
-            <input type="url" name="wr_link2" id="wr_link2" value="<?php echo $v['wr_link2']; ?>">
+        <input type="hidden" name="wr_link2" id="wr_link2" value="<?php echo $v['wr_link2']; ?>">
+        <div class="shop-register-page__sns-grid">
+            <div class="eottae-field">
+                <label for="eottae_sns_instagram">인스타그램 URL</label>
+                <input type="url" name="eottae_sns_instagram" id="eottae_sns_instagram" value="<?php echo $sns_values['instagram']; ?>" placeholder="https://www.instagram.com/...">
+            </div>
+            <div class="eottae-field">
+                <label for="eottae_sns_tiktok">틱톡 URL</label>
+                <input type="url" name="eottae_sns_tiktok" id="eottae_sns_tiktok" value="<?php echo $sns_values['tiktok']; ?>" placeholder="https://www.tiktok.com/@...">
+            </div>
+            <div class="eottae-field">
+                <label for="eottae_sns_facebook">페이스북 URL</label>
+                <input type="url" name="eottae_sns_facebook" id="eottae_sns_facebook" value="<?php echo $sns_values['facebook']; ?>" placeholder="https://www.facebook.com/...">
+            </div>
+            <div class="eottae-field">
+                <label for="eottae_sns_naver_blog">네이버블로그 URL</label>
+                <input type="url" name="eottae_sns_naver_blog" id="eottae_sns_naver_blog" value="<?php echo $sns_values['naver_blog']; ?>" placeholder="https://blog.naver.com/...">
+            </div>
         </div>
     </div>
 
@@ -137,11 +186,27 @@ $shop_seo_v = function_exists('eottae_shop_seo_resolve_for_write')
         <h3>4. 영업정보</h3>
         <div class="eottae-field">
             <label for="wr_6">영업시간</label>
-            <input type="text" name="wr_6" id="wr_6" value="<?php echo $v['wr_6']; ?>" placeholder="09:00 - 22:00">
+            <select name="wr_6" id="wr_6" class="eottae-select">
+                <option value="">영업시간 선택</option>
+                <?php foreach ($business_hour_options as $hour) { ?>
+                <option value="<?php echo $hour; ?>"<?php echo $v['wr_6'] === $hour ? ' selected' : ''; ?>><?php echo $hour; ?></option>
+                <?php } ?>
+                <?php if ($v['wr_6'] !== '' && !in_array($v['wr_6'], $business_hour_options, true)) { ?>
+                <option value="<?php echo $v['wr_6']; ?>" selected><?php echo $v['wr_6']; ?></option>
+                <?php } ?>
+            </select>
         </div>
         <div class="eottae-field">
             <label for="wr_7">휴무일</label>
-            <input type="text" name="wr_7" id="wr_7" value="<?php echo $v['wr_7']; ?>" placeholder="매주 월요일">
+            <select name="wr_7" id="wr_7" class="eottae-select">
+                <option value="">휴무일 선택</option>
+                <?php foreach ($closed_day_options as $day) { ?>
+                <option value="<?php echo $day; ?>"<?php echo $v['wr_7'] === $day ? ' selected' : ''; ?>><?php echo $day; ?></option>
+                <?php } ?>
+                <?php if ($v['wr_7'] !== '' && !in_array($v['wr_7'], $closed_day_options, true)) { ?>
+                <option value="<?php echo $v['wr_7']; ?>" selected><?php echo $v['wr_7']; ?></option>
+                <?php } ?>
+            </select>
         </div>
         <div class="eottae-field">
             <label for="wr_8">영업상태</label>
@@ -166,15 +231,34 @@ $shop_seo_v = function_exists('eottae_shop_seo_resolve_for_write')
             </div>
             <?php } ?>
         </div>
+        <div class="eottae-field">
+            <label for="eottae_map_thumb">지도 표시 썸네일</label>
+            <input type="file" name="eottae_map_thumb" id="eottae_map_thumb" accept="image/*">
+            <input type="hidden" name="eottae_map_thumb_ai_tmp" id="eottae_map_thumb_ai_tmp" value="">
+            <p class="eottae-field__hint">권장 사이즈: 정사각형 1024×1024px 이상. 지도 마커에서는 원형/작은 이미지로 표시됩니다. 비워 두면 대표 이미지가 사용됩니다.</p>
+            <button type="button" class="btn btn--ghost shop-register-page__ai-btn" data-map-thumb-ai-generate>AI 지도 썸네일 생성</button>
+            <p class="eottae-field__hint" data-map-thumb-ai-status aria-live="polite"></p>
+            <div class="shop-register-page__map-thumb-preview" data-map-thumb-preview hidden>
+                <img src="" alt="AI 지도 썸네일 미리보기">
+                <span>AI로 생성된 지도 썸네일입니다. 다시 누르면 새 이미지로 교체됩니다.</span>
+            </div>
+            <?php if (!empty($map_thumb['url'])) { ?>
+            <p class="eottae-field__hint">현재 지도 썸네일: <a href="<?php echo $map_thumb['url']; ?>" target="_blank" rel="noopener noreferrer"><?php echo get_text($map_thumb['source_name']); ?></a>
+                <label><input type="checkbox" name="eottae_map_thumb_del" value="1"> 삭제</label>
+            </p>
+            <?php } ?>
+        </div>
         <p class="eottae-field__hint">메뉴·가격 정보는 업체 소개 본문에 작성해 주세요.</p>
     </div>
 
     <div class="shop-register-page__panel" data-step="5">
         <h3>6. SEO · 검색 노출</h3>
         <p class="eottae-field__hint">업소 상세 페이지에 적용되는 검색·SNS 메타 정보입니다. 비워 두면 업체명·소개 본문에서 자동 생성됩니다.</p>
+        <button type="button" class="btn btn--ghost shop-register-page__ai-btn" data-shop-ai-generate="seo">AI로 SEO 문구 자동생성</button>
+        <p class="eottae-field__hint" data-shop-ai-status aria-live="polite"></p>
         <div class="eottae-field">
             <label for="eottae_seo_title">SEO 타이틀</label>
-            <input type="text" name="eottae_seo_title" id="eottae_seo_title" value="<?php echo get_text($shop_seo_v['meta_title']); ?>" maxlength="255" placeholder="예: 세부 맛집 OO식당 | 더세부">
+            <input type="text" name="eottae_seo_title" id="eottae_seo_title" value="<?php echo get_text($shop_seo_v['meta_title']); ?>" maxlength="255" placeholder="예: 세부 맛집 OO식당 | 세부어때">
         </div>
         <div class="eottae-field">
             <label for="eottae_seo_intro">업소 SEO 소개</label>

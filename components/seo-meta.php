@@ -224,6 +224,10 @@ if (!function_exists('g5b_seo_build_meta_html')) {
         }
         if ($data['og_image'] !== '') {
             $lines[] = '<meta property="og:image" content="' . g5b_seo_escape($data['og_image']) . '">';
+            $lines[] = '<meta property="og:image:secure_url" content="' . g5b_seo_escape($data['og_image']) . '">';
+            $lines[] = '<meta property="og:image:width" content="1200">';
+            $lines[] = '<meta property="og:image:height" content="630">';
+            $lines[] = '<meta property="og:image:alt" content="' . g5b_seo_escape($data['og_title'] !== '' ? $data['og_title'] : $data['site_name']) . '">';
         }
 
         $lines[] = '<meta name="twitter:card" content="summary_large_image">';

@@ -21,8 +21,9 @@ $site_config = array(
     'address'             => 'Cebu, Philippines',
     'primary_color'       => '#0ea5e9',
     'secondary_color'     => '#64748b',
-    'logo_path'           => '/img/logo/logo.svg',
-    'og_image'            => '/img/common/og-image.jpg',
+    'logo_path'           => '/img/logo/cebu-logo-main.png',
+    'footer_logo_path'    => '/img/logo/cebu-logo-footer.png',
+    'og_image'            => '/img/logo/cebu-logo-main.png',
     /* SEO (components/seo-meta.php) */
     'seo_title'           => '',
     'seo_description'     => '',
@@ -60,6 +61,12 @@ $site_config = array(
     'kakao_map_lng'       => '126.9780',
     /* Google Maps — 내 주변 찾기 (components/maps, page/map-locator.php) */
     'google_maps_api_key'       => '',
+    /* 업체 등록 AI 자동생성 — 운영 키는 _site.config.local.php 또는 GitHub Secret으로 주입 */
+    'ai_generate_enabled'       => false,
+    'ai_generate_provider'      => 'openai',
+    'ai_generate_api_key'       => '',
+    'ai_generate_model'         => 'gpt-4o-mini',
+    'ai_generate_image_model'   => 'gpt-image-1',
     /* 온오프챗봇 (components/onoff-chatbot.php) */
     'onoff_chatbot_enabled'     => true,
     'onoff_chatbot_site_key'    => '967314350ee8ce35058ed2c5d0ed9039b10f200a829089af',
