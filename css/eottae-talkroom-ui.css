@@ -410,6 +410,63 @@ body.talkroom-ui .talk-room-detail__banner {
   background: linear-gradient(135deg, #eff6ff 0%, #fff 100%);
 }
 
+body.talkroom-ui .talk-invite-share {
+  margin-bottom: 16px;
+  padding: 16px;
+  border-radius: var(--talkroom-radius-xl, 16px);
+  background: #fff;
+  border: 1px solid var(--talkroom-line, #e8edf2);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+body.talkroom-ui .talk-invite-share--compact {
+  margin-bottom: 14px;
+  padding: 14px 16px;
+}
+
+body.talkroom-ui .talk-invite-share__title {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--talkroom-text, #0f172a);
+}
+
+body.talkroom-ui .talk-invite-share__desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--talkroom-muted, #64748b);
+}
+
+body.talkroom-ui .talk-invite-share__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+body.talkroom-ui .talk-invite-share__input {
+  flex: 1 1 220px;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--talkroom-line, #e8edf2);
+  border-radius: 12px;
+  background: #f8fafc;
+  font-size: 13px;
+  color: #334155;
+}
+
+body.talkroom-ui .talk-invite-share__copy {
+  flex: 0 0 auto;
+  min-height: 42px;
+  padding: 0 16px;
+  white-space: nowrap;
+  background: linear-gradient(135deg, var(--talkroom-accent) 0%, var(--talkroom-accent-dark) 100%);
+  border-color: #facc15;
+  color: var(--talkroom-accent-text, #0f172a);
+}
+
 body.talkroom-ui .talk-room-detail__actions {
   gap: 10px;
   padding: 12px 14px;
@@ -1293,6 +1350,337 @@ body.talkroom-ui .talk-ai-logs-table tbody tr {
     border-radius: 10px;
     background: #f8fcff;
     border: 1px solid #e0f2fe;
+  }
+}
+
+/* ── 세부톡방 관리자 페이지 (슬림 레이아웃) ── */
+body.talk-admin-shell {
+  background: #eef2f7;
+}
+
+body.talk-admin-shell #hd,
+body.talk-admin-shell #container_title,
+body.talk-admin-shell .mobile-bottom-nav--global,
+body.talk-admin-shell #ft.site-footer-wrap {
+  display: none !important;
+}
+
+body.talk-admin-shell #wrapper,
+body.talk-admin-shell #container_wr,
+body.talk-admin-shell #container {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  float: none;
+}
+
+body.talk-admin-shell .talk-admin-page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 16px 16px 32px;
+}
+
+body.talk-admin-shell .promo-admin-page__header {
+  margin-bottom: 16px;
+  padding: 20px 22px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+body.talk-admin-shell .promo-admin-page__header-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+body.talk-admin-shell .promo-admin-page__back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  text-decoration: none;
+}
+
+body.talk-admin-shell .promo-admin-page__back:hover {
+  color: #0284c7;
+  border-color: #bae6fd;
+  background: #f0f9ff;
+}
+
+body.talk-admin-shell .promo-admin-page__title {
+  margin: 0 0 8px;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+body.talk-admin-shell .promo-admin-page__desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #64748b;
+}
+
+body.talk-admin-shell .talk-admin-page__pending {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #b45309;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+body.talk-admin-shell .talk-admin-nav {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+body.talk-admin-shell .talk-admin-nav::-webkit-scrollbar {
+  display: none;
+}
+
+body.talk-admin-shell .talk-admin-nav__item {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  color: #334155;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+body.talk-admin-shell .talk-admin-nav__item.is-active {
+  color: #fff;
+  background: #0284c7;
+  border-color: #0284c7;
+}
+
+body.talk-admin-shell .talk-admin-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+body.talk-admin-shell .talk-admin-filter__item {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  color: #64748b;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+}
+
+body.talk-admin-shell .talk-admin-filter__item.is-active {
+  color: #0284c7;
+  background: #f0f9ff;
+  border-color: #7dd3fc;
+}
+
+body.talk-admin-shell .promo-admin-panel {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+body.talk-admin-shell .promo-admin-empty {
+  margin: 0;
+  padding: 48px 20px;
+  text-align: center;
+  color: #64748b;
+  font-size: 14px;
+}
+
+body.talk-admin-shell .talk-admin-table-wrap {
+  overflow-x: auto;
+}
+
+body.talk-admin-shell .talk-admin-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+body.talk-admin-shell .talk-admin-table th,
+body.talk-admin-shell .talk-admin-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #eef2f7;
+  text-align: left;
+  vertical-align: middle;
+}
+
+body.talk-admin-shell .talk-admin-table th {
+  background: #f8fafc;
+  font-size: 12px;
+  font-weight: 800;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+body.talk-admin-shell .talk-admin-table tbody tr:hover {
+  background: #fafcff;
+}
+
+body.talk-admin-shell .talk-admin-table__sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+body.talk-admin-shell .talk-admin-table__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+body.talk-admin-shell .promo-admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  color: #334155;
+  cursor: pointer;
+}
+
+body.talk-admin-shell .promo-admin-btn--primary {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #fff;
+}
+
+body.talk-admin-shell .promo-admin-btn--sm {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+body.talk-admin-shell .talk-apply-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+body.talk-admin-shell .talk-apply-status--pending {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+body.talk-admin-shell .talk-apply-status--approved,
+body.talk-admin-shell .talk-apply-status--active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+body.talk-admin-shell .talk-apply-status--rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+@media (max-width: 767px) {
+  body.talk-admin-shell .talk-admin-page {
+    padding: 12px 12px 24px;
+  }
+
+  body.talk-admin-shell .promo-admin-page__header {
+    padding: 16px;
+  }
+
+  body.talk-admin-shell .promo-admin-page__title {
+    font-size: 1.25rem;
+  }
+
+  body.talk-admin-shell .talk-admin-table thead {
+    display: none;
+  }
+
+  body.talk-admin-shell .talk-admin-table,
+  body.talk-admin-shell .talk-admin-table tbody,
+  body.talk-admin-shell .talk-admin-table tr,
+  body.talk-admin-shell .talk-admin-table td {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  body.talk-admin-shell .talk-admin-table tr {
+    margin: 0 0 12px;
+    padding: 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #fff;
+  }
+
+  body.talk-admin-shell .talk-admin-table td {
+    padding: 6px 0;
+    border: 0;
+  }
+
+  body.talk-admin-shell .talk-admin-table td::before {
+    content: attr(data-label) ": ";
+    display: inline-block;
+    min-width: 72px;
+    font-weight: 800;
+    color: #64748b;
+  }
+
+  body.talk-admin-shell .talk-admin-table td:last-child::before {
+    display: none;
+  }
+
+  body.talk-admin-shell .talk-admin-table td:last-child {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #e2e8f0;
+  }
+
+  body.talk-admin-shell .talk-admin-table td:last-child .promo-admin-btn {
+    flex: 1 1 auto;
   }
 }
 

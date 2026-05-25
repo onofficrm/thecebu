@@ -8,8 +8,10 @@ if (!function_exists('eottae_plaza_home_feed_html')) {
     {
         include_once G5_LIB_PATH.'/eottae-plaza.lib.php';
 
-        $posts = eottae_plaza_list_home_feed($limit);
-        $list_url = eottae_plaza_list_url();
+        $feed_context = eottae_plaza_home_feed_context($limit);
+        $posts = $feed_context['posts'];
+        $list_url = $feed_context['list_url'];
+        $list_label = $feed_context['list_label'];
 
         ob_start();
         ?>
@@ -34,8 +36,11 @@ if (!function_exists('eottae_plaza_home_feed_html')) {
                             <span class="plaza-home-feed__line">
                                 <?php if (!empty($post['is_ai'])) { ?>
                                 <span class="plaza-home-feed__type plaza-ai-badge plaza-ai-badge--sm">🤖 AI질문</span>
-                                <?php } elseif ($post['type_label'] !== '') { ?>
-                                <span class="plaza-home-feed__type plaza-badge <?php echo $post['type_class']; ?>"><?php echo $post['type_label']; ?></span>
+                                <?php } elseif ($post['type_label'] !== '') {
+                                    $badge_kind = isset($post['badge_kind']) ? (string) $post['badge_kind'] : 'plaza';
+                                    $badge_base = $badge_kind === 'community' ? 'community-badge' : 'plaza-badge';
+                                    ?>
+                                <span class="plaza-home-feed__type <?php echo $badge_base; ?> <?php echo $post['type_class']; ?>"><?php echo $post['type_label']; ?></span>
                                 <?php } ?>
                                 <strong class="plaza-home-feed__subject"><?php echo $post['subject']; ?></strong>
                             </span>
@@ -57,7 +62,7 @@ if (!function_exists('eottae_plaza_home_feed_html')) {
                 <?php } ?>
 
                 <div class="plaza-home-feed__footer">
-                    <a href="<?php echo $list_url; ?>" class="plaza-home-feed__more">세부광장으로 이동</a>
+                    <a href="<?php echo $list_url; ?>" class="plaza-home-feed__more"><?php echo get_text($list_label); ?></a>
                 </div>
             </div>
         </section>

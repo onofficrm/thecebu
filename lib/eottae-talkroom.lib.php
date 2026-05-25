@@ -342,6 +342,30 @@ if (!function_exists('eottae_talkroom_enter_url')) {
     }
 }
 
+if (!function_exists('eottae_talkroom_invite_url')) {
+    function eottae_talkroom_invite_url($room_id)
+    {
+        return eottae_talkroom_enter_url($room_id);
+    }
+}
+
+if (!function_exists('eottae_talkroom_can_share_invite')) {
+    function eottae_talkroom_can_share_invite($ctx)
+    {
+        if (!is_array($ctx)) {
+            return false;
+        }
+
+        if (!empty($ctx['can_manage'])) {
+            return true;
+        }
+
+        $membership = isset($ctx['membership']) ? (string) $ctx['membership'] : 'guest';
+
+        return in_array($membership, array('owner', 'active'), true);
+    }
+}
+
 if (!function_exists('eottae_talkroom_category_label')) {
     function eottae_talkroom_category_label($code)
     {
@@ -1929,6 +1953,7 @@ if (!function_exists('eottae_talkroom_format_detail')) {
             'rules'            => get_text($room['rules'] ?? ''),
             'room_notice'      => get_text($room['room_notice'] ?? ''),
             'enter_href'       => eottae_talkroom_enter_url($room_id),
+            'invite_href'      => eottae_talkroom_invite_url($room_id),
             'manage_href'      => eottae_talkroom_owner_manage_url($room_id),
             'write_href'       => eottae_talkroom_write_url($room_id),
         ));
@@ -2186,6 +2211,10 @@ if (!function_exists('eottae_talkroom_build_detail_context')) {
         $is_super = (isset($is_admin) && $is_admin === 'super');
         $can_manage = eottae_talkroom_can_manage_room($room_id, $mb_id, $is_super);
         $can_view_notice = ($room['visibility'] ?? 'public') === 'public' || $can_view_full;
+        $can_share_invite = eottae_talkroom_can_share_invite(array(
+            'membership'  => $membership,
+            'can_manage'  => $can_manage,
+        ));
 
         return array(
             'room'                => $detail,
@@ -2198,6 +2227,7 @@ if (!function_exists('eottae_talkroom_build_detail_context')) {
             'can_join'            => $can_join,
             'can_leave'           => $can_leave,
             'can_manage'          => $can_manage,
+            'can_share_invite'    => $can_share_invite,
             'join_blocked_reason' => $join_blocked_reason,
             'posts'               => $posts,
         );

@@ -54,6 +54,12 @@ g5_page_start($room['room_name']);
         </div>
     </header>
 
+    <?php if (!empty($ctx['can_share_invite'])) {
+        $talk_invite_url = $room['invite_href'] ?? eottae_talkroom_invite_url($room_id);
+        $talk_invite_room_name = $room['room_name'] ?? '';
+        include G5_PATH.'/components/eottae/talk-invite-share.php';
+    } ?>
+
     <?php if ($ctx['can_view_full']) { ?>
     <section class="talk-room-detail__section">
         <h2 class="talk-room-detail__section-title">톡방 소개</h2>

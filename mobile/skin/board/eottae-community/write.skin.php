@@ -21,6 +21,10 @@ if ($w !== 'u' && !empty($is_member) && function_exists('eottae_is_business_memb
 }
 ?>
 
+<?php
+$file_count = eottae_community_write_photo_count($board, $file_count);
+?>
+
 <div class="community-write-page board-wrap board-wrap--eottae-community" id="bo_w" style="width:<?php echo $width; ?>">
 
     <header class="community-write-page__header">
@@ -64,6 +68,10 @@ if ($w !== 'u' && !empty($is_member) && function_exists('eottae_is_business_memb
         <label for="wr_content">내용</label>
         <textarea name="wr_content" id="wr_content" required class="community-write-page__textarea" placeholder="세부 생활 정보, 꿀팁, 질문 등을 자유롭게 작성해 주세요"><?php echo $content; ?></textarea>
     </div>
+
+    <?php if (function_exists('eottae_is_community_board') && eottae_is_community_board($bo_table)) {
+        include G5_PATH.'/components/eottae/community-write-links.php';
+    } ?>
 
     <?php if ($file_count > 0) { ?>
     <div class="community-write-page__photos">

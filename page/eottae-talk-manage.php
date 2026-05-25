@@ -46,6 +46,13 @@ g5_page_start('톡방 관리');
         · <a href="<?php echo eottae_talkroom_ai_settings_url($room_id); ?>">AI 도우미 설정</a>
     </p>
 
+    <?php
+    $talk_invite_url = $detail['invite_href'] ?? eottae_talkroom_invite_url($room_id);
+    $talk_invite_room_name = $detail['room_name'] ?? '';
+    $talk_invite_compact = true;
+    include G5_PATH.'/components/eottae/talk-invite-share.php';
+    ?>
+
     <section class="promo-admin-panel talk-manage-panel">
         <h2 class="promo-admin-panel__title">톡방 기본 정보</h2>
         <dl class="talk-manage-summary">

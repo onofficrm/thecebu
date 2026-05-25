@@ -232,6 +232,36 @@ if (!function_exists('eottae_is_community_board')) {
     }
 }
 
+if (!function_exists('eottae_on_community_write_before')) {
+    function eottae_on_community_write_before($board, $wr_id, $w, $qstr)
+    {
+        if (empty($board['bo_table']) || !eottae_is_community_board($board['bo_table'])) {
+            return;
+        }
+
+        if (function_exists('eottae_community_board_ensure_settings')) {
+            eottae_community_board_ensure_settings();
+        }
+
+        if (isset($_POST['wr_link1'])) {
+            $_POST['wr_link1'] = function_exists('eottae_community_normalize_url')
+                ? eottae_community_normalize_url($_POST['wr_link1'])
+                : trim((string) $_POST['wr_link1']);
+        }
+
+        if (isset($_POST['wr_link2'])) {
+            $_POST['wr_link2'] = function_exists('eottae_community_normalize_url')
+                ? eottae_community_normalize_url($_POST['wr_link2'])
+                : trim((string) $_POST['wr_link2']);
+        }
+    }
+}
+add_event('write_update_before', 'eottae_on_community_write_before', 12, 4);
+
+if (function_exists('eottae_community_board_ensure_settings')) {
+    eottae_community_board_ensure_settings();
+}
+
 if (!function_exists('eottae_on_promo_write_after')) {
     function eottae_on_promo_write_after($board, $wr_id, $w, $qstr, $redirect_url)
     {
@@ -349,6 +379,8 @@ if (!function_exists('eottae_talkroom_should_load_ui')) {
             'eottae-admin-talk-detail.php',
             'eottae-admin-talk-kicked.php',
             'eottae-admin-talk-reports.php',
+            'eottae-admin-talk-ai.php',
+            'eottae-admin-talk-ai-logs.php',
         );
         if (in_array($script, $talk_scripts, true)) {
             return true;
@@ -382,6 +414,14 @@ if (!function_exists('eottae_talkroom_load_ui_assets')) {
 }
 
 eottae_talkroom_load_ui_assets();
+
+if (!function_exists('eottae_talkroom_on_pre_head_ui')) {
+    function eottae_talkroom_on_pre_head_ui()
+    {
+        eottae_talkroom_load_ui_assets();
+    }
+}
+add_event('pre_head', 'eottae_talkroom_on_pre_head_ui', 5);
 
 if (!function_exists('eottae_talkroom_on_board_head_ui')) {
     function eottae_talkroom_on_board_head_ui($board, $write, $wr_id)

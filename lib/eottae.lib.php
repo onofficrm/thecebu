@@ -2367,6 +2367,141 @@ if (!function_exists('eottae_community_list_thumb')) {
     }
 }
 
+if (!function_exists('eottae_community_view_media')) {
+    /**
+     * 게시글 보기용 첨부 이미지·파일 분리
+     *
+     * @return array{images: string[], files: array<int, array<string, mixed>>}
+     */
+    function eottae_community_view_media($view)
+    {
+        if (!function_exists('get_file_thumbnail')) {
+            include_once G5_LIB_PATH.'/thumbnail.lib.php';
+        }
+
+        $images = array();
+        $files = array();
+
+        if (empty($view['file']) || !is_array($view['file'])) {
+            return array('images' => $images, 'files' => $files);
+        }
+
+        foreach ($view['file'] as $file) {
+            if (empty($file['source'])) {
+                continue;
+            }
+
+            if (!empty($file['view'])) {
+                $images[] = get_file_thumbnail($file);
+            } else {
+                $files[] = $file;
+            }
+        }
+
+        return array('images' => $images, 'files' => $files);
+    }
+}
+
+if (!function_exists('eottae_community_view_gallery_class')) {
+    function eottae_community_view_gallery_class($count)
+    {
+        $count = (int) $count;
+        if ($count <= 0) {
+            return '';
+        }
+        if ($count >= 5) {
+            return 'community-view-page__gallery--count-many';
+        }
+
+        return 'community-view-page__gallery--count-'.$count;
+    }
+}
+
+if (!function_exists('eottae_community_photo_limit')) {
+    function eottae_community_photo_limit()
+    {
+        return 7;
+    }
+}
+
+if (!function_exists('eottae_community_board_ensure_settings')) {
+    function eottae_community_board_ensure_settings()
+    {
+        static $done = false;
+        if ($done) {
+            return;
+        }
+        $done = true;
+
+        global $g5;
+
+        $bo_table = eottae_community_board_table();
+        if ($bo_table === '' || empty($g5['board_table'])) {
+            return;
+        }
+
+        $limit = eottae_community_photo_limit();
+        $row = sql_fetch(" select bo_upload_count from {$g5['board_table']} where bo_table = '".sql_escape_string($bo_table)."' ");
+        if (!$row) {
+            return;
+        }
+
+        if ((int) $row['bo_upload_count'] < $limit) {
+            sql_query(" update {$g5['board_table']} set bo_upload_count = '{$limit}' where bo_table = '".sql_escape_string($bo_table)."' ");
+        }
+    }
+}
+
+if (!function_exists('eottae_community_normalize_url')) {
+    function eottae_community_normalize_url($url)
+    {
+        $url = trim(strip_tags((string) $url));
+        if ($url === '') {
+            return '';
+        }
+
+        if (!preg_match('#^https?://#i', $url)) {
+            $url = 'https://'.$url;
+        }
+
+        return substr($url, 0, 1000);
+    }
+}
+
+if (!function_exists('eottae_community_write_link_values')) {
+    /**
+     * @return array{youtube: string, url: string}
+     */
+    function eottae_community_write_link_values($write = null)
+    {
+        $youtube = '';
+        $url = '';
+
+        if (is_array($write)) {
+            $youtube = isset($write['wr_link1']) ? get_text($write['wr_link1']) : '';
+            $url = isset($write['wr_link2']) ? get_text($write['wr_link2']) : '';
+        }
+
+        return array(
+            'youtube' => $youtube,
+            'url'     => $url,
+        );
+    }
+}
+
+if (!function_exists('eottae_community_write_photo_count')) {
+    function eottae_community_write_photo_count($board, $file_count = 0)
+    {
+        if (!is_array($board) || empty($board['bo_table']) || !function_exists('eottae_is_community_board') || !eottae_is_community_board($board['bo_table'])) {
+            return (int) $file_count;
+        }
+
+        eottae_community_board_ensure_settings();
+
+        return max(eottae_community_photo_limit(), (int) $file_count, (int) ($board['bo_upload_count'] ?? 0));
+    }
+}
+
 if (!function_exists('eottae_community_weekly_popular')) {
     function eottae_community_weekly_popular($bo_table = '', $limit = 5)
     {

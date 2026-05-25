@@ -5,7 +5,6 @@ include_once(G5_LIB_PATH.'/eottae.lib.php');
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
 
 $view_category = isset($view['ca_name']) ? get_text($view['ca_name']) : '';
-$view_thumb = eottae_community_list_thumb($bo_table, $view['wr_id']);
 $list_url = eottae_community_list_url($view_category !== '' ? array('sca' => $view_category) : array());
 
 $is_talkroom_board = function_exists('eottae_talkroom_board_table') && $bo_table === eottae_talkroom_board_table();
@@ -52,11 +51,11 @@ if ($is_ai_post) {
             <?php if ($view['wr_comment']) { ?><span>댓글 <?php echo number_format($view['wr_comment']); ?></span><?php } ?>
         </div>
 
-        <?php if ($view_thumb) { ?>
-        <div class="community-view-page__thumb">
-            <img src="<?php echo $view_thumb; ?>" alt="">
-        </div>
-        <?php } ?>
+        <?php include_once G5_PATH.'/components/eottae/community-view-media.php'; ?>
+
+        <?php if (function_exists('eottae_is_community_board') && eottae_is_community_board($bo_table)) {
+            include_once G5_PATH.'/components/eottae/community-view-links.php';
+        } ?>
 
         <section class="community-view-page__body talk-ai-msg__body<?php echo $is_ai_post ? ' talk-ai-msg__body--ai' : ''; ?>" id="bo_v_con">
             <?php echo get_view_thumbnail($view['content']); ?>
@@ -81,3 +80,12 @@ if ($is_ai_post) {
 </div>
 
 <script src="<?php echo G5_JS_URL; ?>/viewimageresize.js"></script>
+<script>
+$(function() {
+    $(".community-view-page__gallery, .community-view-page__body").viewimageresize();
+    $("a.view_image").on("click", function() {
+        window.open(this.href, "large_image", "location=yes,links=no,toolbar=no,top=10,left=10,width=10,height=10,resizable=yes,scrollbars=no,status=no");
+        return false;
+    });
+});
+</script>

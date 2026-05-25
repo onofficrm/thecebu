@@ -7,6 +7,62 @@ if (!function_exists('eottae_talkroom_ai_admin_url')) {
     include_once G5_LIB_PATH.'/eottae-talkroom-ai.lib.php';
 }
 
+if (!function_exists('eottae_talkroom_admin_append_body_class')) {
+    function eottae_talkroom_admin_append_body_class($class)
+    {
+        global $g5;
+
+        $class = trim((string) $class);
+        if ($class === '') {
+            return;
+        }
+
+        if (!isset($g5['body_script'])) {
+            $g5['body_script'] = '';
+        }
+
+        if (preg_match('/class="([^"]*)"/', $g5['body_script'], $matches)) {
+            if (strpos($matches[1], $class) !== false) {
+                return;
+            }
+            $g5['body_script'] = preg_replace(
+                '/class="([^"]*)"/',
+                'class="'.trim($matches[1].' '.$class).'"',
+                $g5['body_script'],
+                1
+            );
+
+            return;
+        }
+
+        $g5['body_script'] .= ' class="'.$class.'"';
+    }
+}
+
+if (!function_exists('eottae_talkroom_admin_page_assets')) {
+    function eottae_talkroom_admin_page_assets()
+    {
+        static $loaded = false;
+        if ($loaded) {
+            return;
+        }
+        $loaded = true;
+
+        add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae.css">', 19);
+        add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-talkroom-ui.css">', 21);
+
+        foreach (array('eottae-page', 'talkroom-ui', 'talk-admin-shell') as $class) {
+            if (function_exists('eottae_talkroom_append_body_class')) {
+                eottae_talkroom_append_body_class($class);
+            } else {
+                eottae_talkroom_admin_append_body_class($class);
+            }
+        }
+    }
+}
+
+eottae_talkroom_admin_page_assets();
+
 if (!function_exists('eottae_talkroom_render_admin_nav')) {
     function eottae_talkroom_render_admin_nav($active = 'applies')
     {

@@ -71,14 +71,58 @@
       navigator.share({ title: document.title, url: url }).catch(function () {});
       return;
     }
+    copyTextToClipboard(url, '링크가 복사되었습니다.');
+  }
+
+  function copyTextToClipboard(text, successMessage) {
+    var value = (text || '').trim();
+    if (!value) return Promise.reject();
+
+    successMessage = successMessage || '링크가 복사되었습니다.';
+
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(url).then(function () {
-        alert('링크가 복사되었습니다.');
+      return navigator.clipboard.writeText(value).then(function () {
+        alert(successMessage);
       });
+    }
+
+    return new Promise(function (resolve, reject) {
+      var textarea = document.createElement('textarea');
+      textarea.value = value;
+      textarea.setAttribute('readonly', 'readonly');
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        alert(successMessage);
+        resolve();
+      } catch (err) {
+        prompt('링크를 복사하세요:', value);
+        reject(err);
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    var copyBtn = e.target.closest('[data-copy-text], [data-talk-invite-copy]');
+    if (copyBtn) {
+      e.preventDefault();
+      var text = copyBtn.getAttribute('data-copy-text') || '';
+      var targetSelector = copyBtn.getAttribute('data-copy-target');
+      if (targetSelector) {
+        var target = document.querySelector(targetSelector);
+        if (target && target.value) {
+          text = target.value;
+        }
+      }
+      copyTextToClipboard(text, copyBtn.getAttribute('data-copy-message') || '초대 링크가 복사되었습니다.');
       return;
     }
-    prompt('링크를 복사하세요:', url);
-  }
+  });
 
   document.addEventListener('click', function (e) {
     var inquiryBtn = e.target.closest('[data-inquiry-action="open"], .inquiry-button__btn--inquiry');

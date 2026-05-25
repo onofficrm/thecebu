@@ -5973,12 +5973,17 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 
 .promo-admin-btn {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 10px 16px;
   border: 1px solid #cbd5e1;
   border-radius: 10px;
   background: #fff;
   font-size: 13px;
   font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  color: #334155;
   cursor: pointer;
 }
 
@@ -6729,6 +6734,25 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   font-weight: 600;
 }
 
+.community-write-page__links {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.community-write-page__optional {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--eottae-muted);
+}
+
+.community-write-page__hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--eottae-muted);
+}
+
 .community-write-page__photo-grid {
   display: flex;
   gap: 10px;
@@ -7205,6 +7229,114 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   color: #334155;
 }
 
+.community-view-page__gallery {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.community-view-page__gallery-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #f1f5f9;
+}
+
+.community-view-page__gallery-item a {
+  display: block;
+}
+
+.community-view-page__gallery-item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.community-view-page__gallery--count-1 {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.community-view-page__gallery--count-1 .community-view-page__gallery-item img {
+  max-height: 560px;
+  object-fit: contain;
+  background: #0f172a;
+}
+
+.community-view-page__gallery--count-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.community-view-page__gallery--count-2 .community-view-page__gallery-item {
+  aspect-ratio: 1;
+}
+
+.community-view-page__gallery--count-3 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.community-view-page__gallery--count-3 .community-view-page__gallery-item:first-child {
+  grid-column: span 2;
+  aspect-ratio: 16 / 9;
+}
+
+.community-view-page__gallery--count-3 .community-view-page__gallery-item:not(:first-child) {
+  aspect-ratio: 1;
+}
+
+.community-view-page__gallery--count-4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.community-view-page__gallery--count-4 .community-view-page__gallery-item {
+  aspect-ratio: 1;
+}
+
+.community-view-page__gallery--count-many {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.community-view-page__gallery--count-many .community-view-page__gallery-item {
+  aspect-ratio: 1;
+}
+
+.community-view-page__files {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.community-view-page__files-title {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #334155;
+}
+
+.community-view-page__files-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.community-view-page__files-item + .community-view-page__files-item {
+  margin-top: 8px;
+}
+
+.community-view-page__files-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--eottae-primary);
+  text-decoration: none;
+}
+
+.community-view-page__files-meta {
+  font-weight: 500;
+  color: var(--eottae-muted);
+}
+
 .community-view-page__thumb {
   margin-bottom: 16px;
   border-radius: 12px;
@@ -7219,6 +7351,62 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 .community-view-page__body {
   line-height: 1.8;
   font-size: 15px;
+}
+
+.community-view-page__links {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.community-view-page__youtube .board-yt-embed,
+.community-view-page__youtube .board-yt-embed__ratio {
+  width: 100%;
+}
+
+.community-view-page__youtube .board-yt-embed__ratio {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #0f172a;
+}
+
+.community-view-page__youtube .board-yt-embed__ratio iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.community-view-page__related-link {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.community-view-page__related-link-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #64748b;
+}
+
+.community-view-page__related-link-anchor {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--eottae-primary);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.community-view-page__related-link-anchor:hover {
+  text-decoration: underline;
 }
 
 .community-view-page__footer {

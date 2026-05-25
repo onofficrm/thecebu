@@ -286,7 +286,7 @@ if (!function_exists('eottae_install_community_board_def')) {
             'bo_comment_level' => 2,
             'bo_use_category'  => 1,
             'bo_category_list' => $category_list,
-            'bo_upload_count'  => 5,
+            'bo_upload_count'  => 7,
             'bo_order'         => (int) $bo_order,
         );
     }
@@ -425,6 +425,10 @@ if (!function_exists('eottae_install_update_existing_boards')) {
                     }
                 }
                 $sets[] = "bo_upload_count = '10'";
+            }
+
+            if (function_exists('eottae_community_board_table') && $bo_table === eottae_community_board_table()) {
+                $sets[] = "bo_upload_count = '".(int) (isset($def['bo_upload_count']) ? $def['bo_upload_count'] : 7)."'";
             }
 
             sql_query(" update {$g5['board_table']} set ".implode(', ', $sets)." where bo_table = '{$bo_table}' ");
