@@ -18,12 +18,15 @@ if (!defined('_GNUBOARD_')) {
 }
 
 /**
- * head/tail include 시 그누보드 전역 변수 접근 (함수 스코프 대응)
+ * head/tail include 시 그누보드 전역을 함수 스코프로 가져옴
  */
-function g5_page_import_globals()
+function g5_page_prepare_board()
 {
-    global $g5, $config, $member, $is_member, $is_admin, $board, $bo_table, $sca;
-    global $g5_css_brand, $begin_time, $g5_debug;
+    global $board;
+
+    if (!isset($board) || !is_array($board)) {
+        $board = array('bo_use_dhtml_editor' => 0);
+    }
 }
 
 /**
@@ -32,8 +35,10 @@ function g5_page_import_globals()
  */
 function g5_page_start($title)
 {
-    g5_page_import_globals();
-    global $g5;
+    global $g5, $config, $member, $is_member, $is_admin, $board, $bo_table, $sca;
+    global $g5_css_brand, $begin_time, $g5_debug;
+
+    g5_page_prepare_board();
     $g5['title'] = $title;
     include_once(G5_PATH.'/head.php');
 }
@@ -43,6 +48,9 @@ function g5_page_start($title)
  */
 function g5_page_end()
 {
-    g5_page_import_globals();
+    global $g5, $config, $member, $is_member, $is_admin, $board, $bo_table, $sca;
+    global $g5_css_brand, $begin_time, $g5_debug;
+
+    g5_page_prepare_board();
     include_once(G5_PATH.'/tail.php');
 }
