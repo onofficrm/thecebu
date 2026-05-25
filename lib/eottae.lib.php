@@ -602,21 +602,6 @@ if (!function_exists('eottae_builder_inject_logo_head_script')) {
     }
 }
 
-if (!function_exists('eottae_builder_inject_logo_script')) {
-    function eottae_builder_inject_logo_script()
-    {
-        $logo = eottae_builder_logo_url();
-        if ($logo === '') {
-            return '';
-        }
-
-        $logo_js = json_encode($logo, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $home_js = json_encode((defined('G5_URL') ? G5_URL : '').'/', JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-        return '<script>(function(){var LOGO=window.__EOTTae_LOGO__||'.$logo_js.';var HOME='.$home_js.';function normalizePath(href){if(!href){return"";}try{var url=new URL(href,window.location.origin);var path=url.pathname.replace(/\\/+$/,"");return path===""?"/":path;}catch(e){return href;}}function isHomeLogoAnchor(a){if(!a||!a.closest("header")){return false;}var href=a.getAttribute("href")||"";if(href===HOME||href===HOME.replace(/\\/+$/, "")+"/"){return true;}return normalizePath(href)==="/";}function applyLogo(){document.querySelectorAll("header a[href]").forEach(function(a){if(!isHomeLogoAnchor(a)){return;}a.classList.add("eottae-gnb-header__logo");a.setAttribute("data-eottae-logo-link","1");var img=a.querySelector("img[data-eottae-logo]");if(img&&img.getAttribute("src")===LOGO){return;}a.innerHTML=\'<img data-eottae-logo class="eottae-gnb-header__logo-img" src="\'+LOGO+\'" alt="세부어때">\';});}function scheduleApply(){window.requestAnimationFrame(applyLogo);}applyLogo();if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",applyLogo);}new MutationObserver(scheduleApply).observe(document.documentElement,{childList:true,subtree:true});})();</script>';
-    }
-}
-
 if (!function_exists('eottae_builder_inject_featured_carousel_script')) {
     function eottae_builder_inject_featured_carousel_script()
     {
@@ -636,12 +621,15 @@ if (!function_exists('eottae_builder_inject_html')) {
         $html = eottae_builder_inject_home_map($html);
 
         $head_script = eottae_builder_inject_logo_head_script();
-        if ($head_script !== '' && preg_match('#</head>#i', $html)) {
-            $html = preg_replace('#</head>#i', $head_script.'</head>', $html, 1);
+        if ($head_script !== '') {
+            if (preg_match('#<script[^>]+type=["\']module["\'][^>]*>#i', $html)) {
+                $html = preg_replace('#(<script[^>]+type=["\']module["\'][^>]*>)#i', $head_script.'$1', $html, 1);
+            } elseif (preg_match('#</head>#i', $html)) {
+                $html = preg_replace('#</head>#i', $head_script.'</head>', $html, 1);
+            }
         }
 
-        $body_scripts = eottae_builder_inject_logo_script();
-        $body_scripts .= eottae_builder_inject_featured_carousel_script();
+        $body_scripts = eottae_builder_inject_featured_carousel_script();
 
         if ($body_scripts === '') {
             return $html;

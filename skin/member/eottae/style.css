@@ -2,7 +2,19 @@
 
 .register-form .frm_input,
 .login-form .frm_input,
-.password-find-form .frm_input {
+.password-find-form .frm_input,
+.member-confirm-form .frm_input {
   width: 100%;
   box-sizing: border-box;
+}
+
+.member-confirm-form__id-value {
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--eottae-radius-sm);
+  background: #f8fafc;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--eottae-text);
 }
