@@ -126,20 +126,17 @@ if (!function_exists('eottae_shop_list_card_html')) {
                 <?php } ?>
             </a>
             <div class="shop-list-card__body">
-                <div class="shop-list-card__tags">
-                    <?php if ($shop['category']) { ?><span class="shop-list-card__tag shop-list-card__tag--cate"><?php echo $shop['category']; ?></span><?php } ?>
-                    <?php if ($shop['region']) { ?><span class="shop-list-card__tag shop-list-card__tag--region"><?php echo $shop['region']; ?></span><?php } ?>
-                    <span class="shop-list-card__distance" data-shop-distance data-lat="<?php echo htmlspecialchars($shop['lat'], ENT_QUOTES, 'UTF-8'); ?>" data-lng="<?php echo htmlspecialchars($shop['lng'], ENT_QUOTES, 'UTF-8'); ?>">
-                        <?php
-                        if ($distance_label !== '') {
-                            echo $distance_label;
-                        } else {
-                            echo $shop['region'] ? get_text($shop['region']) : '세부';
-                        }
-                        ?>
-                    </span>
+                <div class="shop-list-card__head">
+                    <h3 class="shop-list-card__title"><a href="<?php echo $href; ?>"><?php echo $shop['name'] ?: get_text($row['subject']); ?></a></h3>
+                    <div class="shop-list-card__tags">
+                        <?php if ($shop['category']) { ?><span class="shop-list-card__tag shop-list-card__tag--cate"><?php echo $shop['category']; ?></span><?php } ?>
+                        <?php if ($distance_label !== '') { ?>
+                        <span class="shop-list-card__tag shop-list-card__distance" data-shop-distance data-lat="<?php echo htmlspecialchars($shop['lat'], ENT_QUOTES, 'UTF-8'); ?>" data-lng="<?php echo htmlspecialchars($shop['lng'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo $distance_label; ?></span>
+                        <?php } elseif ($shop['region']) { ?>
+                        <span class="shop-list-card__tag shop-list-card__tag--region"><?php echo $shop['region']; ?></span>
+                        <?php } ?>
+                    </div>
                 </div>
-                <h3 class="shop-list-card__title"><a href="<?php echo $href; ?>"><?php echo $shop['name'] ?: get_text($row['subject']); ?></a></h3>
                 <?php if ($snippet !== '') { ?>
                 <p class="shop-list-card__desc"><?php echo $snippet; ?></p>
                 <?php } ?>

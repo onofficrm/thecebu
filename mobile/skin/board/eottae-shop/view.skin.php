@@ -14,7 +14,6 @@ if ($shop_youtube_id) {
         return ($link['key'] ?? '') !== 'youtube';
     }));
 }
-eottae_enqueue_google_maps();
 eottae_track_recent_shop($view['wr_id']);
 $shop_is_saved = $is_member && eottae_is_shop_saved($member['mb_id'], $view['wr_id']);
 $share_url = G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$view['wr_id'];
@@ -30,6 +29,8 @@ $shop_map = array(
     'thumbnail' => function_exists('eottae_shop_map_thumb_get') ? eottae_shop_map_thumb_get($bo_table, (int) $view['wr_id']) : array(),
 );
 $is_ad = isset($view['wr_link2']) && stripos((string) $view['wr_link2'], 'ad') !== false;
+
+include_once G5_SKIN_PATH.'/board/_inc/eottae-shop-view-setup.php';
 
 if (function_exists('eottae_shop_apply_manage_links')) {
     eottae_shop_apply_manage_links($view, $bo_table);
@@ -82,15 +83,32 @@ if (function_exists('eottae_shop_apply_manage_links')) {
                 </p>
             </div>
 
-            <section class="shop-detail-page__content" id="bo_v_con">
-                <?php if ($shop_youtube_id) {
-                    include_once(G5_SKIN_PATH.'/board/_inc/g5b-youtube.php');
-                    ?>
-                <div class="shop-detail-page__video" aria-label="소개 영상">
-                    <?php echo g5b_youtube_embed_html($shop_youtube_id, $shop['name'].' 소개 영상'); ?>
+            <section class="shop-detail-page__content" id="bo_v_con"<?php if ($shop_can_edit_content) { ?> data-shop-content-edit data-shop-content-use-editor="<?php echo $shop_content_use_editor ? '1' : '0'; ?>" data-shop-content-token="<?php echo htmlspecialchars($shop_content_token, ENT_QUOTES, 'UTF-8'); ?>" data-shop-content-bo-table="<?php echo htmlspecialchars($bo_table, ENT_QUOTES, 'UTF-8'); ?>" data-shop-content-wr-id="<?php echo (int) $view['wr_id']; ?>" data-shop-content-action="<?php echo G5_URL; ?>/proc/eottae-shop-content-update.php"<?php } ?>>
+                <?php if ($shop_can_edit_content) { ?>
+                <div class="shop-detail-page__content-toolbar">
+                    <button type="button" class="shop-detail-page__content-edit-btn" data-shop-content-edit-open>본문 수정</button>
                 </div>
                 <?php } ?>
-                <?php echo get_view_thumbnail($view['content']); ?>
+                <div class="shop-detail-page__content-view" id="shopContentView">
+                    <?php if ($shop_youtube_id) {
+                        include_once(G5_SKIN_PATH.'/board/_inc/g5b-youtube.php');
+                        ?>
+                    <div class="shop-detail-page__video" aria-label="소개 영상">
+                        <?php echo g5b_youtube_embed_html($shop_youtube_id, $shop['name'].' 소개 영상'); ?>
+                    </div>
+                    <?php } ?>
+                    <div class="shop-detail-page__content-body" id="shopContentBody"><?php echo get_view_thumbnail($view['content']); ?></div>
+                </div>
+                <?php if ($shop_can_edit_content) { ?>
+                <div class="shop-detail-page__content-edit" id="shopContentEdit" hidden>
+                    <?php echo $shop_content_editor_html; ?>
+                    <div class="shop-detail-page__content-edit-actions">
+                        <button type="button" class="btn_b01 btn shop-detail-page__content-save" data-shop-content-save>저장</button>
+                        <button type="button" class="btn_b01 btn shop-detail-page__content-cancel" data-shop-content-cancel>취소</button>
+                    </div>
+                    <p class="shop-detail-page__content-edit-status" data-shop-content-status role="status" aria-live="polite"></p>
+                </div>
+                <?php } ?>
             </section>
 
             <?php eottae_render_review_section($view['wr_id'], $view['wr_subject']); ?>
@@ -118,11 +136,16 @@ if (function_exists('eottae_shop_apply_manage_links')) {
             eottae_render_inquiry_buttons('detail', array(
                 'phone'         => $shop['phone'],
                 'inquiry_code'  => $shop['inquiry_code'],
-                'lat'           => $shop['lat'],
-                'lng'           => $shop['lng'],
+                'lat'           => $shop_map['lat'] !== '' ? $shop_map['lat'] : $shop['lat'],
+                'lng'           => $shop_map['lng'] !== '' ? $shop_map['lng'] : $shop['lng'],
                 'address'       => $shop['address'],
                 'share_url'     => $share_url,
             ));
+            ?>
+
+            <?php
+            eottae_load_component('shop-detail-sidebar');
+            include G5_PATH.'/components/eottae/shop-detail-sidebar.php';
             ?>
         </aside>
     </div>

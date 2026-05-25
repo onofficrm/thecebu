@@ -223,6 +223,120 @@ if (!function_exists('eottae_maps_directions_url')) {
     }
 }
 
+if (!function_exists('eottae_shop_resolve_map_coords')) {
+    /**
+     * 지도 표시용 좌표 (저장값 없으면 대표지역 중심으로 보정)
+     *
+     * @return array{lat: string, lng: string}
+     */
+    function eottae_shop_resolve_map_coords($shop)
+    {
+        $lat = is_array($shop) && isset($shop['lat']) ? trim((string) $shop['lat']) : '';
+        $lng = is_array($shop) && isset($shop['lng']) ? trim((string) $shop['lng']) : '';
+
+        if ($lat !== '' && $lng !== '' && is_numeric($lat) && is_numeric($lng)) {
+            return array('lat' => $lat, 'lng' => $lng);
+        }
+
+        $address = is_array($shop) && isset($shop['address']) ? trim((string) $shop['address']) : '';
+        $region = is_array($shop) && isset($shop['region']) ? trim((string) $shop['region']) : '';
+        if ($address === '' && $region === '') {
+            return array('lat' => '', 'lng' => '');
+        }
+
+        $fallback = function_exists('eottae_shop_guess_coords') ? eottae_shop_guess_coords($address, $region) : array();
+        if (empty($fallback['lat']) || empty($fallback['lng'])) {
+            return array('lat' => '', 'lng' => '');
+        }
+
+        return array(
+            'lat' => (string) $fallback['lat'],
+            'lng' => (string) $fallback['lng'],
+        );
+    }
+}
+
+if (!function_exists('eottae_shop_map_embed_url')) {
+    /**
+     * Google Maps API 키 없이 iframe 임베드 URL
+     */
+    function eottae_shop_map_embed_url($lat, $lng, $address = '')
+    {
+        $lat = trim((string) $lat);
+        $lng = trim((string) $lng);
+        $address = trim((string) $address);
+
+        if ($lat !== '' && $lng !== '' && is_numeric($lat) && is_numeric($lng)) {
+            return 'https://maps.google.com/maps?q='.rawurlencode($lat.','.$lng).'&z=15&output=embed';
+        }
+        if ($address !== '') {
+            return 'https://maps.google.com/maps?q='.rawurlencode($address).'&z=15&output=embed';
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('eottae_shop_content_token')) {
+    function eottae_shop_content_token($regenerate = false)
+    {
+        $key = 'eottae_shop_content_token';
+        $token = get_session($key);
+        if ($regenerate || $token === '' || $token === null) {
+            $token = md5(uniqid((string) mt_rand(), true));
+            set_session($key, $token);
+        }
+
+        return $token;
+    }
+}
+
+if (!function_exists('eottae_shop_content_editor_enabled')) {
+    function eottae_shop_content_editor_enabled($board)
+    {
+        global $config, $member;
+
+        if (!is_array($board) || empty($board['bo_use_dhtml_editor'])) {
+            return false;
+        }
+
+        $is_dhtml_editor_use = !G5_IS_MOBILE || (defined('G5_IS_MOBILE_DHTML_USE') && G5_IS_MOBILE_DHTML_USE);
+        if (!$is_dhtml_editor_use || empty($config['cf_editor'])) {
+            return false;
+        }
+
+        return !empty($member['mb_level']) && (int) $member['mb_level'] >= (int) $board['bo_html_level'];
+    }
+}
+
+if (!function_exists('eottae_shop_enqueue_content_editor_assets')) {
+    function eottae_shop_enqueue_content_editor_assets()
+    {
+        global $config;
+
+        static $enqueued = false;
+        if ($enqueued || empty($config['cf_editor'])) {
+            return;
+        }
+
+        $editor_path = G5_EDITOR_PATH.'/'.$config['cf_editor'].'/editor.lib.php';
+        if (!is_file($editor_path)) {
+            return;
+        }
+
+        include_once $editor_path;
+
+        $editor_url = G5_EDITOR_URL.'/'.$config['cf_editor'];
+        add_javascript('<script src="'.$editor_url.'/js/service/HuskyEZCreator.js"></script>', 0);
+        add_javascript(
+            '<script>var g5_editor_url = "'.htmlspecialchars($editor_url, ENT_QUOTES, 'UTF-8').'", oEditors = [], ed_nonce = "'.ft_nonce_create('smarteditor').'";</script>',
+            1
+        );
+
+        $enqueued = true;
+    }
+}
+
 if (!function_exists('eottae_use_site_chrome')) {
     /**
      * 세부어때 공통 GNB·푸터·eottae.css 적용 여부 (관리자·설치 도구 제외)
@@ -1996,6 +2110,136 @@ if (!function_exists('eottae_shop_resolve_category')) {
     }
 }
 
+if (!function_exists('eottae_shop_weekday_options')) {
+    function eottae_shop_weekday_options()
+    {
+        return array('월', '화', '수', '목', '금', '토', '일');
+    }
+}
+
+if (!function_exists('eottae_shop_hours_form_state')) {
+    function eottae_shop_hours_form_state($wr_6, $options)
+    {
+        $wr_6 = trim((string) $wr_6);
+        $options = is_array($options) ? $options : array();
+        $is_custom = $wr_6 !== '' && !in_array($wr_6, $options, true);
+
+        return array(
+            'select' => $is_custom ? '__custom__' : $wr_6,
+            'custom' => $is_custom ? $wr_6 : '',
+        );
+    }
+}
+
+if (!function_exists('eottae_shop_parse_closed_days')) {
+    function eottae_shop_parse_closed_days($raw)
+    {
+        $result = array(
+            'weekdays' => array(),
+            'special'  => '',
+            'custom'   => '',
+        );
+
+        $raw = trim((string) $raw);
+        if ($raw === '') {
+            return $result;
+        }
+
+        if ($raw === '연중무휴' || strpos($raw, '연중무휴') === 0) {
+            $result['special'] = '연중무휴';
+            $rest = trim(preg_replace('/^연중무휴\s*(?:·|,|\/)?\s*/u', '', $raw));
+
+            if ($rest !== '' && $rest !== '연중무휴') {
+                $result['custom'] = $rest;
+            }
+
+            return $result;
+        }
+
+        if (strpos($raw, '비정기') !== false) {
+            $result['special'] = '비정기';
+            $rest = trim(preg_replace('/^비정기\s*휴무\s*(?:·|,|\/)?\s*/u', '', $raw));
+
+            if ($rest !== '' && strpos($rest, '비정기') === false) {
+                $result['custom'] = $rest;
+            }
+
+            return $result;
+        }
+
+        $remaining = $raw;
+        foreach (eottae_shop_weekday_options() as $weekday) {
+            if (preg_match('/(?:매주\s*)?'.preg_quote($weekday, '/').'요일/u', $raw)) {
+                $result['weekdays'][] = $weekday;
+                $remaining = preg_replace('/(?:매주\s*)?'.preg_quote($weekday, '/').'요일\s*(?:·|,|\/)?\s*/u', '', $remaining);
+            }
+        }
+
+        $remaining = trim(preg_replace('/^[\s·,\/]+|[\s·,\/]+$/u', '', $remaining));
+        if ($remaining !== '') {
+            $result['custom'] = $remaining;
+        }
+
+        return $result;
+    }
+}
+
+if (!function_exists('eottae_shop_format_closed_days')) {
+    function eottae_shop_format_closed_days($weekdays, $special, $custom)
+    {
+        $weekdays = is_array($weekdays) ? array_values(array_filter($weekdays)) : array();
+        $special = trim((string) $special);
+        $custom = trim((string) $custom);
+
+        if ($special === '연중무휴') {
+            return $custom !== '' ? '연중무휴 · '.$custom : '연중무휴';
+        }
+
+        if ($special === '비정기') {
+            return $custom !== '' ? '비정기 휴무 · '.$custom : '비정기 휴무';
+        }
+
+        $parts = array();
+        foreach ($weekdays as $weekday) {
+            $weekday = trim((string) $weekday);
+            if ($weekday !== '') {
+                $parts[] = '매주 '.$weekday.'요일';
+            }
+        }
+
+        $base = implode(' · ', $parts);
+        if ($base === '' && $custom !== '') {
+            return $custom;
+        }
+
+        if ($custom !== '') {
+            return $base !== '' ? $base.' · '.$custom : $custom;
+        }
+
+        return $base;
+    }
+}
+
+if (!function_exists('eottae_shop_merge_closed_days_from_post')) {
+    function eottae_shop_merge_closed_days_from_post()
+    {
+        $weekdays = isset($_POST['eottae_closed_weekday']) ? (array) $_POST['eottae_closed_weekday'] : array();
+        $weekdays = array_map(function ($day) {
+            return preg_replace('/[^가-힣]/u', '', (string) $day);
+        }, $weekdays);
+        $weekdays = array_values(array_filter($weekdays));
+
+        $special = isset($_POST['eottae_closed_special']) ? trim(strip_tags((string) $_POST['eottae_closed_special'])) : '';
+        if ($special !== '연중무휴' && $special !== '비정기') {
+            $special = '';
+        }
+
+        $custom = isset($_POST['eottae_closed_custom']) ? trim(strip_tags((string) $_POST['eottae_closed_custom'])) : '';
+
+        return eottae_shop_format_closed_days($weekdays, $special, $custom);
+    }
+}
+
 if (!function_exists('eottae_shop_prepare_write_post')) {
     function eottae_shop_prepare_write_post($board)
     {
@@ -2047,6 +2291,19 @@ if (!function_exists('eottae_shop_prepare_write_post')) {
         if ($has_sns_fields) {
             $_POST['wr_link2'] = array_filter($sns_payload) ? json_encode($sns_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : '';
         }
+        if (isset($_POST['wr_6_preset'])) {
+            $preset = trim((string) $_POST['wr_6_preset']);
+            if ($preset === '__custom__') {
+                $_POST['wr_6'] = isset($_POST['wr_6_custom']) ? trim(strip_tags((string) $_POST['wr_6_custom'])) : '';
+            } elseif ($preset !== '') {
+                $_POST['wr_6'] = $preset;
+            }
+        }
+
+        if (isset($_POST['eottae_closed_weekday']) || isset($_POST['eottae_closed_special']) || isset($_POST['eottae_closed_custom'])) {
+            $_POST['wr_7'] = eottae_shop_merge_closed_days_from_post();
+        }
+
         if (function_exists('eottae_shop_apply_fallback_coords_to_post')) {
             eottae_shop_apply_fallback_coords_to_post();
         }
@@ -2350,6 +2607,7 @@ if (!function_exists('eottae_shop_map_markers')) {
                 'wr_id'    => (int) $shop['wr_id'],
                 'name'     => $shop['name'],
                 'category' => $shop['category'],
+                'region'   => $shop['region'],
                 'lat'      => $lat,
                 'lng'      => $lng,
                 'thumbnail' => $thumbnail,
@@ -2386,6 +2644,7 @@ if (!function_exists('eottae_shop_map_locations_json')) {
                 'id'       => isset($marker['wr_id']) ? (int) $marker['wr_id'] : 0,
                 'name'     => isset($marker['name']) ? (string) $marker['name'] : '',
                 'category' => isset($marker['category']) ? (string) $marker['category'] : '',
+                'region'   => isset($marker['region']) ? (string) $marker['region'] : '',
                 'lat'      => (float) $lat,
                 'lng'      => (float) $lng,
                 'link'     => isset($marker['url']) ? (string) $marker['url'] : '',

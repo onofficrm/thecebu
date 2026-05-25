@@ -1133,13 +1133,23 @@ body.eottae-page hr {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 4px;
+}
+
+.shop-list-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin-bottom: 2px;
 }
 
 .shop-list-card__tags {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 6px;
-  margin-bottom: 6px;
+  margin-bottom: 0;
 }
 
 .shop-list-card__tag,
@@ -1150,6 +1160,7 @@ body.eottae-page hr {
   border-radius: 6px;
   font-size: 11px;
   font-weight: 800;
+  flex-shrink: 0;
 }
 
 .shop-list-card__tag--cate {
@@ -1170,10 +1181,12 @@ body.eottae-page hr {
 }
 
 .shop-list-card__title {
-  margin: 0 0 4px;
+  margin: 0;
   font-size: 15px;
   font-weight: 800;
-  line-height: 1.35;
+  line-height: 1.3;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .shop-list-card__title a {
@@ -1182,7 +1195,7 @@ body.eottae-page hr {
 }
 
 .shop-list-card__desc {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   font-size: 12px;
   line-height: 1.5;
   color: #64748b;
@@ -1193,7 +1206,7 @@ body.eottae-page hr {
 }
 
 .shop-list-card__rating {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   font-size: 12px;
   color: #64748b;
 }
@@ -1691,6 +1704,80 @@ body.eottae-page hr {
   font-weight: 700;
   color: var(--eottae-primary);
   text-decoration: none;
+}
+
+.shop-detail-map--embed .shop-detail-map__canvas {
+  background: none;
+  display: block;
+  min-height: 0;
+  padding: 0;
+}
+
+.shop-detail-map__embed {
+  display: block;
+  width: 100%;
+  height: 220px;
+  border: 0;
+}
+
+.shop-detail-map__foot {
+  padding: 10px 14px 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.shop-detail-page__content-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.shop-detail-page__content-edit-btn {
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  background: #eff6ff;
+  color: var(--eottae-primary);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.shop-detail-page__content-edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.shop-detail-page__content-edit-status {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.shop-detail-page__content-edit-status.is-error {
+  color: #dc2626;
+}
+
+.shop-detail-page__content-edit-status.is-success {
+  color: #059669;
+}
+
+.shop-detail-page__content-textarea {
+  width: 100%;
+  min-height: 220px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.shop-detail-sidebar {
+  margin-top: 16px;
+}
+
+.shop-detail-sidebar .community-ad-carousel {
+  margin-top: 0;
 }
 
 /* ── Community board list (eottae-community) ── */
@@ -5047,6 +5134,87 @@ body.eottae-page hr {
   background: #fff;
 }
 
+.shop-register-page__hours-custom,
+.shop-register-page__closed-custom {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 14px;
+  background: #fff;
+}
+
+.shop-register-page__hours-custom:focus,
+.shop-register-page__closed-custom:focus {
+  border-color: #0ea5e9;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+}
+
+.shop-register-page__closed-label {
+  display: block;
+  margin-bottom: 0.55rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.shop-register-page__closed-days {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.shop-register-page__closed-weekdays {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.shop-register-page__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.shop-register-page__check:has(input:checked) {
+  border-color: rgba(14, 165, 233, 0.45);
+  background: #eff6ff;
+  box-shadow: 0 0 0 1px rgba(14, 165, 233, 0.12);
+}
+
+.shop-register-page__check input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #0284c7;
+}
+
+.shop-register-page__check--special {
+  align-self: flex-start;
+}
+
+@media (min-width: 640px) {
+  .shop-register-page__closed-weekdays {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
+
 .shop-register-page__advanced {
   margin-top: 12px;
   padding: 12px;
@@ -5275,6 +5443,110 @@ body.eottae-page hr {
   object-fit: cover;
   border-radius: 12px;
   margin: 0 0 8px;
+}
+
+/* Google Maps InfoWindow — 닫기 버튼을 썸네일 위에 겹침 */
+.gm-style .gm-style-iw-c {
+  position: relative !important;
+  padding: 0 !important;
+}
+
+.gm-style .gm-style-iw-d {
+  overflow: hidden !important;
+  max-height: none !important;
+}
+
+.gm-style .gm-style-iw-chr {
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  left: auto !important;
+  width: auto !important;
+  height: auto !important;
+  z-index: 3 !important;
+  padding: 0 !important;
+}
+
+.gm-style .gm-style-iw-chr button {
+  width: 28px !important;
+  height: 28px !important;
+  margin: 0 !important;
+  opacity: 1 !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18) !important;
+}
+
+.gm-style .gm-style-iw-chr button span {
+  margin: 0 !important;
+  background-color: #334155 !important;
+}
+
+.marker-info--thumb {
+  max-width: 260px;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.marker-info--thumb .marker-info-thumb-wrap {
+  display: block;
+  line-height: 0;
+}
+
+.marker-info--thumb .marker-info-thumb {
+  width: 100%;
+  max-width: 260px;
+  height: 140px;
+  margin: 0;
+  border-radius: 0;
+}
+
+.marker-info-body {
+  padding: 10px 12px 12px;
+}
+
+.marker-info-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin-bottom: 6px;
+}
+
+.marker-info-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: #0f172a;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.marker-info-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.marker-info-badge--cate {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.marker-info-badge--region {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.marker-info--thumb .marker-info-actions {
+  margin-top: 0;
 }
 
 .shop-register-page__summary {

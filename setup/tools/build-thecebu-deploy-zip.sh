@@ -69,6 +69,7 @@ PROC_FILES=(
   proc/eottae-geocode.php
   proc/eottae-coupon-use.php
   proc/eottae-shop-save.php
+  proc/eottae-shop-content-update.php
   proc/eottae-shop-ai-generate.php
   proc/eottae-shop-map-thumb-ai.php
   proc/inquiry-submit.php
@@ -102,6 +103,8 @@ API_FILES=(
 for f in "${ROOT_FILES[@]}" "${EXTEND_FILES[@]}" "${LIB_FILES[@]}" "${CSS_FILES[@]}" "${JS_FILES[@]}" "${PROC_FILES[@]}" "${PAGE_FILES[@]}" "${SETUP_FILES[@]}" "${API_FILES[@]}"; do
   copy_file "$f"
 done
+
+copy_file skin/board/_inc/eottae-shop-view-setup.php
 
 DIRS=(
   components/eottae

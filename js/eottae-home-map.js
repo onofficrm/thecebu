@@ -41,6 +41,7 @@
       id: raw.id != null ? raw.id : raw.wr_id || '',
       name: raw.name || '업체',
       category: raw.category || '',
+      region: raw.region || '',
       lat: lat,
       lng: lng,
       thumbnail: raw.thumbnail || '',
@@ -57,27 +58,50 @@
     };
   }
 
+  function markerInfoBadgesHtml(loc) {
+    var html = '';
+    if (loc.category) {
+      html +=
+        '<span class="marker-info-badge marker-info-badge--cate">' +
+        escapeHtml(loc.category) +
+        '</span>';
+    }
+    if (loc.region) {
+      html +=
+        '<span class="marker-info-badge marker-info-badge--region">' +
+        escapeHtml(loc.region) +
+        '</span>';
+    }
+    return html;
+  }
+
   function markerInfoHtml(loc) {
-    var thumb = loc.thumbnail
-      ? '<img class="marker-info-thumb" src="' + escapeHtml(loc.thumbnail) + '" alt="">'
+    var hasThumb = !!loc.thumbnail;
+    var thumb = hasThumb
+      ? '<div class="marker-info-thumb-wrap"><img class="marker-info-thumb" src="' +
+        escapeHtml(loc.thumbnail) +
+        '" alt=""></div>'
       : '';
-    var cat = loc.category
-      ? '<p class="marker-info-category">' + escapeHtml(loc.category) + '</p>'
-      : '';
+    var badges = markerInfoBadgesHtml(loc);
     var link =
       loc.link && loc.link !== '#'
         ? '<a href="' + escapeHtml(loc.link) + '" class="marker-info-link">상세보기</a>'
         : '';
     return (
-      '<div class="marker-info">' +
+      '<div class="marker-info' +
+      (hasThumb ? ' marker-info--thumb' : '') +
+      '">' +
       thumb +
+      '<div class="marker-info-body">' +
+      '<div class="marker-info-head">' +
       '<h3 class="marker-info-title">' +
       escapeHtml(loc.name) +
       '</h3>' +
-      cat +
+      badges +
+      '</div>' +
       '<div class="marker-info-actions">' +
       link +
-      '</div></div>'
+      '</div></div></div>'
     );
   }
 

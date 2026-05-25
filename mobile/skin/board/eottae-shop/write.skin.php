@@ -204,38 +204,7 @@ $shop_seo_v = function_exists('eottae_shop_seo_resolve_for_write')
 
     <div class="shop-register-page__panel" data-step="3">
         <h3>4. 영업정보</h3>
-        <div class="eottae-field">
-            <label for="wr_6">영업시간</label>
-            <select name="wr_6" id="wr_6" class="eottae-select">
-                <option value="">영업시간 선택</option>
-                <?php foreach ($business_hour_options as $hour) { ?>
-                <option value="<?php echo $hour; ?>"<?php echo $v['wr_6'] === $hour ? ' selected' : ''; ?>><?php echo $hour; ?></option>
-                <?php } ?>
-                <?php if ($v['wr_6'] !== '' && !in_array($v['wr_6'], $business_hour_options, true)) { ?>
-                <option value="<?php echo $v['wr_6']; ?>" selected><?php echo $v['wr_6']; ?></option>
-                <?php } ?>
-            </select>
-        </div>
-        <div class="eottae-field">
-            <label for="wr_7">휴무일</label>
-            <select name="wr_7" id="wr_7" class="eottae-select">
-                <option value="">휴무일 선택</option>
-                <?php foreach ($closed_day_options as $day) { ?>
-                <option value="<?php echo $day; ?>"<?php echo $v['wr_7'] === $day ? ' selected' : ''; ?>><?php echo $day; ?></option>
-                <?php } ?>
-                <?php if ($v['wr_7'] !== '' && !in_array($v['wr_7'], $closed_day_options, true)) { ?>
-                <option value="<?php echo $v['wr_7']; ?>" selected><?php echo $v['wr_7']; ?></option>
-                <?php } ?>
-            </select>
-        </div>
-        <div class="eottae-field">
-            <label for="wr_8">영업상태</label>
-            <select name="wr_8" id="wr_8" class="eottae-select">
-                <?php foreach (array('영업중', '휴업', '폐업', '준비중') as $st) { ?>
-                <option value="<?php echo $st; ?>"<?php echo $v['wr_8'] === $st ? ' selected' : ''; ?>><?php echo $st; ?></option>
-                <?php } ?>
-            </select>
-        </div>
+        <?php include G5_SKIN_PATH.'/board/_inc/eottae-shop-business-fields.php'; ?>
     </div>
 
     <div class="shop-register-page__panel" data-step="4">

@@ -95,6 +95,109 @@
     }
   });
 
+  function syncShopBusinessFields(root) {
+    var preset = qs('#wr_6_preset', root);
+    var hoursHidden = qs('#wr_6', root);
+    var hoursCustom = qs('#wr_6_custom', root);
+    if (preset && hoursHidden) {
+      if (preset.value === '__custom__') {
+        hoursHidden.value = hoursCustom ? hoursCustom.value.trim() : '';
+      } else {
+        hoursHidden.value = preset.value.trim();
+      }
+    }
+
+    var specialHidden = qs('#eottae_closed_special', root);
+    var closedHidden = qs('#wr_7', root);
+    var customInput = qs('#eottae_closed_custom', root);
+    var special = '';
+    qsa('[data-closed-special]', root).forEach(function (el) {
+      if (el.checked) special = el.getAttribute('data-closed-special') || '';
+    });
+    if (specialHidden) specialHidden.value = special;
+
+    var weekdays = [];
+    qsa('[data-closed-weekday]:checked', root).forEach(function (el) {
+      weekdays.push(el.value);
+    });
+
+    var parts = [];
+    if (special === '연중무휴') {
+      parts.push('연중무휴');
+    } else if (special === '비정기') {
+      parts.push('비정기 휴무');
+    } else {
+      weekdays.forEach(function (day) {
+        parts.push('매주 ' + day + '요일');
+      });
+    }
+    var custom = customInput ? customInput.value.trim() : '';
+    if (custom) {
+      parts.push(custom);
+    }
+    if (closedHidden) {
+      closedHidden.value = parts.join(' · ');
+    }
+  }
+
+  function initShopRegisterBusinessInfo(root) {
+    var preset = qs('#wr_6_preset', root);
+    var hoursCustom = qs('#wr_6_custom', root);
+    if (preset && hoursCustom) {
+      var toggleHoursCustom = function () {
+        var isCustom = preset.value === '__custom__';
+        hoursCustom.hidden = !isCustom;
+        if (isCustom) hoursCustom.focus();
+        syncShopBusinessFields(root);
+      };
+      preset.addEventListener('change', toggleHoursCustom);
+      hoursCustom.addEventListener('input', function () { syncShopBusinessFields(root); });
+      toggleHoursCustom();
+    }
+
+    var weekdayInputs = qsa('[data-closed-weekday]', root);
+    var specialInputs = qsa('[data-closed-special]', root);
+
+    function refreshClosedState(changed) {
+      var activeSpecial = '';
+      specialInputs.forEach(function (el) {
+        if (el === changed && el.checked) {
+          activeSpecial = el.getAttribute('data-closed-special') || '';
+          specialInputs.forEach(function (other) {
+            if (other !== el) other.checked = false;
+          });
+        } else if (el !== changed && el.checked) {
+          activeSpecial = el.getAttribute('data-closed-special') || '';
+        }
+      });
+
+      if (changed && changed.hasAttribute('data-closed-weekday') && changed.checked) {
+        specialInputs.forEach(function (el) { el.checked = false; });
+        activeSpecial = '';
+      }
+
+      var disableWeekdays = activeSpecial === '연중무휴' || activeSpecial === '비정기';
+      weekdayInputs.forEach(function (el) {
+        el.disabled = disableWeekdays;
+        if (disableWeekdays) el.checked = false;
+      });
+
+      syncShopBusinessFields(root);
+    }
+
+    weekdayInputs.forEach(function (el) {
+      el.addEventListener('change', function () { refreshClosedState(el); });
+    });
+    specialInputs.forEach(function (el) {
+      el.addEventListener('change', function () { refreshClosedState(el); });
+    });
+    var customInput = qs('#eottae_closed_custom', root);
+    if (customInput) {
+      customInput.addEventListener('input', function () { syncShopBusinessFields(root); });
+    }
+    syncShopBusinessFields(root);
+  }
+
   /* Shop register 7-step wizard */
   function initShopRegisterWizard() {
     var root = qs('.shop-register-page');
@@ -142,6 +245,7 @@
           current++;
           render();
           if (current === panels.length - 1) {
+            syncShopBusinessFields(root);
             updateShopRegisterSummary(root);
           }
         }
@@ -158,6 +262,7 @@
 
     initShopAiGenerator(root);
     initShopMapThumbAi(root);
+    initShopRegisterBusinessInfo(root);
     render();
   }
 
@@ -366,6 +471,7 @@
       ['네이버블로그', qs('#eottae_sns_naver_blog', root)],
       ['유튜브', qs('#eottae_sns_youtube', root)],
       ['영업시간', qs('#wr_6', root)],
+      ['휴무일', qs('#wr_7', root)],
       ['영업상태', qs('#wr_8', root)],
       ['SEO 타이틀', qs('#eottae_seo_title', root)],
       ['SEO 소개', qs('#eottae_seo_intro', root)],
@@ -401,6 +507,140 @@
         });
       });
     });
+  }
+
+  function initShopDetailContentEditor() {
+    var root = qs('[data-shop-content-edit]');
+    if (!root) return;
+
+    var view = qs('#shopContentView', root);
+    var edit = qs('#shopContentEdit', root);
+    var body = qs('#shopContentBody', root);
+    var textarea = qs('#shop_wr_content', root);
+    var statusEl = qs('[data-shop-content-status]', root);
+    var openBtn = qs('[data-shop-content-edit-open]', root);
+    var saveBtn = qs('[data-shop-content-save]', root);
+    var cancelBtn = qs('[data-shop-content-cancel]', root);
+    var useEditor = root.getAttribute('data-shop-content-use-editor') === '1';
+    var editorReady = false;
+    var saving = false;
+
+    function setStatus(message, type) {
+      if (!statusEl) return;
+      statusEl.textContent = message || '';
+      statusEl.classList.remove('is-error', 'is-success');
+      if (type) statusEl.classList.add('is-' + type);
+    }
+
+    function ensureEditor() {
+      if (!useEditor || editorReady || !textarea) return;
+      if (typeof nhn === 'undefined' || !nhn.husky || !nhn.husky.EZCreator || typeof g5_editor_url === 'undefined') {
+        return;
+      }
+
+      nhn.husky.EZCreator.createInIFrame({
+        oAppRef: oEditors,
+        elPlaceHolder: 'shop_wr_content',
+        sSkinURI: g5_editor_url + '/SmartEditor2Skin.html',
+        htParams: {
+          bUseToolbar: true,
+          bUseVerticalResizer: true,
+          bUseModeChanger: true,
+          bSkipXssFilter: true,
+          fOnBeforeUnload: function () {}
+        },
+        fOnAppLoad: function () {},
+        fCreator: 'createSEditor2'
+      });
+
+      editorReady = true;
+    }
+
+    function syncEditorToField() {
+      if (!useEditor || !editorReady || typeof oEditors === 'undefined' || !oEditors.getById || !oEditors.getById.shop_wr_content) {
+        return;
+      }
+      oEditors.getById.shop_wr_content.exec('UPDATE_CONTENTS_FIELD', []);
+    }
+
+    function showEdit() {
+      if (!edit || !view) return;
+      ensureEditor();
+      view.hidden = true;
+      edit.hidden = false;
+      setStatus('', '');
+      if (openBtn) openBtn.hidden = true;
+    }
+
+    function showView() {
+      if (!edit || !view) return;
+      view.hidden = false;
+      edit.hidden = true;
+      setStatus('', '');
+      if (openBtn) openBtn.hidden = false;
+    }
+
+    function getContentValue() {
+      if (!textarea) return '';
+      if (useEditor) {
+        syncEditorToField();
+      }
+      return textarea.value.trim();
+    }
+
+    if (openBtn) {
+      openBtn.addEventListener('click', showEdit);
+    }
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', showView);
+    }
+
+    if (saveBtn) {
+      saveBtn.addEventListener('click', function () {
+        if (saving) return;
+
+        var content = getContentValue();
+        if (!content) {
+          setStatus('본문 내용을 입력해 주세요.', 'error');
+          return;
+        }
+
+        var fd = new FormData();
+        fd.append('eottae_shop_content_token', root.getAttribute('data-shop-content-token') || '');
+        fd.append('bo_table', root.getAttribute('data-shop-content-bo-table') || '');
+        fd.append('wr_id', root.getAttribute('data-shop-content-wr-id') || '');
+        fd.append('wr_content', content);
+
+        saving = true;
+        saveBtn.disabled = true;
+        setStatus('저장 중…', '');
+
+        fetch(root.getAttribute('data-shop-content-action') || '', {
+          method: 'POST',
+          body: fd,
+          credentials: 'same-origin'
+        })
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (!data || !data.success) {
+              throw new Error((data && data.message) ? data.message : '저장에 실패했습니다.');
+            }
+            if (body && data.content_html) {
+              body.innerHTML = data.content_html;
+            }
+            setStatus(data.message || '저장했습니다.', 'success');
+            showView();
+          })
+          .catch(function (err) {
+            setStatus(err.message || '저장에 실패했습니다.', 'error');
+          })
+          .finally(function () {
+            saving = false;
+            saveBtn.disabled = false;
+          });
+      });
+    }
   }
 
   function initPhotoPreview() {
@@ -1254,6 +1494,7 @@
     initReviewReply();
     initShopSave();
     initShopDetailGallery();
+    initShopDetailContentEditor();
     initPhotoPreview();
     initAdCarousel();
     initBusinessWriteSnippets();

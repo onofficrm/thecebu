@@ -86,7 +86,7 @@ g5_page_start('쿠폰함');
         <article class="coupon-card" style="opacity:0.65">
             <h3 class="coupon-card__title"><?php echo get_text($coupon['cp_title']); ?></h3>
             <p class="coupon-card__desc"><?php echo get_text($coupon['cp_desc']); ?></p>
-            <p class="coupon-card__meta">사용일 <?php echo substr($coupon['ci_used_datetime'], 0, 10); ?></p>
+            <p class="coupon-card__meta">사용일 <?php echo substr($coupon['ci_used_datetime'], 0, 16); ?></p>
         </article>
         <?php } ?>
     </div>

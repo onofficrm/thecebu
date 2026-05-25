@@ -207,20 +207,98 @@
   line-height: 1.45;
 }
 
-.marker-info-title {
-  margin: 0 0 0.35rem;
-  font-size: 1rem;
-  font-weight: 600;
+/* Google Maps InfoWindow — 닫기 버튼을 썸네일 위에 겹침 (map.css, eottae.css와 동일) */
+.gm-style .gm-style-iw-c {
+  position: relative !important;
+  padding: 0 !important;
 }
 
-.marker-info-category {
-  margin: 0 0 0.25rem;
+.gm-style .gm-style-iw-d {
+  overflow: hidden !important;
+  max-height: none !important;
+}
+
+.gm-style .gm-style-iw-chr {
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  left: auto !important;
+  width: auto !important;
+  height: auto !important;
+  z-index: 3 !important;
+  padding: 0 !important;
+}
+
+.gm-style .gm-style-iw-chr button {
+  width: 28px !important;
+  height: 28px !important;
+  margin: 0 !important;
+  opacity: 1 !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18) !important;
+}
+
+.marker-info--thumb {
+  max-width: 260px;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.marker-info--thumb .marker-info-thumb {
+  display: block;
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  margin: 0;
+  border-radius: 0;
+}
+
+.marker-info-body {
+  padding: 10px 12px 12px;
+}
+
+.marker-info-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin-bottom: 6px;
+}
+
+.marker-info-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.3;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.marker-info-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.marker-info-badge--cate {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.marker-info-badge--region {
+  background: #f1f5f9;
   color: #64748b;
-  font-size: 0.85rem;
 }
 
 .marker-info-actions {
-  margin-top: 0.5rem;
+  margin-top: 0;
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
