@@ -19,9 +19,11 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
           GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          TALKROOM_MAINTENANCE_KEY: ${{ secrets.TALKROOM_MAINTENANCE_KEY }}
         run: |
           mkdir -p _deploy_secrets/data
           echo "HAS_DEPLOY_SECRETS=0" >> "$GITHUB_ENV"
+          echo "HAS_MAINTENANCE_KEY=0" >> "$GITHUB_ENV"
           php <<'PHP'
           <?php
           $cfg = array();
@@ -51,7 +53,20 @@ jobs:
               );
           }
           PHP
-          if [ -f _deploy_secrets/_site.config.local.php ] || [ -f _deploy_secrets/data/eottae-secrets.local.php ]; then
+          MAINT_KEY="${TALKROOM_MAINTENANCE_KEY:-$OPENAI_API_KEY}"
+          if [ -n "$MAINT_KEY" ]; then
+            export MAINT_KEY
+            php -r '
+              $key = getenv("MAINT_KEY");
+              file_put_contents(
+                  "_deploy_secrets/data/eottae-maintenance.local.php",
+                  "<?php\nif (!defined(\"_GNUBOARD_\")) exit;\n"
+                  . "define(\"EOTTAE_MAINTENANCE_BATCH_KEY\", ".var_export($key, true)." );\n"
+              );
+            '
+            echo "HAS_MAINTENANCE_KEY=1" >> "$GITHUB_ENV"
+          fi
+          if [ -f _deploy_secrets/_site.config.local.php ] || [ -f _deploy_secrets/data/eottae-secrets.local.php ] || [ -f _deploy_secrets/data/eottae-maintenance.local.php ]; then
             echo "HAS_DEPLOY_SECRETS=1" >> "$GITHUB_ENV"
           fi
 
@@ -99,3 +114,13 @@ jobs:
           server-dir: /public_html/
           state-name: thecebu-secrets-v1
           log-level: minimal
+
+      - name: Approve pending talkroom applications
+        if: env.HAS_MAINTENANCE_KEY == '1'
+        env:
+          TALKROOM_MAINTENANCE_KEY: ${{ secrets.TALKROOM_MAINTENANCE_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          MAINT_KEY="${TALKROOM_MAINTENANCE_KEY:-$OPENAI_API_KEY}"
+          curl -sfS --max-time 60 \
+            "https://thecebu.co.kr/proc/eottae-talkroom-maintenance.php?action=approve_pending_rooms&key=${MAINT_KEY}"

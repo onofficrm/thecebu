@@ -1768,6 +1768,57 @@ if (!function_exists('eottae_talkroom_approve_room')) {
     }
 }
 
+if (!function_exists('eottae_talkroom_approve_all_pending_rooms')) {
+    function eottae_talkroom_approve_all_pending_rooms($admin_mb_id)
+    {
+        $admin_mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $admin_mb_id);
+        if ($admin_mb_id === '') {
+            global $config;
+            $admin_mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) ($config['cf_admin'] ?? ''));
+        }
+
+        $applications = eottae_talkroom_admin_resolve_applications('pending', 500);
+        if (!is_array($applications)) {
+            $applications = array();
+        }
+
+        $results = array(
+            'total'   => count($applications),
+            'success' => 0,
+            'failed'  => 0,
+            'items'   => array(),
+        );
+
+        foreach ($applications as $application) {
+            $room_id = (int) ($application['room_id'] ?? 0);
+            if ($room_id < 1) {
+                continue;
+            }
+
+            $result = eottae_talkroom_approve_room($room_id, $admin_mb_id);
+            $item = array(
+                'room_id'   => $room_id,
+                'room_name' => (string) ($application['room_name'] ?? ''),
+                'ok'        => !empty($result['ok']),
+                'message'   => (string) ($result['message'] ?? ''),
+            );
+            $results['items'][] = $item;
+            if (!empty($result['ok'])) {
+                $results['success']++;
+            } else {
+                $results['failed']++;
+            }
+        }
+
+        $results['ok'] = $results['failed'] === 0;
+        $results['message'] = $results['total'] < 1
+            ? '승인 대기 중인 톡방 신청이 없습니다.'
+            : sprintf('승인 대기 %d건 중 %d건 승인, %d건 실패', $results['total'], $results['success'], $results['failed']);
+
+        return $results;
+    }
+}
+
 if (!function_exists('eottae_talkroom_reject_room')) {
     function eottae_talkroom_reject_room($room_id, $admin_mb_id, $reason)
     {
