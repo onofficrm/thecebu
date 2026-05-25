@@ -45,7 +45,9 @@
       lat: lat,
       lng: lng,
       thumbnail: raw.thumbnail || '',
-      link: raw.link || raw.url || ''
+      link: raw.link || raw.url || '',
+      rating: raw.rating != null ? raw.rating : 0,
+      review_count: raw.review_count != null ? raw.review_count : 0
     };
   }
 
@@ -57,6 +59,55 @@
       scaledSize: new global.google.maps.Size(size, size),
       anchor: new global.google.maps.Point(size / 2, size)
     };
+  }
+
+  function markerInfoReviewHref(loc) {
+    var base = loc.link && loc.link !== '#' ? String(loc.link) : '';
+    if (!base) {
+      return '#shop-reviews';
+    }
+    return base.indexOf('#') >= 0 ? base : base + '#shop-reviews';
+  }
+
+  function markerInfoRatingLabel(rating) {
+    var n = parseFloat(rating);
+    if (!isFinite(n) || n < 0) {
+      n = 0;
+    }
+    return n.toFixed(1);
+  }
+
+  function markerInfoReviewCountLabel(count) {
+    var n = parseInt(count, 10);
+    if (!isFinite(n) || n < 0) {
+      n = 0;
+    }
+    return String(n);
+  }
+
+  function markerInfoMetaHtml(loc) {
+    var html = '<div class="marker-info-meta">';
+    if (loc.category) {
+      html +=
+        '<span class="marker-info-badge marker-info-badge--cate">' +
+        escapeHtml(loc.category) +
+        '</span>';
+    }
+    var reviewHref = markerInfoReviewHref(loc);
+    html +=
+      '<a href="' +
+      escapeHtml(reviewHref) +
+      '" class="marker-info-chip marker-info-chip--rating">★ ' +
+      markerInfoRatingLabel(loc.rating) +
+      '</a>';
+    html +=
+      '<a href="' +
+      escapeHtml(reviewHref) +
+      '" class="marker-info-chip marker-info-chip--reviews">리뷰 ' +
+      markerInfoReviewCountLabel(loc.review_count) +
+      '</a>';
+    html += '</div>';
+    return html;
   }
 
   function markerInfoBadgesHtml(loc) {
@@ -89,9 +140,12 @@
         escapeHtml(loc.thumbnail) +
         '" alt=""></div>' +
         '<div class="marker-info-body">' +
+        '<div class="marker-info-head">' +
         '<h3 class="marker-info-title">' +
         escapeHtml(loc.name) +
         '</h3>' +
+        markerInfoMetaHtml(loc) +
+        '</div>' +
         (link ? '<div class="marker-info-actions">' + link + '</div>' : '') +
         '</div></div>'
       );

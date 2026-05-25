@@ -623,6 +623,9 @@ if (!function_exists('eottae_seed_insert_review')) {
         $shop_name = sql_escape_string(isset($data['shop_name']) ? $data['shop_name'] : '');
         $mb_id = sql_escape_string(isset($data['mb_id']) ? $data['mb_id'] : 'admin');
         $wr_name = sql_escape_string(isset($data['wr_name']) ? $data['wr_name'] : '세부어때');
+        $wr_datetime = isset($data['wr_datetime']) && preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $data['wr_datetime'])
+            ? $data['wr_datetime']
+            : G5_TIME_YMDHIS;
 
         $exists = sql_fetch(" select wr_id from {$write_table}
             where wr_is_comment = 0 and mb_id = '{$mb_id}' and wr_1 = '{$shop_id}' limit 1 ");
@@ -643,8 +646,8 @@ if (!function_exists('eottae_seed_insert_review')) {
             wr_password = '',
             wr_name = '{$wr_name}',
             wr_email = '',
-            wr_datetime = '".G5_TIME_YMDHIS."',
-            wr_last = '".G5_TIME_YMDHIS."',
+            wr_datetime = '{$wr_datetime}',
+            wr_last = '{$wr_datetime}',
             wr_ip = '127.0.0.1',
             wr_1 = '{$shop_id}',
             wr_2 = '{$rating}',
@@ -657,7 +660,7 @@ if (!function_exists('eottae_seed_insert_review')) {
         $wr_id = sql_insert_id();
         sql_query(" update {$write_table} set wr_parent = '{$wr_id}' where wr_id = '{$wr_id}' ");
         sql_query(" insert into {$g5['board_new_table']} ( bo_table, wr_id, wr_parent, bn_datetime, mb_id )
-            values ( '{$bo_table}', '{$wr_id}', '{$wr_id}', '".G5_TIME_YMDHIS."', '{$mb_id}' ) ");
+            values ( '{$bo_table}', '{$wr_id}', '{$wr_id}', '{$wr_datetime}', '{$mb_id}' ) ");
         sql_query(" update {$g5['board_table']} set bo_count_write = bo_count_write + 1 where bo_table = '{$bo_table}' ");
 
         return eottae_seed_log('review', 'shop '.$shop_id.' review seeded (wr_id='.$wr_id.')');
@@ -696,6 +699,124 @@ if (!function_exists('eottae_seed_sample_reviews')) {
                 'wr_name'     => '장보기왕',
             )),
         );
+    }
+}
+
+if (!function_exists('eottae_seed_ensure_member')) {
+    function eottae_seed_ensure_member($mb_id, $mb_nick, $mb_name = '')
+    {
+        global $g5, $config;
+
+        $mb_id = preg_replace('/[^a-z0-9_]/i', '', (string) $mb_id);
+        if ($mb_id === '') {
+            return false;
+        }
+
+        $row = sql_fetch(" select mb_id from {$g5['member_table']} where mb_id = '".sql_escape_string($mb_id)."' ");
+        if (!empty($row['mb_id'])) {
+            return true;
+        }
+
+        $mb_nick = sql_escape_string($mb_nick);
+        $mb_name = sql_escape_string($mb_name !== '' ? $mb_name : $mb_nick);
+        $level = isset($config['cf_register_level']) ? (int) $config['cf_register_level'] : 2;
+        $email = sql_escape_string($mb_id.'@seed.thecebu.local');
+        $password = get_encrypt_string('SeedPass!'.substr(md5($mb_id), 0, 8));
+
+        sql_query(" insert into {$g5['member_table']} set
+            mb_id = '".sql_escape_string($mb_id)."',
+            mb_password = '{$password}',
+            mb_name = '{$mb_name}',
+            mb_nick = '{$mb_nick}',
+            mb_nick_date = '".G5_TIME_YMD."',
+            mb_email = '{$email}',
+            mb_level = '{$level}',
+            mb_datetime = '".G5_TIME_YMDHIS."',
+            mb_today_login = '".G5_TIME_YMDHIS."',
+            mb_ip = '127.0.0.1',
+            mb_login_ip = '127.0.0.1',
+            mb_email_certify = '".G5_TIME_YMDHIS."',
+            mb_open = '0',
+            mb_mailling = '0',
+            mb_sms = '0' ", false);
+
+        return true;
+    }
+}
+
+if (!function_exists('eottae_seed_sel_academy_reviews')) {
+    /**
+     * SEL 아카데미(shop wr_id=8) 샘플 리뷰 23건 — 평점 5.0
+     *
+     * @param int $shop_wr_id
+     * @return array<int, array<string, mixed>>
+     */
+    function eottae_seed_sel_academy_reviews($shop_wr_id = 8)
+    {
+        global $g5;
+
+        include_once G5_LIB_PATH.'/eottae.lib.php';
+
+        $shop_wr_id = (int) $shop_wr_id;
+        $shop_table = $g5['write_prefix'].EOTTae_SHOP_TABLE;
+        $shop_row = sql_fetch(" select wr_id, wr_subject from {$shop_table} where wr_id = '{$shop_wr_id}' and wr_is_comment = 0 ");
+        if (empty($shop_row['wr_id'])) {
+            return array(eottae_seed_log('review', 'shop wr_id='.$shop_wr_id.' not found', false));
+        }
+
+        $shop_name = get_text($shop_row['wr_subject']);
+        $items = array(
+            array('mb_id' => 'selrv01', 'nick' => '세부맘88', 'date' => '2025-09-12 14:22:00', 'text' => '8살 아이 2주 영어캠프 보냈는데 처음엔 걱정 많았어요. 한국 원장님이 매일 사진·학습 리포트 보내주셔서 안심됐고, 돌아와서 영어로 인사하는 모습 보고 바로 재등록했습니다.'),
+            array('mb_id' => 'selrv02', 'nick' => '라푸맘', 'date' => '2025-09-28 10:15:00', 'text' => '가족연수 3주 다녀왔어요. 아이 수업 시간엔 부모님도 상담 받을 수 있어서 좋았고 캠퍼스 수영장·체육 시설 깨끗합니다. 숙소까지 같이 연결해줘서 처음 가는 가족도 편해요.'),
+            array('mb_id' => 'selrv03', 'nick' => '영어걱정끝', 'date' => '2025-10-03 19:40:00', 'text' => '화상영어 6개월째 이용 중입니다. 네이티브 강사님이 아이 눈높이에 맞춰 수업해 주시고, 한국 매니저 선생님이 숙제·출결까지 챙겨주셔서 국내 학원보다 관리가 확실해요.'),
+            array('mb_id' => 'selrv04', 'nick' => '막탄주부', 'date' => '2025-10-11 11:05:00', 'text' => '조기유학 견학 갔다가 바로 결정했습니다. 기숙사·식당·교실 한곳에서 확인할 수 있어서 부모 입장에서 믿음이 갔어요. 상담 때 장기 플랜도 자세히 짜주셨습니다.'),
+            array('mb_id' => 'selrv05', 'nick' => '제이엘아빠', 'date' => '2025-10-19 16:33:00', 'text' => '공항 픽업부터 등록·교재·시간표까지 원스톱으로 도와주셨어요. 혼자 처음 세부 오는 가족이라 정말 큰 도움이 됐습니다. 직원분들 응대도 친절합니다.'),
+            array('mb_id' => 'selrv06', 'nick' => '초등맘2024', 'date' => '2025-10-27 09:18:00', 'text' => '영어유치원 프로그램 보내고 있는데 아이가 학교 가는 날을 기다려요. 놀이 위주라 부담 없고, 원어민 선생님과 한국인 담임이 같이 있어서 소통이 빠릅니다.'),
+            array('mb_id' => 'selrv07', 'nick' => '세부살이3년', 'date' => '2025-11-02 13:50:00', 'text' => '타 학원 다녀보고 SEL로 옮겼습니다. 반 편성·레벨 테스트가 꼼꼼하고 아이 성향에 맞는 반으로 배정해줘서 수업 집중도가 확 올랐어요.'),
+            array('mb_id' => 'selrv08', 'nick' => '둘맘인천', 'date' => '2025-11-08 20:12:00', 'text' => '둘째는 캠프, 첫째는 화상 병행 중입니다. 형제 할인도 챙겨주시고 스케줄 조율도 유연해서 맞벌이 부부한테 최고예요.'),
+            array('mb_id' => 'selrv09', 'nick' => '유학준비중', 'date' => '2025-11-15 15:27:00', 'text' => '중학생 아들 장기 유학 상담 받았는데 입학 서류·비자·현지 생활 안내까지 상세했습니다. 카톡으로 질문하면 답도 빨라서 신뢰가 갑니다.'),
+            array('mb_id' => 'selrv10', 'nick' => '필리핀맘', 'date' => '2025-11-22 08:44:00', 'text' => '신축 캠퍼스라 시설이 정말 좋아요. 교실 밝고 에어컨 잘 나오고, 아이가 수영 수업도 즐겁게 한다고 합니다. 안전하게 운동할 수 있는 환경이 마음에 들어요.'),
+            array('mb_id' => 'selrv11', 'nick' => '아카데미탐방', 'date' => '2025-11-29 17:06:00', 'text' => '오픈하우스 때 방문했는데 수업 분위기가 활기찼습니다. 아이들이 영어로 발표하는 모습 보고 감동했어요. 상담실에서 커리큘럼 설명도 이해하기 쉽게 해주셨습니다.'),
+            array('mb_id' => 'selrv12', 'nick' => '세부아빠', 'date' => '2025-12-05 12:31:00', 'text' => '방학 3주 집중 프로그램 보냈는데 돌아와서 영어 일기 쓰기 시작했어요. 매일 피드백 받은 덕분인지 자신감이 많이 생겼습니다.'),
+            array('mb_id' => 'selrv13', 'nick' => '연수후기', 'date' => '2025-12-12 21:19:00', 'text' => '엄마랑 아이 같이 4주 연수했어요. 주중엔 각자 수업, 주말엔 가족 활동 추천도 해주셔서 세부 생활 적응에 큰 도움 됐습니다.'),
+            array('mb_id' => 'selrv14', 'nick' => '꼼꼼한엄마', 'date' => '2025-12-20 10:02:00', 'text' => '식단·알레르기 이슈 미리 말씀드렸는데 기숙사 측과 잘 조율해주셨어요. 아이 건강 챙기는 부분에서 세심함이 느껴졌습니다.'),
+            array('mb_id' => 'selrv15', 'nick' => '캠프만족', 'date' => '2026-01-08 14:55:00', 'text' => '겨울 캠프 2주 보냈는데 친구들도 많이 사귀고 영어로 노래 부르는 영상 보내주셔서 부모도 즐겁게 봤어요. 다음 방학에도 보낼 예정입니다.'),
+            array('mb_id' => 'selrv16', 'nick' => '부산맘', 'date' => '2026-01-17 09:37:00', 'text' => '화상 수업 녹화본 공유해주셔서 복습하기 좋아요. 발음 교정도 꼼꼼하고, 레벨업 테스트 때마다 상담 연락 주시는 점이 만족스럽습니다.'),
+            array('mb_id' => 'selrv17', 'nick' => '세부교민K', 'date' => '2026-01-25 18:20:00', 'text' => '현지 거주 중인데 주말 특갑 보내고 있어요. 세부에서 오래 살아도 아이 영어 교육은 SEL만큼 체계적인 곳이 없더라고요. 한국어 상담 가능한 게 최대 장점.'),
+            array('mb_id' => 'selrv18', 'nick' => '아들셋맘', 'date' => '2026-02-03 11:48:00', 'text' => '셋째까지 상담 받았는데 형마다 다른 커리큘럼 제안해주셔서 좋았습니다. 무조건 비싼 프로그램 권하지 않고 가족 상황에 맞게 조언해주셨어요.'),
+            array('mb_id' => 'selrv19', 'nick' => '유학생활', 'date' => '2026-02-14 16:04:00', 'text' => '1학기 조기유학 중입니다. 현지 생활 문제 생기면 바로 연락되고, 한국 학부모님 커뮤니티도 운영해주셔서 정보 공유가 잘 됩니다.'),
+            array('mb_id' => 'selrv20', 'nick' => '영어캠프GO', 'date' => '2026-03-01 13:16:00', 'text' => '설 연휴 맞춰 10일 캠프 보냈는데 공항 샌딩·픽업 시간 딱 맞춰주셨어요. 아이가 “다음에 또 가고 싶다”고 할 정도로 만족했습니다.'),
+            array('mb_id' => 'selrv21', 'nick' => '꿈꾸는엄마', 'date' => '2026-03-18 20:41:00', 'text' => '입학 전 무료 체험 수업 받아보고 등록했습니다. 아이가 선생님을 너무 좋아해서 선택했어요. 시설 투어도 친절하게 안내해주셨습니다.'),
+            array('mb_id' => 'selrv22', 'nick' => 'Talamban맘', 'date' => '2026-04-02 08:59:00', 'text' => 'Talamban 쪽이라 IT Park·Ayala 가기도 편하고 캠퍼스 주변이 조용해서 공부하기 좋다고 합니다. 주말에 가족 방문했을 때도 환대 잘 해주셨어요.'),
+            array('mb_id' => 'selrv23', 'nick' => '만족100', 'date' => '2026-04-20 15:33:00', 'text' => '6개월 넘게 다니고 있는데 성적·태도 모두 좋아졌어요. 담당 선생님이 꾸준히 격려해주시고, 원장님 상담도 현실적이라 믿고 맡기고 있습니다. 주변 엄마들에게도 추천했어요.'),
+        );
+
+        $logs = array();
+        foreach ($items as $item) {
+            eottae_seed_ensure_member($item['mb_id'], $item['nick']);
+            $logs[] = eottae_seed_insert_review(array(
+                'shop_wr_id'  => $shop_wr_id,
+                'shop_name'   => $shop_name,
+                'rating'      => 5,
+                'wr_subject'  => '[5점] '.$shop_name.' 리뷰',
+                'wr_content'  => $item['text'],
+                'mb_id'       => $item['mb_id'],
+                'wr_name'     => $item['nick'],
+                'wr_datetime' => $item['date'],
+            ));
+        }
+
+        if (function_exists('eottae_sync_shop_review_stats')) {
+            eottae_sync_shop_review_stats($shop_wr_id);
+        }
+
+        $summary = eottae_get_shop_review_summary($shop_wr_id);
+        $logs[] = eottae_seed_log(
+            'review',
+            'shop '.$shop_wr_id.' summary: ★ '.$summary['average'].' / '.$summary['count'].' reviews'
+        );
+
+        return $logs;
     }
 }
 

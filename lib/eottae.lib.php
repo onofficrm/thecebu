@@ -581,6 +581,21 @@ if (!function_exists('eottae_builder_inject_home_map')) {
     }
 }
 
+if (!function_exists('eottae_builder_inject_logo_script')) {
+    function eottae_builder_inject_logo_script()
+    {
+        $logo = eottae_site_logo_url('logo_path');
+        if ($logo === '') {
+            return '';
+        }
+
+        $logo_js = json_encode($logo, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $home_js = json_encode((defined('G5_URL') ? G5_URL : '').'/', JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        return '<script>(function(){var LOGO='.$logo_js.';var HOME='.$home_js.';function normalizePath(href){if(!href){return"";}try{var url=new URL(href,window.location.origin);var path=url.pathname.replace(/\\/+$/,"");return path===""?"/":path;}catch(e){return href;}}function isHomeLogoAnchor(a){if(!a||!a.closest("header")){return false;}var href=a.getAttribute("href")||"";if(href===HOME||href===HOME.replace(/\\/+$/, "")+"/"){return true;}return normalizePath(href)==="/";}function applyLogo(){document.querySelectorAll("header a[href]").forEach(function(a){if(!isHomeLogoAnchor(a)){return;}a.classList.add("eottae-gnb-header__logo");a.setAttribute("data-eottae-logo-link","1");var img=a.querySelector("img[data-eottae-logo]");if(img&&img.getAttribute("src")===LOGO){return;}a.innerHTML=\'<img data-eottae-logo class="eottae-gnb-header__logo-img" src="\'+LOGO+\'" alt="세부어때">\';});}function scheduleApply(){window.requestAnimationFrame(applyLogo);}applyLogo();if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",applyLogo);}new MutationObserver(scheduleApply).observe(document.documentElement,{childList:true,subtree:true});})();</script>';
+    }
+}
+
 if (!function_exists('eottae_builder_inject_html')) {
     function eottae_builder_inject_html($html, $id)
     {
@@ -590,13 +605,10 @@ if (!function_exists('eottae_builder_inject_html')) {
 
         $html = eottae_builder_inject_home_map($html);
 
-        $logo = eottae_site_logo_url('logo_path');
-        if ($logo === '') {
+        $script = eottae_builder_inject_logo_script();
+        if ($script === '') {
             return $html;
         }
-
-        $logo_js = json_encode($logo, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $script = '<script>(function(){var LOGO='.$logo_js.';function applyLogo(){document.querySelectorAll(\'header a[href="/"], header a[href="'.(defined('G5_URL') ? G5_URL : '').'/"]\').forEach(function(a){if(a.querySelector("img[data-eottae-logo]"))return;a.innerHTML=\'<img data-eottae-logo class="eottae-gnb-header__logo-img" src="\'+LOGO+\'" alt="세부어때">\';});}if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",applyLogo);}else{applyLogo();}new MutationObserver(applyLogo).observe(document.documentElement,{childList:true,subtree:true});})();</script>';
 
         if (preg_match('#</body>#i', $html)) {
             return preg_replace('#</body>#i', $script.'</body>', $html, 1);
@@ -2689,9 +2701,12 @@ if (!function_exists('eottae_shop_map_markers')) {
             $thumbnail = !empty($thumb['url']) ? $thumb['url'] : '';
             if ($thumbnail === '' && !empty($row['file'][0]['file']) && !empty($row['file'][0]['path'])) {
                 $thumbnail = $row['file'][0]['path'].'/'.$row['file'][0]['file'];
-            } elseif ($thumbnail === '') {
+            } else            if ($thumbnail === '') {
                 $thumbnail = eottae_shop_representative_image_url($marker_bo_table, $shop['wr_id']);
             }
+            $summary = function_exists('eottae_get_shop_review_summary')
+                ? eottae_get_shop_review_summary((int) $shop['wr_id'])
+                : array('average' => 0, 'count' => 0);
             $markers[] = array(
                 'wr_id'    => (int) $shop['wr_id'],
                 'name'     => $shop['name'],
@@ -2700,6 +2715,8 @@ if (!function_exists('eottae_shop_map_markers')) {
                 'lat'      => $lat,
                 'lng'      => $lng,
                 'thumbnail' => $thumbnail,
+                'rating'   => isset($summary['average']) ? (float) $summary['average'] : 0,
+                'review_count' => isset($summary['count']) ? (int) $summary['count'] : 0,
                 'url'      => function_exists('eottae_shop_view_url')
                     ? eottae_shop_view_url($shop['wr_id'], $bo_table !== '' ? $bo_table : eottae_shop_table())
                     : G5_BBS_URL.'/board.php?bo_table='.($bo_table !== '' ? $bo_table : eottae_shop_table()).'&wr_id='.$shop['wr_id'],
@@ -2738,6 +2755,8 @@ if (!function_exists('eottae_shop_map_locations_json')) {
                 'lng'      => (float) $lng,
                 'link'     => isset($marker['url']) ? (string) $marker['url'] : '',
                 'thumbnail' => isset($marker['thumbnail']) ? (string) $marker['thumbnail'] : '',
+                'rating'   => isset($marker['rating']) ? (float) $marker['rating'] : 0,
+                'review_count' => isset($marker['review_count']) ? (int) $marker['review_count'] : 0,
             );
         }
 
