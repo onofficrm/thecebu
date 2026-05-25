@@ -39,7 +39,7 @@ if (function_exists('eottae_use_site_chrome') && eottae_use_site_chrome()) {
 			개인정보관리책임자 :  정보책임자명<br>
 		</p>
     </div>
-    <button type="button" id="top_btn"><i class="fa fa-arrow-up" aria-hidden="true"></i><span class="sound_only">상단으로</span></button>
+    <button type="button" id="top_btn" style="display:none !important" hidden aria-hidden="true"></button>
     <?php
     if(G5_DEVICE_BUTTON_DISPLAY && G5_IS_MOBILE) { ?>
     <a href="<?php echo get_device_change_url(); ?>" id="device_change">PC 버전으로 보기</a>
@@ -103,4 +103,7 @@ $(function() {
 </script>
 
 <?php
+if (is_file(G5_PATH.'/components/onoff-chatbot.php')) {
+    include_once(G5_PATH.'/components/onoff-chatbot.php');
+}
 include_once(G5_PATH."/tail.sub.php");

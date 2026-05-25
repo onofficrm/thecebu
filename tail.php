@@ -156,9 +156,12 @@ if (!$eottae_setup_minimal && function_exists('eottae_should_load_assets') && eo
 }
 
 if (!$eottae_setup_minimal) {
-    include_once(G5_PATH.'/components/floating-buttons.php');
     include_once(G5_PATH.'/components/consult-modal.php');
     include_once(G5_PATH.'/components/popup-banner.php');
+}
+
+if (is_file(G5_PATH.'/components/onoff-chatbot.php')) {
+    include_once(G5_PATH.'/components/onoff-chatbot.php');
 }
 ?>
 

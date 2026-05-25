@@ -60,6 +60,9 @@ $site_config = array(
     'kakao_map_lng'       => '126.9780',
     /* Google Maps — 내 주변 찾기 (components/maps, page/map-locator.php) */
     'google_maps_api_key'       => '',
+    /* 온오프챗봇 (components/onoff-chatbot.php) */
+    'onoff_chatbot_enabled'     => true,
+    'onoff_chatbot_site_key'    => '967314350ee8ce35058ed2c5d0ed9039b10f200a829089af',
     'map_default_lat'           => '10.3157',
     'map_default_lng'           => '123.8854',
     'map_default_zoom'          => 13,

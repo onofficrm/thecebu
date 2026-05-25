@@ -2004,7 +2004,12 @@ html.page-index .is-sub-only {
   font-weight: var(--font-weight-medium);
 }
 
-/* 하단 고정 버튼 */
+/* 하단 고정 버튼 — site-dock 제거(온오프챗봇 사용) */
+.site-dock,
+#top_btn {
+  display: none !important;
+}
+
 html:has(.site-dock) {
   scroll-padding-bottom: 80px;
 }
