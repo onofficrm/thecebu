@@ -7,18 +7,10 @@ $eottae_footer_title = isset($g5_site_title) ? $g5_site_title : (function_exists
 $eottae_footer_logo_url = function_exists('eottae_site_logo_url')
     ? eottae_site_logo_url('footer_logo_path')
     : (function_exists('g5site_cfg_url') ? g5site_cfg_url('footer_logo_path', '') : '');
-$eottae_footer_tel = function_exists('g5site_cfg') ? g5site_cfg('phone', '0917-123-4567') : '0917-123-4567';
-$eottae_footer_email = function_exists('g5site_cfg') ? g5site_cfg('email', 'help@thecebu.co.kr') : 'help@thecebu.co.kr';
 $eottae_footer_shop_url = function_exists('eottae_shop_list_url') ? eottae_shop_list_url() : G5_BBS_URL.'/board.php?bo_table='.EOTTae_SHOP_TABLE;
 $eottae_footer_shop_write = G5_BBS_URL.'/write.php?bo_table='.EOTTae_SHOP_TABLE;
 $eottae_footer_community = function_exists('eottae_community_list_url') ? eottae_community_list_url() : G5_BBS_URL.'/board.php?bo_table='.EOTTae_COMMUNITY_TABLE;
-$eottae_footer_inquiry = G5_URL.'/page/eottae-inquiries.php';
-$eottae_footer_auth = function_exists('eottae_auth_context') ? eottae_auth_context() : array('is_member' => !empty($is_member));
-if (empty($eottae_footer_auth['is_member'])) {
-    $eottae_footer_inquiry = function_exists('eottae_login_url')
-        ? eottae_login_url(G5_URL.'/page/eottae-inquiries.php')
-        : G5_BBS_URL.'/login.php?url='.urlencode(G5_URL.'/page/eottae-inquiries.php');
-}
+$eottae_footer_admin_email = 'jong8040@gmail.com';
 $eottae_footer_year = date('Y');
 ?>
 
@@ -49,9 +41,8 @@ $eottae_footer_year = date('Y');
                 <div class="eottae-gnb-footer__col">
                     <h3 class="eottae-gnb-footer__heading">고객지원</h3>
                     <ul class="eottae-gnb-footer__links">
-                        <li><span>고객센터 <?php echo get_text($eottae_footer_tel); ?></span></li>
-                        <li><a href="mailto:<?php echo get_text($eottae_footer_email); ?>"><?php echo get_text($eottae_footer_email); ?></a></li>
-                        <li><a href="<?php echo $eottae_footer_inquiry; ?>">문의하기</a></li>
+                        <li><span>사이트관리자</span></li>
+                        <li><a href="mailto:<?php echo get_text($eottae_footer_admin_email); ?>"><?php echo get_text($eottae_footer_admin_email); ?></a></li>
                         <li><a href="<?php echo G5_URL; ?>/page/eottae-coupon-guide.php">쿠폰 사용 안내</a></li>
                         <li><a href="<?php echo G5_URL; ?>/page/eottae-business-coupon-guide.php">사업자 쿠폰 발행 안내</a></li>
                     </ul>
