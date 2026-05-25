@@ -30,14 +30,18 @@
     var fns = queue.slice();
     queue = [];
 
-    fns.forEach(function (fn) {
-      try {
-        fn();
-      } catch (err) {
-        if (global.console && global.console.error) {
-          global.console.error(err);
-        }
-      }
+    global.requestAnimationFrame(function () {
+      global.requestAnimationFrame(function () {
+        fns.forEach(function (fn) {
+          try {
+            fn();
+          } catch (err) {
+            if (global.console && global.console.error) {
+              global.console.error(err);
+            }
+          }
+        });
+      });
     });
   }
 

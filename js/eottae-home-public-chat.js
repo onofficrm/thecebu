@@ -120,6 +120,61 @@
     }
   }
 
+  function positionExternalChat(chat, grid) {
+    if (!chat || !grid) {
+      return;
+    }
+
+    if (global.innerWidth < 1024) {
+      chat.classList.remove('is-positioned');
+      chat.style.cssText = '';
+      return;
+    }
+
+    var mainCol = findHeroMainColumn(grid);
+    var sidebar = findHeroSidebarColumn(grid);
+    if (!mainCol) {
+      return;
+    }
+
+    var mainRect = mainCol.getBoundingClientRect();
+    var sideRect = sidebar ? sidebar.getBoundingClientRect() : null;
+    var gap = 16;
+    var left = mainRect.right + (gap / 2);
+    var width = sideRect
+      ? Math.max(220, sideRect.left - mainRect.right - gap)
+      : 280;
+
+    chat.style.cssText = ''
+      + 'position:fixed;'
+      + 'top:' + mainRect.top + 'px;'
+      + 'left:' + left + 'px;'
+      + 'width:' + width + 'px;'
+      + 'height:' + mainRect.height + 'px;'
+      + 'z-index:20;';
+    chat.classList.add('is-positioned');
+  }
+
+  function bindExternalChatPosition(chat, grid) {
+    if (!chat || chat.dataset.positionBound === '1') {
+      return;
+    }
+
+    chat.dataset.positionBound = '1';
+
+    var sync = function () {
+      positionExternalChat(chat, grid);
+    };
+
+    sync();
+    global.addEventListener('resize', sync, { passive: true });
+    global.addEventListener('scroll', sync, { passive: true });
+
+    if (typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(sync).observe(grid);
+    }
+  }
+
   function mountHero() {
     var chat = getSection();
     if (!chat || chat.dataset.heroMounted === '1') {
@@ -128,7 +183,6 @@
 
     var grid = findHeroGrid();
     var mainCol = findHeroMainColumn(grid);
-    var sidebar = findHeroSidebarColumn(grid);
     if (!grid || !mainCol) {
       return false;
     }
@@ -137,14 +191,9 @@
     hideMainColumnEvents(mainCol);
     unwrapPendingSlot(chat);
 
-    chat.classList.add('public-group-chat--hero', 'home-hero-chat-column');
-    grid.classList.add('eottae-home-hero-grid--3col');
-
-    if (sidebar) {
-      grid.insertBefore(chat, sidebar);
-    } else {
-      grid.appendChild(chat);
-    }
+    chat.classList.add('public-group-chat--hero', 'home-hero-chat-column', 'home-hero-chat-column--external');
+    grid.classList.add('eottae-home-hero-grid--3col', 'eottae-home-hero-grid--external-chat');
+    bindExternalChatPosition(chat, grid);
 
     chat.dataset.heroMounted = '1';
     return true;

@@ -7465,6 +7465,14 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
     gap: 1rem;
   }
 
+  .eottae-home-hero-grid--external-chat > .lg\:col-span-8 {
+    grid-column: 1 !important;
+  }
+
+  .eottae-home-hero-grid--external-chat > .lg\:col-span-4 {
+    grid-column: 3 !important;
+  }
+
   .eottae-home-hero-grid--3col > .lg\:col-span-8,
   .eottae-home-hero-grid--3col > .lg\:col-span-4,
   .eottae-home-hero-grid--3col > .home-hero-chat-column,
@@ -8112,6 +8120,18 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 
 .home-hero-chat-column {
   min-width: 0;
+}
+
+.home-hero-chat-column--external {
+  display: none;
+}
+
+.home-hero-chat-column--external.is-positioned {
+  display: block;
+}
+
+.home-hero-talk-legacy-list {
+  display: none !important;
 }
 
 .home-hero-sidebar-events {

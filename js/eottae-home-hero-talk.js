@@ -155,8 +155,9 @@
       return;
     }
 
-    listContainer.innerHTML = '';
-    listContainer.appendChild(buildPanel(data));
+    listContainer.classList.add('home-hero-talk-legacy-list');
+    listContainer.style.display = 'none';
+    card.appendChild(buildPanel(data));
   }
 
   function cleanupLegacyHeroTalk() {
