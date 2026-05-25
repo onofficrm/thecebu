@@ -272,7 +272,7 @@ if (!function_exists('eottae_install_get_board_defs')) {
     function eottae_install_get_board_defs()
     {
         $defs = array(
-            eottae_install_shop_board_def('shop', '업체·내주변', 1, '맛집|카페|미용|병원|마트|숙소|기타'),
+            eottae_install_shop_board_def('shop', '업체·내주변', 1, eottae_shop_master_category_pipe()),
             eottae_install_shop_board_def('food', '맛집', 2, '한식|중식|일식|양식|카페|기타'),
             eottae_install_shop_board_def('massage', '마사지·스파', 3, '마사지|스파|네일|기타'),
             eottae_install_shop_board_def('rentcar', '렌트카', 4, '세단|SUV|밴|오토바이|기타'),

@@ -1284,6 +1284,92 @@ if (!function_exists('eottae_shop_detect_region')) {
     }
 }
 
+if (!function_exists('eottae_shop_master_categories')) {
+    function eottae_shop_master_categories()
+    {
+        return array(
+            '맛집',
+            '카페',
+            '마사지',
+            '미용',
+            '병원',
+            '마트',
+            '숙소',
+            '학원',
+            '렌트카',
+            '투어',
+            '세탁',
+            '법률',
+            '회계',
+            '부동산',
+            '배달',
+            '반려동물',
+            '헬스',
+            'IT',
+            '쇼핑',
+            '기타',
+        );
+    }
+}
+
+if (!function_exists('eottae_shop_master_category_pipe')) {
+    function eottae_shop_master_category_pipe()
+    {
+        return implode('|', eottae_shop_master_categories());
+    }
+}
+
+if (!function_exists('eottae_shop_merge_category_lists')) {
+    function eottae_shop_merge_category_lists($current, $master = null)
+    {
+        if (!is_array($master)) {
+            $master = eottae_shop_master_categories();
+        }
+
+        $current_cats = array_values(array_filter(array_map('trim', explode('|', (string) $current))));
+        $merged = array();
+
+        foreach ($master as $cat) {
+            if ($cat !== '' && !in_array($cat, $merged, true)) {
+                $merged[] = $cat;
+            }
+        }
+        foreach ($current_cats as $cat) {
+            if ($cat !== '' && !in_array($cat, $merged, true)) {
+                $merged[] = $cat;
+            }
+        }
+
+        return implode('|', $merged);
+    }
+}
+
+if (!function_exists('eottae_shop_sync_board_categories')) {
+    function eottae_shop_sync_board_categories()
+    {
+        global $g5;
+
+        if (!function_exists('eottae_shop_table')) {
+            return false;
+        }
+
+        $bo_table = eottae_shop_table();
+        $row = sql_fetch(" select bo_category_list from {$g5['board_table']} where bo_table = '".sql_escape_string($bo_table)."' ");
+        if (empty($row)) {
+            return false;
+        }
+
+        $merged = eottae_shop_merge_category_lists($row['bo_category_list']);
+        if ($merged === trim((string) $row['bo_category_list'])) {
+            return true;
+        }
+
+        sql_query(" update {$g5['board_table']} set bo_category_list = '".sql_escape_string($merged)."' where bo_table = '".sql_escape_string($bo_table)."' ");
+
+        return true;
+    }
+}
+
 if (!function_exists('eottae_shop_board_categories')) {
     function eottae_shop_board_categories($board)
     {
