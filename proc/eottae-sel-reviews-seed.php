@@ -2,7 +2,8 @@
 /**
  * POST/GET /proc/eottae-sel-reviews-seed.php?shop_wr_id=8&preset=sel
  * POST/GET /proc/eottae-sel-reviews-seed.php?shop_wr_id=10&preset=yonggungri
- * 관리자 로그인 또는 key 파라미터로 샘플 리뷰 시드 (preset: sel | yonggungri)
+ * POST/GET /proc/eottae-sel-reviews-seed.php?shop_wr_id=9&preset=badachamchi
+ * 관리자 로그인 또는 key 파라미터로 샘플 리뷰 시드 (preset: sel | yonggungri | badachamchi)
  */
 include_once dirname(__DIR__).'/common.php';
 include_once G5_LIB_PATH.'/eottae.lib.php';
@@ -24,7 +25,12 @@ if ($preset === '') {
     $preset = 'sel';
 }
 
-$default_shop_id = ($preset === 'yonggungri') ? 10 : 8;
+$default_shop_id = 8;
+if ($preset === 'yonggungri') {
+    $default_shop_id = 10;
+} elseif ($preset === 'badachamchi') {
+    $default_shop_id = 9;
+}
 $shop_wr_id = isset($_REQUEST['shop_wr_id']) ? (int) $_REQUEST['shop_wr_id'] : $default_shop_id;
 if ($shop_wr_id < 1) {
     http_response_code(400);
@@ -32,11 +38,11 @@ if ($shop_wr_id < 1) {
     exit;
 }
 
-$seed_fn = null;
+$seed_fn = 'eottae_seed_sel_academy_reviews';
 if ($preset === 'yonggungri') {
     $seed_fn = 'eottae_seed_yonggungri_reviews';
-} else {
-    $seed_fn = 'eottae_seed_sel_academy_reviews';
+} elseif ($preset === 'badachamchi') {
+    $seed_fn = 'eottae_seed_badachamchi_reviews';
 }
 
 if (!function_exists($seed_fn)) {
