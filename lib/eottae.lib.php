@@ -1219,6 +1219,71 @@ if (!function_exists('eottae_shop_region_options')) {
     }
 }
 
+if (!function_exists('eottae_shop_region_match_rules')) {
+    function eottae_shop_region_match_rules()
+    {
+        return array(
+            'IT Park'  => array('it park', 'i.t. park', 'cebu it park', 'lahug'),
+            '막탄'     => array('mactan', '막탄', 'mactan island'),
+            '아얄라'   => array('ayala', 'cebu business park', '아얄라', 'it park ayala'),
+            '만다우에' => array('mandaue', '만다우에'),
+            '라푸라푸' => array('lapu-lapu', 'lapu lapu', 'lapulapu', '라푸라푸'),
+        );
+    }
+}
+
+if (!function_exists('eottae_shop_detect_region')) {
+    /**
+     * 주소·Geocoding address_components → 대표 지역(wr_2)
+     *
+     * @param string $address
+     * @param array<int, array<string, string>> $components
+     * @return string
+     */
+    function eottae_shop_detect_region($address, $components = array())
+    {
+        $parts = array((string) $address);
+        if (is_array($components)) {
+            foreach ($components as $component) {
+                if (!is_array($component)) {
+                    continue;
+                }
+                if (!empty($component['long_name'])) {
+                    $parts[] = (string) $component['long_name'];
+                }
+                if (!empty($component['short_name'])) {
+                    $parts[] = (string) $component['short_name'];
+                }
+            }
+        }
+
+        $text = mb_strtolower(implode(' ', $parts), 'UTF-8');
+        if ($text === '') {
+            return '';
+        }
+
+        foreach (eottae_shop_region_match_rules() as $region => $keywords) {
+            foreach ($keywords as $keyword) {
+                if ($keyword !== '' && mb_strpos($text, $keyword, 0, 'UTF-8') !== false) {
+                    return $region;
+                }
+            }
+        }
+
+        if (mb_strpos($text, 'cebu city', 0, 'UTF-8') !== false
+            || mb_strpos($text, '세부시티', 0, 'UTF-8') !== false
+            || mb_strpos($text, '세부', 0, 'UTF-8') !== false
+            || mb_strpos($text, 'talamban', 0, 'UTF-8') !== false
+            || mb_strpos($text, 'banilad', 0, 'UTF-8') !== false
+            || mb_strpos($text, 'sm seaside', 0, 'UTF-8') !== false
+            || mb_strpos($text, 'sugbu', 0, 'UTF-8') !== false) {
+            return '세부시티';
+        }
+
+        return '';
+    }
+}
+
 if (!function_exists('eottae_shop_quick_categories')) {
     function eottae_shop_quick_categories($board)
     {

@@ -81,7 +81,7 @@
     }
   });
 
-  /* Shop register 6-step wizard */
+  /* Shop register 7-step wizard */
   function initShopRegisterWizard() {
     var root = qs('.shop-register-page');
     if (!root) return;
@@ -156,7 +156,11 @@
       ['주소', qs('#wr_3', root)],
       ['전화', qs('#wr_4', root)],
       ['영업시간', qs('#wr_6', root)],
-      ['영업상태', qs('#wr_8', root)]
+      ['영업상태', qs('#wr_8', root)],
+      ['SEO 타이틀', qs('#eottae_seo_title', root)],
+      ['SEO 소개', qs('#eottae_seo_intro', root)],
+      ['메타 디스크립션', qs('#eottae_seo_description', root)],
+      ['포커스 키워드', qs('#eottae_seo_keyword', root)]
     ];
 
     var html = '<dl>';
@@ -224,7 +228,127 @@
     });
   }
 
-  /* Shop register geocode */
+  /* Shop register geocode (browser Geocoder — HTTP referrer 제한 API 키 대응) */
+  var shopRegionRules = [
+    { region: 'IT Park', keywords: ['it park', 'i.t. park', 'cebu it park', 'lahug'] },
+    { region: '막탄', keywords: ['mactan', '막탄', 'mactan island'] },
+    { region: '아얄라', keywords: ['ayala', 'cebu business park', '아얄라'] },
+    { region: '만다우에', keywords: ['mandaue', '만다우에'] },
+    { region: '라푸라푸', keywords: ['lapu-lapu', 'lapu lapu', 'lapulapu', '라푸라푸'] }
+  ];
+
+  function shopNormalizeAddress(address) {
+    var query = (address || '').trim();
+    if (!query) return '';
+    if (!/cebu|세부/i.test(query)) {
+      query += ', Cebu, Philippines';
+    }
+    return query;
+  }
+
+  function shopDetectRegionFromText(text) {
+    var hay = (text || '').toLowerCase();
+    if (!hay) return '';
+    var i;
+    for (i = 0; i < shopRegionRules.length; i++) {
+      var rule = shopRegionRules[i];
+      var k;
+      for (k = 0; k < rule.keywords.length; k++) {
+        if (hay.indexOf(rule.keywords[k]) !== -1) {
+          return rule.region;
+        }
+      }
+    }
+    if (/cebu city|세부시티|세부|talamban|banilad|sm seaside|sugbu/.test(hay)) {
+      return '세부시티';
+    }
+    return '';
+  }
+
+  function shopDetectRegionFromGeocodeResult(result) {
+    if (!result) return '';
+    var parts = [result.formatted_address || ''];
+    if (result.address_components) {
+      result.address_components.forEach(function (component) {
+        if (component.long_name) parts.push(component.long_name);
+        if (component.short_name) parts.push(component.short_name);
+      });
+    }
+    return shopDetectRegionFromText(parts.join(' '));
+  }
+
+  function shopGeocodeErrorMessage(data) {
+    var status = data && data.status ? data.status : '';
+    if (status === 'REQUEST_DENIED') {
+      return 'Geocoding API 키를 확인해 주세요. Maps JavaScript API·Geocoding API 활성화 및 HTTP 리퍼러(thecebu.co.kr) 허용이 필요합니다.';
+    }
+    if (status === 'OVER_QUERY_LIMIT') {
+      return 'Geocoding API 사용 한도를 초과했습니다. 잠시 후 다시 시도해 주세요.';
+    }
+    if (data && data.message) {
+      return data.message;
+    }
+    return '좌표를 찾지 못했습니다. 주소를 확인해 주세요.';
+  }
+
+  function shopApplyGeocodeResult(data, latInput, lngInput, regionInput, regionDisplay, status) {
+    if (latInput) latInput.value = data.lat;
+    if (lngInput) lngInput.value = data.lng;
+    if (regionInput && data.region) {
+      regionInput.value = data.region;
+      if (regionDisplay) {
+        regionDisplay.textContent = '대표 지역: ' + data.region;
+      }
+    } else if (regionDisplay && regionInput && !regionInput.value) {
+      regionDisplay.textContent = '대표 지역을 자동 분류하지 못했습니다. 주소에 Cebu City·Mactan 등 지역명을 포함해 주세요.';
+    }
+    if (status) {
+      status.textContent = data.region
+        ? '좌표와 대표 지역이 설정되었습니다.'
+        : '좌표가 설정되었습니다.';
+    }
+  }
+
+  function shopGeocodeWithGoogle(address) {
+    return new Promise(function (resolve) {
+      if (!window.google || !google.maps || !google.maps.Geocoder) {
+        resolve({ ok: false, status: 'MAPS_NOT_READY' });
+        return;
+      }
+      var geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address: shopNormalizeAddress(address) }, function (results, status) {
+        if (status !== 'OK' || !results || !results[0] || !results[0].geometry) {
+          resolve({ ok: false, status: status || 'ZERO_RESULTS' });
+          return;
+        }
+        var loc = results[0].geometry.location;
+        resolve({
+          ok: true,
+          lat: loc.lat(),
+          lng: loc.lng(),
+          address: results[0].formatted_address || address,
+          region: shopDetectRegionFromGeocodeResult(results[0])
+        });
+      });
+    });
+  }
+
+  function shopGeocodeWithServer(address) {
+    var body = new FormData();
+    body.append('address', address);
+    return fetch('/proc/eottae-geocode.php', { method: 'POST', body: body, credentials: 'same-origin' })
+      .then(function (res) { return res.json(); });
+  }
+
+  function shopRunGeocode(address) {
+    return shopGeocodeWithGoogle(address).then(function (data) {
+      if (data.ok || data.status !== 'MAPS_NOT_READY') {
+        return data;
+      }
+      return shopGeocodeWithServer(address);
+    });
+  }
+
   function initShopGeocode() {
     var btn = qs('#shopGeocodeBtn');
     if (!btn) return;
@@ -232,43 +356,63 @@
     var addressInput = qs('#wr_3');
     var latInput = qs('#wr_9');
     var lngInput = qs('#wr_10');
+    var regionInput = qs('#wr_2');
+    var regionDisplay = qs('#shopRegionDisplay');
     var status = qs('#shopGeocodeStatus');
+    var geocodeTimer = null;
+    var lastGeocodedAddress = '';
 
-    btn.addEventListener('click', function () {
+    function runGeocode(trigger) {
       var address = addressInput ? addressInput.value.trim() : '';
       if (!address) {
-        alert('주소를 입력해 주세요.');
+        if (trigger === 'manual') {
+          alert('주소를 입력해 주세요.');
+        }
+        return;
+      }
+      if (trigger === 'auto' && address === lastGeocodedAddress) {
         return;
       }
 
       btn.disabled = true;
-      if (status) status.textContent = '좌표를 찾는 중…';
+      if (status) status.textContent = '주소를 확인하는 중…';
 
-      var body = new FormData();
-      body.append('address', address);
-
-      fetch('/proc/eottae-geocode.php', { method: 'POST', body: body, credentials: 'same-origin' })
-        .then(function (res) { return res.json(); })
+      shopRunGeocode(address)
         .then(function (data) {
           btn.disabled = false;
           if (!data.ok) {
-            if (data.status === 'REQUEST_DENIED') {
-              if (status) {
-                status.textContent = 'Geocoding API가 비활성화되어 있습니다. Google Cloud Console에서 Geocoding API를 켜 주세요.';
-              }
-              return;
-            }
-            if (status) status.textContent = '좌표를 찾지 못했습니다. 주소를 확인해 주세요.';
+            if (status) status.textContent = shopGeocodeErrorMessage(data);
             return;
           }
-          if (latInput) latInput.value = data.lat;
-          if (lngInput) lngInput.value = data.lng;
-          if (status) status.textContent = '좌표가 설정되었습니다.';
+          lastGeocodedAddress = address;
+          shopApplyGeocodeResult(data, latInput, lngInput, regionInput, regionDisplay, status);
         })
         .catch(function () {
           btn.disabled = false;
           if (status) status.textContent = '요청에 실패했습니다.';
         });
+    }
+
+    btn.addEventListener('click', function () {
+      runGeocode('manual');
+    });
+
+    if (addressInput) {
+      addressInput.addEventListener('blur', function () {
+        if (addressInput.value.trim().length < 8) {
+          return;
+        }
+        clearTimeout(geocodeTimer);
+        geocodeTimer = setTimeout(function () {
+          runGeocode('auto');
+        }, 400);
+      });
+    }
+
+    document.addEventListener('eottae:shop-maps-ready', function () {
+      if (addressInput && addressInput.value.trim().length >= 8 && !lastGeocodedAddress) {
+        runGeocode('auto');
+      }
     });
   }
 

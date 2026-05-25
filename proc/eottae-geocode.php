@@ -4,6 +4,7 @@
  * /proc/eottae-geocode.php
  */
 include_once dirname(__DIR__).'/common.php';
+include_once G5_LIB_PATH.'/eottae.lib.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -51,16 +52,30 @@ if ($raw === false || $raw === '') {
 $data = json_decode($raw, true);
 if (!is_array($data) || empty($data['results'][0]['geometry']['location'])) {
     $status = isset($data['status']) ? $data['status'] : 'UNKNOWN';
-    echo json_encode(array('ok' => false, 'error' => 'no_result', 'status' => $status), JSON_UNESCAPED_UNICODE);
+    $message = isset($data['error_message']) ? $data['error_message'] : '';
+    echo json_encode(array(
+        'ok' => false,
+        'error' => 'no_result',
+        'status' => $status,
+        'message' => $message,
+    ), JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-$loc = $data['results'][0]['geometry']['location'];
-$formatted = isset($data['results'][0]['formatted_address']) ? $data['results'][0]['formatted_address'] : '';
+$result = $data['results'][0];
+$loc = $result['geometry']['location'];
+$formatted = isset($result['formatted_address']) ? $result['formatted_address'] : '';
+$components = isset($result['address_components']) && is_array($result['address_components'])
+    ? $result['address_components']
+    : array();
+$region = function_exists('eottae_shop_detect_region')
+    ? eottae_shop_detect_region($address, $components)
+    : '';
 
 echo json_encode(array(
     'ok'      => true,
     'lat'     => (float) $loc['lat'],
     'lng'     => (float) $loc['lng'],
     'address' => $formatted,
+    'region'  => $region,
 ), JSON_UNESCAPED_UNICODE);

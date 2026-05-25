@@ -170,6 +170,10 @@ if ((isset($wr_id) && $wr_id) || (isset($wr_seo_title) && $wr_seo_title)) {
 
 $is_auth = $is_admin ? true : false;
 
+if (function_exists('run_event')) {
+    run_event('board_head_before', $board, isset($write) && is_array($write) ? $write : null, isset($wr_id) ? (int) $wr_id : 0);
+}
+
 include_once(G5_PATH.'/head.sub.php');
 
 $width = $board['bo_table_width'];

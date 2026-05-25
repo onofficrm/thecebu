@@ -3,6 +3,7 @@ if (!defined('_GNUBOARD_')) exit;
 
 include_once(G5_LIB_PATH.'/eottae.lib.php');
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
+$eottae_maps_enabled = eottae_enqueue_google_maps();
 
 $v = array(
     'wr_1'  => isset($write['wr_1']) ? get_text($write['wr_1']) : '',
@@ -20,7 +21,19 @@ $v = array(
 );
 $ca_value = isset($write['ca_name']) ? get_text($write['ca_name']) : ($v['wr_1'] !== '' ? $v['wr_1'] : $sca);
 $category_options = eottae_shop_quick_categories($board);
-$region_options = eottae_shop_region_options();
+$shop_region_label = $v['wr_2'] !== '' ? get_text($v['wr_2']) : '';
+$shop_seo = array();
+if ($w === 'u' && !empty($write['wr_id']) && function_exists('eottae_shop_seo_get')) {
+    $shop_seo = eottae_shop_seo_get($bo_table, (int) $write['wr_id']);
+}
+$shop_seo_v = function_exists('eottae_shop_seo_resolve_for_write')
+    ? eottae_shop_seo_resolve_for_write($write, $shop_seo)
+    : array(
+        'meta_title' => '',
+        'meta_intro' => '',
+        'meta_description' => '',
+        'focus_keyword' => '',
+    );
 ?>
 
 <section class="shop-register-page board-wrap board-wrap--eottae-shop board-write" id="bo_w" style="width:<?php echo $width; ?>">
@@ -30,7 +43,7 @@ $region_options = eottae_shop_region_options();
     </header>
 
     <div class="shop-register-page__steps" aria-hidden="true">
-        <?php for ($s = 0; $s < 6; $s++) { ?><span class="shop-register-page__step<?php echo $s === 0 ? ' is-active' : ''; ?>"></span><?php } ?>
+        <?php for ($s = 0; $s < 7; $s++) { ?><span class="shop-register-page__step<?php echo $s === 0 ? ' is-active' : ''; ?>"></span><?php } ?>
     </div>
 
     <form name="fwrite" id="fwrite" action="<?php echo $action_url; ?>" onsubmit="return fwrite_submit(this);" method="post" enctype="multipart/form-data" autocomplete="off">
@@ -74,19 +87,12 @@ $region_options = eottae_shop_region_options();
 
     <div class="shop-register-page__panel" data-step="1">
         <h3>2. 위치정보</h3>
-        <div class="eottae-field">
-            <label for="wr_2">대표 지역</label>
-            <select name="wr_2" id="wr_2" class="eottae-select">
-                <option value="">지역 선택</option>
-                <?php foreach ($region_options as $region) { ?>
-                <option value="<?php echo get_text($region); ?>"<?php echo ($v['wr_2'] === $region) ? ' selected' : ''; ?>><?php echo get_text($region); ?></option>
-                <?php } ?>
-            </select>
-        </div>
+        <input type="hidden" name="wr_2" id="wr_2" value="<?php echo $v['wr_2']; ?>">
         <div class="eottae-field">
             <label for="wr_3">주소</label>
-            <input type="text" name="wr_3" id="wr_3" value="<?php echo $v['wr_3']; ?>" placeholder="상세 주소">
-            <button type="button" class="btn btn--ghost shop-register-page__geocode-btn" id="shopGeocodeBtn">주소로 좌표 찾기</button>
+            <input type="text" name="wr_3" id="wr_3" value="<?php echo $v['wr_3']; ?>" placeholder="영문·한글 주소 (예: Talamban, Cebu City)">
+            <button type="button" class="btn btn--ghost shop-register-page__geocode-btn" id="shopGeocodeBtn">주소 확인 · 지역·좌표 설정</button>
+            <p class="eottae-field__hint" id="shopRegionDisplay" aria-live="polite"><?php echo $shop_region_label !== '' ? '대표 지역: '.get_text($shop_region_label) : '주소 입력 후 자동으로 대표 지역이 설정됩니다.'; ?></p>
             <p class="eottae-field__hint" id="shopGeocodeStatus" aria-live="polite"></p>
         </div>
         <details class="shop-register-page__advanced">
@@ -160,7 +166,29 @@ $region_options = eottae_shop_region_options();
     </div>
 
     <div class="shop-register-page__panel" data-step="5">
-        <h3>6. 등록 확인</h3>
+        <h3>6. SEO · 검색 노출</h3>
+        <p class="eottae-field__hint">업소 상세 페이지에 적용되는 검색·SNS 메타 정보입니다. 비워 두면 업체명·소개 본문에서 자동 생성됩니다.</p>
+        <div class="eottae-field">
+            <label for="eottae_seo_title">SEO 타이틀</label>
+            <input type="text" name="eottae_seo_title" id="eottae_seo_title" value="<?php echo get_text($shop_seo_v['meta_title']); ?>" maxlength="255" placeholder="예: 세부 맛집 OO식당 | 더세부">
+        </div>
+        <div class="eottae-field">
+            <label for="eottae_seo_intro">업소 SEO 소개</label>
+            <textarea name="eottae_seo_intro" id="eottae_seo_intro" rows="3" maxlength="500" placeholder="검색 결과에 노출될 한 줄 소개"><?php echo get_text($shop_seo_v['meta_intro']); ?></textarea>
+        </div>
+        <div class="eottae-field">
+            <label for="eottae_seo_description">메타 디스크립션</label>
+            <textarea name="eottae_seo_description" id="eottae_seo_description" rows="4" maxlength="500" placeholder="150~160자 권장. 업소 특징·위치·서비스를 요약해 주세요."><?php echo get_text($shop_seo_v['meta_description']); ?></textarea>
+        </div>
+        <div class="eottae-field">
+            <label for="eottae_seo_keyword">포커스 키워드</label>
+            <input type="text" name="eottae_seo_keyword" id="eottae_seo_keyword" value="<?php echo get_text($shop_seo_v['focus_keyword']); ?>" maxlength="255" placeholder="예: 세부 맛집, IT Park, 한식">
+            <p class="eottae-field__hint">쉼표(,)로 여러 키워드를 구분할 수 있습니다.</p>
+        </div>
+    </div>
+
+    <div class="shop-register-page__panel" data-step="6">
+        <h3>7. 등록 확인</h3>
         <div class="shop-register-page__summary" id="shopRegisterSummary">
             <p class="shop-register-page__summary-empty">입력 내용을 확인해 주세요.</p>
         </div>

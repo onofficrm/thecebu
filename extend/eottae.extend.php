@@ -7,9 +7,13 @@ include_once G5_PATH.'/extend/eottae.config.php';
 include_once G5_LIB_PATH.'/eottae.lib.php';
 include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
 include_once G5_LIB_PATH.'/eottae-ad.lib.php';
+include_once G5_LIB_PATH.'/eottae-shop-seo.lib.php';
 
 if (function_exists('eottae_ad_ensure_table')) {
     eottae_ad_ensure_table();
+}
+if (function_exists('eottae_shop_seo_ensure_table')) {
+    eottae_shop_seo_ensure_table();
 }
 
 if (!function_exists('eottae_on_register_after')) {
@@ -39,6 +43,12 @@ if (!function_exists('eottae_on_shop_write_before')) {
         } elseif ($wr1 !== '' && $ca === '') {
             $_POST['ca_name'] = $wr1;
         }
+
+        $address = isset($_POST['wr_3']) ? trim((string) $_POST['wr_3']) : '';
+        $region = isset($_POST['wr_2']) ? trim((string) $_POST['wr_2']) : '';
+        if ($region === '' && $address !== '' && function_exists('eottae_shop_detect_region')) {
+            $_POST['wr_2'] = eottae_shop_detect_region($address);
+        }
     }
 }
 add_event('write_update_before', 'eottae_on_shop_write_before', 10, 4);
@@ -53,9 +63,44 @@ if (!function_exists('eottae_on_shop_write_after')) {
         if (function_exists('eottae_ad_sync_from_shop')) {
             eottae_ad_sync_from_shop($board['bo_table'], (int) $wr_id);
         }
+
+        if (function_exists('eottae_shop_seo_save')) {
+            eottae_shop_seo_save($board['bo_table'], (int) $wr_id, eottae_shop_seo_from_post());
+        }
     }
 }
 add_event('write_update_after', 'eottae_on_shop_write_after', 10, 5);
+
+if (!function_exists('eottae_on_shop_board_head')) {
+    function eottae_on_shop_board_head($board, $write, $wr_id)
+    {
+        $wr_id = (int) $wr_id;
+        if ($wr_id < 1 || !is_array($write) || empty($write['wr_id'])) {
+            return;
+        }
+        if (empty($board['bo_table']) || !eottae_is_shop_board($board['bo_table'])) {
+            return;
+        }
+
+        eottae_shop_seo_apply_page($board, $write);
+    }
+}
+add_event('board_head_before', 'eottae_on_shop_board_head', 10, 3);
+
+if (!function_exists('eottae_on_shop_delete')) {
+    function eottae_on_shop_delete($write, $board)
+    {
+        if (empty($board['bo_table']) || !eottae_is_shop_board($board['bo_table'])) {
+            return;
+        }
+        if (!is_array($write) || empty($write['wr_id'])) {
+            return;
+        }
+
+        eottae_shop_seo_delete($board['bo_table'], (int) $write['wr_id']);
+    }
+}
+add_event('bbs_delete', 'eottae_on_shop_delete', 10, 2);
 
 if (!function_exists('eottae_is_youtube_board')) {
     function eottae_is_youtube_board($bo_table)
