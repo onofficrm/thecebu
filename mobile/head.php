@@ -18,6 +18,16 @@ include_once(G5_LIB_PATH.'/visit.lib.php');
 include_once(G5_LIB_PATH.'/connect.lib.php');
 include_once(G5_LIB_PATH.'/popular.lib.php');
 
+if (function_exists('eottae_talkroom_is_admin_shell_page') && eottae_talkroom_is_admin_shell_page()) {
+?>
+<div id="wrapper">
+    <div id="container_wr">
+    <div id="container">
+        <?php if (!defined('_INDEX_')) { ?><h2 id="container_title"><span title="<?php echo get_text($g5['title']); ?>"><?php echo get_head_title($g5['title']); ?></span></h2><?php } ?>
+<?php
+    return;
+}
+
 if (function_exists('eottae_use_site_chrome') && eottae_use_site_chrome() && function_exists('eottae_render_site_header')) {
 ?>
 <div id="hd">

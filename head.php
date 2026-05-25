@@ -112,6 +112,9 @@ if (!is_array($menu_datas_mo) || !count($menu_datas_mo)) {
 }
 ?>
 
+<?php if (function_exists('eottae_talkroom_is_admin_shell_page') && eottae_talkroom_is_admin_shell_page()) { ?>
+<!-- 세부톡방 관리자: 사이트 GNB 생략 -->
+<?php } else { ?>
 <!-- 상단 시작 { -->
 <div id="hd">
 <?php if (defined('EOTTAE_SETUP_MINIMAL') && EOTTAE_SETUP_MINIMAL) { ?>
@@ -320,6 +323,7 @@ function fsearchbox_submit(f)
 <!-- } 상단 끝 -->
 
 <hr>
+<?php } ?>
 
 <!-- 콘텐츠 시작 { -->
 <div id="wrapper">
