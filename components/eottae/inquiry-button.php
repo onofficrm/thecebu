@@ -23,10 +23,9 @@ if (!function_exists('eottae_inquiry_buttons_html')) {
             case 'detail':
                 ?>
                 <div class="inquiry-button inquiry-button--detail shop-detail-page__actions">
-                    <a href="<?php echo $tel_href; ?>" class="inquiry-button__btn inquiry-button__btn--phone">전화하기</a>
-                    <button type="button" class="inquiry-button__btn inquiry-button__btn--inquiry inquiry-button"<?php echo $inquiry_attr; ?> data-inquiry-action="open">빠른 문의하기</button>
-                    <a href="<?php echo $map_href; ?>" class="inquiry-button__btn inquiry-button__btn--map" target="_blank" rel="noopener noreferrer">길찾기</a>
+                    <button type="button" class="inquiry-button__btn inquiry-button__btn--inquiry inquiry-button"<?php echo $inquiry_attr; ?> data-inquiry-action="open">문의하기</button>
                     <button type="button" class="inquiry-button__btn inquiry-button__btn--share" data-share-url="<?php echo htmlspecialchars($share_url, ENT_QUOTES, 'UTF-8'); ?>">공유하기</button>
+                    <a href="<?php echo $map_href; ?>" class="inquiry-button__btn inquiry-button__btn--map" target="_blank" rel="noopener noreferrer">길찾기</a>
                 </div>
                 <?php
                 break;

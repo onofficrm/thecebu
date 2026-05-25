@@ -104,6 +104,32 @@
     );
   }
 
+  function openMarkerInfoWindow(infoWindow, map, marker, loc) {
+    infoWindow.setOptions({ maxWidth: 320 });
+    infoWindow.setContent(markerInfoHtml(loc));
+    infoWindow.open(map, marker);
+    global.google.maps.event.addListenerOnce(infoWindow, 'domready', function () {
+      var root = document.querySelector('.gm-style-iw .marker-info--compact');
+      if (!root) {
+        return;
+      }
+      var iw = root.closest('.gm-style-iw');
+      if (!iw) {
+        return;
+      }
+      var header = iw.querySelector('.gm-style-iw-ch');
+      if (header) {
+        header.style.display = 'none';
+        header.style.height = '0';
+      }
+      var contentPane = iw.querySelector('.gm-style-iw-d');
+      if (contentPane) {
+        contentPane.style.overflow = 'visible';
+        contentPane.style.height = 'auto';
+      }
+    });
+  }
+
   function HomeMapPanel(hostEl, cfg) {
     this.hostEl = hostEl;
     this.cfg = cfg;
@@ -135,7 +161,7 @@
       fullscreenControl: true
     });
 
-    this.infoWindow = new global.google.maps.InfoWindow({ maxWidth: 340 });
+    this.infoWindow = new global.google.maps.InfoWindow({ maxWidth: 320 });
     this.renderMarkers();
     this.bindLocateButton();
     this.hostEl.classList.add('eottae-home-map--live');
@@ -160,8 +186,7 @@
         icon: markerIcon(loc)
       });
       marker.addListener('click', function () {
-        self.infoWindow.setContent(markerInfoHtml(loc));
-        self.infoWindow.open(self.map, marker);
+        openMarkerInfoWindow(self.infoWindow, self.map, marker, loc);
       });
       self.markers.push(marker);
     });

@@ -787,6 +787,17 @@ body.eottae-page hr {
 
 .inquiry-button--detail {
   margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.inquiry-button--detail .inquiry-button__btn {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 6px;
+  font-size: 12px;
 }
 
 .inquiry-button--mobile-bar {
@@ -2664,6 +2675,41 @@ body.eottae-page hr {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.community-sidebar__shop-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  min-width: 0;
+}
+
+.community-sidebar__shop-title-row strong {
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+
+.community-sidebar__shop-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.community-sidebar__shop-badge--rating {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.community-sidebar__shop-badge--reviews {
+  background: #f1f5f9;
+  color: #64748b;
 }
 
 .community-sidebar__shop-body small {
@@ -5542,7 +5588,7 @@ body.eottae-page hr {
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
 }
 
-.marker-info-thumb {
+.marker-info:not(.marker-info--compact) .marker-info-thumb {
   display: block;
   width: 160px;
   height: 96px;
@@ -5558,8 +5604,18 @@ body.eottae-page hr {
 }
 
 .gm-style .gm-style-iw-d {
-  overflow: hidden !important;
+  overflow: visible !important;
   max-height: none !important;
+  height: auto !important;
+}
+
+.gm-style .gm-style-iw-ch {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
 }
 
 .gm-style .gm-style-iw-chr {
@@ -5597,10 +5653,16 @@ body.eottae-page hr {
 .marker-info--compact {
   display: flex;
   flex-direction: row;
-  align-items: stretch;
-  width: max-content;
-  max-width: min(340px, calc(100vw - 40px));
+  align-items: center;
+  width: 280px;
+  min-height: 72px;
+  box-sizing: border-box;
   border-radius: 10px;
+  overflow: hidden;
+}
+
+.marker-info--compact.marker-info--thumb {
+  max-width: 280px;
 }
 
 .marker-info--compact .marker-info-thumb-wrap {
@@ -5612,10 +5674,11 @@ body.eottae-page hr {
 
 .marker-info--compact .marker-info-thumb {
   display: block;
-  width: 72px;
-  height: 72px;
+  width: 72px !important;
+  height: 72px !important;
+  max-width: 72px !important;
   object-fit: cover;
-  margin: 0;
+  margin: 0 !important;
   border-radius: 0;
 }
 
@@ -5658,21 +5721,12 @@ body.eottae-page hr {
   text-decoration: underline;
 }
 
-.gm-style .gm-style-iw-c:has(.marker-info--compact) {
-  max-width: none !important;
-}
-
-.gm-style .gm-style-iw-d:has(.marker-info--compact) {
-  max-width: none !important;
-  width: max-content !important;
-}
-
-.marker-info--thumb .marker-info-thumb-wrap {
+.marker-info--thumb:not(.marker-info--compact) .marker-info-thumb-wrap {
   display: block;
   line-height: 0;
 }
 
-.marker-info--thumb .marker-info-thumb {
+.marker-info--thumb:not(.marker-info--compact) .marker-info-thumb {
   width: 100%;
   max-width: 260px;
   height: 140px;

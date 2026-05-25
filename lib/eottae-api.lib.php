@@ -41,6 +41,19 @@ if (!function_exists('eottae_api_shop_thumb')) {
             where bo_table = '{$bo_table}' and wr_id = '{$shop_wr_id}'
             order by bf_no asc limit 1 ");
         if (empty($row['bf_file'])) {
+            if (function_exists('eottae_shop_map_thumb_get')) {
+                $map_thumb = eottae_shop_map_thumb_get(EOTTae_SHOP_TABLE, $shop_wr_id);
+                if (!empty($map_thumb['url'])) {
+                    return $map_thumb['url'];
+                }
+            }
+            if (function_exists('get_list_thumbnail')) {
+                $thumb = get_list_thumbnail(EOTTae_SHOP_TABLE, $shop_wr_id, 200, 200);
+                if (!empty($thumb['src'])) {
+                    return $thumb['src'];
+                }
+            }
+
             return '';
         }
 

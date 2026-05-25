@@ -214,8 +214,18 @@
 }
 
 .gm-style .gm-style-iw-d {
-  overflow: hidden !important;
+  overflow: visible !important;
   max-height: none !important;
+  height: auto !important;
+}
+
+.gm-style .gm-style-iw-ch {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
 }
 
 .gm-style .gm-style-iw-chr {
@@ -248,10 +258,16 @@
 .marker-info--compact {
   display: flex;
   flex-direction: row;
-  align-items: stretch;
-  width: max-content;
-  max-width: min(340px, calc(100vw - 40px));
+  align-items: center;
+  width: 280px;
+  min-height: 72px;
+  box-sizing: border-box;
   border-radius: 10px;
+  overflow: hidden;
+}
+
+.marker-info--compact.marker-info--thumb {
+  max-width: 280px;
 }
 
 .marker-info--compact .marker-info-thumb-wrap {
@@ -263,10 +279,11 @@
 
 .marker-info--compact .marker-info-thumb {
   display: block;
-  width: 72px;
-  height: 72px;
+  width: 72px !important;
+  height: 72px !important;
+  max-width: 72px !important;
   object-fit: cover;
-  margin: 0;
+  margin: 0 !important;
   border-radius: 0;
 }
 
@@ -309,16 +326,7 @@
   text-decoration: underline;
 }
 
-.gm-style .gm-style-iw-c:has(.marker-info--compact) {
-  max-width: none !important;
-}
-
-.gm-style .gm-style-iw-d:has(.marker-info--compact) {
-  max-width: none !important;
-  width: max-content !important;
-}
-
-.marker-info--thumb .marker-info-thumb {
+.marker-info--thumb:not(.marker-info--compact) .marker-info-thumb {
   display: block;
   width: 100%;
   height: 140px;
