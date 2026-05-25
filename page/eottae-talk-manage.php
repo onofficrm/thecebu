@@ -58,7 +58,7 @@ g5_page_start('톡방 관리');
     </section>
 
     <?php if ($detail['join_type'] === 'approval') { ?>
-    <section class="promo-admin-panel talk-manage-panel">
+    <section class="promo-admin-panel talk-manage-panel" id="talk-manage-pending">
         <h2 class="promo-admin-panel__title">참여 신청 <?php if (count($pending_members) > 0) { ?>(<?php echo count($pending_members); ?>)<?php } ?></h2>
         <?php if (empty($pending_members)) { ?>
         <p class="promo-admin-empty">대기 중인 참여 신청이 없습니다.</p>
@@ -82,8 +82,7 @@ g5_page_start('톡방 관리');
     </section>
     <?php } ?>
 
-    <section class="promo-admin-panel talk-manage-panel">
-        <h2 class="promo-admin-panel__title">참여자 목록 (<?php echo count($active_members); ?>)</h2>
+    <section class="promo-admin-panel talk-manage-panel" id="talk-manage-members">
         <?php if (empty($active_members)) { ?>
         <p class="promo-admin-empty">참여 중인 회원이 없습니다.</p>
         <?php } else { ?>
@@ -144,8 +143,7 @@ g5_page_start('톡방 관리');
         <?php } ?>
     </section>
 
-    <section class="promo-admin-panel talk-manage-panel">
-        <h2 class="promo-admin-panel__title">공지 관리</h2>
+    <section class="promo-admin-panel talk-manage-panel" id="talk-manage-notice">
         <form class="talk-manage-form" id="talkNoticeForm" method="post" action="<?php echo G5_URL; ?>/proc/eottae-talkroom-owner.php">
             <input type="hidden" name="action" value="save_notice">
             <input type="hidden" name="room_id" value="<?php echo (int) $room_id; ?>">

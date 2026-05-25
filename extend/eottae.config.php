@@ -90,3 +90,7 @@ if (!defined('EOTTae_REVIEW_COUPON_CODE')) {
 if (!defined('EOTTae_TALKROOM_TABLE')) {
     define('EOTTae_TALKROOM_TABLE', 'talkroom');
 }
+
+if (!defined('EOTTae_PLAZA_TABLE')) {
+    define('EOTTae_PLAZA_TABLE', 'plaza');
+}

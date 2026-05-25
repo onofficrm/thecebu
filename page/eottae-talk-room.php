@@ -2,6 +2,7 @@
 include_once(dirname(__FILE__).'/_init.php');
 include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
 include_once G5_LIB_PATH.'/eottae-talkroom-ai.lib.php';
+include_once G5_LIB_PATH.'/eottae-talkroom-reads.lib.php';
 include_once G5_PATH.'/components/eottae/talk-ai-message-ui.php';
 
 $room_id = isset($_GET['room_id']) ? (int) $_GET['room_id'] : 0;
@@ -10,6 +11,10 @@ $ctx = eottae_talkroom_build_detail_context($room_id, $mb_id);
 
 if (!$ctx) {
     alert('운영 중인 톡방을 찾을 수 없습니다.', eottae_talkroom_list_url());
+}
+
+if ($is_member && $mb_id !== '') {
+    eottae_talkroom_reads_auto_mark_on_view($room_id, $mb_id, $ctx);
 }
 
 $room = $ctx['room'];

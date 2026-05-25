@@ -20,6 +20,15 @@ if (!function_exists('eottae_talkroom_bootstrap_tables')) {
         if (!isset($g5['sebu_talk_logs_table'])) {
             $g5['sebu_talk_logs_table'] = G5_TABLE_PREFIX.'sebu_talk_logs';
         }
+        if (!isset($g5['sebu_talk_room_reads_table'])) {
+            $g5['sebu_talk_room_reads_table'] = G5_TABLE_PREFIX.'sebu_talk_room_reads';
+        }
+        if (!isset($g5['sebu_talk_notifications_table'])) {
+            $g5['sebu_talk_notifications_table'] = G5_TABLE_PREFIX.'sebu_talk_notifications';
+        }
+        if (!isset($g5['sebu_talk_bookmarks_table'])) {
+            $g5['sebu_talk_bookmarks_table'] = G5_TABLE_PREFIX.'sebu_talk_bookmarks';
+        }
     }
 }
 
@@ -34,6 +43,9 @@ if (!function_exists('eottae_talkroom_table_names')) {
             'members' => $g5['sebu_talk_members_table'],
             'reports' => $g5['sebu_talk_reports_table'],
             'logs'    => $g5['sebu_talk_logs_table'],
+            'reads'   => $g5['sebu_talk_room_reads_table'],
+            'notifications' => $g5['sebu_talk_notifications_table'],
+            'bookmarks' => $g5['sebu_talk_bookmarks_table'],
         );
     }
 }
@@ -152,6 +164,55 @@ if (!function_exists('eottae_talkroom_ensure_schema')) {
                 KEY `idx_target` (`target_type`, `target_id`),
                 KEY `idx_created_at` (`created_at`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ",
+
+            'reads' => " CREATE TABLE IF NOT EXISTS `{$tables['reads']}` (
+                `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+                `room_id` int(11) unsigned NOT NULL DEFAULT '0',
+                `mb_id` varchar(20) NOT NULL DEFAULT '',
+                `last_read_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+                `last_read_post_id` int(11) unsigned NOT NULL DEFAULT '0',
+                `last_read_comment_id` int(11) unsigned NOT NULL DEFAULT '0',
+                `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+                PRIMARY KEY (`id`),
+                UNIQUE KEY `uk_room_member_read` (`room_id`, `mb_id`),
+                KEY `idx_mb_id` (`mb_id`),
+                KEY `idx_last_read_at` (`last_read_at`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ",
+
+            'notifications' => " CREATE TABLE IF NOT EXISTS `{$tables['notifications']}` (
+                `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+                `mb_id` varchar(20) NOT NULL DEFAULT '',
+                `room_id` int(11) unsigned NOT NULL DEFAULT '0',
+                `type` varchar(40) NOT NULL DEFAULT '',
+                `target_type` varchar(20) NOT NULL DEFAULT '',
+                `target_id` int(11) unsigned NOT NULL DEFAULT '0',
+                `title` varchar(200) NOT NULL DEFAULT '',
+                `message` varchar(500) NOT NULL DEFAULT '',
+                `href` varchar(500) NOT NULL DEFAULT '',
+                `is_read` tinyint(1) NOT NULL DEFAULT '0',
+                `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+                `read_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+                PRIMARY KEY (`id`),
+                KEY `idx_mb_id` (`mb_id`),
+                KEY `idx_mb_read` (`mb_id`, `is_read`),
+                KEY `idx_room_id` (`room_id`),
+                KEY `idx_type` (`type`),
+                KEY `idx_created_at` (`created_at`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ",
+
+            'bookmarks' => " CREATE TABLE IF NOT EXISTS `{$tables['bookmarks']}` (
+                `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+                `mb_id` varchar(20) NOT NULL DEFAULT '',
+                `room_id` int(11) unsigned NOT NULL DEFAULT '0',
+                `post_id` int(11) unsigned NOT NULL DEFAULT '0',
+                `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+                PRIMARY KEY (`id`),
+                UNIQUE KEY `uk_bookmark_member_post` (`mb_id`, `room_id`, `post_id`),
+                KEY `idx_mb_id` (`mb_id`),
+                KEY `idx_room_id` (`room_id`),
+                KEY `idx_post_id` (`post_id`),
+                KEY `idx_created_at` (`created_at`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ",
         );
 
         foreach ($ddl as $key => $sql) {
@@ -182,7 +243,7 @@ if (!function_exists('eottae_talkroom_drop_schema')) {
     function eottae_talkroom_drop_schema()
     {
         $tables = eottae_talkroom_table_names();
-        $order = array('reports', 'logs', 'members', 'rooms');
+        $order = array('reports', 'logs', 'notifications', 'reads', 'members', 'rooms');
         $results = array();
 
         foreach ($order as $key) {
@@ -245,6 +306,13 @@ if (!function_exists('eottae_talkroom_create_url')) {
     function eottae_talkroom_create_url()
     {
         return G5_URL.'/page/eottae-talk-create.php';
+    }
+}
+
+if (!function_exists('eottae_talkroom_ai_landing_url')) {
+    function eottae_talkroom_ai_landing_url()
+    {
+        return G5_URL.'/talk/ai.php';
     }
 }
 
@@ -454,6 +522,57 @@ if (!function_exists('eottae_talkroom_sanitize_emoji')) {
         }
 
         return function_exists('mb_substr') ? mb_substr($value, 0, 8, 'UTF-8') : substr($value, 0, 16);
+    }
+}
+
+if (!function_exists('eottae_talkroom_emoji_picker_groups')) {
+    function eottae_talkroom_emoji_picker_groups()
+    {
+        return array(
+            '대화·모임' => array('💬', '📣', '🤝', '👋', '🙌', '✨', '🌟', '❤️', '🎉', '📌'),
+            '스포츠·운동' => array('⚽', '🏀', '🏐', '🏸', '🎾', '🏌️', '🏊', '🚴', '🏃', '⛳', '🥊', '🎣'),
+            '육아·가족' => array('👶', '👨‍👩‍👧', '🍼', '🎒', '🧸', '📚', '🏫', '🎨', '🛝', '🧁'),
+            '여행·생활' => array('✈️', '🏝️', '🌴', '🏨', '🚕', '🗺️', '📸', '☀️', '🌊', '🧳'),
+            '맛집·카페' => array('🍜', '🍣', '🍕', '🍔', '☕', '🧋', '🍰', '🍺', '🥗', '🍖'),
+            '사업·일' => array('💼', '🏢', '📈', '💡', '🛠️', '🧾', '🤝', '🏪', '📦', '🎯'),
+            '중고·거래' => array('🛍️', '♻️', '📦', '💰', '🏷️', '📱', '🛒', '🎁', '🔖', '🧺'),
+            '부동산·구인' => array('🏠', '🏢', '🔑', '🏗️', '📋', '🧑‍💼', '💼', '📝', '🏘️', '🏡'),
+        );
+    }
+}
+
+if (!function_exists('eottae_talkroom_render_emoji_picker')) {
+    function eottae_talkroom_render_emoji_picker($selected = '💬', $input_id = 'talk_emoji')
+    {
+        $selected = eottae_talkroom_sanitize_emoji($selected);
+        $input_id = preg_replace('/[^a-z0-9_-]/i', '', (string) $input_id);
+        if ($input_id === '') {
+            $input_id = 'talk_emoji';
+        }
+
+        $groups = eottae_talkroom_emoji_picker_groups();
+        ob_start();
+        ?>
+        <div class="talk-emoji-picker" data-talk-emoji-picker>
+            <div class="talk-emoji-picker__current">
+                <span class="talk-emoji-picker__preview" data-talk-emoji-preview aria-hidden="true"><?php echo get_text($selected); ?></span>
+                <input type="text" id="<?php echo $input_id; ?>" name="emoji" class="talk-apply-form__input talk-apply-form__input--emoji" maxlength="8" placeholder="💬" value="<?php echo get_text($selected); ?>" data-talk-emoji-input autocomplete="off">
+            </div>
+            <p class="talk-apply-form__hint">목록 카드에 표시됩니다. 아래에서 고르거나 직접 입력할 수 있습니다.</p>
+            <?php foreach ($groups as $group_label => $emojis) { ?>
+            <div class="talk-emoji-picker__group">
+                <p class="talk-emoji-picker__group-label"><?php echo get_text($group_label); ?></p>
+                <div class="talk-emoji-picker__grid">
+                    <?php foreach ($emojis as $emoji) { ?>
+                    <button type="button" class="talk-emoji-picker__btn<?php echo $selected === $emoji ? ' is-selected' : ''; ?>" data-talk-emoji-option="<?php echo htmlspecialchars($emoji, ENT_QUOTES, 'UTF-8'); ?>" aria-label="<?php echo get_text($group_label.' '.$emoji); ?>"><?php echo $emoji; ?></button>
+                    <?php } ?>
+                </div>
+            </div>
+            <?php } ?>
+        </div>
+        <?php
+
+        return ob_get_clean();
     }
 }
 
@@ -871,6 +990,7 @@ if (!function_exists('eottae_talkroom_list_public')) {
         $limit = isset($options['limit']) ? max(1, min(100, (int) $options['limit'])) : 50;
         $page = isset($options['page']) ? max(1, (int) $options['page']) : 1;
         $offset = ($page - 1) * $limit;
+        $order = isset($options['order']) ? trim((string) $options['order']) : 'updated';
 
         $statuses = eottae_talkroom_public_statuses();
         $status_sql = array();
@@ -890,16 +1010,28 @@ if (!function_exists('eottae_talkroom_list_public')) {
         }
 
         $member_table = G5_TABLE_PREFIX.'member';
+        if ($order === 'new') {
+            $order_sql = "
+                CASE WHEN r.approved_at IS NULL OR r.approved_at = '0000-00-00 00:00:00' THEN 1 ELSE 0 END,
+                r.approved_at DESC,
+                r.created_at DESC,
+                r.room_id DESC
+            ";
+        } else {
+            $order_sql = "
+                CASE WHEN r.updated_at IS NULL OR r.updated_at = '0000-00-00 00:00:00' THEN 1 ELSE 0 END,
+                r.updated_at DESC,
+                r.approved_at DESC,
+                r.room_id DESC
+            ";
+        }
+
         $result = sql_query("
             SELECT r.*, m.mb_nick AS owner_nick
             FROM `{$tables['rooms']}` r
             LEFT JOIN `{$member_table}` m ON m.mb_id = r.owner_mb_id
             WHERE r.status IN ({$status_in})
-            ORDER BY
-                CASE WHEN r.updated_at IS NULL OR r.updated_at = '0000-00-00 00:00:00' THEN 1 ELSE 0 END,
-                r.updated_at DESC,
-                r.approved_at DESC,
-                r.room_id DESC
+            ORDER BY {$order_sql}
             LIMIT {$offset}, {$limit}
         ", false);
 
@@ -930,6 +1062,134 @@ if (!function_exists('eottae_talkroom_list_public')) {
         return array(
             'total' => $total,
             'rows'  => $rows,
+        );
+    }
+}
+
+if (!function_exists('eottae_talkroom_list_public_cards')) {
+    /**
+     * 승인·운영 중인 공개 톡방 카드 목록 (홈·API용)
+     *
+     * @param array<string, mixed> $options
+     * @return array<int, array<string, mixed>>
+     */
+    function eottae_talkroom_list_public_cards(array $options = array())
+    {
+        $result = eottae_talkroom_list_public($options);
+
+        return isset($result['rows']) && is_array($result['rows']) ? $result['rows'] : array();
+    }
+}
+
+if (!function_exists('eottae_talkroom_home_hero_sort_ts')) {
+    function eottae_talkroom_home_hero_sort_ts($value)
+    {
+        $value = trim((string) $value);
+        if ($value === '' || $value === '0000-00-00 00:00:00') {
+            return 0;
+        }
+
+        $ts = strtotime($value);
+
+        return $ts !== false ? (int) $ts : 0;
+    }
+}
+
+if (!function_exists('eottae_talkroom_home_hero_hot_score')) {
+    function eottae_talkroom_home_hero_hot_score(array $room)
+    {
+        $post_count = max(0, (int) ($room['post_count'] ?? 0));
+        $member_count = max(0, (int) ($room['member_count'] ?? 0));
+        $updated_ts = eottae_talkroom_home_hero_sort_ts($room['updated_at'] ?? '');
+        $score = ($post_count * 4) + ($member_count * 2);
+
+        if ($updated_ts > 0) {
+            $age_hours = max(0, (time() - $updated_ts) / 3600);
+            if ($age_hours <= 24) {
+                $score += 24;
+            } elseif ($age_hours <= 72) {
+                $score += 12;
+            } elseif ($age_hours <= 168) {
+                $score += 6;
+            }
+            $score += min(10, (int) floor($updated_ts / 86400) % 10);
+        }
+
+        return $score;
+    }
+}
+
+if (!function_exists('eottae_talkroom_home_hero_payload')) {
+    /**
+     * 홈 히어로 — 신규·화제 톡방 데이터
+     *
+     * @return array<string, mixed>
+     */
+    function eottae_talkroom_home_hero_payload($new_limit = 3, $hot_limit = 3)
+    {
+        $new_limit = max(1, min(6, (int) $new_limit));
+        $hot_limit = max(1, min(6, (int) $hot_limit));
+        $pool_limit = max(24, $new_limit + $hot_limit + 12);
+
+        $rows = eottae_talkroom_list_public_cards(array(
+            'limit' => $pool_limit,
+            'page'  => 1,
+        ));
+        $new_rows = eottae_talkroom_list_public_cards(array(
+            'limit' => $new_limit,
+            'page'  => 1,
+            'order' => 'new',
+        ));
+        $new_ids = array();
+        foreach ($new_rows as $row) {
+            $new_ids[(int) ($row['room_id'] ?? 0)] = true;
+        }
+
+        if (empty($rows) && empty($new_rows)) {
+            return array(
+                'new'        => array(),
+                'hot'        => array(),
+                'list_url'   => eottae_talkroom_list_url(),
+                'create_url' => eottae_talkroom_create_url(),
+            );
+        }
+
+        if (empty($rows)) {
+            $rows = $new_rows;
+        }
+
+        $hot_pool = array();
+        foreach ($rows as $row) {
+            $room_id = (int) ($row['room_id'] ?? 0);
+            if ($room_id < 1 || isset($new_ids[$room_id])) {
+                continue;
+            }
+            $hot_pool[] = $row;
+        }
+        if (count($hot_pool) < $hot_limit) {
+            $hot_pool = $rows;
+        }
+
+        usort($hot_pool, function ($a, $b) {
+            $score_cmp = eottae_talkroom_home_hero_hot_score($b) <=> eottae_talkroom_home_hero_hot_score($a);
+            if ($score_cmp !== 0) {
+                return $score_cmp;
+            }
+
+            $post_cmp = (int) ($b['post_count'] ?? 0) <=> (int) ($a['post_count'] ?? 0);
+            if ($post_cmp !== 0) {
+                return $post_cmp;
+            }
+
+            return (int) ($b['member_count'] ?? 0) <=> (int) ($a['member_count'] ?? 0);
+        });
+        $hot_rows = array_slice($hot_pool, 0, $hot_limit);
+
+        return array(
+            'new'        => $new_rows,
+            'hot'        => $hot_rows,
+            'list_url'   => eottae_talkroom_list_url(),
+            'create_url' => eottae_talkroom_create_url(),
         );
     }
 }
@@ -1291,6 +1551,10 @@ if (!function_exists('eottae_talkroom_approve_room')) {
 
         eottae_talkroom_write_log($room_id, $admin_mb_id, 'approve', 'room', $room_id, '톡방 개설 승인');
 
+        if (function_exists('eottae_talkroom_notify_room_approved')) {
+            eottae_talkroom_notify_room_approved($room);
+        }
+
         return array('ok' => true, 'message' => '톡방 개설을 승인했습니다.');
     }
 }
@@ -1331,6 +1595,10 @@ if (!function_exists('eottae_talkroom_reject_room')) {
         }
 
         eottae_talkroom_write_log($room_id, $admin_mb_id, 'reject', 'room', $room_id, $reason);
+
+        if (function_exists('eottae_talkroom_notify_room_rejected')) {
+            eottae_talkroom_notify_room_rejected($room, $reason);
+        }
 
         return array('ok' => true, 'message' => '톡방 개설 신청을 반려했습니다.');
     }
@@ -1485,6 +1753,42 @@ if (!function_exists('eottae_talkroom_is_active_member')) {
     function eottae_talkroom_is_active_member($member_row)
     {
         return is_array($member_row) && trim((string) ($member_row['status'] ?? '')) === 'active';
+    }
+}
+
+if (!function_exists('eottae_talkroom_sanitize_internal_href')) {
+    /**
+     * 내부 링크만 허용 (XSS·오픈 리다이렉트 방지)
+     */
+    function eottae_talkroom_sanitize_internal_href($href, $fallback = '#')
+    {
+        $href = trim(strip_tags((string) $href));
+        if ($href === '' || $href === '#') {
+            return $fallback;
+        }
+
+        if (function_exists('clean_xss_tags')) {
+            $href = clean_xss_tags($href, 1, 1);
+        }
+
+        $lower = strtolower($href);
+        if (preg_match('/^(javascript|data|vbscript):/i', $lower)) {
+            return $fallback;
+        }
+
+        if ($href[0] === '/' && ($href[1] ?? '') !== '/') {
+            return $href;
+        }
+
+        $base = defined('G5_URL') ? rtrim((string) G5_URL, '/') : '';
+        if ($base !== '' && strpos($href, $base.'/') === 0) {
+            return $href;
+        }
+        if ($base !== '' && $href === $base) {
+            return $href;
+        }
+
+        return $fallback;
     }
 }
 
@@ -1949,6 +2253,10 @@ if (!function_exists('eottae_talkroom_join_room')) {
         }
 
         if ($new_status === 'pending') {
+            if (function_exists('eottae_talkroom_notify_owner_join_request')) {
+                eottae_talkroom_notify_owner_join_request($room_id, $mb_id);
+            }
+
             return array('ok' => true, 'message' => '참여 신청이 접수되었습니다. 방장 승인 후 글쓰기가 가능합니다.', 'status' => 'pending');
         }
 
@@ -2052,8 +2360,11 @@ if (!function_exists('eottae_talkroom_list_my_rooms')) {
                         continue;
                     }
 
-                    if (($row['member_role'] ?? '') === 'member') {
-                        $joined[] = $card;
+                    $member_role = trim((string) ($row['member_role'] ?? ''));
+                    if ($member_role === 'member' || $member_role === 'owner') {
+                        if (($row['owner_mb_id'] ?? '') !== $mb_id) {
+                            $joined[] = $card;
+                        }
                     }
                 }
             }
@@ -2269,6 +2580,10 @@ if (!function_exists('eottae_talkroom_approve_member')) {
             eottae_talkroom_ai_schedule_welcome($room_id, $row['mb_id']);
         }
 
+        if (function_exists('eottae_talkroom_notify_join_approved')) {
+            eottae_talkroom_notify_join_approved($room_id, $row['mb_id']);
+        }
+
         return array('ok' => true, 'message' => '참여 신청을 승인했습니다.');
     }
 }
@@ -2313,6 +2628,10 @@ if (!function_exists('eottae_talkroom_reject_member')) {
         }
 
         eottae_talkroom_write_log($room_id, $manager_mb_id, 'reject_member', 'member', $member_id, $row['mb_id']);
+
+        if (function_exists('eottae_talkroom_notify_join_rejected')) {
+            eottae_talkroom_notify_join_rejected($room_id, $row['mb_id']);
+        }
 
         return array('ok' => true, 'message' => '참여 신청을 거절했습니다.');
     }
@@ -3576,6 +3895,10 @@ if (!function_exists('eottae_talkroom_submit_report')) {
 
         $report_id = sql_insert_id();
         eottae_talkroom_write_log($room_id, $reporter_mb_id, 'report', $target_type, $target_id, $reason);
+
+        if (function_exists('eottae_talkroom_notify_owner_report')) {
+            eottae_talkroom_notify_owner_report($room_id, (int) $report_id, $target_type);
+        }
 
         return array('ok' => true, 'message' => '신고가 접수되었습니다.', 'report_id' => (int) $report_id);
     }

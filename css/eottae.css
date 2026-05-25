@@ -358,6 +358,60 @@ img[data-eottae-logo] {
   font-weight: 700;
 }
 
+.eottae-gnb-header__nav-link--end {
+  margin-left: auto;
+}
+
+.eottae-gnb-header__nav-link--accent {
+  margin: 0 2px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid #bae6fd;
+  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+  color: #0369a1;
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(14, 116, 144, 0.08);
+}
+
+.eottae-gnb-header__nav-link--accent:hover {
+  color: #0c4a6e;
+  background: #bae6fd;
+  border-color: #7dd3fc;
+}
+
+.eottae-gnb-header__nav-link--accent.is-active {
+  color: #0c4a6e;
+  background: #bae6fd;
+  border-color: #38bdf8;
+}
+
+.eottae-gnb-header__nav-link--primary {
+  margin-left: 6px;
+  padding: 8px 15px;
+  border-radius: 999px;
+  border: 1px solid var(--eottae-gnb-primary);
+  background: var(--eottae-gnb-primary);
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(0, 153, 236, 0.28);
+}
+
+.eottae-gnb-header__nav-link--primary:hover {
+  color: #fff;
+  background: var(--eottae-gnb-primary-dark);
+  border-color: var(--eottae-gnb-primary-dark);
+}
+
+.eottae-gnb-header__nav-link--primary.is-active {
+  color: #fff;
+  background: var(--eottae-gnb-primary-dark);
+  border-color: var(--eottae-gnb-primary-dark);
+}
+
+.eottae-gnb-header__nav-link--end.eottae-gnb-header__nav-link--primary {
+  margin-left: auto;
+}
+
 .eottae-gnb-header__actions {
   display: flex;
   align-items: center;
@@ -550,6 +604,33 @@ img[data-eottae-logo] {
 .eottae-gnb-header__mobile-link.is-active {
   color: var(--eottae-gnb-primary-dark);
   background: var(--eottae-gnb-primary-soft);
+}
+
+.eottae-gnb-header__mobile-link--accent {
+  border: 1px solid #bae6fd;
+  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+  color: #0369a1;
+  text-align: center;
+}
+
+.eottae-gnb-header__mobile-link--accent.is-active {
+  color: #0c4a6e;
+  background: #bae6fd;
+}
+
+.eottae-gnb-header__mobile-link--primary {
+  margin-top: 4px;
+  border: 1px solid var(--eottae-gnb-primary);
+  background: var(--eottae-gnb-primary);
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 153, 236, 0.24);
+}
+
+.eottae-gnb-header__mobile-link--primary:hover,
+.eottae-gnb-header__mobile-link--primary.is-active {
+  color: #fff;
+  background: var(--eottae-gnb-primary-dark);
 }
 
 .eottae-gnb-header__mobile-auth {
@@ -3901,6 +3982,45 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   margin-bottom: 20px;
 }
 
+.auth-member-type--audience {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.auth-member-type-group {
+  border: 0;
+  margin: 0 0 20px;
+  padding: 0;
+}
+
+.auth-member-type-group__legend {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--eottae-text);
+  margin-bottom: 6px;
+}
+
+.auth-member-type-group__hint,
+.auth-member-type-group__sublegend {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--eottae-muted);
+}
+
+.auth-member-type-group__sublegend {
+  font-weight: 700;
+  color: var(--eottae-text);
+}
+
+.auth-member-type-group__role.is-hidden {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .auth-member-type--audience {
+    grid-template-columns: 1fr;
+  }
+}
+
 .auth-member-type label {
   display: flex;
   flex-direction: column;
@@ -7150,6 +7270,207 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   will-change: opacity;
 }
 
+/* 홈 — 히어로 세부톡 위젯 (3열) */
+@media (min-width: 1024px) {
+  .eottae-home-hero-grid--3col {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.95fr) minmax(0, 0.85fr);
+    gap: 1rem;
+  }
+
+  .eottae-home-hero-grid--3col > .lg\:col-span-8,
+  .eottae-home-hero-grid--3col > .lg\:col-span-4,
+  .eottae-home-hero-grid--3col > .home-hero-talk-rooms {
+    grid-column: auto !important;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+.home-hero-talk-rooms {
+  min-width: 0;
+}
+
+.home-hero-talk-rooms__card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+  padding: 18px 16px 16px;
+  background: #fff;
+  border: 1px solid #e8edf2;
+  border-radius: 24px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.home-hero-talk-rooms__head {
+  padding-bottom: 2px;
+}
+
+.home-hero-talk-rooms__title {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.home-hero-talk-rooms__desc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--eottae-muted, #64748b);
+}
+
+.home-hero-talk-rooms__block + .home-hero-talk-rooms__block {
+  margin-top: 2px;
+  padding-top: 12px;
+  border-top: 1px solid #eef2f6;
+}
+
+.home-hero-talk-rooms__block-head {
+  margin-bottom: 8px;
+}
+
+.home-hero-talk-rooms__block-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.home-hero-talk-rooms__badge {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.home-hero-talk-rooms__badge--new {
+  background: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
+}
+
+.home-hero-talk-rooms__badge--hot {
+  background: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.18);
+}
+
+.home-hero-talk-rooms__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.home-hero-talk-rooms__link {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+
+.home-hero-talk-rooms__link:hover {
+  background: #f8fafc;
+}
+
+.home-hero-talk-rooms__emoji {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #f1f5f9;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.home-hero-talk-rooms__body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.home-hero-talk-rooms__name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-hero-talk-rooms__category {
+  font-size: 11px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.home-hero-talk-rooms__meta {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.home-hero-talk-rooms__footer {
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.home-hero-talk-rooms__more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 38px;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.home-hero-talk-rooms__more:hover {
+  background: #dbeafe;
+}
+
+.home-hero-talk-rooms__empty {
+  padding: 12px 10px;
+  border-radius: 14px;
+  background: #f8fafc;
+  text-align: center;
+}
+
+.home-hero-talk-rooms__empty p {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.home-hero-talk-rooms__empty a {
+  font-size: 12px;
+  font-weight: 800;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.home-hero-talk-rooms__empty a:hover {
+  text-decoration: underline;
+}
+
 /* 홈 — 오늘의 세부톡 */
 .talk-home-feed {
   padding: 28px 16px 32px;
@@ -7306,6 +7627,122 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 }
 
 .talk-home-feed__more:hover {
+  background: #e0f2fe;
+  border-color: #7dd3fc;
+}
+
+/* ── 세부광장 메인 피드 ── */
+.plaza-home-feed {
+  padding: 28px 16px;
+  background: #f8fafc;
+}
+
+.plaza-home-feed__inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.plaza-home-feed__head {
+  margin-bottom: 14px;
+}
+
+.plaza-home-feed__title {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.plaza-home-feed__desc {
+  margin: 0;
+  font-size: 0.86rem;
+  color: #64748b;
+}
+
+.plaza-home-feed__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+}
+
+.plaza-home-feed__item + .plaza-home-feed__item {
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.plaza-home-feed__link {
+  display: block;
+  padding: 12px 14px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.plaza-home-feed__link:hover {
+  background: #f8fafc;
+}
+
+.plaza-home-feed__line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.plaza-home-feed__type {
+  font-size: 0.72rem;
+  padding: 2px 8px;
+}
+
+.plaza-home-feed__subject {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.plaza-home-feed__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.76rem;
+  color: #64748b;
+}
+
+.plaza-home-feed__empty {
+  margin: 0;
+  padding: 16px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px dashed rgba(15, 23, 42, 0.12);
+  font-size: 0.88rem;
+  color: #64748b;
+  text-align: center;
+}
+
+.plaza-home-feed__footer {
+  margin-top: 14px;
+  text-align: center;
+}
+
+.plaza-home-feed__more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  color: #0369a1;
+  background: #fff;
+  border: 1px solid #bae6fd;
+}
+
+.plaza-home-feed__more:hover {
   background: #e0f2fe;
   border-color: #7dd3fc;
 }
@@ -7608,6 +8045,152 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 .talk-apply-form__submit {
   border: none;
   cursor: pointer;
+}
+
+.talk-apply-form__ai-panel {
+  padding: 16px;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+  display: grid;
+  gap: 12px;
+}
+
+.talk-apply-form__ai-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.talk-apply-form__ai-title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.talk-apply-form__ai-desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--eottae-muted);
+}
+
+.talk-apply-form__ai-btn {
+  flex-shrink: 0;
+}
+
+.talk-apply-form__ai-status {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #0369a1;
+}
+
+.talk-apply-form__ai-status.is-error {
+  color: #dc2626;
+}
+
+.talk-apply-form__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.talk-apply-form__label-row label {
+  margin-bottom: 0;
+}
+
+.talk-apply-form__field-ai {
+  border: 0;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.talk-apply-form__field-ai:hover {
+  background: #dbeafe;
+}
+
+.talk-apply-form__field-ai.is-loading,
+.talk-apply-form__field-ai:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.talk-emoji-picker {
+  display: grid;
+  gap: 12px;
+}
+
+.talk-emoji-picker__current {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.talk-emoji-picker__preview {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.talk-emoji-picker__group-label {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--eottae-muted);
+}
+
+.talk-emoji-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.talk-emoji-picker__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.talk-emoji-picker__btn:hover {
+  border-color: #93c5fd;
+  background: #f0f9ff;
+}
+
+.talk-emoji-picker__btn.is-selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: inset 0 0 0 1px #2563eb;
+}
+
+@media (max-width: 640px) {
+  .talk-emoji-picker__grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
 }
 
 .talk-applies-page__success {

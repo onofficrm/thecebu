@@ -58,6 +58,22 @@ if ($w == "") {
         $member['mb_name']  = $_POST['mb_name'];
     }
 
+    $member['mb_1'] = 'member';
+    $member['mb_2'] = '';
+    if (function_exists('eottae_normalize_member_type_fields')) {
+        list($member['mb_1'], $member['mb_2']) = eottae_normalize_member_type_fields(
+            isset($_POST['mb_1']) ? $_POST['mb_1'] : '',
+            isset($_POST['mb_2']) ? $_POST['mb_2'] : ''
+        );
+    } else {
+        if (isset($_POST['mb_1'])) {
+            $member['mb_1'] = preg_replace('/[^a-z]/', '', (string) $_POST['mb_1']);
+        }
+        if (isset($_POST['mb_2'])) {
+            $member['mb_2'] = preg_replace('/[^a-z]/', '', (string) $_POST['mb_2']);
+        }
+    }
+
     $g5['title'] = '회원 가입';
 
 } else if ($w == 'u') {

@@ -22,7 +22,7 @@ g5_page_start('마이페이지');
 
 <main class="mypage-dashboard">
     <section class="mypage-profile-card">
-        <p class="mypage-profile-card__type"><?php echo $is_biz ? '사업자회원' : '일반회원'; ?></p>
+        <p class="mypage-profile-card__type"><?php echo function_exists('eottae_member_profile_type_label') ? get_text(eottae_member_profile_type_label($member)) : ($is_biz ? '사업자회원' : '일반회원'); ?></p>
         <h1 class="mypage-profile-card__name"><?php echo get_text($member['mb_nick']); ?>님</h1>
         <p><?php echo get_text($member['mb_email']); ?></p>
     </section>
@@ -45,6 +45,7 @@ g5_page_start('마이페이지');
         <a href="<?php echo G5_URL; ?>/page/eottae-saved-shops.php" class="mypage-quick-menu__item">찜·최근<?php if ($saved_count > 0) { ?> (<?php echo $saved_count; ?>)<?php } ?></a>
         <a href="<?php echo G5_URL; ?>/page/eottae-inquiries.php" class="mypage-quick-menu__item">문의<?php if ($inquiry_count > 0) { ?> (<?php echo $inquiry_count; ?>)<?php } ?></a>
         <a href="<?php echo G5_URL; ?>/page/eottae-events.php" class="mypage-quick-menu__item">이벤트</a>
+        <a href="<?php echo function_exists('eottae_mypage_talk_url') ? eottae_mypage_talk_url() : G5_URL.'/mypage/talk.php'; ?>" class="mypage-quick-menu__item">내 세부톡방</a>
         <a href="<?php echo G5_URL; ?>/page/eottae-business-snippets.php" class="mypage-quick-menu__item">홍보 문구</a>
         <?php if ($is_biz) { ?><a href="<?php echo G5_URL; ?>/page/eottae-business-coupons.php" class="mypage-quick-menu__item">쿠폰 발행</a><?php } ?>
         <a href="<?php echo G5_URL; ?>/page/eottae-coupon-guide.php" class="mypage-quick-menu__item">쿠폰 안내</a>

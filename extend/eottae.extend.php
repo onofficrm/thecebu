@@ -16,6 +16,8 @@ include_once G5_LIB_PATH.'/eottae-promo-coupon.lib.php';
 include_once G5_LIB_PATH.'/eottae-review-delete.lib.php';
 include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
 include_once G5_LIB_PATH.'/eottae-talkroom-ai.lib.php';
+include_once G5_LIB_PATH.'/eottae-talkroom-reads.lib.php';
+include_once G5_LIB_PATH.'/eottae-talkroom-notify.lib.php';
 
 if (function_exists('eottae_business_coupon_ensure_schema')) {
     eottae_business_coupon_ensure_schema();
@@ -340,6 +342,7 @@ if (!function_exists('eottae_talkroom_should_load_ui')) {
             'eottae-talk-room.php',
             'eottae-talk-manage.php',
             'eottae-talk-my.php',
+            'eottae-mypage-talk.php',
             'eottae-talk-reports.php',
             'eottae-admin-talk-applies.php',
             'eottae-admin-talk-rooms.php',
@@ -353,7 +356,7 @@ if (!function_exists('eottae_talkroom_should_load_ui')) {
 
         $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
 
-        return (bool) preg_match('#/(?:talk)(?:[/?]|$)|/page/eottae-(?:talk|admin-talk)-#', $uri);
+        return (bool) preg_match('#/(?:talk)(?:[/?]|$)|/mypage/talk(?:\.php)?(?:[/?]|$)|/page/eottae-(?:talk|admin-talk|mypage-talk)-#', $uri);
     }
 }
 
@@ -625,6 +628,30 @@ if (!function_exists('eottae_talkroom_on_comment_before')) {
 }
 add_event('comment_update_before', 'eottae_talkroom_on_comment_before', 10, 4);
 
+if (!function_exists('eottae_talkroom_on_comment_after')) {
+    function eottae_talkroom_on_comment_after($board, $wr_id, $w, $qstr, $redirect_url, $comment_id, $reply_array)
+    {
+        if ($w !== 'c' || (int) $comment_id < 1) {
+            return;
+        }
+
+        if (empty($board['bo_table']) || !function_exists('eottae_talkroom_is_talkroom_board')
+            || !eottae_talkroom_is_talkroom_board($board['bo_table'])) {
+            return;
+        }
+
+        global $member, $is_member;
+        $commenter_mb_id = (!empty($is_member) && !empty($member['mb_id'])) ? $member['mb_id'] : '';
+
+        if (!function_exists('eottae_talkroom_notify_comment_on_post')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom-notify.lib.php';
+        }
+
+        eottae_talkroom_notify_comment_on_post($board, (int) $wr_id, (int) $comment_id, $commenter_mb_id);
+    }
+}
+add_event('comment_update_after', 'eottae_talkroom_on_comment_after', 20, 7);
+
 if (!function_exists('eottae_talkroom_ai_on_write_update_after')) {
     function eottae_talkroom_ai_on_write_update_after($board, $wr_id, $w, $qstr, $redirect_url)
     {
@@ -653,6 +680,106 @@ if (!function_exists('eottae_talkroom_on_board_head')) {
     }
 }
 add_event('board_head_before', 'eottae_talkroom_on_board_head', 12, 3);
+
+if (!function_exists('eottae_plaza_guard_board_view')) {
+    function eottae_plaza_guard_board_view($board, $write, $wr_id)
+    {
+        global $is_admin;
+
+        if (empty($board['bo_table']) || !eottae_plaza_is_plaza_board($board['bo_table'])) {
+            return;
+        }
+
+        $wr_id = (int) $wr_id;
+        if ($wr_id < 1 || !is_array($write) || empty($write['wr_id']) || !empty($write['wr_is_comment'])) {
+            return;
+        }
+
+        if (!eottae_plaza_is_post_visible($write, $is_admin === 'super')) {
+            alert('삭제되었거나 볼 수 없는 글입니다.', eottae_plaza_list_url());
+        }
+    }
+}
+
+if (!function_exists('eottae_plaza_on_board_head')) {
+    function eottae_plaza_on_board_head($board, $write, $wr_id)
+    {
+        if (empty($board['bo_table']) || !function_exists('eottae_plaza_is_plaza_board')) {
+            return;
+        }
+        if (!eottae_plaza_is_plaza_board($board['bo_table'])) {
+            return;
+        }
+
+        include_once G5_LIB_PATH.'/eottae-plaza.lib.php';
+        include_once G5_LIB_PATH.'/eottae-plaza-likes.lib.php';
+        include_once G5_LIB_PATH.'/eottae-plaza-report.lib.php';
+        include_once G5_LIB_PATH.'/eottae-plaza-ai.lib.php';
+        eottae_plaza_likes_ensure_schema();
+        eottae_plaza_reports_ensure_schema();
+        eottae_plaza_ai_ensure_schema();
+        eottae_plaza_load_assets();
+        eottae_plaza_guard_board_view($board, $write, $wr_id);
+    }
+}
+add_event('board_head_before', 'eottae_plaza_on_board_head', 7, 3);
+
+if (!function_exists('eottae_plaza_on_write_update_before')) {
+    function eottae_plaza_on_write_update_before($board, $wr_id, $w, $qstr)
+    {
+        if (empty($board['bo_table']) || !function_exists('eottae_plaza_is_plaza_board')) {
+            return;
+        }
+        if (!eottae_plaza_is_plaza_board($board['bo_table'])) {
+            return;
+        }
+
+        include_once G5_LIB_PATH.'/eottae-plaza.lib.php';
+
+        if ($w === 'u' && (int) $wr_id > 0) {
+            include_once G5_LIB_PATH.'/eottae-plaza-ai.lib.php';
+            global $is_admin, $g5;
+            $write_table = $g5['write_prefix'].eottae_plaza_board_table();
+            $existing = sql_fetch("
+                SELECT *
+                FROM `{$write_table}`
+                WHERE wr_id = '".(int) $wr_id."'
+                  AND wr_is_comment = 0
+                LIMIT 1
+            ", false);
+            if (is_array($existing) && function_exists('eottae_plaza_ai_is_ai_write_row')
+                && eottae_plaza_ai_is_ai_write_row($existing) && $is_admin !== 'super') {
+                alert('AI 질문 글은 수정할 수 없습니다.', eottae_plaza_list_url());
+            }
+        }
+
+        if ($w !== 'u') {
+            global $is_member;
+            if (empty($is_member)) {
+                alert('로그인 후 이용해 주세요.', eottae_plaza_login_url());
+            }
+        }
+
+        $result = eottae_plaza_validate_write_input();
+        if (empty($result['ok'])) {
+            alert($result['message']);
+        }
+
+        eottae_plaza_apply_write_defaults($w);
+
+        global $is_admin;
+        if ($is_admin !== 'super' && isset($_POST['wr_3'])) {
+            $marker = trim((string) $_POST['wr_3']);
+            if (strpos($marker, 'ai:') === 0) {
+                unset($_POST['wr_3']);
+            }
+        }
+        if ($is_admin !== 'super' && isset($_POST['ca_name']) && trim((string) $_POST['ca_name']) === 'AI질문') {
+            alert('선택할 수 없는 글 유형입니다.');
+        }
+    }
+}
+add_event('write_update_before', 'eottae_plaza_on_write_update_before', 18, 4);
 
 if (!function_exists('eottae_apply_google_oauth_config')) {
     function eottae_apply_google_oauth_config()

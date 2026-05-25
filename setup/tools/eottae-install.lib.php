@@ -248,6 +248,30 @@ if (!function_exists('eottae_install_shop_board_def')) {
     }
 }
 
+if (!function_exists('eottae_install_plaza_board_def')) {
+    function eottae_install_plaza_board_def()
+    {
+        return array(
+            'bo_table'         => 'plaza',
+            'bo_subject'       => '세부광장',
+            'bo_skin'          => 'eottae-plaza',
+            'bo_mobile_skin'   => 'eottae-plaza',
+            'gr_id'            => 'community',
+            'bo_read_level'    => 1,
+            'bo_write_level'   => 2,
+            'bo_comment_level' => 2,
+            'bo_use_category'  => 1,
+            'bo_category_list' => '한마디|질문|정보공유|모임제안|홍보/거래',
+            'bo_upload_count'  => 3,
+            'bo_use_good'      => 0,
+            'bo_use_dhtml_editor' => 0,
+            'bo_order'         => 9,
+            'bo_1_subj'        => '지역',
+            'bo_2_subj'        => '상태',
+        );
+    }
+}
+
 if (!function_exists('eottae_install_community_board_def')) {
     function eottae_install_community_board_def($bo_table, $bo_subject, $bo_order, $category_list, $skin = 'eottae-community')
     {
@@ -277,6 +301,7 @@ if (!function_exists('eottae_install_get_board_defs')) {
             eottae_install_shop_board_def('massage', '마사지·스파', 3, '마사지|스파|네일|기타'),
             eottae_install_shop_board_def('rentcar', '렌트카', 4, '세단|SUV|밴|오토바이|기타'),
             eottae_install_shop_board_def('tour', '투어·액티비티', 5, '호핑|다이빙|시티투어|기타'),
+            eottae_install_plaza_board_def(),
             eottae_install_community_board_def('community', '커뮤니티', 10, '자유|정보|질문|후기'),
             eottae_install_community_board_def('people', '사람찾기', 11, '실종|만남|동행|지인|기타'),
             eottae_install_community_board_def('job', '구인구직', 12, '구인|구직|알바|기타'),

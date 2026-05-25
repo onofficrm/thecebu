@@ -28,6 +28,169 @@ if (!function_exists('eottae_is_business_member')) {
     }
 }
 
+if (!function_exists('eottae_member_audience_options')) {
+    function eottae_member_audience_options()
+    {
+        return array(
+            'tourist' => '관광객',
+            'expat'   => '교민',
+            'both'    => '둘 다',
+        );
+    }
+}
+
+if (!function_exists('eottae_member_resident_role_options')) {
+    function eottae_member_resident_role_options()
+    {
+        return array(
+            'member'   => '일반인',
+            'business' => '사업자',
+        );
+    }
+}
+
+if (!function_exists('eottae_member_audience_type')) {
+    function eottae_member_audience_type($member = null)
+    {
+        global $member;
+
+        $m = is_array($member) ? $member : (isset($member) && is_array($member) ? $member : array());
+        if (empty($m) && !empty($GLOBALS['member']['mb_id'])) {
+            $m = $GLOBALS['member'];
+        }
+
+        $type = isset($m['mb_2']) ? trim((string) $m['mb_2']) : '';
+        $allowed = array_keys(eottae_member_audience_options());
+
+        return in_array($type, $allowed, true) ? $type : '';
+    }
+}
+
+if (!function_exists('eottae_member_audience_label')) {
+    function eottae_member_audience_label($audience = '')
+    {
+        $options = eottae_member_audience_options();
+
+        return isset($options[$audience]) ? $options[$audience] : '';
+    }
+}
+
+if (!function_exists('eottae_member_profile_type_label')) {
+    function eottae_member_profile_type_label($member = null)
+    {
+        $audience = eottae_member_audience_type($member);
+        $is_biz = eottae_is_business_member($member);
+
+        if ($audience === 'tourist') {
+            return '관광객';
+        }
+        if ($audience === 'expat' || $audience === 'both') {
+            $audience_label = eottae_member_audience_label($audience);
+            $role_label = $is_biz ? '사업자' : '일반인';
+
+            return $audience_label.' · '.$role_label;
+        }
+
+        return $is_biz ? '사업자회원' : '일반회원';
+    }
+}
+
+if (!function_exists('eottae_normalize_member_type_fields')) {
+    function eottae_normalize_member_type_fields($mb_1 = '', $mb_2 = '')
+    {
+        $audience_options = array_keys(eottae_member_audience_options());
+        $role_options = array_keys(eottae_member_resident_role_options());
+
+        $mb_2 = trim((string) $mb_2);
+        if (!in_array($mb_2, $audience_options, true)) {
+            $mb_2 = '';
+        }
+
+        $mb_1 = trim((string) $mb_1);
+        if (!in_array($mb_1, $role_options, true)) {
+            $mb_1 = 'member';
+        }
+
+        if ($mb_2 === 'tourist') {
+            $mb_1 = 'member';
+        }
+
+        return array($mb_1, $mb_2);
+    }
+}
+
+if (!function_exists('eottae_validate_member_type_fields')) {
+    function eottae_validate_member_type_fields($mb_1, $mb_2, $is_new = true)
+    {
+        list($mb_1, $mb_2) = eottae_normalize_member_type_fields($mb_1, $mb_2);
+
+        if ($is_new && $mb_2 === '') {
+            return '회원 유형(관광객/교민/둘 다)을 선택해 주세요.';
+        }
+
+        if (($mb_2 === 'expat' || $mb_2 === 'both') && !in_array($mb_1, array('member', 'business'), true)) {
+            return '교민 회원은 일반인 또는 사업자를 선택해 주세요.';
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('eottae_render_member_type_fields')) {
+    function eottae_render_member_type_fields($args = array())
+    {
+        $defaults = array(
+            'audience' => '',
+            'role'     => 'member',
+            'require_hidden' => true,
+            'id_prefix' => '',
+        );
+        $args = array_merge($defaults, is_array($args) ? $args : array());
+
+        $audience = trim((string) $args['audience']);
+        $role = trim((string) $args['role']) === 'business' ? 'business' : 'member';
+        $id_prefix = preg_replace('/[^a-z0-9_-]/i', '', (string) $args['id_prefix']);
+        $audience_options = eottae_member_audience_options();
+        $role_options = eottae_member_resident_role_options();
+        $show_role = ($audience === 'expat' || $audience === 'both');
+
+        ob_start();
+        ?>
+        <?php if (!empty($args['require_hidden'])) { ?>
+        <input type="hidden" name="mb_1" id="<?php echo $id_prefix; ?>reg_mb_1" value="<?php echo $role === 'business' ? 'business' : 'member'; ?>">
+        <input type="hidden" name="mb_2" id="<?php echo $id_prefix; ?>reg_mb_2" value="<?php echo htmlspecialchars($audience, ENT_QUOTES, 'UTF-8'); ?>">
+        <?php } ?>
+
+        <fieldset class="auth-member-type-group">
+            <legend class="auth-member-type-group__legend">회원 유형</legend>
+            <p class="auth-member-type-group__hint">세부 방문·거주 성격을 선택해 주세요.</p>
+            <div class="auth-member-type auth-member-type--audience">
+                <?php foreach ($audience_options as $value => $label) { ?>
+                <label>
+                    <input type="radio" name="eottae_audience_type" value="<?php echo $value; ?>"<?php echo ($audience === $value) ? ' checked' : ''; ?>>
+                    <span><?php echo get_text($label); ?></span>
+                </label>
+                <?php } ?>
+            </div>
+
+            <div class="auth-member-type-group__role<?php echo $show_role ? '' : ' is-hidden'; ?>" data-member-role-wrap>
+                <p class="auth-member-type-group__sublegend">교민 회원 구분</p>
+                <div class="auth-member-type auth-member-type--role">
+                    <?php foreach ($role_options as $value => $label) { ?>
+                    <label>
+                        <input type="radio" name="eottae_member_type" value="<?php echo $value; ?>"<?php echo ($role === $value) ? ' checked' : ''; ?>>
+                        <span><?php echo get_text($label); ?></span>
+                    </label>
+                    <?php } ?>
+                </div>
+            </div>
+        </fieldset>
+        <?php
+
+        return ob_get_clean();
+    }
+}
+
 if (!function_exists('eottae_shop_resolve_inquiry_code')) {
     /**
      * 업체 문의 연결 코드 — 등록자 입력 없이 wr_id 기준 자동 생성
@@ -675,6 +838,64 @@ if (!function_exists('eottae_builder_inject_home_talk_feed_script')) {
     }
 }
 
+if (!function_exists('eottae_builder_inject_home_hero_talk_script')) {
+    function eottae_builder_inject_home_hero_talk_script()
+    {
+        if (!function_exists('eottae_talkroom_home_hero_payload')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
+        }
+
+        $payload = eottae_talkroom_home_hero_payload(3, 3);
+        $payload_json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($payload_json === false) {
+            return '';
+        }
+
+        $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-hero-talk.js' : '/js/eottae-home-hero-talk.js';
+
+        return '<script>window.__EOTTae_HOME_HERO_TALK__='.$payload_json.';</script>'
+            .'<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
+    }
+}
+
+if (!function_exists('eottae_builder_inject_home_plaza_feed')) {
+    function eottae_builder_inject_home_plaza_feed($html)
+    {
+        if (!is_string($html) || $html === '') {
+            return $html;
+        }
+
+        if (!function_exists('eottae_plaza_home_feed_html')) {
+            $component = G5_PATH.'/components/eottae/plaza-home-feed.php';
+            if (is_file($component)) {
+                include_once $component;
+            }
+        }
+
+        if (!function_exists('eottae_plaza_home_feed_html')) {
+            return $html;
+        }
+
+        $feed_html = eottae_plaza_home_feed_html(5);
+        if ($feed_html === '') {
+            return $html;
+        }
+
+        if (preg_match('#(<section[^>]*id=["\']eottae-home-talk-feed["\'][^>]*>.*?</section>)#is', $html, $m)
+            && strpos($html, 'id="eottae-home-plaza-feed"') === false) {
+            $html = str_replace($m[0], $m[0].$feed_html, $html);
+        } elseif (preg_match('#(<div\s+id=["\']root["\'][^>]*>\s*</div>)#i', $html)) {
+            $html = preg_replace('#(<div\s+id=["\']root["\'][^>]*>\s*</div>)#i', '$1'.$feed_html, $html, 1);
+        } elseif (preg_match('#</body>#i', $html)) {
+            $html = preg_replace('#</body>#i', $feed_html.'</body>', $html, 1);
+        } else {
+            $html .= $feed_html;
+        }
+
+        return $html;
+    }
+}
+
 if (!function_exists('eottae_builder_inject_html')) {
     function eottae_builder_inject_html($html, $id)
     {
@@ -684,6 +905,7 @@ if (!function_exists('eottae_builder_inject_html')) {
 
         $html = eottae_builder_inject_home_map($html);
         $html = eottae_builder_inject_home_talk_feed($html);
+        $html = eottae_builder_inject_home_plaza_feed($html);
 
         $head_script = eottae_builder_inject_logo_head_script();
         if ($head_script !== '') {
@@ -696,6 +918,7 @@ if (!function_exists('eottae_builder_inject_html')) {
 
         $body_scripts = eottae_builder_inject_featured_carousel_script();
         $body_scripts .= eottae_builder_inject_home_search_script();
+        $body_scripts .= eottae_builder_inject_home_hero_talk_script();
         $body_scripts .= eottae_builder_inject_home_talk_feed_script();
 
         if ($body_scripts === '') {
@@ -768,6 +991,13 @@ if (!function_exists('eottae_mypage_url')) {
     function eottae_mypage_url()
     {
         return G5_URL.'/page/eottae-mypage.php';
+    }
+}
+
+if (!function_exists('eottae_mypage_talk_url')) {
+    function eottae_mypage_talk_url()
+    {
+        return G5_URL.'/mypage/talk.php';
     }
 }
 
@@ -1153,7 +1383,10 @@ if (!function_exists('eottae_shop_map_thumb_save_from_upload')) {
 
         if (empty($_FILES['eottae_map_thumb']['name']) || empty($_FILES['eottae_map_thumb']['tmp_name'])) {
             if (!empty($_POST['eottae_map_thumb_del'])) {
-                eottae_shop_map_thumb_delete($bo_table, $wr_id);
+                $storage_bo = function_exists('eottae_shop_storage_bo_table')
+                    ? eottae_shop_storage_bo_table($bo_table)
+                    : preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
+                eottae_shop_map_thumb_delete($storage_bo, $wr_id);
             }
             return;
         }
@@ -1178,15 +1411,19 @@ if (!function_exists('eottae_shop_map_thumb_save_from_upload')) {
             @chmod($dir, G5_DIR_PERMISSION);
         }
 
-        eottae_shop_map_thumb_delete($bo_table, $wr_id);
+        $storage_bo = function_exists('eottae_shop_storage_bo_table')
+            ? eottae_shop_storage_bo_table($bo_table)
+            : preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
 
-        $file_name = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table).'_'.(int) $wr_id.'_'.substr(md5(uniqid('', true)), 0, 12).'.'.$ext_map[$type];
+        eottae_shop_map_thumb_delete($storage_bo, $wr_id);
+
+        $file_name = preg_replace('/[^a-z0-9_]/i', '', (string) $storage_bo).'_'.(int) $wr_id.'_'.substr(md5(uniqid('', true)), 0, 12).'.'.$ext_map[$type];
         if (@move_uploaded_file($_FILES['eottae_map_thumb']['tmp_name'], $dir.'/'.$file_name)) {
             @chmod($dir.'/'.$file_name, G5_FILE_PERMISSION);
             $table = eottae_shop_map_thumb_table();
             $source = sql_escape_string(substr(trim(strip_tags((string) $_FILES['eottae_map_thumb']['name'])), 0, 255));
             sql_query(" replace into {$table}
-                set bo_table = '".sql_escape_string((string) $bo_table)."',
+                set bo_table = '".sql_escape_string((string) $storage_bo)."',
                     wr_id = '".(int) $wr_id."',
                     file_name = '".sql_escape_string($file_name)."',
                     source_name = '{$source}',
@@ -1221,14 +1458,18 @@ if (!function_exists('eottae_shop_map_thumb_save_from_tmp')) {
             @chmod($dir, G5_DIR_PERMISSION);
         }
 
-        eottae_shop_map_thumb_delete($bo_table, $wr_id);
+        $storage_bo = function_exists('eottae_shop_storage_bo_table')
+            ? eottae_shop_storage_bo_table($bo_table)
+            : preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
 
-        $file_name = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table).'_'.(int) $wr_id.'_ai_'.substr(md5(uniqid('', true)), 0, 12).'.png';
+        eottae_shop_map_thumb_delete($storage_bo, $wr_id);
+
+        $file_name = preg_replace('/[^a-z0-9_]/i', '', (string) $storage_bo).'_'.(int) $wr_id.'_ai_'.substr(md5(uniqid('', true)), 0, 12).'.png';
         if (@rename($src, $dir.'/'.$file_name)) {
             @chmod($dir.'/'.$file_name, G5_FILE_PERMISSION);
             $table = eottae_shop_map_thumb_table();
             sql_query(" replace into {$table}
-                set bo_table = '".sql_escape_string((string) $bo_table)."',
+                set bo_table = '".sql_escape_string((string) $storage_bo)."',
                     wr_id = '".(int) $wr_id."',
                     file_name = '".sql_escape_string($file_name)."',
                     source_name = 'AI 지도 썸네일',
@@ -1281,22 +1522,11 @@ if (!function_exists('eottae_shop_listing_thumb_url')) {
             ? eottae_shop_storage_bo_table($bo_table)
             : $bo_table;
 
-        if (is_array($row) && !empty($row['file'][0]['file']) && !empty($row['file'][0]['path'])) {
-            return function_exists('eottae_map_public_url')
-                ? eottae_map_public_url($row['file'][0]['path'].'/'.$row['file'][0]['file'])
-                : $row['file'][0]['path'].'/'.$row['file'][0]['file'];
-        }
-
         if (function_exists('eottae_shop_map_thumb_get')) {
             $map_thumb = eottae_shop_map_thumb_get($storage_bo, $wr_id);
             if (!empty($map_thumb['url'])) {
                 return $map_thumb['url'];
             }
-        }
-
-        $representative = eottae_shop_representative_image_url($storage_bo, $wr_id);
-        if ($representative !== '') {
-            return function_exists('eottae_map_public_url') ? eottae_map_public_url($representative) : $representative;
         }
 
         if (!function_exists('get_list_thumbnail')) {
@@ -1307,6 +1537,57 @@ if (!function_exists('eottae_shop_listing_thumb_url')) {
             if (!empty($thumb['src'])) {
                 return function_exists('eottae_map_public_url') ? eottae_map_public_url($thumb['src']) : $thumb['src'];
             }
+        }
+
+        if (is_array($row) && !empty($row['file'][0]['file']) && !empty($row['file'][0]['path'])) {
+            return function_exists('eottae_map_public_url')
+                ? eottae_map_public_url($row['file'][0]['path'].'/'.$row['file'][0]['file'])
+                : $row['file'][0]['path'].'/'.$row['file'][0]['file'];
+        }
+
+        $representative = eottae_shop_representative_image_url($storage_bo, $wr_id);
+        if ($representative !== '') {
+            return function_exists('eottae_map_public_url') ? eottae_map_public_url($representative) : $representative;
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('eottae_shop_map_marker_thumb_url')) {
+    /**
+     * Google Maps 마커용 썸네일 — 지도 전용 등록 → 리스트 카드와 동일 → 공통 fallback
+     */
+    function eottae_shop_map_marker_thumb_url($bo_table, $wr_id, $row = null)
+    {
+        $bo_table = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
+        $wr_id = (int) $wr_id;
+        if ($wr_id < 1) {
+            return '';
+        }
+        if ($bo_table === '') {
+            $bo_table = defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop';
+        }
+        $storage_bo = function_exists('eottae_shop_storage_bo_table')
+            ? eottae_shop_storage_bo_table($bo_table)
+            : $bo_table;
+
+        if (function_exists('eottae_shop_map_thumb_get')) {
+            $map_thumb = eottae_shop_map_thumb_get($storage_bo, $wr_id);
+            if (!empty($map_thumb['url'])) {
+                return $map_thumb['url'];
+            }
+        }
+
+        if (is_array($row) && function_exists('eottae_shop_card_thumb')) {
+            $card_thumb = eottae_shop_card_thumb($row, $bo_table);
+            if ($card_thumb !== '') {
+                return function_exists('eottae_map_public_url') ? eottae_map_public_url($card_thumb) : $card_thumb;
+            }
+        }
+
+        if (function_exists('eottae_shop_listing_thumb_url')) {
+            return eottae_shop_listing_thumb_url($bo_table, $wr_id, $row);
         }
 
         return '';
@@ -2843,7 +3124,9 @@ if (!function_exists('eottae_shop_map_markers')) {
             }
             $marker_bo_table = $bo_table !== '' ? $bo_table : eottae_shop_table();
             $thumbnail = '';
-            if (function_exists('eottae_shop_listing_thumb_url')) {
+            if (function_exists('eottae_shop_map_marker_thumb_url')) {
+                $thumbnail = eottae_shop_map_marker_thumb_url($marker_bo_table, $shop['wr_id'], $row);
+            } elseif (function_exists('eottae_shop_listing_thumb_url')) {
                 $thumbnail = eottae_shop_listing_thumb_url($marker_bo_table, $shop['wr_id'], $row);
             } else {
                 $storage_bo = function_exists('eottae_shop_storage_bo_table')
@@ -3633,19 +3916,49 @@ if (!function_exists('eottae_gnb_nav_links')) {
     {
         return array(
             array('key' => 'home', 'label' => '홈', 'href' => G5_URL.'/'),
-            array('key' => 'shop', 'label' => '내주변', 'href' => eottae_board_list_url(eottae_shop_table())),
+            array('key' => 'shop', 'label' => '내주변', 'href' => eottae_board_list_url(eottae_shop_table()), 'emphasis' => 'accent'),
             array('key' => 'food', 'label' => '맛집', 'href' => eottae_board_list_url(defined('EOTTae_FOOD_TABLE') ? EOTTae_FOOD_TABLE : 'food')),
             array('key' => 'massage', 'label' => '마사지', 'href' => eottae_board_list_url(defined('EOTTae_MASSAGE_TABLE') ? EOTTae_MASSAGE_TABLE : 'massage')),
             array('key' => 'rentcar', 'label' => '렌트카', 'href' => eottae_board_list_url(defined('EOTTae_RENTCAR_TABLE') ? EOTTae_RENTCAR_TABLE : 'rentcar')),
             array('key' => 'tour', 'label' => '투어', 'href' => eottae_board_list_url(defined('EOTTae_TOUR_TABLE') ? EOTTae_TOUR_TABLE : 'tour')),
-            array('key' => 'community', 'label' => '커뮤니티', 'href' => eottae_community_list_url()),
-            array('key' => 'talk', 'label' => '세부톡', 'href' => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk'),
+            array('key' => 'community', 'label' => '커뮤니티', 'href' => eottae_community_list_url(), 'emphasis' => 'accent'),
             array('key' => 'people', 'label' => '사람찾기', 'href' => eottae_board_list_url(defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people')),
             array('key' => 'job', 'label' => '구인구직', 'href' => eottae_board_list_url(defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job')),
             array('key' => 'estate', 'label' => '부동산', 'href' => eottae_board_list_url(defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate')),
             array('key' => 'gallery', 'label' => '갤러리', 'href' => eottae_board_list_url(defined('EOTTae_GALLERY_TABLE') ? EOTTae_GALLERY_TABLE : 'gallery')),
             array('key' => 'youtube', 'label' => '유튜브', 'href' => eottae_board_list_url(defined('EOTTae_YOUTUBE_TABLE') ? EOTTae_YOUTUBE_TABLE : 'youtube')),
+            array('key' => 'talk', 'label' => '세부톡', 'href' => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk', 'emphasis' => 'primary', 'nav_end' => true),
         );
+    }
+}
+
+if (!function_exists('eottae_gnb_nav_link_classes')) {
+    function eottae_gnb_nav_link_classes(array $link, $context = 'desktop', $active = false)
+    {
+        $classes = array();
+
+        if ($context === 'mobile') {
+            $classes[] = 'eottae-gnb-header__mobile-link';
+        } else {
+            $classes[] = 'eottae-gnb-header__nav-link';
+        }
+
+        if (!empty($link['emphasis'])) {
+            $emphasis = preg_replace('/[^a-z-]/', '', (string) $link['emphasis']);
+            if ($emphasis !== '') {
+                $classes[] = ($context === 'mobile' ? 'eottae-gnb-header__mobile-link' : 'eottae-gnb-header__nav-link').'--'.$emphasis;
+            }
+        }
+
+        if (!empty($link['nav_end']) && $context !== 'mobile') {
+            $classes[] = 'eottae-gnb-header__nav-link--end';
+        }
+
+        if ($active) {
+            $classes[] = 'is-active';
+        }
+
+        return implode(' ', $classes);
     }
 }
 

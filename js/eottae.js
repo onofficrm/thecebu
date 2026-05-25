@@ -399,6 +399,187 @@
     });
   }
 
+  function talkApplyValue(form, selector) {
+    var el = qs(selector, form);
+    return el ? (el.value || '').trim() : '';
+  }
+
+  function talkApplyFill(form, selector, value, overwrite) {
+    var el = qs(selector, form);
+    if (!el || !value) return;
+    if (!overwrite && (el.value || '').trim() !== '') return;
+    el.value = value;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  function talkApplySetAiStatus(form, message, isError) {
+    var status = qs('[data-talk-apply-ai-status]', form);
+    if (!status) return;
+    if (!message) {
+      status.hidden = true;
+      status.textContent = '';
+      status.classList.remove('is-error');
+      return;
+    }
+    status.hidden = false;
+    status.textContent = message;
+    status.classList.toggle('is-error', !!isError);
+  }
+
+  function talkApplySelectEmoji(form, emoji) {
+    if (!emoji) return;
+    var input = qs('[data-talk-emoji-input]', form);
+    var preview = qs('[data-talk-emoji-preview]', form);
+    if (input) {
+      input.value = emoji;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    if (preview) {
+      preview.textContent = emoji;
+    }
+    qsa('[data-talk-emoji-option]', form).forEach(function (btn) {
+      btn.classList.toggle('is-selected', btn.getAttribute('data-talk-emoji-option') === emoji);
+    });
+  }
+
+  function talkApplyApplyAiData(form, data, mode) {
+    if (!data) return;
+    var overwrite = mode === 'all';
+    if (data.room_name) {
+      talkApplyFill(form, '#talk_room_name', data.room_name, overwrite || mode === 'room_name');
+    }
+    if (data.room_description) {
+      talkApplyFill(form, '#talk_room_description', data.room_description, overwrite || mode === 'room_name' || mode === 'room_description');
+    }
+    if (data.room_detail) {
+      talkApplyFill(form, '#talk_room_detail', data.room_detail, overwrite || mode === 'room_detail');
+    }
+    if (data.rules) {
+      talkApplyFill(form, '#talk_rules', data.rules, overwrite || mode === 'rules');
+    }
+    if (data.apply_reason) {
+      talkApplyFill(form, '#talk_apply_reason', data.apply_reason, overwrite || mode === 'apply_reason');
+    }
+    if (data.category) {
+      var category = qs('#talk_category', form);
+      if (category && (overwrite || mode === 'all' || mode === 'emoji' || !category.value)) {
+        category.value = data.category;
+        category.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }
+    if (data.emoji) {
+      talkApplySelectEmoji(form, data.emoji);
+    }
+  }
+
+  function initTalkEmojiPicker(form) {
+    var picker = qs('[data-talk-emoji-picker]', form);
+    if (!picker) return;
+
+    var input = qs('[data-talk-emoji-input]', form);
+    if (input) {
+      input.addEventListener('input', function () {
+        var value = (input.value || '').trim();
+        var preview = qs('[data-talk-emoji-preview]', form);
+        if (preview && value) {
+          preview.textContent = value.slice(0, 2);
+        }
+        qsa('[data-talk-emoji-option]', form).forEach(function (btn) {
+          btn.classList.toggle('is-selected', btn.getAttribute('data-talk-emoji-option') === value);
+        });
+      });
+    }
+
+    qsa('[data-talk-emoji-option]', form).forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        talkApplySelectEmoji(form, btn.getAttribute('data-talk-emoji-option'));
+      });
+    });
+  }
+
+  function initTalkApplyAi(form) {
+    var buttons = qsa('[data-talk-apply-ai]', form);
+    if (!buttons.length || !window.fetch) return;
+
+    function buildFormData(mode) {
+      var fd = new FormData();
+      fd.append('mode', mode || 'all');
+      fd.append('topic_hint', talkApplyValue(form, '#talk_topic_hint'));
+      fd.append('room_name', talkApplyValue(form, '#talk_room_name'));
+      fd.append('room_description', talkApplyValue(form, '#talk_room_description'));
+      fd.append('room_detail', talkApplyValue(form, '#talk_room_detail'));
+      fd.append('category', talkApplyValue(form, '#talk_category'));
+      fd.append('rules', talkApplyValue(form, '#talk_rules'));
+      fd.append('apply_reason', talkApplyValue(form, '#talk_apply_reason'));
+      fd.append('emoji', talkApplyValue(form, '#talk_emoji'));
+      return fd;
+    }
+
+    function validateBeforeAi(mode) {
+      var hasTopic = talkApplyValue(form, '#talk_topic_hint') !== '';
+      var hasName = talkApplyValue(form, '#talk_room_name') !== '';
+      var hasCategory = talkApplyValue(form, '#talk_category') !== '';
+      if (hasTopic || hasName || hasCategory) {
+        return true;
+      }
+      alert('톡방 주제, 이름, 카테고리 중 하나 이상을 입력해 주세요.');
+      var hint = qs('#talk_topic_hint', form);
+      if (hint) hint.focus();
+      return false;
+    }
+
+    buttons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var mode = btn.getAttribute('data-talk-apply-ai') || 'all';
+        if (!validateBeforeAi(mode)) {
+          return;
+        }
+
+        var loadingLabel = mode === 'all' ? 'AI 작성 중…' : '작성 중…';
+        buttons.forEach(function (b) {
+          setAiBtnLoading(b, true);
+          if (b.classList.contains('eottae-ai-btn')) {
+            setAiBtnLabel(b, loadingLabel);
+          }
+        });
+        talkApplySetAiStatus(form, 'AI가 신청서 내용을 작성 중입니다...', false);
+
+        fetch('/proc/eottae-talkroom-apply-ai.php', {
+          method: 'POST',
+          credentials: 'same-origin',
+          body: buildFormData(mode)
+        })
+          .then(function (res) { return parseJsonResponse(res); })
+          .then(function (json) {
+            if (!json || !json.success) {
+              throw new Error((json && json.message) || 'AI 자동작성에 실패했습니다.');
+            }
+            talkApplyApplyAiData(form, json.data || {}, mode);
+            var sourceLabel = json.source === 'api' ? 'AI' : '기본 템플릿';
+            talkApplySetAiStatus(form, sourceLabel + '로 내용을 입력했습니다. 제출 전 내용을 확인해 주세요.', false);
+          })
+          .catch(function (err) {
+            talkApplySetAiStatus(form, err.message || 'AI 자동작성에 실패했습니다.', true);
+          })
+          .finally(function () {
+            buttons.forEach(function (b) {
+              setAiBtnLoading(b, false);
+              if (b.classList.contains('eottae-ai-btn')) {
+                setAiBtnLabel(b, 'AI로 전체 자동 작성');
+              }
+            });
+          });
+      });
+    });
+  }
+
+  function initTalkApplyForm() {
+    var form = qs('[data-talk-apply-form]');
+    if (!form) return;
+    initTalkEmojiPicker(form);
+    initTalkApplyAi(form);
+  }
+
   function initShopMapThumbAi(root) {
     var btn = qs('[data-map-thumb-ai-generate]', root);
     if (!btn || !window.fetch) return;
@@ -698,16 +879,60 @@
     });
   }
 
-  /* Auth member type → mb_1 */
+  /* Auth member type → mb_1 / mb_2 */
   function initMemberType() {
-    var form = qs('#fregisterform');
-    if (!form) return;
-    var mb1 = qs('input[name="mb_1"]', form);
-    if (!mb1) return;
-    qsa('input[name="eottae_member_type"]', form).forEach(function (radio) {
-      radio.addEventListener('change', function () {
-        mb1.value = this.value === 'business' ? 'business' : 'member';
+    var forms = [qs('#fregisterform'), qs('#fregister')].filter(Boolean);
+    if (!forms.length) return;
+
+    forms.forEach(function (form) {
+      var mb1 = qs('input[name="mb_1"]', form);
+      var mb2 = qs('input[name="mb_2"]', form);
+      var roleWrap = qs('[data-member-role-wrap]', form);
+      if (!mb1 || !mb2) return;
+
+      function syncRoleVisibility(audience) {
+        if (!roleWrap) return;
+        var show = audience === 'expat' || audience === 'both';
+        roleWrap.classList.toggle('is-hidden', !show);
+        if (audience === 'tourist') {
+          mb1.value = 'member';
+          var memberRadio = qs('input[name="eottae_member_type"][value="member"]', form);
+          if (memberRadio) memberRadio.checked = true;
+        }
+      }
+
+      function syncFromAudience(radio) {
+        mb2.value = radio.value;
+        syncRoleVisibility(radio.value);
+      }
+
+      function syncFromRole(radio) {
+        mb1.value = radio.value === 'business' ? 'business' : 'member';
+      }
+
+      qsa('input[name="eottae_audience_type"]', form).forEach(function (radio) {
+        radio.addEventListener('change', function () {
+          syncFromAudience(this);
+        });
       });
+
+      qsa('input[name="eottae_member_type"]', form).forEach(function (radio) {
+        radio.addEventListener('change', function () {
+          syncFromRole(this);
+        });
+      });
+
+      var checkedAudience = qs('input[name="eottae_audience_type"]:checked', form);
+      if (checkedAudience) {
+        syncFromAudience(checkedAudience);
+      } else {
+        syncRoleVisibility(mb2.value || '');
+      }
+
+      var checkedRole = qs('input[name="eottae_member_type"]:checked', form);
+      if (checkedRole) {
+        syncFromRole(checkedRole);
+      }
     });
   }
 
@@ -1598,6 +1823,7 @@
     initShopGeocode();
     initShopCoordinatePicker();
     initMemberType();
+    initTalkApplyForm();
     initReviewModal();
     initReviewReply();
     initReviewLoadMore();

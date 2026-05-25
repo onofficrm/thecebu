@@ -19,7 +19,9 @@ if ($is_member && is_array($member)) {
     $eottae_member_nick = isset($member['mb_nick']) ? get_text($member['mb_nick']) : '회원';
     $eottae_member_point = isset($member['mb_point']) ? (int) $member['mb_point'] : 0;
     $eottae_member_is_biz = function_exists('eottae_is_business_member') && eottae_is_business_member($member);
-    $eottae_member_type = $eottae_member_is_biz ? '사업자회원' : '일반회원';
+    $eottae_member_type = function_exists('eottae_member_profile_type_label')
+        ? eottae_member_profile_type_label($member)
+        : ($eottae_member_is_biz ? '사업자회원' : '일반회원');
     $eottae_coupon_count = 0;
     if (is_file(G5_LIB_PATH.'/eottae-coupon.lib.php')) {
         include_once G5_LIB_PATH.'/eottae-coupon.lib.php';

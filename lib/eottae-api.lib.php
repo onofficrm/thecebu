@@ -578,18 +578,34 @@ if (!function_exists('eottae_api_get_auth_summary')) {
         $nick = isset($member['mb_nick']) ? get_text($member['mb_nick']) : '회원';
         $initial = function_exists('mb_substr') ? mb_substr($nick, 0, 1, 'UTF-8') : substr($nick, 0, 1);
         $is_biz = function_exists('eottae_is_business_member') && eottae_is_business_member($member);
+        $member_type = function_exists('eottae_member_profile_type_label')
+            ? eottae_member_profile_type_label($member)
+            : ($is_biz ? '사업자회원' : '일반회원');
 
         return array(
             'is_member'    => true,
             'nick'         => $nick,
             'initial'      => $initial,
-            'member_type'  => $is_biz ? '사업자회원' : '일반회원',
+            'member_type'  => $member_type,
+            'audience_type' => function_exists('eottae_member_audience_type') ? eottae_member_audience_type($member) : '',
+            'is_business'  => $is_biz,
             'point'        => isset($member['mb_point']) ? (int) $member['mb_point'] : 0,
             'coupon_count' => $coupon_count,
             'mypage_url'   => function_exists('eottae_mypage_url') ? eottae_mypage_url() : G5_URL.'/page/eottae-mypage.php',
             'profile_url'  => G5_BBS_URL.'/member_confirm.php?url='.urlencode(G5_BBS_URL.'/register_form.php'),
             'logout_url'   => G5_BBS_URL.'/logout.php',
         );
+    }
+}
+
+if (!function_exists('eottae_api_get_home_talk_hero')) {
+    function eottae_api_get_home_talk_hero()
+    {
+        if (!function_exists('eottae_talkroom_home_hero_payload')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
+        }
+
+        return eottae_talkroom_home_hero_payload(3, 3);
     }
 }
 
@@ -608,12 +624,14 @@ if (!function_exists('eottae_api_get_home_bundle')) {
             'gallery_posts'  => eottae_api_get_gallery_posts(27),
             'auth'           => eottae_api_get_auth_summary(),
             'ads'            => eottae_ad_get_active(EOTTae_AD_SLOT_SIDEBAR, 10),
+            'talk_hero'      => eottae_api_get_home_talk_hero(),
             'urls'           => array(
                 'shop'      => G5_BBS_URL.'/board.php?bo_table='.EOTTae_SHOP_TABLE,
                 'community' => G5_BBS_URL.'/board.php?bo_table='.EOTTae_COMMUNITY_TABLE,
                 'youtube'   => G5_BBS_URL.'/board.php?bo_table='.eottae_api_youtube_table(),
                 'gallery'   => G5_BBS_URL.'/board.php?bo_table='.eottae_api_gallery_table(),
                 'mypage'    => G5_URL.'/page/eottae-mypage.php',
+                'talk'      => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk',
             ),
         );
     }

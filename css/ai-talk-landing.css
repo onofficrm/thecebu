@@ -1,0 +1,632 @@
+@charset "utf-8";
+
+/**
+ * AI 톡방 도우미 랜딩 — ai-talk- prefix (사이트 공통 CSS와 분리)
+ */
+
+.ai-talk-landing {
+  --ai-talk-bg: #f4f6f9;
+  --ai-talk-surface: #ffffff;
+  --ai-talk-muted: #64748b;
+  --ai-talk-text: #0f172a;
+  --ai-talk-primary: #0ea5e9;
+  --ai-talk-primary-dark: #0284c7;
+  --ai-talk-accent: #fee500;
+  --ai-talk-accent-text: #422006;
+  --ai-talk-ai-bg: #f0f9ff;
+  --ai-talk-ai-border: #bae6fd;
+  --ai-talk-member-bg: #fffbeb;
+  --ai-talk-member-border: #fde68a;
+  --ai-talk-radius-lg: 20px;
+  --ai-talk-radius-md: 14px;
+  --ai-talk-shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+  --ai-talk-touch: 48px;
+  color: var(--ai-talk-text);
+  background: var(--ai-talk-bg);
+  line-height: 1.65;
+}
+
+.ai-talk-landing *,
+.ai-talk-landing *::before,
+.ai-talk-landing *::after {
+  box-sizing: border-box;
+}
+
+/* ── 버튼 ── */
+.ai-talk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--ai-talk-touch);
+  padding: 0 22px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  border: 2px solid transparent;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.ai-talk-btn--primary {
+  color: var(--ai-talk-accent-text);
+  background: linear-gradient(180deg, #fff176 0%, var(--ai-talk-accent) 100%);
+  box-shadow: 0 2px 10px rgba(251, 191, 36, 0.35);
+}
+
+.ai-talk-btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(251, 191, 36, 0.45);
+}
+
+.ai-talk-btn--ghost {
+  color: var(--ai-talk-text);
+  background: var(--ai-talk-surface);
+  border-color: #e2e8f0;
+}
+
+.ai-talk-btn--ghost:hover {
+  border-color: var(--ai-talk-primary);
+  color: var(--ai-talk-primary-dark);
+}
+
+.ai-talk-btn--on-dark {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.ai-talk-btn--on-dark:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.ai-talk-btn--lg {
+  min-height: 52px;
+  padding: 0 28px;
+  font-size: 16px;
+}
+
+/* ── 말풍선 ── */
+.ai-talk-bubble {
+  position: relative;
+  max-width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--ai-talk-radius-md);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.ai-talk-bubble p {
+  margin: 4px 0 0;
+}
+
+.ai-talk-bubble__who {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.ai-talk-bubble--ai {
+  background: var(--ai-talk-ai-bg);
+  border: 1px solid var(--ai-talk-ai-border);
+}
+
+.ai-talk-bubble--ai .ai-talk-bubble__who {
+  color: #0369a1;
+}
+
+.ai-talk-bubble--member {
+  margin-left: auto;
+  max-width: 85%;
+  background: var(--ai-talk-member-bg);
+  border: 1px solid var(--ai-talk-member-border);
+}
+
+.ai-talk-bubble--member .ai-talk-bubble__who {
+  color: #b45309;
+}
+
+.ai-talk-bubble--sample {
+  margin-top: 10px;
+}
+
+.ai-talk-bubble--compact {
+  font-size: 13px;
+}
+
+/* ── 히어로 ── */
+.ai-talk-hero {
+  padding: 28px 16px 36px;
+  background: linear-gradient(165deg, #fff 0%, #fffbeb 45%, #e0f2fe 100%);
+}
+
+.ai-talk-hero__inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.ai-talk-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 14px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #0369a1;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--ai-talk-ai-border);
+}
+
+.ai-talk-hero__title {
+  margin: 0 0 14px;
+  font-size: clamp(1.65rem, 5.5vw, 2.35rem);
+  font-weight: 900;
+  line-height: 1.25;
+  letter-spacing: -0.04em;
+}
+
+.ai-talk-hero__title-accent {
+  color: var(--ai-talk-primary-dark);
+}
+
+.ai-talk-hero__lead {
+  margin: 0 0 22px;
+  font-size: 15px;
+  color: #334155;
+}
+
+.ai-talk-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.ai-talk-hero__actions .ai-talk-btn {
+  flex: 1 1 140px;
+}
+
+.ai-talk-hero__chat {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: var(--ai-talk-radius-lg);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(186, 230, 253, 0.8);
+  box-shadow: var(--ai-talk-shadow);
+}
+
+/* ── 섹션 공통 ── */
+.ai-talk-section {
+  padding: 40px 16px;
+}
+
+.ai-talk-section--muted {
+  background: #eef2f7;
+}
+
+.ai-talk-section--warm {
+  background: linear-gradient(180deg, #fff 0%, #fffbeb 100%);
+}
+
+.ai-talk-section--cta {
+  background: linear-gradient(145deg, #0ea5e9 0%, #0284c7 100%);
+  color: #fff;
+}
+
+.ai-talk-section--cta .ai-talk-section__title,
+.ai-talk-section--cta .ai-talk-section__desc,
+.ai-talk-section--cta .ai-talk-prompt-list li {
+  color: #fff;
+}
+
+.ai-talk-section__inner {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.ai-talk-section__inner--center {
+  text-align: center;
+}
+
+.ai-talk-section__title {
+  margin: 0 0 10px;
+  font-size: clamp(1.35rem, 4vw, 1.75rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.3;
+}
+
+.ai-talk-section__desc {
+  margin: 0 0 24px;
+  font-size: 15px;
+  color: var(--ai-talk-muted);
+}
+
+.ai-talk-section--cta .ai-talk-section__desc {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.ai-talk-section__note {
+  margin: 16px 0 0;
+  font-size: 14px;
+  color: var(--ai-talk-muted);
+  text-align: center;
+}
+
+.ai-talk-quote {
+  margin: 0 0 16px;
+  padding: 18px 16px;
+  border-radius: var(--ai-talk-radius-md);
+  font-size: 15px;
+  font-style: normal;
+  text-align: center;
+  line-height: 1.7;
+  background: var(--ai-talk-ai-bg);
+  border: 1px solid var(--ai-talk-ai-border);
+}
+
+.ai-talk-quote--inline {
+  margin-top: 24px;
+}
+
+/* ── 카드 그리드 ── */
+.ai-talk-card-grid {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ai-talk-card {
+  padding: 16px;
+  border-radius: var(--ai-talk-radius-md);
+  background: var(--ai-talk-surface);
+  border: 1px solid #e8edf2;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+}
+
+.ai-talk-card--pain .ai-talk-card__icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.ai-talk-card__title {
+  margin: 8px 0 6px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.ai-talk-card__text {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ai-talk-muted);
+  line-height: 1.55;
+}
+
+.ai-talk-card--room .ai-talk-card__title {
+  margin-top: 0;
+}
+
+/* ── 기능 목록 ── */
+.ai-talk-feature-list {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ai-talk-feature {
+  padding: 18px 16px;
+  border-radius: var(--ai-talk-radius-lg);
+  background: var(--ai-talk-surface);
+  border: 1px solid #e8edf2;
+}
+
+.ai-talk-feature__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.ai-talk-feature__icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.ai-talk-feature__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.ai-talk-feature__desc {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ai-talk-muted);
+}
+
+/* ── 비교 ── */
+.ai-talk-compare {
+  display: grid;
+  gap: 12px;
+}
+
+.ai-talk-compare__col {
+  padding: 18px 16px;
+  border-radius: var(--ai-talk-radius-md);
+  background: var(--ai-talk-surface);
+  border: 1px solid #e2e8f0;
+}
+
+.ai-talk-compare__col--eottae {
+  border-color: var(--ai-talk-ai-border);
+  background: linear-gradient(180deg, #fff 0%, var(--ai-talk-ai-bg) 100%);
+}
+
+.ai-talk-compare__heading {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.ai-talk-compare__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ai-talk-compare__list li {
+  position: relative;
+  padding: 6px 0 6px 18px;
+  font-size: 14px;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.ai-talk-compare__list li::before {
+  content: "•";
+  position: absolute;
+  left: 4px;
+  color: var(--ai-talk-primary);
+  font-weight: 700;
+}
+
+.ai-talk-compare__col--kakao .ai-talk-compare__list li::before {
+  color: #94a3b8;
+}
+
+/* ── 체크리스트 ── */
+.ai-talk-checklist {
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.ai-talk-checklist li {
+  position: relative;
+  padding: 10px 0 10px 28px;
+  font-size: 15px;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.ai-talk-checklist li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 800;
+  color: #0369a1;
+  background: var(--ai-talk-ai-bg);
+}
+
+/* ── 개설 유도 ── */
+.ai-talk-prompt-list {
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+
+.ai-talk-prompt-list li {
+  padding: 8px 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.ai-talk-section--cta .ai-talk-hero__actions {
+  justify-content: center;
+  margin-bottom: 0;
+}
+
+.ai-talk-section--cta .ai-talk-hero__actions .ai-talk-btn {
+  flex: 1 1 160px;
+  max-width: 280px;
+}
+
+/* ── FAQ ── */
+.ai-talk-faq {
+  display: grid;
+  gap: 10px;
+}
+
+.ai-talk-faq__item {
+  border-radius: var(--ai-talk-radius-md);
+  background: var(--ai-talk-surface);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.ai-talk-faq__q {
+  padding: 16px 44px 16px 16px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  list-style: none;
+  letter-spacing: -0.02em;
+}
+
+.ai-talk-faq__q::-webkit-details-marker {
+  display: none;
+}
+
+.ai-talk-faq__item[open] .ai-talk-faq__q {
+  color: var(--ai-talk-primary-dark);
+  border-bottom: 1px solid #eef2f6;
+}
+
+.ai-talk-faq__a {
+  margin: 0;
+  padding: 14px 16px 16px;
+  font-size: 14px;
+  color: var(--ai-talk-muted);
+  line-height: 1.65;
+}
+
+/* ── 하단 CTA ── */
+.ai-talk-final {
+  padding: 48px 16px 56px;
+  background: linear-gradient(160deg, #0f172a 0%, #1e3a5f 55%, #0c4a6e 100%);
+  color: #fff;
+  text-align: center;
+}
+
+.ai-talk-final__inner {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.ai-talk-final__title {
+  margin: 0 0 14px;
+  font-size: clamp(1.4rem, 4.5vw, 1.85rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.35;
+}
+
+.ai-talk-final__text {
+  margin: 0 0 12px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.ai-talk-final__tagline {
+  margin: 0 0 24px;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ai-talk-accent);
+}
+
+.ai-talk-final .ai-talk-hero__actions {
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.ai-talk-final .ai-talk-hero__actions .ai-talk-btn {
+  flex: 1 1 160px;
+  max-width: 280px;
+}
+
+.ai-talk-final__back {
+  margin: 0;
+  font-size: 13px;
+}
+
+.ai-talk-final__back a {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+}
+
+.ai-talk-final__back a:hover {
+  color: #fff;
+}
+
+/* ── 반응형 ── */
+@media (min-width: 640px) {
+  .ai-talk-hero {
+    padding: 48px 24px 56px;
+  }
+
+  .ai-talk-section {
+    padding: 56px 24px;
+  }
+
+  .ai-talk-card-grid--pain {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ai-talk-card-grid--rooms {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ai-talk-feature-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ai-talk-compare {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ai-talk-hero__actions .ai-talk-btn {
+    flex: 0 1 auto;
+    min-width: 180px;
+  }
+}
+
+@media (min-width: 960px) {
+  .ai-talk-card-grid--pain {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ai-talk-card-grid--rooms {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ai-talk-hero__inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: center;
+  }
+
+  .ai-talk-hero__chat {
+    margin-top: 0;
+  }
+
+  .ai-talk-hero__actions {
+    margin-bottom: 0;
+  }
+}
+
+/* 컨테이너 여백 — eottae-page 레이아웃 */
+body.eottae-page #container .ai-talk-landing {
+  margin-left: calc(-1 * var(--eottae-page-pad, 16px));
+  margin-right: calc(-1 * var(--eottae-page-pad, 16px));
+  width: calc(100% + 2 * var(--eottae-page-pad, 16px));
+  max-width: none;
+}
+
+@media (min-width: 768px) {
+  body.eottae-page #container .ai-talk-landing {
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+  }
+}

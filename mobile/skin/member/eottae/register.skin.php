@@ -9,19 +9,17 @@ add_stylesheet('<link rel="stylesheet" href="'.$member_skin_url.'/style.css">', 
         <h1 class="auth-layout__title">회원가입</h1>
         <p class="auth-layout__sub">세부어때에 오신 것을 환영합니다</p>
 
-        <form name="fregister" action="<?php echo $register_action_url ?>" method="post" onsubmit="return fregister_submit(this);">
+        <form name="fregister" id="fregister" action="<?php echo $register_action_url ?>" method="post" onsubmit="return fregister_submit(this);">
         <input type="hidden" name="url" value="<?php echo $urlencode ?>">
 
-        <div class="auth-member-type">
-            <label>
-                <input type="radio" name="eottae_member_type" value="member" checked>
-                <span>일반회원</span>
-            </label>
-            <label>
-                <input type="radio" name="eottae_member_type" value="business">
-                <span>사업자회원</span>
-            </label>
-        </div>
+        <?php
+        if (function_exists('eottae_render_member_type_fields')) {
+            echo eottae_render_member_type_fields(array(
+                'audience' => '',
+                'role'     => 'member',
+            ));
+        }
+        ?>
 
         <div id="fregister_term" style="text-align:left;font-size:13px;line-height:1.6;margin-bottom:16px">
             <?php echo conv_content($config['cf_stipulation'], $config['cf_editor']); ?>
@@ -56,6 +54,11 @@ add_stylesheet('<link rel="stylesheet" href="'.$member_skin_url.'/style.css">', 
 function fregister_submit(f) {
     if (!f.agree.checked) { alert('이용약관에 동의해 주세요.'); return false; }
     if (!f.agree2.checked) { alert('개인정보 처리방침에 동의해 주세요.'); return false; }
+    var audience = f.mb_2 ? f.mb_2.value : '';
+    if (!audience) {
+        alert('회원 유형(관광객/교민/둘 다)을 선택해 주세요.');
+        return false;
+    }
     return true;
 }
 </script>

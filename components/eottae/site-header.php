@@ -46,8 +46,11 @@ $eottae_mypage_href = function_exists('eottae_mypage_url') ? eottae_mypage_url()
                     <nav class="eottae-gnb-header__nav" aria-label="메인메뉴">
                         <?php foreach ($eottae_gnb_links as $link) {
                             $active = eottae_gnb_link_is_active($link['key']);
+                            $link_class = function_exists('eottae_gnb_nav_link_classes')
+                                ? eottae_gnb_nav_link_classes($link, 'desktop', $active)
+                                : 'eottae-gnb-header__nav-link'.($active ? ' is-active' : '');
                             ?>
-                        <a href="<?php echo $link['href']; ?>" class="eottae-gnb-header__nav-link<?php echo $active ? ' is-active' : ''; ?>">
+                        <a href="<?php echo $link['href']; ?>" class="<?php echo $link_class; ?>">
                             <?php echo get_text($link['label']); ?>
                         </a>
                         <?php } ?>
@@ -76,8 +79,11 @@ $eottae_mypage_href = function_exists('eottae_mypage_url') ? eottae_mypage_url()
                 <nav class="eottae-gnb-header__mobile-nav">
                     <?php foreach ($eottae_gnb_links as $link) {
                         $active = eottae_gnb_link_is_active($link['key']);
+                        $link_class = function_exists('eottae_gnb_nav_link_classes')
+                            ? eottae_gnb_nav_link_classes($link, 'mobile', $active)
+                            : 'eottae-gnb-header__mobile-link'.($active ? ' is-active' : '');
                         ?>
-                    <a href="<?php echo $link['href']; ?>" class="eottae-gnb-header__mobile-link<?php echo $active ? ' is-active' : ''; ?>">
+                    <a href="<?php echo $link['href']; ?>" class="<?php echo $link_class; ?>">
                         <?php echo get_text($link['label']); ?>
                     </a>
                     <?php } ?>

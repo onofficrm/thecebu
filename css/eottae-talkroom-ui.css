@@ -38,6 +38,7 @@ body.talkroom-ui .talk-applies-page,
 body.talkroom-ui .talk-room-detail-page,
 body.talkroom-ui .talk-manage-page,
 body.talkroom-ui .talk-my-page,
+body.talkroom-ui .my-talk-page,
 body.talkroom-ui .talk-reports-page,
 body.talkroom-ui .talk-admin-page {
   max-width: 640px;
@@ -823,6 +824,40 @@ body.talkroom-ui .talk-report-btn {
   border-radius: var(--talkroom-radius-pill, 999px);
   font-size: 12px;
   font-weight: 700;
+}
+
+body.talkroom-ui .talk-bookmark-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 0;
+}
+
+body.talkroom-ui .talk-bookmark-btn {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: var(--talkroom-radius-pill, 999px);
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(14, 165, 233, 0.35);
+  background: #fff;
+  color: var(--talkroom-primary, #0ea5e9);
+  cursor: pointer;
+}
+
+body.talkroom-ui .talk-bookmark-btn--saved {
+  border-color: rgba(15, 23, 42, 0.12);
+  background: #f8fafc;
+  color: #475569;
+}
+
+body.talkroom-ui .talk-bookmark-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+body.talkroom-ui .talk-report-actions--post + .talk-bookmark-actions--post {
+  margin-top: 0;
 }
 
 body.talkroom-ui .talk-report-modal__panel {

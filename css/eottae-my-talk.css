@@ -1,0 +1,1373 @@
+@charset "utf-8";
+
+/**
+ * 마이페이지 — 내 세부톡방 대시보드
+ * 클래스 prefix: my-talk-
+ * 모바일 우선 · 카드형 UI
+ */
+
+.my-talk-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 12px 14px calc(24px + env(safe-area-inset-bottom, 0px));
+}
+
+.my-talk-page__intro {
+  margin: 0 0 18px;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--eottae-muted, #64748b);
+}
+
+.my-talk-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* ── Hero ── */
+.my-talk-hero {
+  margin: 0;
+  padding: 18px 16px;
+  border-radius: var(--eottae-radius, 16px);
+  background: linear-gradient(145deg, #0ea5e9 0%, #0284c7 55%, #0369a1 100%);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(14, 165, 233, 0.28);
+}
+
+.my-talk-hero__greeting {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+}
+
+.my-talk-hero__sub {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+/* ── Sticky anchor nav ── */
+.my-talk-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin: -6px -14px 0;
+  padding: 8px 14px;
+  background: rgba(248, 250, 252, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.my-talk-nav__list {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0 2px 4px;
+  list-style: none;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.my-talk-nav__list::-webkit-scrollbar {
+  display: none;
+}
+
+.my-talk-nav__item {
+  flex-shrink: 0;
+}
+
+.my-talk-nav__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--eottae-surface, #fff);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--eottae-text, #0f172a);
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: var(--eottae-shadow-sm, 0 2px 8px rgba(15, 23, 42, 0.04));
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.my-talk-nav__link:hover,
+.my-talk-nav__link:focus-visible {
+  border-color: rgba(14, 165, 233, 0.35);
+  background: #f0f9ff;
+}
+
+.my-talk-nav__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  min-height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+  background: #ef4444;
+}
+
+/* ── 섹션 공통 ── */
+.my-talk-section {
+  scroll-margin-top: 56px;
+}
+
+.my-talk-section--panel {
+  padding: 16px;
+  border-radius: var(--eottae-radius, 16px);
+  background: var(--eottae-surface, #fff);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: var(--eottae-shadow-sm, 0 2px 8px rgba(15, 23, 42, 0.06));
+}
+
+.my-talk-section--today {
+  padding-bottom: 14px;
+}
+
+/* ── 유틸 ── */
+.my-talk-title-clamp {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+
+.my-talk-meta-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.05);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.my-talk-type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.my-talk-type-badge--notice {
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.my-talk-type-badge--meetup {
+  color: #0369a1;
+  background: rgba(14, 165, 233, 0.12);
+}
+
+.my-talk-type-badge--question {
+  color: #6d28d9;
+  background: rgba(139, 92, 246, 0.12);
+}
+
+.my-talk-type-badge--sale {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.my-talk-type-badge--default {
+  color: var(--eottae-muted, #64748b);
+  background: rgba(15, 23, 42, 0.06);
+}
+.my-talk-section__title {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--eottae-text, #0f172a);
+}
+
+.my-talk-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.my-talk-section__head .my-talk-section__title {
+  margin: 0;
+}
+
+.my-talk-section__more {
+  flex-shrink: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--eottae-primary, #0ea5e9);
+  text-decoration: none;
+}
+
+.my-talk-section__desc {
+  margin: -6px 0 12px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--eottae-muted, #64748b);
+}
+
+/* ── AI 브리핑 ── */
+.my-talk-briefing {
+  margin: 0;
+}
+
+.my-talk-briefing__inner {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 16px;
+  border-radius: var(--eottae-radius, 16px);
+  background: linear-gradient(135deg, #fff 0%, #f0f9ff 45%, #ecfdf5 100%);
+  border: 1px solid rgba(14, 165, 233, 0.15);
+  box-shadow: var(--eottae-shadow-sm, 0 2px 8px rgba(15, 23, 42, 0.06));
+}
+
+.my-talk-briefing__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 1.25rem;
+}
+
+.my-talk-briefing__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--eottae-text, #0f172a);
+}
+
+.my-talk-briefing__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.my-talk-briefing__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #0369a1;
+  background: rgba(14, 165, 233, 0.12);
+}
+
+.my-talk-briefing__auto-note {
+  margin: 0 0 10px;
+  font-size: 0.72rem;
+  color: var(--eottae-muted, #64748b);
+}
+
+.my-talk-briefing__text-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.my-talk-briefing__text {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--eottae-text, #0f172a);
+}
+
+.my-talk-briefing__hint {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  color: var(--eottae-muted, #64748b);
+}
+
+.my-talk-briefing__priority {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(14, 165, 233, 0.12);
+}
+
+.my-talk-briefing__priority-title {
+  margin: 0 0 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--eottae-text, #0f172a);
+}
+
+.my-talk-briefing__priority-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.my-talk-briefing__priority-link {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: var(--eottae-radius-sm, 12px);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(14, 165, 233, 0.1);
+  text-decoration: none;
+  color: inherit;
+}
+
+.my-talk-briefing__priority-link:hover,
+.my-talk-briefing__priority-link:focus-visible {
+  border-color: rgba(14, 165, 233, 0.28);
+  background: #fff;
+}
+
+.my-talk-briefing__priority-subject {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--eottae-text, #0f172a);
+}
+
+.my-talk-briefing__priority-subject.my-talk-title-clamp {
+  display: -webkit-box;
+}
+
+.my-talk-briefing__priority-meta {
+  font-size: 0.74rem;
+  color: var(--eottae-muted, #64748b);
+}
+
+.my-talk-briefing__priority-room {
+  align-self: flex-start;
+}
+
+.my-talk-briefing__priority-reason {
+  align-self: flex-start;
+}
+
+/* ── 오늘 확인할 것 ── */
+.my-talk-today-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 480px) {
+  .my-talk-today-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.my-talk-today-card {
+  margin: 0;
+}
+
+.my-talk-today-card__link {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: 96px;
+  padding: 14px 12px;
+  border-radius: var(--eottae-radius-sm, 12px);
+  background: var(--eottae-surface, #fff);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: var(--eottae-shadow-sm, 0 2px 8px rgba(15, 23, 42, 0.06));
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.my-talk-today-card__link:hover,
+.my-talk-today-card__link:focus-visible {
+  border-color: rgba(14, 165, 233, 0.35);
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.12);
+}
+
+.my-talk-today-card--alert .my-talk-today-card__link {
+  border-color: rgba(239, 68, 68, 0.28);
+  background: linear-gradient(180deg, #fff 0%, #fef2f2 100%);
+}
+
+.my-talk-today-card--alert .my-talk-today-card__value {
+  color: #dc2626;
+}
+
+.my-talk-today-card__icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.my-talk-today-card__label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--eottae-muted, #64748b);
+}
+
+.my-talk-section__tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.my-talk-badge--alert {
+  background: #ef4444;
+  color: #fff;
+}
+
+.my-talk-room-card--unread .my-talk-room-card__inner {
+  border-color: rgba(239, 68, 68, 0.25);
+  box-shadow: 0 4px 18px rgba(239, 68, 68, 0.08);
+}
+
+.my-talk-room-card__unread-summary {
+  margin: 0 0 12px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--eottae-muted, #64748b);
+}
+
+.my-talk-room-card__unread-summary--active {
+  color: #dc2626;
+}
+
+.my-talk-today-card__value {
+  margin-top: auto;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--eottae-text, #0f172a);
+}
+
+.my-talk-today-card__link .my-talk-today-card__value {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+
+/* ── 뱃지 ── */
+.my-talk-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  min-height: 22px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.my-talk-badge--count {
+  margin-left: 4px;
+  background: #ef4444;
+  color: #fff;
+}
+
+.my-talk-badge--owner {
+  flex-shrink: 0;
+  background: rgba(14, 165, 233, 0.12);
+  color: var(--eottae-primary-dark, #0284c7);
+}
+
+.my-talk-badge--muted {
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--eottae-muted, #64748b);
+}
+
+.my-talk-room-badge {
+  display: inline-block;
+  max-width: 100%;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(14, 165, 233, 0.1);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--eottae-primary-dark, #0284c7);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── 버튼 ── */
+.my-talk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.my-talk-btn--sm {
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 0.82rem;
+}
+
+.my-talk-btn--primary {
+  background: var(--eottae-primary, #0ea5e9);
+  color: #fff;
+}
+
+.my-talk-btn--primary:hover,
+.my-talk-btn--primary:focus-visible {
+  background: var(--eottae-primary-dark, #0284c7);
+  color: #fff;
+}
+
+.my-talk-btn--ghost {
+  background: transparent;
+  color: var(--eottae-primary, #0ea5e9);
+  border: 1px solid rgba(14, 165, 233, 0.35);
+}
+
+.my-talk-btn--ghost:hover,
+.my-talk-btn--ghost:focus-visible {
+  background: rgba(14, 165, 233, 0.08);
+}
+
+/* ── 빈 상태 ── */
+.my-talk-empty {
+  padding: 24px 16px;
+  border-radius: var(--eottae-radius, 16px);
+  background: var(--eottae-surface, #fff);
+  border: 1px dashed rgba(15, 23, 42, 0.12);
+  text-align: center;
+}
+
+.my-talk-empty--compact {
+  padding: 16px;
+  text-align: left;
+}
+
+.my-talk-empty__title {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--eottae-text, #0f172a);
+}
+
+.my-talk-empty__desc {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--eottae-muted, #64748b);
+}
+
+.my-talk-empty__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+/* ── 톡방 카드 ── */
+.my-talk-room-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.my-talk-room-card__inner {
+  padding: 16px;
+  border-radius: var(--eottae-radius, 16px);
+  background: var(--eottae-surface, #fff);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: var(--eottae-shadow-sm, 0 2px 8px rgba(15, 23, 42, 0.06));
+}
+
+.my-talk-room-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.my-talk-room-card__emoji {
+  flex-shrink: 0;
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.my-talk-room-card__titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.my-talk-room-card__name {
+  margin: 0 0 4px;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.my-talk-room-card__category {
+  display: inline-block;
+  font-size: 0.78rem;
+  color: var(--eottae-muted, #64748b);
+}
+
+.my-talk-room-card__meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  margin: 0 0 14px;
+}
+
+.my-talk-room-card__meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: baseline;
+  margin: 0;
+}
+
+.my-talk-room-card__meta-row dt {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--eottae-muted, #64748b);
+}
+
+.my-talk-room-card__meta-row dd {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--eottae-text, #0f172a);
+}
+
+.my-talk-room-card__meta-row--pending dd {
+  font-weight: 500;
+}
+
+.my-talk-room-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ── 피드 ── */
+.my-talk-feed-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-end;
+  margin-bottom: 12px;
+}
+
+.my-talk-feed-filters__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 120px;
+  flex: 1;
+}
+
+.my-talk-feed-filters__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--eottae-muted, #64748b);
+}
+
+.my-talk-feed-filters__select {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 12px;
+  background: var(--eottae-surface, #fff);
+  font-size: 0.85rem;
+  color: var(--eottae-text, #0f172a);
+}
+
+.my-talk-feed {
+  position: relative;
+  padding: 0;
+  border-radius: var(--eottae-radius, 16px);
+  background: transparent;
+  border: none;
+  text-align: left;
+}
+
+.my-talk-feed--empty {
+  padding: 24px 16px;
+  background: var(--eottae-surface, #fff);
+  border: 1px dashed rgba(15, 23, 42, 0.12);
+  text-align: center;
+}
+
+.my-talk-feed--list {
+  background: transparent;
+}
+
+.my-talk-feed__skeleton {
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.my-talk-feed__skeleton-item {
+  height: 52px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: my-talk-shimmer 1.4s ease infinite;
+}
+
+.my-talk-feed__skeleton-item:last-child {
+  margin-bottom: 0;
+  width: 75%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@keyframes my-talk-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.my-talk-feed__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.my-talk-feed__item {
+  border-radius: var(--eottae-radius-sm, 12px);
+  background: var(--eottae-surface, #fff);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: var(--eottae-shadow-sm, 0 2px 8px rgba(15, 23, 42, 0.06));
+  overflow: hidden;
+}
+
+.my-talk-feed__item--new {
+  border-color: rgba(239, 68, 68, 0.22);
+}
+
+.my-talk-feed__link {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  padding: 14px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.my-talk-feed__thumb {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f1f5f9;
+}
+
+.my-talk-feed__thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.my-talk-feed__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.my-talk-feed__headline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.my-talk-feed__room {
+  max-width: 100%;
+}
+
+.my-talk-feed__new {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+}
+
+.my-talk-feed__category {
+  font-size: 0.75rem;
+  color: var(--eottae-muted, #64748b);
+}
+
+.my-talk-feed__subject {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--eottae-text, #0f172a);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.my-talk-feed__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: 2px;
+  font-size: 0.78rem;
+  color: var(--eottae-muted, #64748b);
+}
+
+.my-talk-feed__type {
+  font-size: 0.72rem;
+}
+
+.my-talk-feed__author {
+  font-weight: 600;
+  color: var(--eottae-text, #0f172a);
+}
+
+.my-talk-feed__comments,
+.my-talk-feed__time {
+  white-space: nowrap;
+}
+
+.my-talk-feed__more-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+/* ── 내 톡방 공지 ── */
+.my-talk-notice--empty,
+.my-talk-meetup--empty {
+  padding: 24px 16px;
+  border-radius: var(--eottae-radius, 16px);
+  background: var(--eottae-surface, #fff);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  text-align: center;
+}
+
+.my-talk-notice__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.my-talk-notice__item {
+  position: relative;
+  border-radius: var(--eottae-radius-sm, 12px);
+  background: var(--eottae-surface, #fff);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: var(--eottae-shadow-sm, 0 2px 8px rgba(15, 23, 42, 0.06));
+}
+
+.my-talk-notice__item--unread {
+  border-color: rgba(245, 158, 11, 0.35);
+  background: linear-gradient(180deg, #fff 0%, #fffbeb 100%);
+}
+
+.my-talk-notice__link {
+  display: block;
+  padding: 14px 56px 14px 14px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.my-talk-notice__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.my-talk-notice__subject {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--eottae-text, #0f172a);
+  margin-bottom: 6px;
+}
+
+.my-talk-notice__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--eottae-muted, #64748b);
+}
+
+.my-talk-notice__author {
+  font-weight: 600;
+}
+
+.my-talk-notice__read-btn {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 12px;
+  border: 1px solid rgba(14, 165, 233, 0.25);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--eottae-primary, #0ea5e9);
+  cursor: pointer;
+}
+
+.my-talk-notice__read-btn:hover,
+.my-talk-notice__read-btn:focus-visible {
+  background: rgba(14, 165, 233, 0.08);
+}
+
+.my-talk-notice__more-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+/* ── 내 모임 ── */
+.my-talk-meetup__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.my-talk-meetup__inner {
+  padding: 16px;
+  border-radius: var(--eottae-radius, 16px);
+  background: var(--eottae-surface, #fff);
+  border: 1px solid rgba(14, 165, 233, 0.12);
+  box-shadow: var(--eottae-shadow-sm, 0 2px 8px rgba(15, 23, 42, 0.06));
+}
+
+.my-talk-meetup__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.my-talk-meetup__subject {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.my-talk-meetup__link {
+  color: var(--eottae-text, #0f172a);
+  text-decoration: none;
+}
+
+.my-talk-meetup__link:hover,
+.my-talk-meetup__link:focus-visible {
+  color: var(--eottae-primary, #0ea5e9);
+}
+
+.my-talk-meetup__meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  margin: 0 0 12px;
+}
+
+@media (min-width: 640px) {
+  .my-talk-meetup__meta {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.my-talk-meetup__meta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.78rem;
+}
+
+.my-talk-meetup__meta-label {
+  color: var(--eottae-muted, #64748b);
+  font-weight: 600;
+}
+
+.my-talk-meetup__meta-value {
+  color: var(--eottae-text, #0f172a);
+  font-weight: 600;
+}
+
+.my-talk-meetup__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ── 저장한 글 ── */
+.my-talk-bookmark--empty {
+  padding: 24px 16px;
+  border-radius: var(--eottae-radius, 16px);
+  background: var(--eottae-surface, #fff);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  text-align: center;
+}
+
+.my-talk-bookmark__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.my-talk-bookmark__inner {
+  padding: 16px;
+  border-radius: var(--eottae-radius, 16px);
+  background: var(--eottae-surface, #fff);
+  border: 1px solid rgba(14, 165, 233, 0.12);
+  box-shadow: var(--eottae-shadow-sm, 0 2px 8px rgba(15, 23, 42, 0.06));
+}
+
+.my-talk-bookmark__item--restricted .my-talk-bookmark__inner {
+  border-color: rgba(148, 163, 184, 0.35);
+  background: #f8fafc;
+}
+
+.my-talk-bookmark__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.my-talk-bookmark__subject {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.my-talk-bookmark__link {
+  color: var(--eottae-text, #0f172a);
+  text-decoration: none;
+}
+
+.my-talk-bookmark__link:hover,
+.my-talk-bookmark__link:focus-visible {
+  color: var(--eottae-primary, #0ea5e9);
+}
+
+.my-talk-bookmark__subject-text {
+  color: var(--eottae-muted, #64748b);
+}
+
+.my-talk-bookmark__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 0.78rem;
+  color: var(--eottae-muted, #64748b);
+}
+
+.my-talk-bookmark__author,
+.my-talk-bookmark__type {
+  font-weight: 600;
+}
+
+.my-talk-bookmark__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ── 알림 ── */
+.my-talk-notify--empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 16px;
+  border-radius: var(--eottae-radius, 16px);
+  background: var(--eottae-surface, #fff);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  text-align: center;
+}
+
+.my-talk-notify__icon {
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+  opacity: 0.7;
+}
+
+.my-talk-notify__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.my-talk-notify__item {
+  position: relative;
+  border-radius: var(--eottae-radius-sm, 12px);
+  background: var(--eottae-surface, #fff);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: var(--eottae-shadow-sm, 0 2px 8px rgba(15, 23, 42, 0.06));
+}
+
+.my-talk-notify__item--unread {
+  border-color: rgba(14, 165, 233, 0.25);
+  background: linear-gradient(180deg, #fff 0%, #f8fcff 100%);
+}
+
+.my-talk-notify__link {
+  display: block;
+  padding: 14px 56px 14px 14px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.my-talk-notify__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.my-talk-notify__title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--eottae-text, #0f172a);
+}
+
+.my-talk-notify__message {
+  display: block;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--eottae-muted, #64748b);
+  margin-bottom: 8px;
+}
+
+.my-talk-notify__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 0.75rem;
+  color: var(--eottae-muted, #64748b);
+}
+
+.my-talk-notify__unread-dot {
+  font-size: 0.62rem;
+  padding: 2px 6px;
+}
+
+.my-talk-notify__read-btn {
+  position: absolute;
+  top: 12px;
+  right: 10px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 12px;
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--eottae-primary, #0ea5e9);
+  cursor: pointer;
+}
+
+.my-talk-notify__read-btn:hover,
+.my-talk-notify__read-btn:focus-visible {
+  background: rgba(14, 165, 233, 0.08);
+}
+
+/* ── 방장 관리 ── */
+.my-talk-owner-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.my-talk-owner-card__inner {
+  padding: 16px;
+  border-radius: var(--eottae-radius, 16px);
+  background: var(--eottae-surface, #fff);
+  border: 1px solid rgba(14, 165, 233, 0.12);
+  box-shadow: var(--eottae-shadow-sm, 0 2px 8px rgba(15, 23, 42, 0.06));
+}
+
+.my-talk-owner-card__head {
+  margin-bottom: 12px;
+}
+
+.my-talk-owner-card--tasks .my-talk-owner-card__inner {
+  border-color: rgba(239, 68, 68, 0.35);
+  box-shadow: 0 2px 12px rgba(239, 68, 68, 0.08);
+}
+
+.my-talk-owner-card__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.my-talk-owner-card__category {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--eottae-muted, #64748b);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(14, 165, 233, 0.08);
+}
+
+.my-talk-owner-card__updated {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.76rem;
+  color: var(--eottae-muted, #64748b);
+}
+
+.my-talk-owner-card__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .my-talk-owner-card__stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.my-talk-owner-card__stats li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.82rem;
+}
+
+.my-talk-owner-card__stat-label {
+  color: var(--eottae-muted, #64748b);
+  font-weight: 600;
+}
+
+.my-talk-owner-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* talkroom-ui 스코프 호환 */
+body.talkroom-ui .my-talk-page {
+  padding-left: 14px;
+  padding-right: 14px;
+}
+
+body.talkroom-ui .my-talk-briefing__inner {
+  border-radius: var(--talkroom-radius-xl, 20px);
+}
+
+body.talkroom-ui .my-talk-room-card__inner,
+body.talkroom-ui .my-talk-owner-card__inner,
+body.talkroom-ui .my-talk-meetup__inner,
+body.talkroom-ui .my-talk-bookmark__inner {
+  border-radius: var(--talkroom-radius-lg, 16px);
+}
+
+@media (min-width: 720px) {
+  .my-talk-page {
+    max-width: 720px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .my-talk-nav {
+    margin-left: -20px;
+    margin-right: -20px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .my-talk-hero {
+    padding: 22px 20px;
+  }
+
+  .my-talk-hero__greeting {
+    font-size: 1.15rem;
+  }
+
+  .my-talk-section--panel {
+    padding: 20px;
+  }
+
+  .my-talk-today-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
