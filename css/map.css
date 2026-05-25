@@ -245,6 +245,79 @@
   border-radius: 12px;
 }
 
+.marker-info--compact {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  width: max-content;
+  max-width: min(340px, calc(100vw - 40px));
+  border-radius: 10px;
+}
+
+.marker-info--compact .marker-info-thumb-wrap {
+  flex: 0 0 72px;
+  width: 72px;
+  min-height: 72px;
+  line-height: 0;
+}
+
+.marker-info--compact .marker-info-thumb {
+  display: block;
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  margin: 0;
+  border-radius: 0;
+}
+
+.marker-info--compact .marker-info-body {
+  flex: 0 1 auto;
+  display: flex;
+  align-items: center;
+  padding: 8px 10px 8px 8px;
+  min-width: 0;
+}
+
+.marker-info--compact .marker-info-head {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  min-width: 0;
+}
+
+.marker-info--compact .marker-info-title {
+  flex: 0 1 auto;
+  max-width: 9em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.marker-info--compact .marker-info-link {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #2563eb;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.marker-info--compact .marker-info-link:hover {
+  text-decoration: underline;
+}
+
+.gm-style .gm-style-iw-c:has(.marker-info--compact) {
+  max-width: none !important;
+}
+
+.gm-style .gm-style-iw-d:has(.marker-info--compact) {
+  max-width: none !important;
+  width: max-content !important;
+}
+
 .marker-info--thumb .marker-info-thumb {
   display: block;
   width: 100%;

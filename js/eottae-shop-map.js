@@ -46,6 +46,16 @@
     };
   }
 
+  function markerIcon(loc) {
+    if (!loc.thumbnail || !global.google || !global.google.maps) return null;
+    var size = 42;
+    return {
+      url: loc.thumbnail,
+      scaledSize: new global.google.maps.Size(size, size),
+      anchor: new global.google.maps.Point(size / 2, size)
+    };
+  }
+
   function markerInfoBadgesHtml(loc) {
     var html = '';
     if (loc.category) {
@@ -79,7 +89,7 @@
         : '';
     return (
       '<div class="marker-info' +
-      (hasThumb ? ' marker-info--thumb' : '') +
+      (hasThumb ? ' marker-info--thumb marker-info--compact' : '') +
       '">' +
       thumb +
       '<div class="marker-info-body">' +
@@ -88,8 +98,6 @@
       escapeHtml(loc.name) +
       '</h3>' +
       badges +
-      '</div>' +
-      '<div class="marker-info-actions">' +
       link +
       '</div></div></div>'
     );
@@ -129,7 +137,7 @@
       streetViewControl: false,
       fullscreenControl: true
     });
-    this.infoWindow = new global.google.maps.InfoWindow();
+    this.infoWindow = new global.google.maps.InfoWindow({ maxWidth: 340 });
     this.renderMarkers();
     this.bindEvents();
     this.bindCardSync();
@@ -153,7 +161,8 @@
       var marker = new global.google.maps.Marker({
         position: { lat: loc.lat, lng: loc.lng },
         map: self.map,
-        title: loc.name
+        title: loc.name,
+        icon: markerIcon(loc)
       });
       marker.addListener('click', function () {
         self.infoWindow.setContent(markerInfoHtml(loc));
@@ -301,7 +310,8 @@
     this.marker = new global.google.maps.Marker({
       position: center,
       map: this.map,
-      title: this.name
+      title: this.name,
+      icon: markerIcon({ thumbnail: this.thumbnail })
     });
     this.root.classList.add('is-live');
   };

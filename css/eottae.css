@@ -1261,6 +1261,12 @@ body.eottae-page hr {
   isolation: isolate;
 }
 
+/* 홈 지도 — 지역 뱃지가 Google Maps 좌상단 컨트롤을 가리지 않도록 우상단으로 */
+.eottae-home-map--live > .absolute.top-4.left-4 {
+  left: auto;
+  right: 3.75rem;
+}
+
 .shop-map-panel {
   position: relative;
   min-height: calc(100vh - var(--eottae-header-h) - 48px);
@@ -1613,6 +1619,14 @@ body.eottae-page hr {
   margin-bottom: 8px;
 }
 
+.board-wrap--eottae-shop #bo_v_con.shop-detail-page__content {
+  padding: 16px;
+}
+
+.shop-detail-page__content-view {
+  min-width: 0;
+}
+
 .shop-detail-page__content-head {
   display: flex;
   align-items: center;
@@ -1731,10 +1745,17 @@ body.eottae-page hr {
 }
 
 .shop-detail-page__video {
+  width: 100%;
   margin: 0 0 1rem;
   border-radius: 12px;
   overflow: hidden;
   background: #0f172a;
+}
+
+.shop-detail-page__video .board-yt-embed {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
 }
 
 .shop-detail-page__video .board-yt-embed,
@@ -1744,7 +1765,22 @@ body.eottae-page hr {
 }
 
 .shop-detail-page__video .board-yt-embed__ratio {
+  position: relative;
+  width: 100%;
+  height: 0;
   padding-bottom: 56.25%;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+.shop-detail-page__video .board-yt-embed__ratio iframe,
+.shop-detail-page__video .youtube-embed iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 
 .shop-detail-page__footer {
@@ -5556,6 +5592,79 @@ body.eottae-page hr {
   max-width: 260px;
   overflow: hidden;
   border-radius: 12px;
+}
+
+.marker-info--compact {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  width: max-content;
+  max-width: min(340px, calc(100vw - 40px));
+  border-radius: 10px;
+}
+
+.marker-info--compact .marker-info-thumb-wrap {
+  flex: 0 0 72px;
+  width: 72px;
+  min-height: 72px;
+  line-height: 0;
+}
+
+.marker-info--compact .marker-info-thumb {
+  display: block;
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  margin: 0;
+  border-radius: 0;
+}
+
+.marker-info--compact .marker-info-body {
+  flex: 0 1 auto;
+  display: flex;
+  align-items: center;
+  padding: 8px 10px 8px 8px;
+  min-width: 0;
+}
+
+.marker-info--compact .marker-info-head {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  min-width: 0;
+}
+
+.marker-info--compact .marker-info-title {
+  flex: 0 1 auto;
+  max-width: 9em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.marker-info--compact .marker-info-link {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--eottae-primary, #2563eb);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.marker-info--compact .marker-info-link:hover {
+  text-decoration: underline;
+}
+
+.gm-style .gm-style-iw-c:has(.marker-info--compact) {
+  max-width: none !important;
+}
+
+.gm-style .gm-style-iw-d:has(.marker-info--compact) {
+  max-width: none !important;
+  width: max-content !important;
 }
 
 .marker-info--thumb .marker-info-thumb-wrap {

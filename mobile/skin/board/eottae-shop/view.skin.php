@@ -103,10 +103,7 @@ if (function_exists('eottae_shop_apply_manage_links')) {
                 </dl>
             </section>
 
-            <?php
-            eottae_load_component('shop-detail-map');
-            include G5_PATH.'/components/eottae/shop-detail-map.php';
-            ?>
+            <?php include G5_PATH.'/components/eottae/shop-detail-map.php'; ?>
 
             <?php
             eottae_render_inquiry_buttons('detail', array(
@@ -121,7 +118,6 @@ if (function_exists('eottae_shop_apply_manage_links')) {
 
             <?php
             $shop_detail_sidebar_exclude_wr_id = (int) $view['wr_id'];
-            eottae_load_component('shop-detail-sidebar');
             include G5_PATH.'/components/eottae/shop-detail-sidebar.php';
             ?>
         </aside>
