@@ -86,6 +86,10 @@ else if (!$write['mb_id']) { // 회원이 쓴 글이 아니라면
     $delete_href = G5_BBS_URL.'/password.php?w=d&amp;bo_table='.$bo_table.'&amp;wr_id='.$wr_id.'&amp;page='.$page.$qstr;
 }
 
+if (function_exists('eottae_talkroom_apply_view_links')) {
+    eottae_talkroom_apply_view_links($board, $write, $member, $is_admin, $bo_table, $wr_id, $page, $qstr, $update_href, $delete_href);
+}
+
 // 최고, 그룹관리자라면 글 복사, 이동 가능
 $copy_href = $move_href = '';
 if ($write['wr_reply'] == '' && ($is_admin == 'super' || $is_admin == 'group')) {
@@ -143,5 +147,10 @@ if ($board['bo_use_signature'] && $view['mb_id']) {
 }
 
 include_once($board_skin_path.'/view.skin.php');
+
+if (function_exists('eottae_talkroom_render_post_report_button')) {
+    include_once G5_PATH.'/components/eottae/talk-report.php';
+    eottae_talkroom_render_post_report_button($board, $write, $member, $is_admin);
+}
 
 @include_once($board_skin_path.'/view.tail.skin.php');

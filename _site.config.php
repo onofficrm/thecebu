@@ -71,6 +71,12 @@ $site_config = array(
     'ai_generate_api_key'       => '',
     'ai_generate_model'         => 'gpt-4o-mini',
     'ai_generate_image_model'   => 'gpt-image-1',
+    /* 세부톡방 AI — bot 계정·크론 키 (_site.config.local.php 권장) */
+    'talkroom_ai_bot_mb_id'     => 'sebu_ai',
+    'talkroom_ai_cron_key'      => '',
+    'talkroom_ai_summary_start_time' => '21:00:00',
+    'talkroom_ai_summary_end_time'   => '23:00:00',
+    'talkroom_ai_summary_min_activity' => 5,
     /* 온오프챗봇 (components/onoff-chatbot.php) */
     'onoff_chatbot_enabled'     => true,
     'onoff_chatbot_site_key'    => '967314350ee8ce35058ed2c5d0ed9039b10f200a829089af',

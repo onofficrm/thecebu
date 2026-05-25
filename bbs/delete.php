@@ -17,6 +17,8 @@ if ($is_admin == 'super') // 최고관리자 통과
     ;
 else if (function_exists('eottae_shop_user_can_manage') && !empty($board['bo_table']) && is_array($write) && eottae_shop_user_can_manage($write, $board['bo_table']))
     ;
+else if (function_exists('eottae_talkroom_user_can_delete_write') && !empty($board['bo_table']) && is_array($write) && eottae_talkroom_user_can_delete_write($write, $board, $member['mb_id'] ?? '', $is_admin === 'super'))
+    ;
 else if ($is_admin == 'group') { // 그룹관리자
     $mb = get_member($write['mb_id']);
     if ($member['mb_id'] != $group['gr_admin']) // 자신이 관리하는 그룹인가?
@@ -37,6 +39,10 @@ else if ($is_admin == 'group') { // 그룹관리자
         alert('로그인 후 삭제하세요.', G5_BBS_URL.'/login.php?url='.urlencode(get_pretty_url($bo_table, $wr_id)));
     else if (!check_password($wr_password, $write['wr_password']))
         alert('비밀번호가 틀리므로 삭제할 수 없습니다.');
+}
+
+if (function_exists('eottae_talkroom_handle_soft_delete_post')) {
+    eottae_talkroom_handle_soft_delete_post($write, $board);
 }
 
 $len = strlen($write['wr_reply']);

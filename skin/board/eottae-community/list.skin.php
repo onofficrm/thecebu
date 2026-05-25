@@ -12,6 +12,10 @@ $region_options = eottae_community_region_options();
 $current_region = isset($_GET['region']) ? trim($_GET['region']) : '';
 $list_base = get_pretty_url($bo_table);
 $hero = eottae_community_board_hero($board, $sca);
+$is_talkroom_board = function_exists('eottae_talkroom_board_table') && $bo_table === eottae_talkroom_board_table();
+if ($is_talkroom_board) {
+    include_once G5_PATH.'/components/eottae/talk-ai-message-ui.php';
+}
 ?>
 
 <div class="community-page board-wrap board-wrap--eottae-community" id="bo_list" style="width:<?php echo $width; ?>">
@@ -89,12 +93,19 @@ $hero = eottae_community_board_hero($board, $sca);
             $time_label = eottae_community_relative_time(isset($item['wr_datetime']) ? $item['wr_datetime'] : '');
             $is_new = !$is_notice && eottae_community_is_new(isset($item['wr_datetime']) ? $item['wr_datetime'] : '');
             $is_hot = !$is_notice && eottae_community_is_hot($hit_num, $comment_num, $board);
+            $is_ai_post = $is_talkroom_board && function_exists('eottae_talkroom_ai_message_is_ai') && eottae_talkroom_ai_message_is_ai($item);
             $item_class = 'community-post'.($is_notice ? ' community-post--notice' : '');
+            if ($is_ai_post) {
+                $item_class .= ' community-post--ai is-talk-ai-message';
+            }
             ?>
         <article class="<?php echo $item_class; ?>">
             <a href="<?php echo $item['href']; ?>" class="community-post__link">
                 <div class="community-post__body">
                     <div class="community-post__tags">
+                        <?php if ($is_ai_post) { ?>
+                        <?php echo eottae_talkroom_ai_message_render_badge($item, 'sm'); ?>
+                        <?php } ?>
                         <?php if ($is_notice) { ?>
                         <span class="community-badge community-badge--notice"><span aria-hidden="true">📣</span> 공지</span>
                         <?php } else { ?>
@@ -108,12 +119,16 @@ $hero = eottae_community_board_hero($board, $sca);
                             <?php if ($is_hot) { ?><span class="community-badge community-badge--hot">HOT</span><?php } ?>
                         <?php } ?>
                     </div>
-                    <h2 class="community-post__title"><?php echo $item['subject']; ?></h2>
+                    <h2 class="community-post__title<?php echo $is_ai_post ? ' talk-ai-msg__title' : ''; ?>"><?php echo $item['subject']; ?></h2>
                     <?php if ($snippet !== '') { ?>
                     <p class="community-post__excerpt"><?php echo $snippet; ?></p>
                     <?php } ?>
                     <div class="community-post__meta">
+                        <?php if ($is_ai_post) { ?>
+                        <span class="community-post__author talk-ai-msg__author-line"><?php echo eottae_talkroom_ai_message_display_name($item); ?></span>
+                        <?php } else { ?>
                         <span class="community-post__author"><?php echo $author; ?></span>
+                        <?php } ?>
                         <span class="community-post__time"><?php echo $time_label; ?></span>
                     </div>
                     <div class="community-post__stats">

@@ -1,5 +1,10 @@
 <?php
 if (!defined('_GNUBOARD_')) exit;
+
+$is_talkroom_board = function_exists('eottae_talkroom_board_table') && isset($bo_table) && $bo_table === eottae_talkroom_board_table();
+if ($is_talkroom_board) {
+    include_once G5_PATH.'/components/eottae/talk-ai-message-ui.php';
+}
 ?>
 
 <script>
@@ -22,20 +27,29 @@ var char_max = parseInt(<?php echo $comment_max ?>);
         $c_reply_href = $comment_common_url.'&amp;c_id='.$comment_id.'&amp;w=c#bo_vc_w';
         $c_edit_href = $comment_common_url.'&amp;c_id='.$comment_id.'&amp;w=cu#bo_vc_w';
         $is_comment_reply_edit = ($list[$i]['is_reply'] || $list[$i]['is_edit'] || $list[$i]['is_del']) ? 1 : 0;
+        $is_ai_comment = $is_talkroom_board && function_exists('eottae_talkroom_ai_message_is_ai') && eottae_talkroom_ai_message_is_ai($list[$i]);
+        $comment_class = 'board-view__comment';
+        if ($is_ai_comment) {
+            $comment_class .= ' board-view__comment--ai is-talk-ai-message talk-ai-msg__comment';
+        }
     ?>
-    <article id="c_<?php echo $comment_id ?>" class="board-view__comment" <?php if ($cmt_depth) { ?>style="margin-left:<?php echo $cmt_depth ?>px"<?php } ?>>
-        <div class="pf_img"><?php echo get_member_profile_img($list[$i]['mb_id']); ?></div>
+    <article id="c_<?php echo $comment_id ?>" class="<?php echo $comment_class; ?>" <?php if ($cmt_depth) { ?>style="margin-left:<?php echo $cmt_depth ?>px"<?php } ?>>
+        <div class="pf_img"><?php echo $is_ai_comment ? '<span class="talk-ai-msg__avatar" aria-hidden="true">🤖</span>' : get_member_profile_img($list[$i]['mb_id']); ?></div>
         <div class="cm_wrap">
             <header style="z-index:<?php echo $cmt_sv; ?>">
                 <h3 class="sound_only"><?php echo get_text($list[$i]['wr_name']); ?>님의 댓글</h3>
+                <?php if ($is_ai_comment) { ?>
+                <span class="talk-ai-msg__comment-head"><?php echo eottae_talkroom_ai_message_render_badge($list[$i], 'sm'); ?></span>
+                <?php } else { ?>
                 <?php echo $list[$i]['name'] ?>
+                <?php } ?>
                 <?php if ($is_ip_view) { ?><span class="sound_only">아이피</span><span>(<?php echo $list[$i]['ip']; ?>)</span><?php } ?>
                 <span class="bo_vc_hdinfo"><i class="fa fa-clock-o" aria-hidden="true"></i>
                     <time datetime="<?php echo date('Y-m-d\TH:i:s+09:00', strtotime($list[$i]['datetime'])) ?>"><?php echo $list[$i]['datetime'] ?></time>
                 </span>
                 <?php include(G5_SNS_PATH.'/view_comment_list.sns.skin.php'); ?>
             </header>
-            <div class="cmt_contents">
+            <div class="cmt_contents<?php echo $is_ai_comment ? ' talk-ai-msg__comment-body' : ''; ?>">
                 <p>
                     <?php if (strstr($list[$i]['wr_option'], 'secret')) { ?><i class="fa fa-lock" aria-hidden="true" title="비밀댓글"></i><span class="sound_only">비밀글</span><?php } ?>
                     <?php echo $comment ?>

@@ -7,6 +7,17 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
 $view_category = isset($view['ca_name']) ? get_text($view['ca_name']) : '';
 $view_thumb = eottae_community_list_thumb($bo_table, $view['wr_id']);
 $list_url = eottae_community_list_url($view_category !== '' ? array('sca' => $view_category) : array());
+
+$is_talkroom_board = function_exists('eottae_talkroom_board_table') && $bo_table === eottae_talkroom_board_table();
+$is_ai_post = false;
+if ($is_talkroom_board) {
+    include_once G5_PATH.'/components/eottae/talk-ai-message-ui.php';
+    $is_ai_post = eottae_talkroom_ai_message_is_ai($view);
+}
+$article_class = 'community-view-page__article';
+if ($is_ai_post) {
+    $article_class .= ' community-view-page__article--ai is-talk-ai-message';
+}
 ?>
 
 <div class="community-view-page board-wrap board-wrap--eottae-community" id="bo_v" style="width:<?php echo $width; ?>">
@@ -21,11 +32,21 @@ $list_url = eottae_community_list_url($view_category !== '' ? array('sca' => $vi
         <?php } ?>
     </header>
 
-    <article class="community-view-page__article">
-        <h1 class="community-view-page__title"><?php echo get_text($view['wr_subject']); ?></h1>
+    <article class="<?php echo $article_class; ?>">
+        <?php if ($is_ai_post) { ?>
+        <div class="community-view-page__ai-label">
+            <?php echo eottae_talkroom_ai_message_render_badge($view); ?>
+        </div>
+        <?php } ?>
+
+        <h1 class="community-view-page__title<?php echo $is_ai_post ? ' talk-ai-msg__title' : ''; ?>"><?php echo get_text($view['wr_subject']); ?></h1>
 
         <div class="community-view-page__meta">
+            <?php if ($is_ai_post) { ?>
+            <span class="community-view-page__author talk-ai-msg__author-line"><?php echo eottae_talkroom_ai_message_display_name($view); ?></span>
+            <?php } else { ?>
             <span class="community-view-page__author"><?php echo $view['name']; ?></span>
+            <?php } ?>
             <time datetime="<?php echo date('c', strtotime($view['wr_datetime'])); ?>"><?php echo date('Y.m.d H:i', strtotime($view['wr_datetime'])); ?></time>
             <span>조회 <?php echo number_format($view['wr_hit']); ?></span>
             <?php if ($view['wr_comment']) { ?><span>댓글 <?php echo number_format($view['wr_comment']); ?></span><?php } ?>
@@ -37,7 +58,7 @@ $list_url = eottae_community_list_url($view_category !== '' ? array('sca' => $vi
         </div>
         <?php } ?>
 
-        <section class="community-view-page__body" id="bo_v_con">
+        <section class="community-view-page__body talk-ai-msg__body<?php echo $is_ai_post ? ' talk-ai-msg__body--ai' : ''; ?>" id="bo_v_con">
             <?php echo get_view_thumbnail($view['content']); ?>
         </section>
     </article>

@@ -15,8 +15,16 @@ $c_wr_content = '';
 $list = array();
 
 $is_comment_write = false;
-if ($member['mb_level'] >= $board['bo_comment_level'])
+if (function_exists('eottae_talkroom_can_comment_on_post')) {
+    $talkroom_comment = eottae_talkroom_can_comment_on_post($board, $write, $member['mb_id'] ?? '', $is_admin === 'super');
+    if ($talkroom_comment !== null) {
+        $is_comment_write = (bool) $talkroom_comment;
+    } elseif ($member['mb_level'] >= $board['bo_comment_level']) {
+        $is_comment_write = true;
+    }
+} elseif ($member['mb_level'] >= $board['bo_comment_level']) {
     $is_comment_write = true;
+}
 
 // 코멘트 출력
 //$sql = " select * from {$write_table} where wr_parent = '{$wr_id}' and wr_is_comment = 1 order by wr_comment desc, wr_comment_reply ";
@@ -25,6 +33,23 @@ $result = sql_query($sql);
 for ($i=0; $row=sql_fetch_array($result); $i++)
 {
     $list[$i] = $row;
+
+    if (function_exists('eottae_talkroom_format_deleted_comment_content')) {
+        $deleted_comment = eottae_talkroom_format_deleted_comment_content($row, $is_admin === 'super');
+        if (is_array($deleted_comment)) {
+            $list[$i]['content'] = $deleted_comment['content'];
+            $list[$i]['content1'] = $deleted_comment['content1'];
+            $list[$i]['datetime'] = substr($row['wr_datetime'],2,14);
+            $list[$i]['ip'] = $row['wr_ip'];
+            if (!$is_admin) {
+                $list[$i]['ip'] = preg_replace("/([0-9]+).([0-9]+).([0-9]+).([0-9]+)/", G5_IP_DISPLAY, $row['wr_ip']);
+            }
+            $list[$i]['is_reply'] = false;
+            $list[$i]['is_edit'] = false;
+            $list[$i]['is_del']  = false;
+            continue;
+        }
+    }
 
     //$list[$i]['name'] = get_sideview($row['mb_id'], cut_str($row['wr_name'], 20, ''), $row['wr_email'], $row['wr_homepage']);
 
@@ -81,6 +106,11 @@ for ($i=0; $row=sql_fetch_array($result); $i++)
                 $list[$i]['is_edit']   = true;
                 $list[$i]['is_del']    = true;
             }
+            else if (function_exists('eottae_talkroom_comment_delete_link') && ($talkroom_del_link = eottae_talkroom_comment_delete_link($row, $board, $write, $member, $is_admin, $page, $qstr)) !== '')
+            {
+                $list[$i]['del_link'] = $talkroom_del_link;
+                $list[$i]['is_del'] = true;
+            }
         }
         else
         {
@@ -123,6 +153,11 @@ else
 
 $comment_action_url = https_url(G5_BBS_DIR)."/write_comment_update.php";
 $comment_common_url = short_url_clean(G5_BBS_URL.'/board.php?'.clean_query_string($_SERVER['QUERY_STRING']));
+
+if (function_exists('eottae_talkroom_render_comment_report_assets')) {
+    include_once G5_PATH.'/components/eottae/talk-report.php';
+    eottae_talkroom_render_comment_report_assets($list, $board, $write, $member, $is_admin);
+}
 
 include_once($board_skin_path.'/view_comment.skin.php');
 

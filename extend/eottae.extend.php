@@ -14,6 +14,8 @@ include_once G5_LIB_PATH.'/eottae-shop-owner.lib.php';
 include_once G5_LIB_PATH.'/eottae-business-coupon.lib.php';
 include_once G5_LIB_PATH.'/eottae-promo-coupon.lib.php';
 include_once G5_LIB_PATH.'/eottae-review-delete.lib.php';
+include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
+include_once G5_LIB_PATH.'/eottae-talkroom-ai.lib.php';
 
 if (function_exists('eottae_business_coupon_ensure_schema')) {
     eottae_business_coupon_ensure_schema();
@@ -23,6 +25,12 @@ if (function_exists('eottae_promo_coupon_ensure_schema')) {
 }
 if (function_exists('eottae_review_delete_ensure_schema')) {
     eottae_review_delete_ensure_schema();
+}
+if (function_exists('eottae_talkroom_ensure_schema')) {
+    eottae_talkroom_ensure_schema();
+}
+if (function_exists('eottae_talkroom_ai_ensure_schema')) {
+    eottae_talkroom_ai_ensure_schema();
 }
 if (function_exists('eottae_ad_ensure_table')) {
     eottae_ad_ensure_table();
@@ -277,6 +285,113 @@ if (eottae_should_load_assets()) {
     }
 }
 
+if (!function_exists('eottae_talkroom_append_body_class')) {
+    function eottae_talkroom_append_body_class($class)
+    {
+        global $g5;
+
+        $class = trim((string) $class);
+        if ($class === '') {
+            return;
+        }
+
+        if (!isset($g5['body_script'])) {
+            $g5['body_script'] = '';
+        }
+
+        if (preg_match('/class="([^"]*)"/', $g5['body_script'], $matches)) {
+            if (strpos($matches[1], $class) !== false) {
+                return;
+            }
+            $g5['body_script'] = preg_replace(
+                '/class="([^"]*)"/',
+                'class="'.trim($matches[1].' '.$class).'"',
+                $g5['body_script'],
+                1
+            );
+
+            return;
+        }
+
+        $g5['body_script'] .= ' class="'.$class.'"';
+    }
+}
+
+if (!function_exists('eottae_talkroom_should_load_ui')) {
+    function eottae_talkroom_should_load_ui()
+    {
+        global $bo_table, $board;
+
+        if (function_exists('eottae_talkroom_is_talkroom_board')) {
+            if (!empty($bo_table) && eottae_talkroom_is_talkroom_board($bo_table)) {
+                return true;
+            }
+            if (is_array($board) && !empty($board['bo_table']) && eottae_talkroom_is_talkroom_board($board['bo_table'])) {
+                return true;
+            }
+        }
+
+        $script = basename($_SERVER['SCRIPT_FILENAME'] ?? '');
+        $talk_scripts = array(
+            'talk.php',
+            'eottae-talk.php',
+            'eottae-talk-create.php',
+            'eottae-talk-applies.php',
+            'eottae-talk-room.php',
+            'eottae-talk-manage.php',
+            'eottae-talk-my.php',
+            'eottae-talk-reports.php',
+            'eottae-admin-talk-applies.php',
+            'eottae-admin-talk-rooms.php',
+            'eottae-admin-talk-detail.php',
+            'eottae-admin-talk-kicked.php',
+            'eottae-admin-talk-reports.php',
+        );
+        if (in_array($script, $talk_scripts, true)) {
+            return true;
+        }
+
+        $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
+
+        return (bool) preg_match('#/(?:talk)(?:[/?]|$)|/page/eottae-(?:talk|admin-talk)-#', $uri);
+    }
+}
+
+if (!function_exists('eottae_talkroom_load_ui_assets')) {
+    function eottae_talkroom_load_ui_assets()
+    {
+        static $loaded = false;
+        if ($loaded) {
+            return;
+        }
+
+        if (!function_exists('eottae_should_load_assets') || !eottae_should_load_assets()) {
+            return;
+        }
+        if (!function_exists('eottae_talkroom_should_load_ui') || !eottae_talkroom_should_load_ui()) {
+            return;
+        }
+
+        add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-talkroom-ui.css">', 21);
+        eottae_talkroom_append_body_class('talkroom-ui');
+        $loaded = true;
+    }
+}
+
+eottae_talkroom_load_ui_assets();
+
+if (!function_exists('eottae_talkroom_on_board_head_ui')) {
+    function eottae_talkroom_on_board_head_ui($board, $write, $wr_id)
+    {
+        if (empty($board['bo_table']) || !function_exists('eottae_talkroom_is_talkroom_board') || !eottae_talkroom_is_talkroom_board($board['bo_table'])) {
+            return;
+        }
+
+        eottae_talkroom_load_ui_assets();
+    }
+}
+add_event('board_head_before', 'eottae_talkroom_on_board_head_ui', 8, 3);
+
 if (isset($board) && is_array($board) && isset($board['bo_skin'])) {
     $skin = (string) $board['bo_skin'];
     if (strpos($skin, 'eottae-') === 0) {
@@ -394,6 +509,150 @@ add_event('board_head_before', 'eottae_load_shop_board_map_assets', 6);
 if (function_exists('eottae_shop_apply_segment_board_context')) {
     eottae_shop_apply_segment_board_context();
 }
+
+if (!function_exists('eottae_talkroom_is_talkroom_board')) {
+    function eottae_talkroom_is_talkroom_board($bo_table)
+    {
+        return function_exists('eottae_talkroom_board_table')
+            && (string) $bo_table === eottae_talkroom_board_table();
+    }
+}
+
+if (!function_exists('eottae_talkroom_resolve_write_room_id')) {
+    function eottae_talkroom_resolve_write_room_id($board, $wr_id, $w)
+    {
+        global $write;
+
+        if (!eottae_talkroom_is_talkroom_board($board['bo_table'] ?? '')) {
+            return 0;
+        }
+
+        if (($w === 'u' || $w === 'r') && is_array($write) && !empty($write['wr_1'])) {
+            return (int) $write['wr_1'];
+        }
+
+        if (isset($_REQUEST['wr_1'])) {
+            return (int) $_REQUEST['wr_1'];
+        }
+
+        return 0;
+    }
+}
+
+if (!function_exists('eottae_talkroom_on_bbs_write')) {
+    function eottae_talkroom_on_bbs_write($board, $wr_id, $w)
+    {
+        global $is_member, $member, $is_admin, $write;
+
+        if (empty($board['bo_table']) || !eottae_talkroom_is_talkroom_board($board['bo_table'])) {
+            return;
+        }
+
+        if (!$is_member || empty($member['mb_id'])) {
+            alert('로그인 후 글을 작성할 수 있습니다.', eottae_login_url(G5_URL.$_SERVER['REQUEST_URI']));
+        }
+
+        $is_super = ($is_admin === 'super');
+        $room_id = eottae_talkroom_resolve_write_room_id($board, $wr_id, $w);
+        if ($room_id < 1) {
+            alert('톡방 정보가 없습니다. 톡방 상세 페이지에서 글쓰기를 이용해 주세요.', eottae_talkroom_list_url());
+        }
+
+        $room = eottae_talkroom_get_operating_room($room_id);
+        if (!$room) {
+            alert('운영 중인 톡방이 아닙니다.', eottae_talkroom_list_url());
+        }
+
+        if ($w === 'u') {
+            if (!is_array($write) || empty($write['wr_id'])) {
+                alert('글이 존재하지 않습니다.');
+            }
+            if (eottae_talkroom_is_post_deleted($write) && !$is_super) {
+                alert('삭제된 글은 수정할 수 없습니다.');
+            }
+            if (!eottae_talkroom_user_can_edit_write($write, $board, $member['mb_id'], $is_super)) {
+                alert('글을 수정할 권한이 없습니다.', eottae_talkroom_enter_url($room_id));
+            }
+
+            return;
+        }
+
+        if ($w === 'r') {
+            alert('톡방 게시판에서는 답글을 사용할 수 없습니다.', eottae_talkroom_enter_url($room_id));
+        }
+
+        $member_row = eottae_talkroom_get_member_row($room_id, $member['mb_id']);
+        if (!eottae_talkroom_can_write_posts($room, $member_row)) {
+            alert('톡방 참여자만 글을 작성할 수 있습니다.', eottae_talkroom_enter_url($room_id));
+        }
+    }
+}
+add_event('bbs_write', 'eottae_talkroom_on_bbs_write', 10, 3);
+
+if (!function_exists('eottae_talkroom_on_write_update_before')) {
+    function eottae_talkroom_on_write_update_before($board, $wr_id, $w, $qstr)
+    {
+        eottae_talkroom_assert_write_update_access($board, $wr_id, $w);
+
+        if ($w !== 'u' || empty($board['bo_table']) || !eottae_talkroom_is_talkroom_board($board['bo_table'])) {
+            return;
+        }
+
+        global $write;
+        $target = is_array($write) && !empty($write['wr_id']) ? $write : null;
+        if (!$target && $wr_id > 0) {
+            $write_table = eottae_talkroom_write_table();
+            $target = sql_fetch(" SELECT * FROM `{$write_table}` WHERE wr_id = '".(int) $wr_id."' ", false);
+        }
+
+        if (!$target || empty($target['wr_id'])) {
+            return;
+        }
+
+        $_POST['wr_1'] = (string) ($target['wr_1'] ?? '');
+        for ($i = 2; $i <= 5; $i++) {
+            $_POST['wr_'.$i] = (string) ($target['wr_'.$i] ?? '');
+        }
+    }
+}
+add_event('write_update_before', 'eottae_talkroom_on_write_update_before', 20, 4);
+
+if (!function_exists('eottae_talkroom_on_comment_before')) {
+    function eottae_talkroom_on_comment_before($board, $wr, $wr_id, $w)
+    {
+        eottae_talkroom_assert_comment_update_access($board, $wr, $wr_id, $w);
+    }
+}
+add_event('comment_update_before', 'eottae_talkroom_on_comment_before', 10, 4);
+
+if (!function_exists('eottae_talkroom_ai_on_write_update_after')) {
+    function eottae_talkroom_ai_on_write_update_after($board, $wr_id, $w, $qstr, $redirect_url)
+    {
+        if ($w !== '' || (int) $wr_id < 1) {
+            return;
+        }
+
+        if (empty($board['bo_table']) || !eottae_talkroom_is_talkroom_board($board['bo_table'])) {
+            return;
+        }
+
+        if (!function_exists('eottae_talkroom_ai_schedule_reaction_for_post')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom-ai-reaction.lib.php';
+        }
+
+        eottae_talkroom_ai_schedule_reaction_for_post((int) $wr_id);
+    }
+}
+add_event('write_update_after', 'eottae_talkroom_ai_on_write_update_after', 30, 5);
+
+if (!function_exists('eottae_talkroom_on_board_head')) {
+    function eottae_talkroom_on_board_head($board, $write, $wr_id)
+    {
+        eottae_talkroom_guard_board_list_access($board, $wr_id);
+        eottae_talkroom_guard_board_view($board, $write, $wr_id);
+    }
+}
+add_event('board_head_before', 'eottae_talkroom_on_board_head', 12, 3);
 
 if (!function_exists('eottae_apply_google_oauth_config')) {
     function eottae_apply_google_oauth_config()

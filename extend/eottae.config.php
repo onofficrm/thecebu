@@ -86,3 +86,7 @@ if (!defined('EOTTae_WELCOME_COUPON_CODE')) {
 if (!defined('EOTTae_REVIEW_COUPON_CODE')) {
     define('EOTTae_REVIEW_COUPON_CODE', 'review_bonus');
 }
+
+if (!defined('EOTTae_TALKROOM_TABLE')) {
+    define('EOTTae_TALKROOM_TABLE', 'talkroom');
+}

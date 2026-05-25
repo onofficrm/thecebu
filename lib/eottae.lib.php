@@ -631,6 +631,50 @@ if (!function_exists('eottae_builder_inject_featured_carousel_script')) {
     }
 }
 
+if (!function_exists('eottae_builder_inject_home_talk_feed')) {
+    function eottae_builder_inject_home_talk_feed($html)
+    {
+        if (!is_string($html) || $html === '') {
+            return $html;
+        }
+
+        if (!function_exists('eottae_talkroom_home_feed_html')) {
+            $component = G5_PATH.'/components/eottae/talk-home-feed.php';
+            if (is_file($component)) {
+                include_once $component;
+            }
+        }
+
+        if (!function_exists('eottae_talkroom_home_feed_html')) {
+            return $html;
+        }
+
+        $feed_html = eottae_talkroom_home_feed_html(8);
+        if ($feed_html === '') {
+            return $html;
+        }
+
+        if (preg_match('#(<div\s+id=["\']root["\'][^>]*>\s*</div>)#i', $html)) {
+            $html = preg_replace('#(<div\s+id=["\']root["\'][^>]*>\s*</div>)#i', '$1'.$feed_html, $html, 1);
+        } elseif (preg_match('#</body>#i', $html)) {
+            $html = preg_replace('#</body>#i', $feed_html.'</body>', $html, 1);
+        } else {
+            $html .= $feed_html;
+        }
+
+        return $html;
+    }
+}
+
+if (!function_exists('eottae_builder_inject_home_talk_feed_script')) {
+    function eottae_builder_inject_home_talk_feed_script()
+    {
+        $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-talk-feed.js' : '/js/eottae-home-talk-feed.js';
+
+        return '<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
+    }
+}
+
 if (!function_exists('eottae_builder_inject_html')) {
     function eottae_builder_inject_html($html, $id)
     {
@@ -639,6 +683,7 @@ if (!function_exists('eottae_builder_inject_html')) {
         }
 
         $html = eottae_builder_inject_home_map($html);
+        $html = eottae_builder_inject_home_talk_feed($html);
 
         $head_script = eottae_builder_inject_logo_head_script();
         if ($head_script !== '') {
@@ -651,6 +696,7 @@ if (!function_exists('eottae_builder_inject_html')) {
 
         $body_scripts = eottae_builder_inject_featured_carousel_script();
         $body_scripts .= eottae_builder_inject_home_search_script();
+        $body_scripts .= eottae_builder_inject_home_talk_feed_script();
 
         if ($body_scripts === '') {
             return $html;
@@ -3593,6 +3639,7 @@ if (!function_exists('eottae_gnb_nav_links')) {
             array('key' => 'rentcar', 'label' => '렌트카', 'href' => eottae_board_list_url(defined('EOTTae_RENTCAR_TABLE') ? EOTTae_RENTCAR_TABLE : 'rentcar')),
             array('key' => 'tour', 'label' => '투어', 'href' => eottae_board_list_url(defined('EOTTae_TOUR_TABLE') ? EOTTae_TOUR_TABLE : 'tour')),
             array('key' => 'community', 'label' => '커뮤니티', 'href' => eottae_community_list_url()),
+            array('key' => 'talk', 'label' => '세부톡', 'href' => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk'),
             array('key' => 'people', 'label' => '사람찾기', 'href' => eottae_board_list_url(defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people')),
             array('key' => 'job', 'label' => '구인구직', 'href' => eottae_board_list_url(defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job')),
             array('key' => 'estate', 'label' => '부동산', 'href' => eottae_board_list_url(defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate')),
@@ -3625,6 +3672,8 @@ if (!function_exists('eottae_gnb_link_is_active')) {
         switch ($key) {
             case 'home':
                 return defined('_INDEX_');
+            case 'talk':
+                return strpos($uri, '/talk') !== false || strpos($uri, '/page/eottae-talk') !== false;
             case 'mypage':
                 return strpos($uri, '/page/eottae-') !== false;
             default:

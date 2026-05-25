@@ -21,6 +21,8 @@ if (!$write['wr_id'] || !$write['wr_is_comment'])
 
 if ($is_admin == 'super') // 최고관리자 통과
     ;
+else if (function_exists('eottae_talkroom_user_can_delete_write') && !empty($board['bo_table']) && is_array($write) && eottae_talkroom_user_can_delete_write($write, $board, $member['mb_id'] ?? '', $is_admin === 'super'))
+    ;
 else if ($is_admin == 'group') { // 그룹관리자
     $mb = get_member($write['mb_id']);
     if ($member['mb_id'] === $group['gr_admin']) { // 자신이 관리하는 그룹인가?
@@ -45,6 +47,10 @@ else if ($is_admin == 'group') { // 그룹관리자
 } else {
     if (!check_password($wr_password, $write['wr_password']))
         alert('비밀번호가 틀립니다.');
+}
+
+if (function_exists('eottae_talkroom_handle_soft_delete_comment')) {
+    eottae_talkroom_handle_soft_delete_comment($write, $board);
 }
 
 $len = strlen($write['wr_comment_reply']);

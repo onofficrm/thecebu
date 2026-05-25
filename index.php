@@ -58,6 +58,7 @@ $g5_main_sections = array(
     'advantage',
     'portfolio',
     'latest',   // 게시판 최신글 (story, news, sample) — section/latest.php
+    'talk-today', // 세부톡방 최신글 — section/talk-today.php
     'review',
     'faq',
     'contact',
