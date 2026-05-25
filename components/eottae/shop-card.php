@@ -79,9 +79,19 @@ if (!function_exists('eottae_shop_card_thumb')) {
 
         if (function_exists('get_list_thumbnail')) {
             $table = !empty($row['bo_table']) ? $row['bo_table'] : $bo_table;
+            if (function_exists('eottae_shop_storage_bo_table')) {
+                $table = eottae_shop_storage_bo_table($table);
+            }
             $t = get_list_thumbnail($table, $row['wr_id'], 400, 300);
             if (!empty($t['src'])) {
                 return $t['src'];
+            }
+        }
+
+        if (function_exists('eottae_shop_listing_thumb_url')) {
+            $thumb = eottae_shop_listing_thumb_url($bo_table, (int) $row['wr_id'], $row);
+            if ($thumb !== '') {
+                return $thumb;
             }
         }
 

@@ -360,3 +360,7 @@ if (!function_exists('eottae_load_media_board_assets')) {
     }
 }
 add_event('board_head_before', 'eottae_load_media_board_assets', 5);
+
+if (function_exists('eottae_shop_apply_segment_board_context')) {
+    eottae_shop_apply_segment_board_context();
+}

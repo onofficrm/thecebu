@@ -1190,19 +1190,22 @@ if (!function_exists('eottae_shop_listing_thumb_url')) {
         if ($bo_table === '') {
             $bo_table = defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop';
         }
+        $storage_bo = function_exists('eottae_shop_storage_bo_table')
+            ? eottae_shop_storage_bo_table($bo_table)
+            : $bo_table;
 
         if (is_array($row) && !empty($row['file'][0]['file']) && !empty($row['file'][0]['path'])) {
             return $row['file'][0]['path'].'/'.$row['file'][0]['file'];
         }
 
         if (function_exists('eottae_shop_map_thumb_get')) {
-            $map_thumb = eottae_shop_map_thumb_get($bo_table, $wr_id);
+            $map_thumb = eottae_shop_map_thumb_get($storage_bo, $wr_id);
             if (!empty($map_thumb['url'])) {
                 return $map_thumb['url'];
             }
         }
 
-        $representative = eottae_shop_representative_image_url($bo_table, $wr_id);
+        $representative = eottae_shop_representative_image_url($storage_bo, $wr_id);
         if ($representative !== '') {
             return $representative;
         }
@@ -1211,7 +1214,7 @@ if (!function_exists('eottae_shop_listing_thumb_url')) {
             include_once G5_LIB_PATH.'/thumbnail.lib.php';
         }
         if (function_exists('get_list_thumbnail')) {
-            $thumb = get_list_thumbnail($bo_table, $wr_id, 200, 200, false, true);
+            $thumb = get_list_thumbnail($storage_bo, $wr_id, 200, 200, false, true);
             if (!empty($thumb['src'])) {
                 return $thumb['src'];
             }
@@ -2587,13 +2590,23 @@ if (!function_exists('eottae_shop_build_nearby_list')) {
             return array();
         }
 
-        $write_table = $g5['write_prefix'].$bo_table;
+        $master = function_exists('eottae_shop_segment_master_category')
+            ? eottae_shop_segment_master_category($bo_table)
+            : '';
+        if ($master !== '') {
+            $write_table = $g5['write_prefix'].eottae_shop_table();
+        } else {
+            $write_table = $g5['write_prefix'].$bo_table;
+        }
         $exists = sql_fetch(" show tables like '".sql_escape_string($write_table)."' ");
         if (empty($exists)) {
             return array();
         }
 
         $where = array("wr_is_comment = 0");
+        if ($master !== '') {
+            $where[] = "wr_1 = '".sql_escape_string($master)."'";
+        }
         $sca = isset($args['sca']) ? trim((string) $args['sca']) : '';
         $sfl = isset($args['sfl']) ? trim((string) $args['sfl']) : '';
         $stx = isset($args['stx']) ? trim((string) $args['stx']) : '';
@@ -3205,6 +3218,108 @@ if (!function_exists('eottae_community_list_url')) {
         }
 
         return $base.'&'.http_build_query($params);
+    }
+}
+
+if (!function_exists('eottae_shop_segment_master_map')) {
+    function eottae_shop_segment_master_map()
+    {
+        return array(
+            defined('EOTTae_FOOD_TABLE') ? EOTTae_FOOD_TABLE : 'food'         => '맛집',
+            defined('EOTTae_MASSAGE_TABLE') ? EOTTae_MASSAGE_TABLE : 'massage' => '마사지',
+            defined('EOTTae_RENTCAR_TABLE') ? EOTTae_RENTCAR_TABLE : 'rentcar' => '렌트카',
+            defined('EOTTae_TOUR_TABLE') ? EOTTae_TOUR_TABLE : 'tour'         => '투어',
+        );
+    }
+}
+
+if (!function_exists('eottae_shop_segment_master_category')) {
+    function eottae_shop_segment_master_category($bo_table)
+    {
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+        if ($bo_table === '' || $bo_table === eottae_shop_table()) {
+            return '';
+        }
+
+        $map = eottae_shop_segment_master_map();
+
+        return isset($map[$bo_table]) ? $map[$bo_table] : '';
+    }
+}
+
+if (!function_exists('eottae_shop_is_segment_board')) {
+    function eottae_shop_is_segment_board($bo_table)
+    {
+        return eottae_shop_segment_master_category($bo_table) !== '';
+    }
+}
+
+if (!function_exists('eottae_shop_storage_bo_table')) {
+    /** 파일·썸네일 경로용 — 세그먼트 게시판은 shop 테이블 데이터 참조 */
+    function eottae_shop_storage_bo_table($bo_table)
+    {
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+        if ($bo_table === '' || eottae_shop_is_segment_board($bo_table)) {
+            return eottae_shop_table();
+        }
+
+        return $bo_table;
+    }
+}
+
+if (!function_exists('eottae_shop_list_segment_sql')) {
+    function eottae_shop_list_segment_sql()
+    {
+        if (empty($GLOBALS['eottae_shop_segment_master'])) {
+            return '';
+        }
+
+        return " and wr_1 = '".sql_escape_string((string) $GLOBALS['eottae_shop_segment_master'])."' ";
+    }
+}
+
+if (!function_exists('eottae_shop_list_segment_total_count')) {
+    function eottae_shop_list_segment_total_count($write_table)
+    {
+        if (empty($GLOBALS['eottae_shop_segment_master'])) {
+            return null;
+        }
+
+        $row = sql_fetch(" select count(*) as cnt from {$write_table} where wr_is_comment = 0 ".eottae_shop_list_segment_sql());
+
+        return isset($row['cnt']) ? (int) $row['cnt'] : 0;
+    }
+}
+
+if (!function_exists('eottae_shop_apply_segment_board_context')) {
+    /**
+     * 맛집·마사지 등 세그먼트 게시판 → shop 테이블 + wr_1 대분류 필터
+     */
+    function eottae_shop_apply_segment_board_context()
+    {
+        global $bo_table, $write_table, $write, $wr_id, $g5;
+
+        if (empty($bo_table) || !function_exists('eottae_shop_segment_master_category')) {
+            return;
+        }
+
+        $master = eottae_shop_segment_master_category($bo_table);
+        if ($master === '') {
+            return;
+        }
+
+        $shop_table = $g5['write_prefix'].eottae_shop_table();
+        $GLOBALS['eottae_shop_segment_master'] = $master;
+        $GLOBALS['eottae_shop_segment_bo_table'] = $bo_table;
+        $write_table = $shop_table;
+
+        $wr_id = isset($wr_id) ? (int) $wr_id : 0;
+        if ($wr_id > 0) {
+            $row = sql_fetch(" select * from {$shop_table}
+                where wr_id = '{$wr_id}' and wr_is_comment = 0
+                and wr_1 = '".sql_escape_string($master)."' limit 1 ");
+            $write = !empty($row['wr_id']) ? $row : array();
+        }
     }
 }
 
