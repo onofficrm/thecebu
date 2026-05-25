@@ -100,6 +100,13 @@ if (is_file(G5_PATH.'/_site.config.local.php')) {
     }
 }
 
+if (is_file(G5_PATH.'/data/eottae-secrets.local.php')) {
+    include_once G5_PATH.'/data/eottae-secrets.local.php';
+    if (isset($eottae_secrets_override) && is_array($eottae_secrets_override)) {
+        $site_config = array_merge($site_config, $eottae_secrets_override);
+    }
+}
+
 /**
  * 설정값 조회 (없거나 비어 있으면 $default)
  *

@@ -1,6 +1,7 @@
 .DS_Store
 **/._*
 data/dbconfig.local.php
+data/eottae-secrets.local.php
 _site.config.local.php
 _BUILDER_INPUT/
 dist/

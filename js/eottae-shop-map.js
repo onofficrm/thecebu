@@ -4,6 +4,8 @@
 (function (global) {
   'use strict';
 
+  var MARKER_SIZE = 46;
+
   function escapeHtml(str) {
     if (str == null) return '';
     return String(str)
@@ -75,98 +77,69 @@
     return img.currentSrc || img.getAttribute('src') || '';
   }
 
-  function markerThumbContent(loc) {
-    if (!loc.thumbnail) return null;
-
-    var wrap = document.createElement('div');
-    wrap.className = 'shop-map-thumb-marker';
-    wrap.setAttribute('title', loc.name || '');
-
-    var img = document.createElement('img');
-    img.className = 'shop-map-thumb-marker__img';
-    img.src = loc.thumbnail;
-    img.alt = '';
-    img.onerror = function () {
-      if (loc.cardThumbnail && loc.cardThumbnail !== img.src) {
-        img.src = loc.cardThumbnail;
-        return;
-      }
-      wrap.classList.add('is-failed');
-    };
-
-    wrap.appendChild(img);
-
-    return wrap;
-  }
-
-  function createShopThumbOverlay(loc, map, panel) {
-    var position = new global.google.maps.LatLng(loc.lat, loc.lng);
-    var overlay = new global.google.maps.OverlayView();
-    var div = null;
-
-    overlay.onAdd = function () {
-      div = markerThumbContent(loc);
-      if (!div) {
-        return;
-      }
-      div.style.position = 'absolute';
-      div.style.cursor = 'pointer';
-      div.style.zIndex = '2';
-      div.addEventListener('click', function (event) {
-        event.preventDefault();
-        openMarkerInfoWindow(panel.infoWindow, map, overlay, loc);
-      });
-      var panes = overlay.getPanes();
-      if (panes && panes.overlayMouseTarget) {
-        panes.overlayMouseTarget.appendChild(div);
-      }
-    };
-
-    overlay.draw = function () {
-      if (!div) {
-        return;
-      }
-      var projection = overlay.getProjection();
-      if (!projection) {
-        return;
-      }
-      var point = projection.fromLatLngToDivPixel(position);
-      if (!point) {
-        return;
-      }
-      var w = div.offsetWidth || 46;
-      var h = div.offsetHeight || 46;
-      div.style.left = Math.round(point.x - w / 2) + 'px';
-      div.style.top = Math.round(point.y - h) + 'px';
-    };
-
-    overlay.onRemove = function () {
-      if (div && div.parentNode) {
-        div.parentNode.removeChild(div);
-      }
-      div = null;
-    };
-
-    overlay.getPosition = function () {
-      return position;
-    };
-
-    overlay.openInfo = function () {
-      openMarkerInfoWindow(panel.infoWindow, map, overlay, loc);
-    };
-
-    overlay.setMap(map);
-    return overlay;
-  }
-
-  function markerIcon(loc) {
-    if (!loc.thumbnail || !global.google || !global.google.maps) return null;
-    var size = 42;
+  function markerIconConfig(url, size) {
+    if (!url || !global.google || !global.google.maps) {
+      return null;
+    }
     return {
-      url: loc.thumbnail,
+      url: url,
       scaledSize: new global.google.maps.Size(size, size),
       anchor: new global.google.maps.Point(size / 2, size)
     };
+  }
+
+  function markerIconFromImage(thumbnail, size, callback) {
+    if (!thumbnail) {
+      callback(null);
+      return;
+    }
+
+    var img = new Image();
+    img.onload = function () {
+      var iconUrl = thumbnail;
+      try {
+        var canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        var ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, size, size);
+          iconUrl = canvas.toDataURL('image/png');
+        }
+      } catch (e) {}
+      callback(markerIconConfig(iconUrl, size));
+    };
+    img.onerror = function () {
+      callback(markerIconConfig(thumbnail, size));
+    };
+    img.src = thumbnail;
+  }
+
+  function createMapMarker(loc, map, panel, callback) {
+    var position = { lat: loc.lat, lng: loc.lng };
+    var markerOptions = {
+      position: position,
+      map: map,
+      title: loc.name
+    };
+
+    function finish(icon) {
+      if (icon) {
+        markerOptions.icon = icon;
+      }
+      var marker = new global.google.maps.Marker(markerOptions);
+      marker.addListener('click', function () {
+        openMarkerInfoWindow(panel.infoWindow, map, marker, loc);
+      });
+      callback(marker);
+    }
+
+    if (!loc.thumbnail) {
+      finish(null);
+      return;
+    }
+
+    markerIconFromImage(loc.thumbnail, MARKER_SIZE, finish);
   }
 
   function markerInfoReviewHref(loc) {
@@ -366,49 +339,55 @@
     this.markers = [];
   };
 
+  ShopMapPanel.prototype.fitMapToLocations = function () {
+    if (!this.map || !this.locations.length) {
+      return;
+    }
+
+    if (this.locations.length > 1) {
+      var bounds = new global.google.maps.LatLngBounds();
+      this.locations.forEach(function (loc) {
+        bounds.extend({ lat: loc.lat, lng: loc.lng });
+      });
+      this.map.fitBounds(bounds);
+      global.google.maps.event.addListenerOnce(this.map, 'bounds_changed', function () {
+        var maxZoom = Math.max(this.zoom, 12);
+        if (this.map.getZoom() > maxZoom) {
+          this.map.setZoom(maxZoom);
+        }
+      }.bind(this));
+    } else {
+      this.map.setCenter({ lat: this.locations[0].lat, lng: this.locations[0].lng });
+      this.map.setZoom(15);
+    }
+  };
+
   ShopMapPanel.prototype.renderMarkers = function () {
     var self = this;
     if (!self.map) return;
 
     self.clearMarkers();
     self.markerById = {};
-    self.locations.forEach(function (loc) {
-      var position = { lat: loc.lat, lng: loc.lng };
-      var marker;
-      if (loc.thumbnail) {
-        marker = createShopThumbOverlay(loc, self.map, self);
-      } else {
-        marker = new global.google.maps.Marker({
-          position: position,
-          map: self.map,
-          title: loc.name
-        });
-        marker.addListener('click', function () {
-          openMarkerInfoWindow(self.infoWindow, self.map, marker, loc);
-        });
-      }
-      self.markers.push(marker);
-      if (loc.id !== '' && loc.id != null) {
-        self.markerById[String(loc.id)] = marker;
-      }
-    });
 
-    if (self.locations.length > 1) {
-      var bounds = new global.google.maps.LatLngBounds();
-      self.locations.forEach(function (loc) {
-        bounds.extend({ lat: loc.lat, lng: loc.lng });
-      });
-      self.map.fitBounds(bounds);
-      global.google.maps.event.addListenerOnce(self.map, 'bounds_changed', function () {
-        var maxZoom = Math.max(self.zoom, 12);
-        if (self.map.getZoom() > maxZoom) {
-          self.map.setZoom(maxZoom);
+  if (!self.locations.length) {
+      return;
+    }
+
+    var pending = self.locations.length;
+    var completed = 0;
+
+    self.locations.forEach(function (loc) {
+      createMapMarker(loc, self.map, self, function (marker) {
+        self.markers.push(marker);
+        if (loc.id !== '' && loc.id != null) {
+          self.markerById[String(loc.id)] = marker;
+        }
+        completed += 1;
+        if (completed >= pending) {
+          self.fitMapToLocations();
         }
       });
-    } else if (self.locations.length === 1) {
-      self.map.setCenter({ lat: self.locations[0].lat, lng: self.locations[0].lng });
-      self.map.setZoom(15);
-    }
+    });
   };
 
   ShopMapPanel.prototype.focusLocationById = function (id) {
@@ -429,10 +408,6 @@
     }
     this.map.panTo({ lat: loc.lat, lng: loc.lng });
     this.map.setZoom(Math.max(this.zoom, 15));
-    if (typeof marker.openInfo === 'function') {
-      marker.openInfo();
-      return;
-    }
     global.google.maps.event.trigger(marker, 'click');
   };
 
@@ -535,6 +510,7 @@
       return;
     }
 
+    var self = this;
     var center = { lat: this.lat, lng: this.lng };
     this.map = new global.google.maps.Map(this.canvas, {
       center: center,
@@ -547,19 +523,16 @@
       streetViewControl: false,
       fullscreenControl: true
     });
-    if (this.thumbnail) {
-      this.marker = createShopThumbOverlay(
-        { lat: this.lat, lng: this.lng, thumbnail: this.thumbnail, name: this.name },
-        this.map,
-        { infoWindow: new global.google.maps.InfoWindow({ maxWidth: 240 }) }
-      );
-    } else {
-      this.marker = new global.google.maps.Marker({
-        position: center,
-        map: this.map,
-        title: this.name
-      });
-    }
+
+    createMapMarker(
+      { lat: this.lat, lng: this.lng, thumbnail: this.thumbnail, name: this.name, link: '' },
+      this.map,
+      { infoWindow: new global.google.maps.InfoWindow({ maxWidth: 240 }) },
+      function (marker) {
+        self.marker = marker;
+      }
+    );
+
     this.root.classList.add('is-live');
   };
 
