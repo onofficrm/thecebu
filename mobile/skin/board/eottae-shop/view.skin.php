@@ -83,38 +83,14 @@ if (function_exists('eottae_shop_apply_manage_links')) {
                 </p>
             </div>
 
-            <section class="shop-detail-page__content" id="bo_v_con"<?php if ($shop_can_edit_content) { ?> data-shop-content-edit data-shop-content-use-editor="<?php echo $shop_content_use_editor ? '1' : '0'; ?>" data-shop-content-token="<?php echo htmlspecialchars($shop_content_token, ENT_QUOTES, 'UTF-8'); ?>" data-shop-content-bo-table="<?php echo htmlspecialchars($bo_table, ENT_QUOTES, 'UTF-8'); ?>" data-shop-content-wr-id="<?php echo (int) $view['wr_id']; ?>" data-shop-content-action="<?php echo G5_URL; ?>/proc/eottae-shop-content-update.php"<?php } ?>>
-                <?php if ($shop_can_edit_content) { ?>
-                <div class="shop-detail-page__content-toolbar">
-                    <button type="button" class="shop-detail-page__content-edit-btn" data-shop-content-edit-open>본문 수정</button>
-                </div>
-                <?php } ?>
-                <div class="shop-detail-page__content-view" id="shopContentView">
-                    <?php if ($shop_youtube_id) {
-                        include_once(G5_SKIN_PATH.'/board/_inc/g5b-youtube.php');
-                        ?>
-                    <div class="shop-detail-page__video" aria-label="소개 영상">
-                        <?php echo g5b_youtube_embed_html($shop_youtube_id, $shop['name'].' 소개 영상'); ?>
-                    </div>
-                    <?php } ?>
-                    <div class="shop-detail-page__content-body" id="shopContentBody"><?php echo get_view_thumbnail($view['content']); ?></div>
-                </div>
-                <?php if ($shop_can_edit_content) { ?>
-                <div class="shop-detail-page__content-edit" id="shopContentEdit" hidden>
-                    <?php echo $shop_content_editor_html; ?>
-                    <div class="shop-detail-page__content-edit-actions">
-                        <button type="button" class="btn_b01 btn shop-detail-page__content-save" data-shop-content-save>저장</button>
-                        <button type="button" class="btn_b01 btn shop-detail-page__content-cancel" data-shop-content-cancel>취소</button>
-                    </div>
-                    <p class="shop-detail-page__content-edit-status" data-shop-content-status role="status" aria-live="polite"></p>
-                </div>
-                <?php } ?>
-            </section>
+            <?php include G5_SKIN_PATH.'/board/_inc/eottae-shop-view-content.php'; ?>
 
             <?php eottae_render_review_section($view['wr_id'], $view['wr_subject']); ?>
         </main>
 
         <aside class="shop-detail-page__aside">
+            <?php include G5_PATH.'/components/eottae/community-login-box.php'; ?>
+
             <section class="shop-detail-page__info">
                 <h2 class="shop-detail-page__info-title">업체 정보</h2>
                 <dl class="shop-detail-page__info-list">
@@ -144,6 +120,7 @@ if (function_exists('eottae_shop_apply_manage_links')) {
             ?>
 
             <?php
+            $shop_detail_sidebar_exclude_wr_id = (int) $view['wr_id'];
             eottae_load_component('shop-detail-sidebar');
             include G5_PATH.'/components/eottae/shop-detail-sidebar.php';
             ?>

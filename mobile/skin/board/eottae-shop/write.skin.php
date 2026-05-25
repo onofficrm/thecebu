@@ -25,7 +25,7 @@ $v = array(
     'wr_9'  => isset($write['wr_9']) ? get_text($write['wr_9']) : '',
     'wr_10' => isset($write['wr_10']) ? get_text($write['wr_10']) : '',
     'wr_link1' => isset($write['wr_link1']) ? get_text($write['wr_link1']) : '',
-    'wr_link2' => isset($write['wr_link2']) ? get_text($write['wr_link2']) : '',
+    'wr_link2' => eottae_shop_wr_link2_raw($write),
 );
 $ca_value = isset($write['ca_name']) ? get_text($write['ca_name']) : ($v['wr_1'] !== '' ? $v['wr_1'] : $sca);
 $board_categories = eottae_shop_board_categories($board);
@@ -176,7 +176,7 @@ $shop_seo_v = function_exists('eottae_shop_seo_resolve_for_write')
             <label for="wr_link1">홈페이지 URL</label>
             <input type="url" name="wr_link1" id="wr_link1" value="<?php echo $v['wr_link1']; ?>">
         </div>
-        <input type="hidden" name="wr_link2" id="wr_link2" value="<?php echo $v['wr_link2']; ?>">
+        <input type="hidden" name="wr_link2" id="wr_link2" value="<?php echo htmlspecialchars($v['wr_link2'], ENT_QUOTES, 'UTF-8'); ?>">
         <div class="eottae-field">
             <label for="eottae_sns_youtube">유튜브 소개 영상 URL <span class="board-write-form__optional">(선택)</span></label>
             <input type="url" name="eottae_sns_youtube" id="eottae_sns_youtube" value="<?php echo $sns_values['youtube']; ?>" placeholder="https://www.youtube.com/watch?v=...">
@@ -307,6 +307,9 @@ $shop_seo_v = function_exists('eottae_shop_seo_resolve_for_write')
 
 <script>
 function fwrite_submit(f) {
+    if (typeof syncShopSnsFields === 'function') {
+        syncShopSnsFields(f);
+    }
     var ca = document.getElementById('ca_name');
     var wr1 = document.getElementById('wr_1');
     var wr2 = document.getElementById('wr_2');

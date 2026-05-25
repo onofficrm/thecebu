@@ -49,15 +49,6 @@
     };
   }
 
-  function markerIcon(loc) {
-    if (!loc.thumbnail || !global.google || !global.google.maps) return null;
-    return {
-      url: loc.thumbnail,
-      scaledSize: new global.google.maps.Size(46, 46),
-      anchor: new global.google.maps.Point(23, 46)
-    };
-  }
-
   function markerInfoBadgesHtml(loc) {
     var html = '';
     if (loc.category) {
@@ -157,8 +148,7 @@
       var marker = new global.google.maps.Marker({
         position: { lat: loc.lat, lng: loc.lng },
         map: self.map,
-        title: loc.name,
-        icon: markerIcon(loc)
+        title: loc.name
       });
       marker.addListener('click', function () {
         self.infoWindow.setContent(markerInfoHtml(loc));

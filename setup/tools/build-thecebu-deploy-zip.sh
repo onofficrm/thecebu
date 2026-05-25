@@ -105,6 +105,7 @@ for f in "${ROOT_FILES[@]}" "${EXTEND_FILES[@]}" "${LIB_FILES[@]}" "${CSS_FILES[
 done
 
 copy_file skin/board/_inc/eottae-shop-view-setup.php
+copy_file skin/board/_inc/eottae-shop-view-content.php
 
 DIRS=(
   components/eottae

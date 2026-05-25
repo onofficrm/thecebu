@@ -83,6 +83,48 @@ if (!function_exists('eottae_shop_ensure_inquiry_code')) {
     }
 }
 
+if (!function_exists('eottae_shop_wr_link2_raw')) {
+    /** wr_link2 SNS JSON — get_text() 없이 원문 유지 */
+    function eottae_shop_wr_link2_raw($wr)
+    {
+        if (!is_array($wr) || !isset($wr['wr_link2'])) {
+            return '';
+        }
+
+        return trim(stripslashes((string) $wr['wr_link2']));
+    }
+}
+
+if (!function_exists('eottae_shop_sns_decode')) {
+    /**
+     * wr_link2 SNS JSON 디코드 (get_text로 깨진 레거시 문자열 보정 시도)
+     *
+     * @return array<string, string>|null
+     */
+    function eottae_shop_sns_decode($raw)
+    {
+        $raw = trim(stripslashes((string) $raw));
+        if ($raw === '') {
+            return null;
+        }
+
+        $decoded = json_decode($raw, true);
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+
+        if (strpos($raw, '&#034;') !== false && function_exists('get_text')) {
+            $restored = get_text($raw, 0, true);
+            $decoded = json_decode($restored, true);
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+        }
+
+        return null;
+    }
+}
+
 if (!function_exists('eottae_shop_youtube_id')) {
     function eottae_shop_youtube_id($shop)
     {
@@ -123,7 +165,7 @@ if (!function_exists('eottae_shop_from_write')) {
             $bo_table = (string) $wr['bo_table'];
         }
 
-        $sns_raw = isset($wr['wr_link2']) ? get_text($wr['wr_link2']) : '';
+        $sns_raw = eottae_shop_wr_link2_raw($wr);
 
         return array(
             'name'          => isset($wr['wr_subject']) ? get_text($wr['wr_subject']) : '',
@@ -158,7 +200,7 @@ if (!function_exists('eottae_tel_href')) {
 if (!function_exists('eottae_shop_sns_links')) {
     function eottae_shop_sns_links($raw)
     {
-        $raw = trim((string) $raw);
+        $raw = trim(stripslashes((string) $raw));
         if ($raw === '' || stripos($raw, 'ad') !== false) {
             return array();
         }
@@ -172,7 +214,7 @@ if (!function_exists('eottae_shop_sns_links')) {
             'sns' => 'SNS',
         );
 
-        $decoded = json_decode($raw, true);
+        $decoded = function_exists('eottae_shop_sns_decode') ? eottae_shop_sns_decode($raw) : json_decode($raw, true);
         if (!is_array($decoded)) {
             return array(array('key' => 'sns', 'label' => $labels['sns'], 'url' => get_text($raw)));
         }
@@ -195,12 +237,13 @@ if (!function_exists('eottae_shop_sns_links')) {
 if (!function_exists('eottae_shop_sns_value')) {
     function eottae_shop_sns_value($raw, $key)
     {
-        $raw = trim((string) $raw);
+        $raw = trim(stripslashes((string) $raw));
         $key = (string) $key;
         if ($raw === '') {
             return '';
         }
-        $decoded = json_decode($raw, true);
+
+        $decoded = function_exists('eottae_shop_sns_decode') ? eottae_shop_sns_decode($raw) : json_decode($raw, true);
         if (is_array($decoded)) {
             return isset($decoded[$key]) ? get_text($decoded[$key]) : '';
         }

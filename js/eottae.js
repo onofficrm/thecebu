@@ -140,6 +140,25 @@
     }
   }
 
+  function syncShopSnsFields(root) {
+    var scope = root && root.querySelector ? root : document;
+    var form = root && root.tagName === 'FORM' ? root : qs('.shop-register-page', scope) || qs('#fwrite', scope);
+    if (!form) return;
+
+    var hidden = qs('#wr_link2', form);
+    if (!hidden) return;
+
+    var keys = ['youtube', 'instagram', 'tiktok', 'facebook', 'naver_blog'];
+    var payload = {};
+    keys.forEach(function (key) {
+      var el = qs('#eottae_sns_' + key, form);
+      if (!el) return;
+      var val = (el.value || '').trim();
+      if (val !== '') payload[key] = val;
+    });
+    hidden.value = Object.keys(payload).length ? JSON.stringify(payload) : '';
+  }
+
   function initShopRegisterBusinessInfo(root) {
     var preset = qs('#wr_6_preset', root);
     var hoursCustom = qs('#wr_6_custom', root);
@@ -518,7 +537,7 @@
     var body = qs('#shopContentBody', root);
     var textarea = qs('#shop_wr_content', root);
     var statusEl = qs('[data-shop-content-status]', root);
-    var openBtn = qs('[data-shop-content-edit-open]', root);
+    var openBtns = qsa('[data-shop-content-edit-open]', root);
     var saveBtn = qs('[data-shop-content-save]', root);
     var cancelBtn = qs('[data-shop-content-cancel]', root);
     var useEditor = root.getAttribute('data-shop-content-use-editor') === '1';
@@ -563,21 +582,29 @@
       oEditors.getById.shop_wr_content.exec('UPDATE_CONTENTS_FIELD', []);
     }
 
+    function setOpenButtonsVisible(visible) {
+      openBtns.forEach(function (btn) {
+        btn.hidden = !visible;
+      });
+    }
+
     function showEdit() {
       if (!edit || !view) return;
       ensureEditor();
       view.hidden = true;
       edit.hidden = false;
+      root.classList.add('is-editing');
       setStatus('', '');
-      if (openBtn) openBtn.hidden = true;
+      setOpenButtonsVisible(false);
     }
 
     function showView() {
       if (!edit || !view) return;
       view.hidden = false;
       edit.hidden = true;
+      root.classList.remove('is-editing');
       setStatus('', '');
-      if (openBtn) openBtn.hidden = false;
+      setOpenButtonsVisible(true);
     }
 
     function getContentValue() {
@@ -588,9 +615,9 @@
       return textarea.value.trim();
     }
 
-    if (openBtn) {
-      openBtn.addEventListener('click', showEdit);
-    }
+    openBtns.forEach(function (btn) {
+      btn.addEventListener('click', showEdit);
+    });
 
     if (cancelBtn) {
       cancelBtn.addEventListener('click', showView);
