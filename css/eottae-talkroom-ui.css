@@ -1527,17 +1527,15 @@ body.talk-admin-shell .talk-admin-applies__shell {
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
 }
 
-body.talk-admin-shell .talk-admin-applies__body {
-  display: block !important;
-  clear: both;
-  width: 100%;
-  min-height: 160px;
-  margin: 16px -22px -20px;
-  padding: 0;
-  overflow: visible;
-  border-top: 1px solid #eef2f6;
-  border-radius: 0 0 18px 18px;
-  background: #fff;
+body.talk-admin-shell .talk-admin-applies__filter {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 14px 18px;
+  border-top: 0;
+  border-bottom: 1px solid #eef2f6;
+  background: #f8fafc;
 }
 
 body.talk-admin-shell .promo-admin-empty {
@@ -1656,14 +1654,6 @@ body.talk-admin-shell .talk-apply-status--rejected {
     padding: 16px;
   }
 
-  body.talk-admin-shell .talk-admin-applies__shell {
-    padding: 16px;
-  }
-
-  body.talk-admin-shell .talk-admin-applies__body {
-    margin: 16px -16px -16px;
-  }
-
   body.talk-admin-shell .promo-admin-page__title {
     font-size: 1.25rem;
   }
@@ -1722,30 +1712,25 @@ body.talk-admin-shell .talk-admin-applies__header .promo-admin-page__desc {
   margin-bottom: 0;
 }
 
-body.talk-admin-shell .talk-admin-applies__shell .promo-admin-page__desc {
-  margin-bottom: 0;
-}
-
-body.talk-admin-shell .talk-admin-applies__filter {
-  display: flex !important;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 0;
-  padding: 14px 18px;
-  border-top: 0;
-  border-bottom: 1px solid #eef2f6;
-  background: #f8fafc;
-}
-
-body.talk-admin-shell .talk-admin-applies__panel {
+body.talk-admin-shell .talk-admin-applies-page .talk-admin-applies__panel {
   display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-height: 160px;
+  margin-top: 16px;
   padding: 0;
   overflow: visible;
-  visibility: visible;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+  position: relative;
+  z-index: 1;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+body.talk-admin-shell .talk-admin-applies-page .talk-admin-applies__filter {
+  display: flex !important;
+  visibility: visible !important;
 }
 
 body.talk-admin-shell .talk-admin-applies__summary {
