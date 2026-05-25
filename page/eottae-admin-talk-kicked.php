@@ -25,10 +25,15 @@ g5_talk_admin_page_start('강퇴 회원 관리');
         <?php eottae_talkroom_render_admin_nav('kicked'); ?>
     </header>
 
-    <section class="promo-admin-panel talk-admin-panel">
+    <section class="promo-admin-panel talk-admin-panel talk-admin-kicked__panel" aria-label="강퇴 회원 목록">
         <?php if (empty($kicked_members)) { ?>
-        <p class="promo-admin-empty">강퇴된 회원이 없습니다.</p>
+        <div class="talk-admin-kicked__empty">
+            <p class="promo-admin-empty">강퇴된 회원이 없습니다.</p>
+        </div>
         <?php } else { ?>
+        <div class="talk-admin-applies__summary">
+            <span>총 <strong><?php echo number_format(count($kicked_members)); ?></strong>명</span>
+        </div>
         <div class="talk-admin-table-wrap">
             <table class="talk-admin-table talk-admin-table--kicked">
                 <thead>

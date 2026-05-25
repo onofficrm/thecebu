@@ -82,13 +82,80 @@ if (!function_exists('eottae_talkroom_render_admin_nav')) {
             <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>" class="talk-admin-nav__item<?php echo $active === 'applies' ? ' is-active' : ''; ?>">
                 개설 신청 관리<?php if ($pending > 0) { ?> (<?php echo number_format($pending); ?>)<?php } ?>
             </a>
-            <a href="<?php echo eottae_talkroom_admin_kicked_url(); ?>" class="talk-admin-nav__item<?php echo $active === 'kicked' ? ' is-active' : ''; ?>">강퇴 회원</a>
+            <a href="<?php echo eottae_talkroom_admin_kicked_url(); ?>" class="talk-admin-nav__item<?php echo $active === 'kicked' ? ' is-active' : ''; ?>">
+                강퇴 회원<?php
+                $kicked_total = function_exists('eottae_talkroom_admin_kicked_count') ? eottae_talkroom_admin_kicked_count() : 0;
+                if ($kicked_total > 0) {
+                    echo ' ('.number_format($kicked_total).')';
+                }
+                ?>
+            </a>
             <a href="<?php echo eottae_talkroom_admin_reports_url('pending'); ?>" class="talk-admin-nav__item<?php echo $active === 'reports' ? ' is-active' : ''; ?>">
                 신고 관리<?php if ($report_pending > 0) { ?> (<?php echo number_format($report_pending); ?>)<?php } ?>
             </a>
             <a href="<?php echo eottae_talkroom_ai_admin_url(); ?>" class="talk-admin-nav__item<?php echo $active === 'ai' ? ' is-active' : ''; ?>">AI 도우미 설정</a>
             <a href="<?php echo eottae_talkroom_ai_logs_url(); ?>" class="talk-admin-nav__item<?php echo $active === 'ai_logs' ? ' is-active' : ''; ?>">AI 발언 로그</a>
         </nav>
+        <?php
+    }
+}
+
+if (!function_exists('eottae_talkroom_render_mypage_super_admin_talk_tools')) {
+    function eottae_talkroom_render_mypage_super_admin_talk_tools($preview_limit = 8)
+    {
+        global $is_admin;
+
+        if ($is_admin !== 'super') {
+            return;
+        }
+
+        $pending = function_exists('eottae_talkroom_pending_count') ? eottae_talkroom_pending_count() : 0;
+        $kicked_total = function_exists('eottae_talkroom_admin_kicked_count') ? eottae_talkroom_admin_kicked_count() : 0;
+        $report_pending = function_exists('eottae_talkroom_admin_pending_report_count') ? eottae_talkroom_admin_pending_report_count() : 0;
+        $preview_limit = max(1, min(20, (int) $preview_limit));
+        $recent_kicked = function_exists('eottae_talkroom_admin_list_kicked_members')
+            ? eottae_talkroom_admin_list_kicked_members($preview_limit)
+            : array();
+        ?>
+        <section class="my-talk-section my-talk-section--panel my-talk-super-admin" id="my-talk-super-admin" aria-labelledby="my-talk-super-admin-title">
+            <h2 class="my-talk-section__title" id="my-talk-super-admin-title">세부톡방 관리 (최고관리자)</h2>
+            <p class="my-talk-section__desc">개설 신청, 강퇴 회원, 신고 등 사이트 전체 톡방을 관리할 수 있습니다.</p>
+            <div class="my-talk-super-admin__links">
+                <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>" class="my-talk-btn my-talk-btn--ghost my-talk-btn--sm">개설 신청<?php if ($pending > 0) { ?> (<?php echo number_format($pending); ?>)<?php } ?></a>
+                <a href="<?php echo eottae_talkroom_admin_rooms_url(); ?>" class="my-talk-btn my-talk-btn--ghost my-talk-btn--sm">톡방 목록</a>
+                <a href="<?php echo eottae_talkroom_admin_kicked_url(); ?>" class="my-talk-btn my-talk-btn--primary my-talk-btn--sm">강퇴 회원<?php if ($kicked_total > 0) { ?> (<?php echo number_format($kicked_total); ?>)<?php } ?></a>
+                <a href="<?php echo eottae_talkroom_admin_reports_url('pending'); ?>" class="my-talk-btn my-talk-btn--ghost my-talk-btn--sm">신고 관리<?php if ($report_pending > 0) { ?> (<?php echo number_format($report_pending); ?>)<?php } ?></a>
+                <a href="<?php echo eottae_talkroom_ai_admin_url(); ?>" class="my-talk-btn my-talk-btn--ghost my-talk-btn--sm">AI 설정</a>
+            </div>
+
+            <div class="my-talk-super-admin__kicked">
+                <div class="my-talk-super-admin__kicked-head">
+                    <h3 class="my-talk-super-admin__kicked-title">강퇴 회원</h3>
+                    <a href="<?php echo eottae_talkroom_admin_kicked_url(); ?>" class="my-talk-section__more">전체 보기</a>
+                </div>
+                <?php if (empty($recent_kicked)) { ?>
+                <p class="my-talk-super-admin__empty">강퇴된 회원이 없습니다.</p>
+                <?php } else { ?>
+                <ul class="my-talk-super-admin__kicked-list">
+                    <?php foreach ($recent_kicked as $item) { ?>
+                    <li class="my-talk-super-admin__kicked-item">
+                        <div class="my-talk-super-admin__kicked-main">
+                            <span class="my-talk-super-admin__kicked-room"><?php echo $item['emoji']; ?> <?php echo $item['room_name']; ?></span>
+                            <span class="my-talk-super-admin__kicked-member"><?php echo $item['mb_nick']; ?> <span class="my-talk-super-admin__kicked-id">(<?php echo $item['mb_id']; ?>)</span></span>
+                        </div>
+                        <div class="my-talk-super-admin__kicked-meta">
+                            <span><?php echo $item['kicked_at'] !== '0000-00-00 00:00:00' ? substr($item['kicked_at'], 0, 16) : '-'; ?></span>
+                            <span>처리: <?php echo $item['kicked_by_nick']; ?></span>
+                        </div>
+                        <?php if ($item['kicked_reason'] !== '') { ?>
+                        <p class="my-talk-super-admin__kicked-reason"><?php echo nl2br($item['kicked_reason']); ?></p>
+                        <?php } ?>
+                    </li>
+                    <?php } ?>
+                </ul>
+                <?php } ?>
+            </div>
+        </section>
         <?php
     }
 }

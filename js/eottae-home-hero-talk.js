@@ -100,14 +100,21 @@
     var body = newHtml + hotHtml;
     var listUrl = data.list_url || '/talk';
     var createUrl = data.create_url || '/page/eottae-talk-create.php';
+    var isEmpty = body === '';
 
-    if (!body) {
+    if (isEmpty) {
       body = ''
         + '<div class="home-hero-talk-rooms__empty">'
-        + '<p>아직 표시할 톡방이 없습니다.</p>'
-        + '<a href="' + esc(createUrl) + '">톡방 만들기</a>'
+        + '<span class="home-hero-talk-rooms__empty-icon" aria-hidden="true">💬</span>'
+        + '<p class="home-hero-talk-rooms__empty-title">아직 표시할 톡방이 없습니다</p>'
+        + '<p class="home-hero-talk-rooms__empty-desc">관심 주제의 톡방을 만들거나 세부톡방을 둘러보세요</p>'
         + '</div>';
     }
+
+    var footerHtml = isEmpty
+      ? '<a href="' + esc(createUrl) + '" class="home-hero-talk-rooms__cta home-hero-talk-rooms__cta--primary">톡방 만들기</a>'
+        + '<a href="' + esc(listUrl) + '" class="home-hero-talk-rooms__cta home-hero-talk-rooms__cta--ghost">톡방 더보기</a>'
+      : '<a href="' + esc(listUrl) + '" class="home-hero-talk-rooms__cta home-hero-talk-rooms__cta--primary">톡방 더보기</a>';
 
     var panel = document.createElement('aside');
     panel.className = 'home-hero-talk-rooms home-hero-talk-rooms--content';
@@ -116,9 +123,7 @@
     panel.innerHTML = ''
       + '<div class="home-hero-talk-rooms__card">'
       + body
-      + '<footer class="home-hero-talk-rooms__footer">'
-      + '<a href="' + esc(listUrl) + '" class="home-hero-talk-rooms__more">톡방 더보기</a>'
-      + '</footer>'
+      + '<footer class="home-hero-talk-rooms__footer">' + footerHtml + '</footer>'
       + '</div>';
 
     return panel;
@@ -134,6 +139,8 @@
     if (!card || card.querySelector('[data-eottae-home-talk-content]')) {
       return;
     }
+
+    card.classList.add('home-hero-talk-card');
 
     var headingWrap = card.querySelector('.flex.items-center.justify-between');
     if (headingWrap) {

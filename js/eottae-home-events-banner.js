@@ -30,6 +30,32 @@
     return (d.getMonth() + 1) + '.' + d.getDate();
   }
 
+  function normalizeText(value) {
+    return String(value || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function isEventsHeading(text) {
+    return text.indexOf('업체 이벤트') !== -1
+      || (text.indexOf('기획전') !== -1 && text.indexOf('업체') !== -1);
+  }
+
+  function isTalkHeading(text) {
+    return text === '세부톡' || text.indexOf('세부톡') === 0;
+  }
+
+  function sidebarChildFromNode(sidebar, node) {
+    if (!sidebar || !node) {
+      return null;
+    }
+
+    var current = node;
+    while (current && current.parentElement && current.parentElement !== sidebar) {
+      current = current.parentElement;
+    }
+
+    return current && current.parentElement === sidebar ? current : null;
+  }
+
   function findHeroSidebar() {
     if (typeof global.findEottaeHeroSidebarColumn === 'function') {
       return global.findEottaeHeroSidebarColumn();
@@ -55,6 +81,75 @@
       }
     }
     return null;
+  }
+
+  function findSidebarLegacyEventsBlock(sidebar) {
+    if (!sidebar) {
+      return null;
+    }
+
+    var headings = sidebar.querySelectorAll('h2, h3');
+    var i;
+    for (i = 0; i < headings.length; i += 1) {
+      if (!isEventsHeading(normalizeText(headings[i].textContent))) {
+        continue;
+      }
+      var block = sidebarChildFromNode(sidebar, headings[i]);
+      if (block && !block.querySelector('[data-eottae-events-banner]')) {
+        return block;
+      }
+    }
+
+    return null;
+  }
+
+  function findSidebarTalkBlock(sidebar) {
+    if (!sidebar) {
+      return null;
+    }
+
+    var headings = sidebar.querySelectorAll('h2, h3, h4');
+    var i;
+    for (i = 0; i < headings.length; i += 1) {
+      if (!isTalkHeading(normalizeText(headings[i].textContent))) {
+        continue;
+      }
+      return sidebarChildFromNode(sidebar, headings[i]);
+    }
+
+    return null;
+  }
+
+  function removeDuplicateLegacyEvents(sidebar, keepNode) {
+    if (!sidebar) {
+      return;
+    }
+
+    var children = Array.prototype.slice.call(sidebar.children);
+    var i;
+
+    for (i = 0; i < children.length; i += 1) {
+      var child = children[i];
+      if (!child || child === keepNode) {
+        continue;
+      }
+      if (child.classList && child.classList.contains('home-hero-sidebar-events')) {
+        continue;
+      }
+
+      var heading = child.querySelector('h2, h3');
+      if (!heading) {
+        continue;
+      }
+
+      if (!isEventsHeading(normalizeText(heading.textContent))) {
+        continue;
+      }
+
+      if (child.parentNode) {
+        child.parentNode.removeChild(child);
+      }
+    }
   }
 
   function buildBanner(events, listUrl) {
@@ -90,6 +185,15 @@
         : '');
 
     return root;
+  }
+
+  function buildWrap(banner) {
+    var wrap = document.createElement('div');
+    wrap.className = 'home-hero-sidebar-events';
+    wrap.setAttribute('aria-label', '업체 이벤트 / 기획전');
+    wrap.setAttribute('data-eottae-events-banner-mounted', '1');
+    wrap.appendChild(banner);
+    return wrap;
   }
 
   function bindCarousel(root) {
@@ -164,59 +268,44 @@
     restartTimer();
   }
 
-  function hideSidebarLegacyEvents(sidebar) {
-    if (!sidebar) {
-      return null;
-    }
-
-    var headings = sidebar.querySelectorAll('h2, h3');
-    var i;
-    for (i = 0; i < headings.length; i += 1) {
-      if ((headings[i].textContent || '').indexOf('업체 이벤트') === -1) {
-        continue;
-      }
-      var block = headings[i].closest('section') || headings[i].closest('div');
-      if (!block) {
-        block = headings[i].parentElement;
-      }
-      if (block) {
-        block.style.display = 'none';
-        block.setAttribute('data-eottae-legacy-sidebar-events', '1');
-        block.setAttribute('aria-hidden', 'true');
-        return block;
-      }
-    }
-
-    return null;
-  }
-
   function mount() {
     var data = cfg();
     if (!data || !data.events || !data.events.length) {
-      return;
+      return false;
     }
 
     var sidebar = findHeroSidebar();
-    if (!sidebar || sidebar.querySelector('[data-eottae-events-banner]')) {
-      return;
+    if (!sidebar) {
+      return false;
     }
 
-    var legacy = hideSidebarLegacyEvents(sidebar);
+    var existingWrap = sidebar.querySelector('.home-hero-sidebar-events[data-eottae-events-banner-mounted]');
+    if (existingWrap) {
+      var existingBanner = existingWrap.querySelector('[data-eottae-events-banner]');
+      if (existingBanner) {
+        bindCarousel(existingBanner);
+        removeDuplicateLegacyEvents(sidebar, existingWrap);
+        return true;
+      }
+      existingWrap.parentNode.removeChild(existingWrap);
+    }
 
-    var wrap = document.createElement('div');
-    wrap.className = 'home-hero-sidebar-events';
-    wrap.setAttribute('aria-label', '업체 이벤트 / 기획전');
-
+    var legacy = findSidebarLegacyEventsBlock(sidebar);
+    var talkBlock = findSidebarTalkBlock(sidebar);
     var banner = buildBanner(data.events, data.list_url || '/page/eottae-events.php');
-    wrap.appendChild(banner);
+    var wrap = buildWrap(banner);
 
     if (legacy && legacy.parentNode) {
-      legacy.parentNode.insertBefore(wrap, legacy);
+      legacy.parentNode.replaceChild(wrap, legacy);
+    } else if (talkBlock && talkBlock.parentNode === sidebar) {
+      sidebar.insertBefore(wrap, talkBlock);
     } else {
       sidebar.appendChild(wrap);
     }
 
+    removeDuplicateLegacyEvents(sidebar, wrap);
     bindCarousel(banner);
+    return true;
   }
 
   function init() {
@@ -226,10 +315,37 @@
 
     if (typeof global.eottaeHomeAfterReactReady === 'function') {
       global.eottaeHomeAfterReactReady(run);
+    } else {
+      global.setTimeout(run, 1500);
+    }
+
+    if (typeof MutationObserver === 'undefined') {
       return;
     }
 
-    global.setTimeout(run, 1500);
+    var root = document.getElementById('root');
+    if (!root) {
+      return;
+    }
+
+    var scheduled = false;
+    var observer = new MutationObserver(function () {
+      if (scheduled) {
+        return;
+      }
+      scheduled = true;
+      global.requestAnimationFrame(function () {
+        scheduled = false;
+        if (!root.querySelector('[data-eottae-events-banner-mounted]')) {
+          mount();
+        }
+      });
+    });
+
+    observer.observe(root, {
+      childList: true,
+      subtree: true,
+    });
   }
 
   if (document.readyState === 'loading') {

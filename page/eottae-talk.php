@@ -24,6 +24,10 @@ g5_page_start('세부톡방');
             }
             ?>
             · <a href="<?php echo eottae_talkroom_admin_rooms_url(); ?>">톡방 목록 관리</a>
+            <?php
+            $talk_kicked = function_exists('eottae_talkroom_admin_kicked_count') ? eottae_talkroom_admin_kicked_count() : 0;
+            ?>
+            · <a href="<?php echo eottae_talkroom_admin_kicked_url(); ?>">강퇴 회원 관리<?php if ($talk_kicked > 0) { ?> (<?php echo number_format($talk_kicked); ?>)<?php } ?></a>
         </p>
         <?php } ?>
         <p class="talk-page__intro">

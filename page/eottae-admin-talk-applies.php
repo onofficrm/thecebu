@@ -15,6 +15,13 @@ if (!in_array($filter, array('pending', 'all', 'rejected', 'approved', 'stopped'
 
 $applications = eottae_talkroom_admin_list_applications($filter === 'all' ? 'all' : $filter, 200);
 $pending_count = eottae_talkroom_pending_count();
+
+if (empty($applications) && $filter === 'pending' && $pending_count > 0) {
+    $fallback = eottae_talkroom_admin_list_applications('all', 200);
+    $applications = array_values(array_filter($fallback, function ($item) {
+        return ($item['status'] ?? '') === 'pending';
+    }));
+}
 $admin_token = eottae_talkroom_admin_token();
 
 g5_talk_admin_page_start('개설 신청 관리');
@@ -34,7 +41,9 @@ g5_talk_admin_page_start('개설 신청 관리');
             <?php } ?>
         </p>
         <?php eottae_talkroom_render_admin_nav('applies'); ?>
+    </header>
 
+    <div class="talk-admin-applies__toolbar">
         <nav class="talk-admin-filter talk-admin-applies__filter" aria-label="신청 상태 필터">
             <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>?status=pending" class="talk-admin-filter__item<?php echo $filter === 'pending' ? ' is-active' : ''; ?>">
                 승인대기<?php if ($pending_count > 0) { ?> (<?php echo number_format($pending_count); ?>)<?php } ?>
@@ -42,13 +51,15 @@ g5_talk_admin_page_start('개설 신청 관리');
             <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>?status=all" class="talk-admin-filter__item<?php echo $filter === 'all' ? ' is-active' : ''; ?>">전체</a>
             <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>?status=rejected" class="talk-admin-filter__item<?php echo $filter === 'rejected' ? ' is-active' : ''; ?>">반려</a>
         </nav>
-    </header>
+    </div>
 
-    <section class="promo-admin-panel talk-admin-panel talk-admin-applies__panel">
+    <section class="promo-admin-panel talk-admin-panel talk-admin-applies__panel" aria-label="개설 신청 목록">
         <?php if (empty($applications)) { ?>
         <div class="talk-admin-applies__empty">
             <p class="promo-admin-empty">표시할 신청 내역이 없습니다.</p>
-            <?php if ($filter === 'pending') { ?>
+            <?php if ($filter === 'pending' && $pending_count > 0) { ?>
+            <p class="talk-admin-applies__empty-hint talk-admin-applies__empty-hint--warn">승인 대기 <?php echo number_format($pending_count); ?>건이 있으나 목록을 불러오지 못했습니다. <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>?status=all">전체</a> 탭을 확인하거나 페이지를 새로고침해 주세요.</p>
+            <?php } elseif ($filter === 'pending') { ?>
             <p class="talk-admin-applies__empty-hint">새 개설 신청이 들어오면 이 목록에 표시됩니다.</p>
             <?php } ?>
         </div>

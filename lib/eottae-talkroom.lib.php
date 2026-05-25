@@ -1319,6 +1319,53 @@ if (!function_exists('eottae_talkroom_verify_admin_token')) {
     }
 }
 
+if (!function_exists('eottae_talkroom_sql_member_table')) {
+    function eottae_talkroom_sql_member_table()
+    {
+        global $g5;
+
+        if (!empty($g5['member_table'])) {
+            return $g5['member_table'];
+        }
+
+        return G5_TABLE_PREFIX.'member';
+    }
+}
+
+if (!function_exists('eottae_talkroom_admin_fetch_room_rows')) {
+    /**
+     * @return resource|false
+     */
+    function eottae_talkroom_admin_fetch_room_rows($where_sql, $limit, $with_member = true)
+    {
+        $tables = eottae_talkroom_table_names();
+        $limit = max(1, min(500, (int) $limit));
+        $order_sql = 'r.created_at DESC, r.room_id DESC';
+
+        if ($with_member) {
+            $member_table = eottae_talkroom_sql_member_table();
+            $sql = "
+                SELECT r.*, m.mb_nick AS owner_nick, m.mb_email AS owner_email, m.mb_name AS owner_name
+                FROM `{$tables['rooms']}` r
+                LEFT JOIN `{$member_table}` m ON m.mb_id = r.owner_mb_id
+                {$where_sql}
+                ORDER BY {$order_sql}
+                LIMIT {$limit}
+            ";
+        } else {
+            $sql = "
+                SELECT r.*, '' AS owner_nick, '' AS owner_email, '' AS owner_name
+                FROM `{$tables['rooms']}` r
+                {$where_sql}
+                ORDER BY {$order_sql}
+                LIMIT {$limit}
+            ";
+        }
+
+        return sql_query($sql, false);
+    }
+}
+
 if (!function_exists('eottae_talkroom_pending_count')) {
     function eottae_talkroom_pending_count()
     {
@@ -1330,7 +1377,7 @@ if (!function_exists('eottae_talkroom_pending_count')) {
         $row = sql_fetch("
             SELECT COUNT(*) AS cnt
             FROM `{$tables['rooms']}`
-            WHERE status = 'pending'
+            WHERE TRIM(status) = 'pending'
         ", false);
 
         return (int) ($row['cnt'] ?? 0);
@@ -1350,7 +1397,7 @@ if (!function_exists('eottae_talkroom_get_room')) {
             return null;
         }
 
-        $member_table = G5_TABLE_PREFIX.'member';
+        $member_table = eottae_talkroom_sql_member_table();
         $row = sql_fetch("
             SELECT r.*, m.mb_nick AS owner_nick, m.mb_email AS owner_email, m.mb_name AS owner_name
             FROM `{$tables['rooms']}` r
@@ -1424,22 +1471,14 @@ if (!function_exists('eottae_talkroom_admin_list_applications')) {
         if ($status_filter !== '' && $status_filter !== 'all') {
             $allowed = array('pending', 'approved', 'active', 'rejected', 'stopped', 'closed');
             if (in_array($status_filter, $allowed, true)) {
-                $where = " WHERE r.status = '".sql_escape_string($status_filter)."' ";
+                $where = " WHERE TRIM(r.status) = '".sql_escape_string($status_filter)."' ";
             }
         }
 
-        $member_table = G5_TABLE_PREFIX.'member';
-        $result = sql_query("
-            SELECT r.*, m.mb_nick AS owner_nick, m.mb_email AS owner_email, m.mb_name AS owner_name
-            FROM `{$tables['rooms']}` r
-            LEFT JOIN `{$member_table}` m ON m.mb_id = r.owner_mb_id
-            {$where}
-            ORDER BY
-                CASE r.status WHEN 'pending' THEN 0 ELSE 1 END,
-                r.created_at DESC,
-                r.room_id DESC
-            LIMIT {$limit}
-        ", false);
+        $result = eottae_talkroom_admin_fetch_room_rows($where, $limit, true);
+        if (!$result) {
+            $result = eottae_talkroom_admin_fetch_room_rows($where, $limit, false);
+        }
 
         $rows = array();
         if ($result) {
@@ -3021,6 +3060,62 @@ if (!function_exists('eottae_talkroom_admin_kicked_url')) {
     }
 }
 
+if (!function_exists('eottae_talkroom_admin_kicked_count')) {
+    function eottae_talkroom_admin_kicked_count()
+    {
+        $tables = eottae_talkroom_table_names();
+        if (!eottae_talkroom_table_exists($tables['members'])) {
+            return 0;
+        }
+
+        $row = sql_fetch("
+            SELECT COUNT(*) AS cnt
+            FROM `{$tables['members']}`
+            WHERE status IN ('kicked', 'banned')
+        ", false);
+
+        return (int) ($row['cnt'] ?? 0);
+    }
+}
+
+if (!function_exists('eottae_talkroom_admin_fetch_kicked_rows')) {
+    /**
+     * @return resource|false
+     */
+    function eottae_talkroom_admin_fetch_kicked_rows($limit, $with_member = true)
+    {
+        $tables = eottae_talkroom_table_names();
+        $limit = max(1, min(300, (int) $limit));
+
+        if ($with_member) {
+            $member_table = eottae_talkroom_sql_member_table();
+            $sql = "
+                SELECT tm.*, m.mb_nick AS target_nick, kb.mb_nick AS kicked_by_nick,
+                       r.room_name, r.emoji, r.status AS room_status
+                FROM `{$tables['members']}` tm
+                INNER JOIN `{$tables['rooms']}` r ON r.room_id = tm.room_id
+                LEFT JOIN `{$member_table}` m ON m.mb_id = tm.mb_id
+                LEFT JOIN `{$member_table}` kb ON kb.mb_id = tm.kicked_by
+                WHERE tm.status IN ('kicked', 'banned')
+                ORDER BY tm.kicked_at DESC, tm.id DESC
+                LIMIT {$limit}
+            ";
+        } else {
+            $sql = "
+                SELECT tm.*, '' AS target_nick, '' AS kicked_by_nick,
+                       r.room_name, r.emoji, r.status AS room_status
+                FROM `{$tables['members']}` tm
+                INNER JOIN `{$tables['rooms']}` r ON r.room_id = tm.room_id
+                WHERE tm.status IN ('kicked', 'banned')
+                ORDER BY tm.kicked_at DESC, tm.id DESC
+                LIMIT {$limit}
+            ";
+        }
+
+        return sql_query($sql, false);
+    }
+}
+
 if (!function_exists('eottae_talkroom_admin_list_kicked_members')) {
     /**
      * @return array<int, array<string, mixed>>
@@ -3033,18 +3128,10 @@ if (!function_exists('eottae_talkroom_admin_list_kicked_members')) {
         }
 
         $limit = max(1, min(300, (int) $limit));
-        $member_table = G5_TABLE_PREFIX.'member';
-        $result = sql_query("
-            SELECT tm.*, m.mb_nick AS target_nick, kb.mb_nick AS kicked_by_nick,
-                   r.room_name, r.emoji, r.status AS room_status
-            FROM `{$tables['members']}` tm
-            INNER JOIN `{$tables['rooms']}` r ON r.room_id = tm.room_id
-            LEFT JOIN `{$member_table}` m ON m.mb_id = tm.mb_id
-            LEFT JOIN `{$member_table}` kb ON kb.mb_id = tm.kicked_by
-            WHERE tm.status IN ('kicked', 'banned')
-            ORDER BY tm.kicked_at DESC, tm.id DESC
-            LIMIT {$limit}
-        ", false);
+        $result = eottae_talkroom_admin_fetch_kicked_rows($limit, true);
+        if (!$result) {
+            $result = eottae_talkroom_admin_fetch_kicked_rows($limit, false);
+        }
 
         $rows = array();
         if ($result) {
