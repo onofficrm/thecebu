@@ -11,6 +11,10 @@ $g5['title'] = '게시글 저장';
 $msg = array();
 $uid = isset($_POST['uid']) ? preg_replace('/[^0-9]/', '', $_POST['uid']) : 0;
 
+if (function_exists('eottae_shop_prepare_write_post')) {
+    eottae_shop_prepare_write_post($board);
+}
+
 if($board['bo_use_category']) {
     $ca_name = isset($_POST['ca_name']) ? trim($_POST['ca_name']) : '';
     if(!$ca_name) {

@@ -265,6 +265,25 @@
     return '';
   }
 
+  window.shopDetectRegionFromText = shopDetectRegionFromText;
+
+  function shopApplyRegionFromAddress(address, regionInput, regionDisplay, status) {
+    var region = shopDetectRegionFromText(address);
+    if (!region) {
+      return false;
+    }
+    if (regionInput) {
+      regionInput.value = region;
+    }
+    if (regionDisplay) {
+      regionDisplay.textContent = '대표 지역: ' + region;
+    }
+    if (status) {
+      status.textContent = '대표 지역이 설정되었습니다.';
+    }
+    return true;
+  }
+
   function shopDetectRegionFromGeocodeResult(result) {
     if (!result) return '';
     var parts = [result.formatted_address || ''];
@@ -381,6 +400,9 @@
         .then(function (data) {
           btn.disabled = false;
           if (!data.ok) {
+            if (shopApplyRegionFromAddress(address, regionInput, regionDisplay, status)) {
+              return;
+            }
             if (status) status.textContent = shopGeocodeErrorMessage(data);
             return;
           }
@@ -409,11 +431,14 @@
       });
     }
 
-    document.addEventListener('eottae:shop-maps-ready', function () {
+    document.addEventListener('eottae:geocoder-ready', onMapsReady);
+    document.addEventListener('eottae:shop-maps-ready', onMapsReady);
+
+    function onMapsReady() {
       if (addressInput && addressInput.value.trim().length >= 8 && !lastGeocodedAddress) {
         runGeocode('auto');
       }
-    });
+    }
   }
 
   function initAdCarousel() {

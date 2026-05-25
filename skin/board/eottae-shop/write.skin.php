@@ -3,7 +3,7 @@ if (!defined('_GNUBOARD_')) exit;
 
 include_once(G5_LIB_PATH.'/eottae.lib.php');
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
-$eottae_maps_enabled = eottae_enqueue_google_maps();
+$eottae_maps_enabled = eottae_enqueue_google_geocoder();
 
 $v = array(
     'wr_1'  => isset($write['wr_1']) ? get_text($write['wr_1']) : '',
@@ -20,6 +20,10 @@ $v = array(
     'wr_link2' => isset($write['wr_link2']) ? get_text($write['wr_link2']) : '',
 );
 $ca_value = isset($write['ca_name']) ? get_text($write['ca_name']) : ($v['wr_1'] !== '' ? $v['wr_1'] : $sca);
+$board_categories = eottae_shop_board_categories($board);
+if (!in_array($ca_value, $board_categories, true)) {
+    $ca_value = '';
+}
 $category_options = eottae_shop_quick_categories($board);
 $shop_region_label = $v['wr_2'] !== '' ? get_text($v['wr_2']) : '';
 $shop_seo = array();
@@ -207,8 +211,23 @@ $shop_seo_v = function_exists('eottae_shop_seo_resolve_for_write')
 function fwrite_submit(f) {
     var ca = document.getElementById('ca_name');
     var wr1 = document.getElementById('wr_1');
+    var wr2 = document.getElementById('wr_2');
+    var wr3 = document.getElementById('wr_3');
     if (ca && wr1) {
+        if (!ca.value && ca.options.length > 1) {
+            ca.selectedIndex = 1;
+        }
         wr1.value = ca.value;
+    }
+    if (wr2 && wr3 && !wr2.value.trim() && wr3.value.trim() && typeof shopDetectRegionFromText === 'function') {
+        var autoRegion = shopDetectRegionFromText(wr3.value.trim());
+        if (autoRegion) {
+            wr2.value = autoRegion;
+            var regionDisplay = document.getElementById('shopRegionDisplay');
+            if (regionDisplay) {
+                regionDisplay.textContent = '대표 지역: ' + autoRegion;
+            }
+        }
     }
     if (!f.wr_subject.value.trim()) {
         alert('업체명을 입력해 주세요.');

@@ -35,6 +35,10 @@ if (!function_exists('eottae_on_shop_write_before')) {
             return;
         }
 
+        if (function_exists('eottae_shop_prepare_write_post')) {
+            eottae_shop_prepare_write_post($board);
+        }
+
         $ca = isset($_POST['ca_name']) ? trim((string) $_POST['ca_name']) : '';
         $wr1 = isset($_POST['wr_1']) ? trim((string) $_POST['wr_1']) : '';
 

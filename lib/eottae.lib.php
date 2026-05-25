@@ -1284,22 +1284,86 @@ if (!function_exists('eottae_shop_detect_region')) {
     }
 }
 
+if (!function_exists('eottae_shop_board_categories')) {
+    function eottae_shop_board_categories($board)
+    {
+        $cats = array();
+        if (is_array($board) && !empty($board['bo_category_list'])) {
+            $cats = array_values(array_filter(array_map('trim', explode('|', $board['bo_category_list']))));
+        }
+        if (empty($cats)) {
+            $cats = array('기타');
+        }
+
+        return $cats;
+    }
+}
+
+if (!function_exists('eottae_shop_resolve_category')) {
+    function eottae_shop_resolve_category($board, $candidate = '')
+    {
+        $allowed = eottae_shop_board_categories($board);
+        $candidate = trim((string) $candidate);
+
+        if ($candidate !== '' && in_array($candidate, $allowed, true)) {
+            return $candidate;
+        }
+
+        if (in_array('기타', $allowed, true)) {
+            return '기타';
+        }
+
+        return $allowed[0];
+    }
+}
+
+if (!function_exists('eottae_shop_prepare_write_post')) {
+    function eottae_shop_prepare_write_post($board)
+    {
+        if (empty($board['bo_table']) || !eottae_is_shop_board($board['bo_table'])) {
+            return;
+        }
+
+        $allowed = eottae_shop_board_categories($board);
+        $ca = isset($_POST['ca_name']) ? trim((string) $_POST['ca_name']) : '';
+        $wr1 = isset($_POST['wr_1']) ? trim((string) $_POST['wr_1']) : '';
+
+        if ($ca !== '' && !in_array($ca, $allowed, true) && function_exists('eottae_shop_detect_region')) {
+            $maybe_region = eottae_shop_detect_region($ca);
+            if ($maybe_region === $ca) {
+                if (empty($_POST['wr_2'])) {
+                    $_POST['wr_2'] = $ca;
+                }
+                $ca = '';
+            }
+        }
+
+        if ($ca === '' && $wr1 !== '' && in_array($wr1, $allowed, true)) {
+            $ca = $wr1;
+        } elseif ($ca === '' && $wr1 !== '') {
+            $wr1_region = function_exists('eottae_shop_detect_region') ? eottae_shop_detect_region($wr1) : '';
+            if ($wr1_region === $wr1 && empty($_POST['wr_2'])) {
+                $_POST['wr_2'] = $wr1;
+            }
+        }
+
+        $resolved = eottae_shop_resolve_category($board, $ca !== '' ? $ca : $wr1);
+        $_POST['ca_name'] = $resolved;
+        $_POST['wr_1'] = $resolved;
+
+        $address = isset($_POST['wr_3']) ? trim((string) $_POST['wr_3']) : '';
+        $region = isset($_POST['wr_2']) ? trim((string) $_POST['wr_2']) : '';
+        if ($region === '' && $address !== '' && function_exists('eottae_shop_detect_region')) {
+            $_POST['wr_2'] = eottae_shop_detect_region($address);
+        }
+    }
+}
+
 if (!function_exists('eottae_shop_quick_categories')) {
     function eottae_shop_quick_categories($board)
     {
         $items = array(array('slug' => '', 'label' => '전체'));
-        $defaults = array('맛집', '마사지', '렌트카', '투어', '카페', '병원', '학원', '숙소');
-        $board_cats = array();
-
-        if (!empty($board['bo_category_list'])) {
-            $board_cats = array_filter(array_map('trim', explode('|', $board['bo_category_list'])));
-        }
-
-        $merged = array_unique(array_merge($board_cats, $defaults));
-        foreach ($merged as $cat) {
-            if ($cat === '') {
-                continue;
-            }
+        foreach (eottae_shop_board_categories($board) as $cat) {
             $items[] = array('slug' => $cat, 'label' => $cat);
         }
 
@@ -1546,6 +1610,51 @@ if (!function_exists('eottae_enqueue_google_maps')) {
         add_javascript('<script src="'.G5_JS_URL.'/eottae-shop-map.js"></script>', 25);
         add_javascript(
             '<script src="https://maps.googleapis.com/maps/api/js?key='.$key.'&amp;callback=initEottaeShopMaps" defer></script>',
+            5
+        );
+
+        $enqueued = true;
+
+        return true;
+    }
+}
+
+if (!function_exists('eottae_enqueue_google_geocoder')) {
+    /**
+     * 업체 등록 등 Geocoding 전용 Maps JS 로드
+     *
+     * @return bool
+     */
+    function eottae_enqueue_google_geocoder()
+    {
+        static $enqueued = false;
+
+        if ($enqueued) {
+            return function_exists('onoff_map_has_api_key') && onoff_map_has_api_key();
+        }
+
+        if (!is_file(G5_PATH.'/components/maps/map-config.php')) {
+            return false;
+        }
+
+        include_once G5_PATH.'/components/maps/map-config.php';
+
+        if (!function_exists('onoff_map_has_api_key') || !onoff_map_has_api_key()) {
+            return false;
+        }
+
+        $cfg = onoff_map_get_config();
+        $key = isset($cfg['api_key']) ? htmlspecialchars($cfg['api_key'], ENT_QUOTES, 'UTF-8') : '';
+        if ($key === '') {
+            return false;
+        }
+
+        add_javascript(
+            '<script>window.initEottaeGeocoderBootstrap=function(){document.dispatchEvent(new CustomEvent("eottae:geocoder-ready"));};</script>',
+            4
+        );
+        add_javascript(
+            '<script src="https://maps.googleapis.com/maps/api/js?key='.$key.'&amp;callback=initEottaeGeocoderBootstrap" async defer></script>',
             5
         );
 
