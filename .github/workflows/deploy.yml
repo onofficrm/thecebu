@@ -47,6 +47,12 @@ jobs:
           file_put_contents('_deploy_secrets/_site.config.local.php', $root.'$site_config_override = '.var_export($cfg, true).";\n");
           if (!empty($cfg['google_maps_api_key'])) {
               $data_cfg = array('google_maps_api_key' => $cfg['google_maps_api_key']);
+              if (!empty($cfg['ai_generate_api_key'])) {
+                  $data_cfg['ai_generate_enabled'] = true;
+                  $data_cfg['ai_generate_api_key'] = $cfg['ai_generate_api_key'];
+                  $data_cfg['ai_generate_model'] = 'gpt-4o-mini';
+                  $data_cfg['ai_generate_image_model'] = 'gpt-image-1';
+              }
               file_put_contents(
                   '_deploy_secrets/data/eottae-secrets.local.php',
                   $root.'$eottae_secrets_override = '.var_export($data_cfg, true).";\n"

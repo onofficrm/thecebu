@@ -4,23 +4,15 @@
  */
 require_once dirname(__FILE__).'/_eottae_json_bootstrap.php';
 
+include_once G5_LIB_PATH.'/eottae-ai-generate.lib.php';
+
 if (empty($is_member)) {
     eottae_json_send(array('success' => false, 'message' => '로그인 후 이용해 주세요.'));
 }
 
-$enabled = function_exists('g5site_cfg_bool') ? g5site_cfg_bool('ai_generate_enabled', false) : false;
-$api_key = function_exists('g5site_cfg') ? trim((string) g5site_cfg('ai_generate_api_key', '')) : '';
-$model = function_exists('g5site_cfg') ? trim((string) g5site_cfg('ai_generate_model', 'gpt-4o-mini')) : 'gpt-4o-mini';
-if ($model === '') {
-    $model = 'gpt-4o-mini';
-}
-
-if (!$enabled || $api_key === '') {
-    eottae_json_send(array(
-        'success' => false,
-        'message' => 'AI 자동생성 API 키가 아직 설정되지 않았습니다. _site.config.local.php 또는 GitHub Secret OPENAI_API_KEY를 설정해 주세요.',
-    ));
-}
+$ai_cfg = eottae_ai_generate_require_ready();
+$api_key = $ai_cfg['api_key'];
+$model = $ai_cfg['model'];
 
 $bo_table = isset($_POST['bo_table']) ? preg_replace('/[^a-z0-9_]/i', '', (string) $_POST['bo_table']) : '';
 if ($bo_table === '' || !function_exists('eottae_is_shop_board') || !eottae_is_shop_board($bo_table)) {
@@ -114,8 +106,9 @@ curl_close($ch);
 if ($raw === false || $raw === '' || $http_code < 200 || $http_code >= 300) {
     eottae_json_send(array(
         'success' => false,
-        'message' => 'AI 자동생성 요청에 실패했습니다.',
-        'debug' => $curl_error !== '' ? $curl_error : 'HTTP '.$http_code,
+        'message' => function_exists('eottae_ai_generate_openai_error_message')
+            ? eottae_ai_generate_openai_error_message($http_code, $raw, $curl_error)
+            : 'AI 자동생성 요청에 실패했습니다.',
     ));
 }
 

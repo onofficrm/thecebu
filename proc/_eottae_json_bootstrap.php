@@ -46,3 +46,11 @@ if (!function_exists('g5site_cfg') && is_file(G5_PATH.'/_site.config.php')) {
 if (!function_exists('eottae_is_shop_board') && is_file(G5_LIB_PATH.'/eottae.lib.php')) {
     include_once G5_LIB_PATH.'/eottae.lib.php';
 }
+
+if (!function_exists('eottae_ai_generate_bootstrap_config') && is_file(G5_LIB_PATH.'/eottae-ai-generate.lib.php')) {
+    include_once G5_LIB_PATH.'/eottae-ai-generate.lib.php';
+}
+
+if (function_exists('eottae_merge_runtime_secrets')) {
+    eottae_merge_runtime_secrets();
+}

@@ -41,6 +41,11 @@ g5_page_start('쿠폰 사용 안내');
     <section class="eottae-guide-section">
         <h2 class="eottae-guide-section__title">매장에서 사용하는 방법</h2>
 
+        <?php
+        include_once G5_PATH.'/components/eottae/coupon-guide-comic.php';
+        echo eottae_coupon_guide_comic_html('member');
+        ?>
+
         <article class="eottae-guide-step">
             <span class="eottae-guide-step__num">1</span>
             <div class="eottae-guide-step__body">

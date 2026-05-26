@@ -23,6 +23,14 @@
     });
   }
 
+  function eottaeProcPath(file) {
+    var base = global.__EOTTae__ && global.__EOTTae__.procBase ? String(global.__EOTTae__.procBase) : '';
+    if (base) {
+      return base.replace(/\/$/, '') + '/' + String(file || '').replace(/^\//, '');
+    }
+    return '/proc/' + String(file || '').replace(/^\//, '');
+  }
+
   function ensureInquiryModal() {
     var modal = qs('#eottaeInquiryModal');
     if (modal) return modal;
@@ -408,7 +416,7 @@
         });
         shopSetAiStatus(root, 'AI가 업체 소개와 SEO 문구를 작성 중입니다...', false);
 
-        fetch('/proc/eottae-shop-ai-generate.php', {
+        fetch(eottaeProcPath('eottae-shop-ai-generate.php'), {
           method: 'POST',
           credentials: 'same-origin',
           body: form
@@ -588,7 +596,7 @@
         });
         talkApplySetAiStatus(form, 'AI가 신청서 내용을 작성 중입니다...', false);
 
-        fetch('/proc/eottae-talkroom-apply-ai.php', {
+        fetch(eottaeProcPath('eottae-talkroom-apply-ai.php'), {
           method: 'POST',
           credentials: 'same-origin',
           body: buildFormData(mode)
@@ -657,7 +665,7 @@
         status.classList.remove('is-error');
       }
 
-      fetch('/proc/eottae-shop-map-thumb-ai.php', {
+      fetch(eottaeProcPath('eottae-shop-map-thumb-ai.php'), {
         method: 'POST',
         credentials: 'same-origin',
         body: form
@@ -1528,7 +1536,7 @@
       setStatus('AI가 홍보 문구를 작성 중입니다...', false);
       var fd = new FormData();
       fd.append('topic', topic);
-      return fetch('/proc/eottae-business-snippet-ai.php', { method: 'POST', body: fd, credentials: 'same-origin' })
+      return fetch(eottaeProcPath('eottae-business-snippet-ai.php'), { method: 'POST', body: fd, credentials: 'same-origin' })
         .then(function (res) { return parseJsonResponse(res); })
         .then(function (json) {
           if (!json || !json.success) {
@@ -1739,7 +1747,7 @@
         setStatus('AI가 홍보 문구를 작성 중입니다...', false);
         var fd = new FormData();
         fd.append('topic', topic);
-        fetch('/proc/eottae-business-snippet-ai.php', { method: 'POST', body: fd, credentials: 'same-origin' })
+        fetch(eottaeProcPath('eottae-business-snippet-ai.php'), { method: 'POST', body: fd, credentials: 'same-origin' })
           .then(function (res) { return parseJsonResponse(res); })
           .then(function (json) {
             if (!json || !json.success) {

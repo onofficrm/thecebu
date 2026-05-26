@@ -24,6 +24,11 @@ g5_page_start('사업자 쿠폰 안내');
         <?php } ?>
     </header>
 
+    <?php
+    include_once G5_PATH.'/components/eottae/coupon-guide-business-story-comic.php';
+    echo eottae_coupon_guide_business_story_comic_html();
+    ?>
+
     <section class="eottae-guide-section">
         <h2 class="eottae-guide-section__title">이 기능으로 할 수 있는 일</h2>
         <ul class="eottae-guide-cards">
@@ -102,6 +107,10 @@ g5_page_start('사업자 쿠폰 안내');
             <span class="eottae-guide-step__num">3</span>
             <div class="eottae-guide-step__body">
                 <h3>매장에서 사용 처리 (중요)</h3>
+                <?php
+                include_once G5_PATH.'/components/eottae/coupon-guide-comic.php';
+                echo eottae_coupon_guide_comic_html('business');
+                ?>
                 <p>손님이 결제 전·후에 휴대폰 <strong>쿠폰함 → 매장에서 보여주기</strong>로 쿠폰 화면을 보여줍니다. 화면에 <strong>쿠폰번호(8자리)</strong>와 회원 정보, <strong>사용 완료</strong> 버튼이 나옵니다.</p>
                 <p>혜택 적용 후 아래 중 편한 방법으로 <strong>사용 완료</strong>를 처리합니다.</p>
                 <ul class="eottae-guide-list">

@@ -140,9 +140,23 @@ if (!function_exists('eottae_talkroom_apply_ai_generate_via_api')) {
             return null;
         }
 
-        $enabled = g5site_cfg_bool('ai_generate_enabled', false);
-        $api_key = trim((string) g5site_cfg('ai_generate_api_key', ''));
-        $model = trim((string) g5site_cfg('ai_generate_model', 'gpt-4o-mini'));
+        $enabled = false;
+        $api_key = '';
+        $model = 'gpt-4o-mini';
+
+        if (function_exists('eottae_ai_generate_bootstrap_config')) {
+            $cfg = eottae_ai_generate_bootstrap_config();
+            $enabled = !empty($cfg['enabled']);
+            $api_key = isset($cfg['api_key']) ? (string) $cfg['api_key'] : '';
+            $model = isset($cfg['model']) && $cfg['model'] !== '' ? (string) $cfg['model'] : 'gpt-4o-mini';
+        } elseif (function_exists('g5site_cfg_bool') && function_exists('g5site_cfg')) {
+            $enabled = g5site_cfg_bool('ai_generate_enabled', false);
+            $api_key = trim((string) g5site_cfg('ai_generate_api_key', ''));
+            $model = trim((string) g5site_cfg('ai_generate_model', 'gpt-4o-mini'));
+            if ($api_key !== '') {
+                $enabled = true;
+            }
+        }
         if ($model === '') {
             $model = 'gpt-4o-mini';
         }

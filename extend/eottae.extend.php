@@ -5,6 +5,7 @@ if (!defined('_GNUBOARD_')) {
 
 include_once G5_PATH.'/extend/eottae.config.php';
 include_once G5_LIB_PATH.'/eottae.lib.php';
+include_once G5_LIB_PATH.'/eottae-ai-generate.lib.php';
 include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
 include_once G5_LIB_PATH.'/eottae-ad.lib.php';
 include_once G5_LIB_PATH.'/eottae-shop-seo.lib.php';
@@ -315,6 +316,17 @@ add_event('board_head_before', 'eottae_on_promo_board_view', 20, 3);
 
 if (eottae_should_load_assets()) {
     add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae.css">', 20);
+    $eottae_ai_cfg = function_exists('eottae_ai_generate_bootstrap_config')
+        ? eottae_ai_generate_bootstrap_config()
+        : array('enabled' => false, 'api_key' => '');
+    add_javascript(
+        '<script>window.__EOTTae__='.json_encode(array(
+            'url' => G5_URL,
+            'procBase' => G5_URL.'/proc',
+            'aiEnabled' => !empty($eottae_ai_cfg['enabled']) && !empty($eottae_ai_cfg['api_key']),
+        ), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT).';</script>',
+        18
+    );
     add_javascript('<script src="'.G5_JS_URL.'/eottae.js" defer></script>', 20);
     if (function_exists('eottae_coupon_ensure_ready')) {
         eottae_coupon_ensure_ready();

@@ -4,6 +4,7 @@
  */
 include_once dirname(__DIR__).'/common.php';
 include_once G5_LIB_PATH.'/eottae.lib.php';
+include_once G5_LIB_PATH.'/eottae-ai-generate.lib.php';
 include_once G5_LIB_PATH.'/eottae-business-snippet.lib.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -22,22 +23,9 @@ if (!function_exists('g5site_cfg') && is_file(G5_PATH.'/_site.config.php')) {
     include_once G5_PATH.'/_site.config.php';
 }
 
-$enabled = function_exists('g5site_cfg_bool') ? g5site_cfg_bool('ai_generate_enabled', false) : false;
-$api_key = function_exists('g5site_cfg') ? trim((string) g5site_cfg('ai_generate_api_key', '')) : '';
-$model = function_exists('g5site_cfg') ? trim((string) g5site_cfg('ai_generate_model', 'gpt-4o-mini')) : 'gpt-4o-mini';
-if ($model === '') {
-    $model = 'gpt-4o-mini';
-}
-
-if (!$enabled || $api_key === '') {
-    echo json_encode(array('success' => false, 'message' => 'AI 자동생성 API 키가 설정되지 않았습니다.'), JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-if (!function_exists('curl_init')) {
-    echo json_encode(array('success' => false, 'message' => '서버 PHP cURL 확장이 필요합니다.'), JSON_UNESCAPED_UNICODE);
-    exit;
-}
+$ai_cfg = eottae_ai_generate_require_ready();
+$api_key = $ai_cfg['api_key'];
+$model = $ai_cfg['model'];
 
 $topic = isset($_POST['topic']) ? trim(strip_tags((string) $_POST['topic'])) : '';
 $tone = isset($_POST['tone']) ? trim(strip_tags((string) $_POST['tone'])) : 'friendly';
@@ -116,8 +104,9 @@ curl_close($ch);
 if ($raw === false || $raw === '' || $http_code < 200 || $http_code >= 300) {
     echo json_encode(array(
         'success' => false,
-        'message' => 'AI 홍보 문구 생성에 실패했습니다.',
-        'debug' => $curl_error !== '' ? $curl_error : 'HTTP '.$http_code,
+        'message' => function_exists('eottae_ai_generate_openai_error_message')
+            ? eottae_ai_generate_openai_error_message($http_code, $raw, $curl_error)
+            : 'AI 홍보 문구 생성에 실패했습니다.',
     ), JSON_UNESCAPED_UNICODE);
     exit;
 }

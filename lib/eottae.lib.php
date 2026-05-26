@@ -2829,6 +2829,7 @@ if (!function_exists('eottae_shop_master_categories')) {
             '학원',
             '렌트카',
             '투어',
+            '골프',
             '세탁',
             '법률',
             '회계',
@@ -4147,6 +4148,7 @@ if (!function_exists('eottae_shop_default_cover_url')) {
             '마사지' => '1544161515-4ab6ce6db874',
             '렌트카' => '1449965408869-aa9dcba15532',
             '투어'   => '1506905925346-21bda4d32df4',
+            '골프'   => '1535131743360-94cfed6ab469',
         );
 
         $photo_id = isset($presets[$category]) ? $presets[$category] : '1518509562904-7fc873a70436';

@@ -95,14 +95,14 @@ if (!function_exists('eottae_public_group_chat_html')) {
                     <?php } else { ?>
                     <form class="public-group-chat__composer" id="eottae-public-chat-form" action="#" method="post">
                         <label class="sr-only" for="eottae-public-chat-input">메시지 입력</label>
-                        <textarea
-                            id="eottae-public-chat-input"
-                            class="public-group-chat__input"
-                            rows="2"
-                            maxlength="500"
-                            placeholder="세부 소식, 질문, 한마디를 남겨 보세요"
-                        ></textarea>
-                        <div class="public-group-chat__composer-actions">
+                        <div class="public-group-chat__composer-field">
+                            <textarea
+                                id="eottae-public-chat-input"
+                                class="public-group-chat__input"
+                                rows="2"
+                                maxlength="500"
+                                placeholder="세부 소식, 질문, 한마디를 남겨 보세요"
+                            ></textarea>
                             <button type="submit" class="public-group-chat__send" <?php echo empty($payload['can_send']) ? 'disabled' : ''; ?>>보내기</button>
                         </div>
                     </form>

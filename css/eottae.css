@@ -5741,8 +5741,139 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 }
 
 .eottae-guide-page__footer-link a {
-  color: #64748b;
+  color: #0369a1;
   font-weight: 700;
+  text-decoration: underline;
+}
+
+.eottae-guide-comic {
+  margin-bottom: 28px;
+  padding: 20px;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+}
+
+.eottae-guide-comic__head {
+  margin-bottom: 18px;
+}
+
+.eottae-guide-comic__title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.eottae-guide-comic__lead {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #64748b;
+}
+
+.eottae-guide-comic__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.eottae-guide-comic__panel {
+  margin: 0;
+}
+
+.eottae-guide-comic__figure {
+  margin: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  box-shadow: 0 2px 12px -4px rgba(15, 23, 42, 0.08);
+}
+
+.eottae-guide-comic__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  background: #fff;
+}
+
+.eottae-guide-comic__image--wide {
+  aspect-ratio: 3 / 2;
+}
+
+.eottae-guide-comic--story {
+  margin-top: 8px;
+  margin-bottom: 32px;
+}
+
+.eottae-guide-comic__caption {
+  padding: 14px 16px 16px;
+}
+
+.eottae-guide-comic__step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  margin-bottom: 8px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.eottae-guide-page--business .eottae-guide-comic__step {
+  background: #c2410c;
+}
+
+.eottae-guide-comic__panel-title {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.eottae-guide-comic__panel-desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #64748b;
+}
+
+@media (min-width: 640px) {
+  .eottae-guide-comic__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  .eottae-guide-comic {
+    padding: 24px;
+  }
+
+  .eottae-guide-comic__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .eottae-guide-comic--5 .eottae-guide-comic__grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) and (max-width: 1199px) {
+  .eottae-guide-comic--5 .eottae-guide-comic__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .coupon-guide-callout {
@@ -7756,7 +7887,10 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   }
 
   .eottae-home-hero-grid--3col > .home-hero-chat-column {
-    align-self: start;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
   }
 }
 
@@ -8576,6 +8710,7 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 
 .home-hero-chat-column {
   min-width: 0;
+  height: 100%;
 }
 
 .home-hero-talk-legacy-list {
@@ -8659,15 +8794,20 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 .public-group-chat--hero {
   width: 100%;
   margin-top: 0;
-  height: auto;
+  height: 100%;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .public-group-chat--hero .public-group-chat__inner {
   display: flex;
   flex-direction: column;
   gap: 0;
+  flex: 1 1 auto;
   min-height: 0;
-  height: auto;
+  height: 100%;
   padding: 14px 14px 12px;
   border-radius: 20px;
   background: #fff;
@@ -8723,7 +8863,9 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 }
 
 .public-group-chat--hero .public-group-chat__panel {
-  flex: 0 1 auto;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
   min-height: 0;
   border: 0;
   box-shadow: none;
@@ -8732,8 +8874,9 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 }
 
 .public-group-chat--hero .public-group-chat__messages {
-  min-height: 72px;
-  max-height: 132px;
+  flex: 1 1 auto;
+  min-height: 120px;
+  max-height: none;
   padding: 10px;
   gap: 8px;
   background: transparent;
@@ -8754,6 +8897,7 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 }
 
 .public-group-chat--hero .public-group-chat__composer {
+  flex: 0 0 auto;
   padding: 8px 10px 10px;
   background: #fff;
   border-top: 1px solid #eef2f6;
@@ -8769,17 +8913,19 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   font-size: 0.76rem;
 }
 
-.public-group-chat--hero .public-group-chat__input {
-  min-height: 44px;
-  padding: 8px 10px;
-  font-size: 0.82rem;
-  border-radius: 10px;
-  border-color: #e2e8f0;
+.public-group-chat--hero .public-group-chat__composer-field {
+  padding: 6px 6px 6px 10px;
 }
 
-.public-group-chat--hero .public-group-chat__send,
-.public-group-chat--hero .public-group-chat__action {
-  min-height: 34px;
+.public-group-chat--hero .public-group-chat__composer-field .public-group-chat__input {
+  min-height: 36px;
+  max-height: 72px;
+  padding: 6px 0;
+  font-size: 0.82rem;
+}
+
+.public-group-chat--hero .public-group-chat__composer-field .public-group-chat__send {
+  min-height: 32px;
   padding: 0 12px;
   font-size: 12px;
 }
@@ -9024,6 +9170,47 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   padding: 12px;
   border-top: 1px solid #e2e8f0;
   background: #fff;
+}
+
+.public-group-chat__composer-field {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 8px 8px 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.public-group-chat__composer-field:focus-within {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+}
+
+.public-group-chat__composer-field .public-group-chat__input {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  min-height: 44px;
+  max-height: 120px;
+  margin: 0;
+  padding: 4px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  resize: none;
+}
+
+.public-group-chat__composer-field .public-group-chat__input:focus {
+  outline: none;
+}
+
+.public-group-chat__composer-field .public-group-chat__send {
+  flex: 0 0 auto;
+  min-height: 36px;
+  margin: 0;
 }
 
 .public-group-chat__composer--login,

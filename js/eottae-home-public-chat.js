@@ -410,6 +410,16 @@
         event.preventDefault();
         sendMessage(section, form);
       });
+
+      var input = form.querySelector('#eottae-public-chat-input');
+      if (input) {
+        input.addEventListener('keydown', function (event) {
+          if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage(section, form);
+          }
+        });
+      }
     }
 
     poll(section);

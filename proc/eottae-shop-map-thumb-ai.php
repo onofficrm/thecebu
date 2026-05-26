@@ -4,24 +4,19 @@
  */
 require_once dirname(__FILE__).'/_eottae_json_bootstrap.php';
 
+include_once G5_LIB_PATH.'/eottae-ai-generate.lib.php';
+
 if (empty($is_member)) {
     eottae_json_send(array('success' => false, 'message' => '로그인 후 이용해 주세요.'));
-}
-
-$enabled = function_exists('g5site_cfg_bool') ? g5site_cfg_bool('ai_generate_enabled', false) : false;
-$api_key = function_exists('g5site_cfg') ? trim((string) g5site_cfg('ai_generate_api_key', '')) : '';
-$model = function_exists('g5site_cfg') ? trim((string) g5site_cfg('ai_generate_image_model', 'gpt-image-1')) : 'gpt-image-1';
-if ($model === '') {
-    $model = 'gpt-image-1';
-}
-
-if (!$enabled || $api_key === '') {
-    eottae_json_send(array('success' => false, 'message' => 'AI 이미지 생성 API 키가 설정되지 않았습니다.'));
 }
 
 if (!function_exists('curl_init')) {
     eottae_json_send(array('success' => false, 'message' => '서버 PHP cURL 확장이 필요합니다.'));
 }
+
+$ai_cfg = eottae_ai_generate_require_ready();
+$api_key = $ai_cfg['api_key'];
+$model = $ai_cfg['image_model'];
 
 $bo_table = isset($_POST['bo_table']) ? preg_replace('/[^a-z0-9_]/i', '', (string) $_POST['bo_table']) : '';
 if ($bo_table === '' || !function_exists('eottae_is_shop_board') || !eottae_is_shop_board($bo_table)) {
