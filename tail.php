@@ -7,8 +7,10 @@ if (defined('G5_THEME_PATH')) {
 }
 
 if (G5_IS_MOBILE && !defined('EOTTAE_MOBILE_SITE_TAIL')) {
-    include_once(G5_MOBILE_PATH.'/tail.php');
-    return;
+    include G5_MOBILE_PATH.'/tail.php';
+    if (!defined('EOTTAE_MOBILE_SITE_TAIL')) {
+        return;
+    }
 }
 
 if (!isset($site_config) && is_file(G5_PATH.'/_site.config.php')) {
