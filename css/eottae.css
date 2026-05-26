@@ -5779,11 +5779,26 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 
 .eottae-guide-comic__grid {
   list-style: none;
-  margin: 0;
+  margin: 0 auto;
   padding: 0;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: 20px;
+  width: min(100%, 36rem);
+  max-width: 68%;
+}
+
+@media (max-width: 639px) {
+  .eottae-guide-comic__grid {
+    max-width: 92%;
+    width: 100%;
+  }
+}
+
+@media (min-width: 1200px) {
+  .eottae-guide-comic__grid {
+    max-width: min(62%, 40rem);
+  }
 }
 
 .eottae-guide-comic__panel {
@@ -5803,13 +5818,13 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 3;
   object-fit: cover;
   background: #fff;
 }
 
 .eottae-guide-comic__image--wide {
-  aspect-ratio: 3 / 2;
+  aspect-ratio: 16 / 10;
 }
 
 .eottae-guide-comic--story {
@@ -5855,29 +5870,9 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   color: #64748b;
 }
 
-@media (min-width: 640px) {
-  .eottae-guide-comic__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 @media (min-width: 960px) {
   .eottae-guide-comic {
     padding: 24px;
-  }
-
-  .eottae-guide-comic__grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .eottae-guide-comic--5 .eottae-guide-comic__grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 960px) and (max-width: 1199px) {
-  .eottae-guide-comic--5 .eottae-guide-comic__grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
