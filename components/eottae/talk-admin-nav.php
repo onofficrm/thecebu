@@ -95,6 +95,11 @@ if (!function_exists('eottae_talkroom_render_admin_nav')) {
             </a>
             <a href="<?php echo eottae_talkroom_ai_admin_url(); ?>" class="talk-admin-nav__item<?php echo $active === 'ai' ? ' is-active' : ''; ?>">AI 도우미 설정</a>
             <a href="<?php echo eottae_talkroom_ai_logs_url(); ?>" class="talk-admin-nav__item<?php echo $active === 'ai_logs' ? ' is-active' : ''; ?>">AI 발언 로그</a>
+            <?php if (function_exists('eottae_public_ai_admin_settings_url')) {
+                include_once G5_LIB_PATH.'/eottae-public-ai.lib.php';
+                ?>
+            <a href="<?php echo eottae_public_ai_admin_settings_url(); ?>" class="talk-admin-nav__item<?php echo $active === 'public_ai' ? ' is-active' : ''; ?>">공개톡 AI</a>
+            <?php } ?>
         </nav>
         <?php
     }
@@ -126,6 +131,12 @@ if (!function_exists('eottae_talkroom_render_mypage_super_admin_talk_tools')) {
                 <a href="<?php echo eottae_talkroom_admin_kicked_url(); ?>" class="my-talk-btn my-talk-btn--primary my-talk-btn--sm">강퇴 회원<?php if ($kicked_total > 0) { ?> (<?php echo number_format($kicked_total); ?>)<?php } ?></a>
                 <a href="<?php echo eottae_talkroom_admin_reports_url('pending'); ?>" class="my-talk-btn my-talk-btn--ghost my-talk-btn--sm">신고 관리<?php if ($report_pending > 0) { ?> (<?php echo number_format($report_pending); ?>)<?php } ?></a>
                 <a href="<?php echo eottae_talkroom_ai_admin_url(); ?>" class="my-talk-btn my-talk-btn--ghost my-talk-btn--sm">AI 설정</a>
+                <?php if (function_exists('eottae_public_ai_admin_settings_url')) {
+                    include_once G5_LIB_PATH.'/eottae-public-ai.lib.php';
+                    $public_ai_pending = eottae_public_ai_pending_count();
+                    ?>
+                <a href="<?php echo eottae_public_ai_admin_settings_url(); ?>" class="my-talk-btn my-talk-btn--ghost my-talk-btn--sm">공개톡 AI<?php if ($public_ai_pending > 0) { ?> (<?php echo number_format($public_ai_pending); ?>)<?php } ?></a>
+                <?php } ?>
             </div>
 
             <div class="my-talk-super-admin__kicked">

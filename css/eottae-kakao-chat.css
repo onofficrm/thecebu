@@ -168,8 +168,23 @@
   color: var(--kakao-text-muted);
 }
 
-.public-group-chat--kakao .public-group-chat__message--ai .talk-ai-msg__badge {
+.public-group-chat--kakao .public-group-chat__message--ai .talk-ai-msg__badge,
+.public-group-chat--kakao .public-ai-message .public-ai-badge,
+.public-group-chat--kakao .public-ai-message .talk-ai-msg__badge {
   margin: 0;
+}
+
+/* 홈 공개톡 AI 메시지 구분 (3단계 발행 연동 준비) */
+.public-group-chat--kakao .public-ai-message .public-group-chat__bubble {
+  border: 1px solid rgba(14, 165, 233, 0.18);
+  background: #ffffff;
+}
+
+.public-group-chat--kakao .public-ai-message .public-ai-badge,
+.public-group-chat--kakao .public-ai-message .talk-ai-msg__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .public-group-chat--kakao .public-group-chat__bubble-row {

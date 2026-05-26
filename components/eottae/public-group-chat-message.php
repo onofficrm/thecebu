@@ -22,7 +22,7 @@ if (!function_exists('eottae_public_group_chat_message_html')) {
             $item_class .= ' public-group-chat__message--mine';
         }
         if ($is_ai) {
-            $item_class .= ' public-group-chat__message--ai is-talk-ai-message';
+            $item_class .= ' public-group-chat__message--ai public-ai-message is-talk-ai-message';
         }
 
         $author = $is_ai
@@ -37,8 +37,10 @@ if (!function_exists('eottae_public_group_chat_message_html')) {
             <div class="public-group-chat__message-inner">
                 <?php if (!$is_mine) { ?>
                 <div class="public-group-chat__meta">
-                    <?php if ($is_ai) { ?>
-                    <?php echo eottae_talkroom_ai_message_render_badge($message, 'sm'); ?>
+                    <?php if ($is_ai) {
+                        $ai_badge = eottae_talkroom_ai_message_render_badge($message, 'sm');
+                        echo str_replace('talk-ai-msg__badge', 'talk-ai-msg__badge public-ai-badge', $ai_badge);
+                    } ?>
                     <?php } else { ?>
                     <strong class="public-group-chat__author"><?php echo $author; ?></strong>
                     <?php } ?>

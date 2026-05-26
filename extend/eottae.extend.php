@@ -45,6 +45,12 @@ if (function_exists('eottae_calendar_ensure_schema')) {
 if (function_exists('eottae_talkroom_ai_ensure_schema')) {
     eottae_talkroom_ai_ensure_schema();
 }
+if (is_file(G5_LIB_PATH.'/eottae-public-ai.lib.php')) {
+    include_once G5_LIB_PATH.'/eottae-public-ai.lib.php';
+    if (function_exists('eottae_public_ai_ensure_schema')) {
+        eottae_public_ai_ensure_schema();
+    }
+}
 if (function_exists('eottae_ad_ensure_table')) {
     eottae_ad_ensure_table();
 }
@@ -404,6 +410,9 @@ if (!function_exists('eottae_talkroom_should_load_ui')) {
             'eottae-admin-talk-reports.php',
             'eottae-admin-talk-ai.php',
             'eottae-admin-talk-ai-logs.php',
+            'eottae-admin-public-ai.php',
+            'eottae-admin-public-ai-candidates.php',
+            'eottae-admin-public-ai-logs.php',
         );
         if (in_array($script, $talk_scripts, true)) {
             return true;
@@ -516,6 +525,9 @@ if (!function_exists('eottae_talkroom_admin_shell_scripts')) {
             'eottae-admin-review-deletes.php',
             'eottae-admin-promo-coupons.php',
             'eottae-admin-calendar-reports.php',
+            'eottae-admin-public-ai.php',
+            'eottae-admin-public-ai-candidates.php',
+            'eottae-admin-public-ai-logs.php',
         );
     }
 }
