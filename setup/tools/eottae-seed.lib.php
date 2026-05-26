@@ -978,6 +978,38 @@ if (!function_exists('eottae_seed_badachamchi_reviews')) {
     }
 }
 
+if (!function_exists('eottae_seed_dawon_reviews')) {
+    /**
+     * 다원(shop wr_id=11) 샘플 리뷰 47건 — 평점 5.0
+     *
+     * @param int $shop_wr_id
+     * @return array<int, array<string, mixed>>
+     */
+    function eottae_seed_dawon_reviews($shop_wr_id = 11)
+    {
+        global $g5;
+
+        $shop_wr_id = (int) $shop_wr_id;
+        if ($shop_wr_id < 1) {
+            $shop_table = $g5['write_prefix'].EOTTae_SHOP_TABLE;
+            $shop_row = sql_fetch(" select wr_id from {$shop_table} where wr_is_comment = 0 and wr_subject like '%다원%' limit 1 ");
+            $shop_wr_id = !empty($shop_row['wr_id']) ? (int) $shop_row['wr_id'] : 0;
+        }
+
+        $items_file = __DIR__.'/eottae-seed-dawon-reviews-items.php';
+        if (!is_file($items_file)) {
+            return array(eottae_seed_log('review', 'dawon review items file missing', false));
+        }
+
+        $items = include $items_file;
+        if (!is_array($items)) {
+            return array(eottae_seed_log('review', 'dawon review items invalid', false));
+        }
+
+        return eottae_seed_shop_reviews_from_items($shop_wr_id, $items);
+    }
+}
+
 if (!function_exists('eottae_seed_sample_events')) {
     function eottae_seed_sample_events()
 
