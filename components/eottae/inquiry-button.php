@@ -89,7 +89,6 @@ if (!function_exists('eottae_inquiry_buttons_html')) {
                     <a href="<?php echo $map_href; ?>" class="inquiry-button__btn inquiry-button__btn--map inquiry-button__btn--outline" target="_blank" rel="noopener noreferrer">길찾기</a>
                     <button type="button" class="inquiry-button__btn inquiry-button__btn--share inquiry-button__btn--share-compact" data-share-url="<?php echo htmlspecialchars($share_url, ENT_QUOTES, 'UTF-8'); ?>" aria-label="공유하기">
                         <span class="inquiry-button__icon"><?php echo eottae_inquiry_detail_icon_svg('share'); ?></span>
-                        <span class="inquiry-button__label">공유하기</span>
                     </button>
                 </div>
                 <?php

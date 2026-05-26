@@ -163,22 +163,24 @@ if (!function_exists('eottae_shop_list_card_html')) {
             <div class="shop-list-card__body">
                 <div class="shop-list-card__head">
                     <h3 class="shop-list-card__title"><a href="<?php echo $href; ?>"><?php echo $shop['name'] ?: get_text($row['subject']); ?></a></h3>
-                    <div class="shop-list-card__tags">
-                        <?php if ($shop['category']) { ?><span class="shop-list-card__tag shop-list-card__tag--cate"><?php echo $shop['category']; ?></span><?php } ?>
-                        <?php if ($distance_label !== '') { ?>
-                        <span class="shop-list-card__tag shop-list-card__distance" data-shop-distance data-lat="<?php echo htmlspecialchars($shop['lat'], ENT_QUOTES, 'UTF-8'); ?>" data-lng="<?php echo htmlspecialchars($shop['lng'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo $distance_label; ?></span>
-                        <?php } elseif ($shop['region']) { ?>
-                        <span class="shop-list-card__tag shop-list-card__tag--region"><?php echo $shop['region']; ?></span>
-                        <?php } ?>
+                    <div class="shop-list-card__meta">
+                        <p class="shop-list-card__rating">
+                            <span class="shop-list-card__stars">★ <?php echo number_format($summary['average'], 1); ?></span>
+                            <span class="shop-list-card__reviews">리뷰 <?php echo number_format($summary['count']); ?></span>
+                        </p>
+                        <div class="shop-list-card__tags">
+                            <?php if ($shop['category']) { ?><span class="shop-list-card__tag shop-list-card__tag--cate"><?php echo $shop['category']; ?></span><?php } ?>
+                            <?php if ($distance_label !== '') { ?>
+                            <span class="shop-list-card__tag shop-list-card__distance" data-shop-distance data-lat="<?php echo htmlspecialchars($shop['lat'], ENT_QUOTES, 'UTF-8'); ?>" data-lng="<?php echo htmlspecialchars($shop['lng'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo $distance_label; ?></span>
+                            <?php } elseif ($shop['region']) { ?>
+                            <span class="shop-list-card__tag shop-list-card__tag--region"><?php echo $shop['region']; ?></span>
+                            <?php } ?>
+                        </div>
                     </div>
                 </div>
                 <?php if ($snippet !== '') { ?>
                 <p class="shop-list-card__desc"><?php echo $snippet; ?></p>
                 <?php } ?>
-                <p class="shop-list-card__rating">
-                    <span class="shop-list-card__stars">★ <?php echo number_format($summary['average'], 1); ?></span>
-                    <span class="shop-list-card__reviews">리뷰 <?php echo number_format($summary['count']); ?></span>
-                </p>
                 <?php
                 eottae_render_inquiry_buttons('list', array(
                     'phone'         => $shop['phone'],

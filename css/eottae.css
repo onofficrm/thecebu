@@ -1523,6 +1523,8 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 .shop-list-card {
   display: grid;
   grid-template-columns: 108px minmax(0, 1fr);
+  grid-template-rows: 1fr;
+  align-items: stretch;
   gap: 14px;
   padding: 14px;
   border: 1px solid var(--shop-list-border);
@@ -1553,9 +1555,10 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   border-radius: 16px;
   overflow: hidden;
   width: 108px;
-  aspect-ratio: 1 / 1;
+  min-height: 108px;
+  height: 100%;
   flex-shrink: 0;
-  align-self: start;
+  align-self: stretch;
   background: linear-gradient(145deg, #f8fbff, #eef6ff);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.8);
 }
@@ -1606,15 +1609,26 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-height: 108px;
 }
 
 .shop-list-card__head {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px 8px;
   margin-bottom: 0;
+}
+
+.shop-list-card__meta {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .shop-list-card__tags {
@@ -1624,7 +1638,7 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   justify-content: flex-end;
   gap: 6px;
   margin-bottom: 0;
-  margin-left: auto;
+  margin-left: 0;
 }
 
 .shop-list-card__tag,
@@ -1694,35 +1708,40 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 
 .shop-list-card__rating {
   margin: 0;
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 1.3;
   color: #94a3b8;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .shop-list-card__stars {
   color: #d97706;
   font-weight: 700;
-  margin-right: 6px;
+  margin-right: 4px;
 }
 
 .shop-list-card__reviews {
   color: #94a3b8;
+  font-weight: 600;
 }
 
 .inquiry-button--list.shop-list-card__actions {
   display: grid;
-  grid-template-columns: 4fr 4fr 2fr;
-  gap: 7px;
+  grid-template-columns: 1fr 1fr 40px;
+  gap: 6px;
   margin-top: auto;
-  padding-top: 6px;
+  padding-top: 4px;
 }
 
 .inquiry-button--list .inquiry-button__btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 42px;
-  border-radius: 12px;
-  font-size: 12px;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: -0.02em;
   text-decoration: none;
@@ -1747,66 +1766,71 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 
 .inquiry-button--list .inquiry-button__btn--primary {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 42%),
-    linear-gradient(165deg, #38bdf8 0%, #0ea5e9 48%, #0284c7 100%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 40%),
+    linear-gradient(165deg, #3f3f46 0%, #27272a 52%, #18181b 100%);
   color: #fff;
-  border-color: rgba(2, 132, 199, 0.35);
+  border-color: #09090b;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.35) inset,
-    0 8px 20px rgba(14, 165, 233, 0.22),
-    0 2px 4px rgba(15, 23, 42, 0.06);
-  text-shadow: 0 1px 0 rgba(2, 105, 162, 0.35);
+    0 1px 0 rgba(255, 255, 255, 0.14) inset,
+    0 4px 12px rgba(24, 24, 27, 0.22),
+    0 1px 2px rgba(15, 23, 42, 0.08);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
 }
 
-.inquiry-button--list .inquiry-button__btn--outline {
-  background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
-  color: #334155;
-  border-color: rgba(148, 163, 184, 0.45);
+.inquiry-button--list .inquiry-button__btn--outline,
+.inquiry-button--list .inquiry-button__btn--map {
+  background:
+    linear-gradient(180deg, #fffef0 0%, #fff9c4 35%, #fee500 100%);
+  color: #191919;
+  border-color: #f0d000;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 4px 14px rgba(15, 23, 42, 0.06);
+    0 1px 0 rgba(255, 255, 255, 0.65) inset,
+    0 3px 10px rgba(254, 229, 0, 0.28),
+    0 1px 2px rgba(15, 23, 42, 0.06);
 }
 
 .inquiry-button--list .inquiry-button__btn--primary:hover {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0) 42%),
-    linear-gradient(165deg, #7dd3fc 0%, #0ea5e9 45%, #0369a1 100%);
-  border-color: rgba(3, 105, 161, 0.4);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 40%),
+    linear-gradient(165deg, #52525b 0%, #3f3f46 48%, #27272a 100%);
+  border-color: #18181b;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.4) inset,
-    0 10px 24px rgba(14, 165, 233, 0.28),
-    0 3px 6px rgba(15, 23, 42, 0.08);
+    0 1px 0 rgba(255, 255, 255, 0.18) inset,
+    0 6px 16px rgba(24, 24, 27, 0.28),
+    0 2px 4px rgba(15, 23, 42, 0.1);
 }
 
-.inquiry-button--list .inquiry-button__btn--outline:hover {
-  background: linear-gradient(180deg, #fff 0%, #f1f5f9 100%);
-  color: #0f172a;
-  border-color: rgba(100, 116, 139, 0.5);
+.inquiry-button--list .inquiry-button__btn--outline:hover,
+.inquiry-button--list .inquiry-button__btn--map:hover {
+  background:
+    linear-gradient(180deg, #fffff5 0%, #fff59d 40%, #ffd21f 100%);
+  color: #191919;
+  border-color: #e6c200;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 1) inset,
-    0 6px 16px rgba(15, 23, 42, 0.08);
+    0 1px 0 rgba(255, 255, 255, 0.75) inset,
+    0 5px 14px rgba(254, 229, 0, 0.35),
+    0 2px 4px rgba(15, 23, 42, 0.08);
 }
 
 .inquiry-button--list .inquiry-button__btn--share-compact {
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-  padding: 6px 4px;
-  background: linear-gradient(180deg, #fff 0%, #f1f5f9 100%);
-  color: #475569;
-  border-color: rgba(148, 163, 184, 0.4);
+  min-width: 40px;
+  width: 100%;
+  padding: 0;
+  background: linear-gradient(180deg, #fff 0%, #f4f4f5 100%);
+  color: #3f3f46;
+  border-color: rgba(161, 161, 170, 0.55);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.95) inset,
-    0 4px 12px rgba(15, 23, 42, 0.05);
+    0 2px 8px rgba(15, 23, 42, 0.06);
 }
 
 .inquiry-button--list .inquiry-button__btn--share-compact:hover {
-  background: linear-gradient(180deg, #fff 0%, #eef2ff 100%);
-  border-color: rgba(129, 140, 248, 0.45);
-  color: #3730a3;
+  background: linear-gradient(180deg, #fff 0%, #e4e4e7 100%);
+  border-color: rgba(113, 113, 122, 0.6);
+  color: #18181b;
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 1) inset,
-    0 6px 14px rgba(99, 102, 241, 0.12);
+    0 4px 12px rgba(15, 23, 42, 0.1);
 }
 
 .inquiry-button--list .inquiry-button__btn--share-compact .inquiry-button__icon {
@@ -1817,16 +1841,12 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 }
 
 .inquiry-button--list .inquiry-button__btn--share-compact .inquiry-button__icon svg {
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
 }
 
 .inquiry-button--list .inquiry-button__btn--share-compact .inquiry-button__label {
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
+  display: none;
 }
 
 /* ── Home map (builder bridge) ── */
