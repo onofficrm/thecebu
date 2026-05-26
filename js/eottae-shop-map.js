@@ -277,10 +277,25 @@
     });
   }
 
+  function listFiltersFromUrl() {
+    var u = new URL(global.location.href);
+    var keys = ['sca', 'sfl', 'stx', 'sst', 'sod', 'eottae_lat', 'eottae_lng'];
+    var params = new URLSearchParams();
+    keys.forEach(function (key) {
+      var val = u.searchParams.get(key);
+      if (val !== null && val !== '') {
+        params.set(key, val);
+      }
+    });
+    return params;
+  }
+
   function ShopMapPanel(root) {
     this.root = root;
     this.canvas = root.querySelector('.shop-map-panel__map');
     this.locateBtn = root.querySelector('#shopMapLocateBtn');
+    this.markersApi = root.getAttribute('data-map-markers-api') || '';
+    this.boTable = root.getAttribute('data-map-bo-table') || 'shop';
     this.locations = parseLocations(root.getAttribute('data-shop-locations'))
       .map(normalizeLoc)
       .filter(Boolean);
@@ -295,6 +310,29 @@
     this.infoWindow = null;
   }
 
+  ShopMapPanel.prototype.fetchAllMarkers = function () {
+    var self = this;
+    if (!self.markersApi) {
+      return Promise.resolve();
+    }
+
+    var params = listFiltersFromUrl();
+    params.set('action', 'map_markers');
+    params.set('bo_table', self.boTable);
+
+    return fetch(self.markersApi + '?' + params.toString(), { credentials: 'same-origin' })
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (data) {
+        if (!data || !data.success || !Array.isArray(data.locations)) {
+          return;
+        }
+        self.locations = data.locations.map(normalizeLoc).filter(Boolean);
+      })
+      .catch(function () {});
+  };
+
   ShopMapPanel.prototype.applyCardThumbnailFallbacks = function () {
     this.locations.forEach(function (loc) {
       var cardThumbnail = cardThumbnailById(loc.id);
@@ -308,28 +346,36 @@
   };
 
   ShopMapPanel.prototype.init = function () {
-    if (!this.canvas || !global.google || !global.google.maps) {
+    var self = this;
+    if (!self.canvas || !global.google || !global.google.maps) {
       return;
     }
 
-    this.map = new global.google.maps.Map(this.canvas, {
-      center: this.center,
-      zoom: this.zoom,
-      zoomControl: true,
-      zoomControlOptions: {
-        position: global.google.maps.ControlPosition.RIGHT_CENTER
-      },
-      mapTypeControl: false,
-      streetViewControl: false,
-      fullscreenControl: true
+    self.fetchAllMarkers().then(function () {
+      self.map = new global.google.maps.Map(self.canvas, {
+        center: self.center,
+        zoom: self.zoom,
+        zoomControl: true,
+        zoomControlOptions: {
+          position: global.google.maps.ControlPosition.RIGHT_CENTER
+        },
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: true
+      });
+      self.infoWindow = new global.google.maps.InfoWindow({ maxWidth: 240 });
+      self.applyCardThumbnailFallbacks();
+      self.renderMarkers();
+      self.bindCardThumbRefresh();
+      self.bindEvents();
+      self.bindCardSync();
+      self.root.classList.add('is-live');
+
+      global.document.addEventListener('eottae:shop-list-appended', function () {
+        self.applyCardThumbnailFallbacks();
+        self.bindCardSync();
+      });
     });
-    this.infoWindow = new global.google.maps.InfoWindow({ maxWidth: 240 });
-    this.applyCardThumbnailFallbacks();
-    this.renderMarkers();
-    this.bindCardThumbRefresh();
-    this.bindEvents();
-    this.bindCardSync();
-    this.root.classList.add('is-live');
   };
 
   ShopMapPanel.prototype.clearMarkers = function () {
@@ -413,19 +459,33 @@
 
   ShopMapPanel.prototype.bindCardSync = function () {
     var self = this;
-    var cards = document.querySelectorAll('[data-shop-card]');
-    cards.forEach(function (card) {
-      card.addEventListener('mouseenter', function () {
-        var id = card.getAttribute('data-wr-id');
-        document.querySelectorAll('[data-shop-card].is-map-focus').forEach(function (el) {
-          el.classList.remove('is-map-focus');
-        });
-        card.classList.add('is-map-focus');
-        self.focusLocationById(id);
+    if (self._cardSyncBound) {
+      return;
+    }
+    self._cardSyncBound = true;
+
+    var listRoot = document.querySelector('[data-shop-infinite-list]') || document;
+    listRoot.addEventListener('mouseover', function (e) {
+      var card = e.target.closest && e.target.closest('[data-shop-card]');
+      if (!card || !listRoot.contains(card)) {
+        return;
+      }
+      var id = card.getAttribute('data-wr-id');
+      document.querySelectorAll('[data-shop-card].is-map-focus').forEach(function (el) {
+        el.classList.remove('is-map-focus');
       });
-      card.addEventListener('mouseleave', function () {
-        card.classList.remove('is-map-focus');
-      });
+      card.classList.add('is-map-focus');
+      self.focusLocationById(id);
+    });
+    listRoot.addEventListener('mouseout', function (e) {
+      var card = e.target.closest && e.target.closest('[data-shop-card]');
+      if (!card || !listRoot.contains(card)) {
+        return;
+      }
+      if (card.contains(e.relatedTarget)) {
+        return;
+      }
+      card.classList.remove('is-map-focus');
     });
   };
 

@@ -11,6 +11,9 @@ $eottae_footer_shop_url = function_exists('eottae_shop_list_url') ? eottae_shop_
 $eottae_footer_shop_write = G5_BBS_URL.'/write.php?bo_table='.EOTTae_SHOP_TABLE;
 $eottae_footer_community = function_exists('eottae_community_list_url') ? eottae_community_list_url() : G5_BBS_URL.'/board.php?bo_table='.EOTTae_COMMUNITY_TABLE;
 $eottae_footer_admin_email = 'jong8040@gmail.com';
+$eottae_footer_talk_landing = G5_URL.'/talk/ai.php';
+$eottae_footer_coupon_guide = G5_URL.'/page/eottae-coupon-guide.php';
+$eottae_footer_business_coupon_guide = G5_URL.'/page/eottae-business-coupon-guide.php';
 $eottae_footer_year = date('Y');
 ?>
 
@@ -38,13 +41,20 @@ $eottae_footer_year = date('Y');
                     </ul>
                 </nav>
 
+                <nav class="eottae-gnb-footer__col" aria-label="서비스 안내">
+                    <h3 class="eottae-gnb-footer__heading">서비스 안내</h3>
+                    <ul class="eottae-gnb-footer__links">
+                        <li><a href="<?php echo $eottae_footer_talk_landing; ?>">세부톡 AI 도우미</a></li>
+                        <li><a href="<?php echo $eottae_footer_coupon_guide; ?>">쿠폰 사용 방법</a></li>
+                        <li><a href="<?php echo $eottae_footer_business_coupon_guide; ?>">쿠폰 발행 방법 (사업자)</a></li>
+                    </ul>
+                </nav>
+
                 <div class="eottae-gnb-footer__col">
                     <h3 class="eottae-gnb-footer__heading">고객지원</h3>
                     <ul class="eottae-gnb-footer__links">
                         <li><span>사이트관리자</span></li>
                         <li><a href="mailto:<?php echo get_text($eottae_footer_admin_email); ?>"><?php echo get_text($eottae_footer_admin_email); ?></a></li>
-                        <li><a href="<?php echo G5_URL; ?>/page/eottae-coupon-guide.php">쿠폰 사용 안내</a></li>
-                        <li><a href="<?php echo G5_URL; ?>/page/eottae-business-coupon-guide.php">사업자 쿠폰 발행 안내</a></li>
                     </ul>
                 </div>
             </div>

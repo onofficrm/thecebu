@@ -21,6 +21,7 @@ body.talkroom-ui {
   --talkroom-radius-md: 12px;
   --talkroom-shadow: 0 2px 14px rgba(15, 23, 42, 0.06);
   --talkroom-touch: 44px;
+  --talkroom-mobile-bottom: calc(var(--eottae-bottom-nav-h, 64px) + env(safe-area-inset-bottom, 0px));
   background: var(--talkroom-bg);
 }
 
@@ -227,6 +228,18 @@ body.talkroom-ui .talk-room-card__avatar {
 
 body.talkroom-ui .talk-room-card__title {
   font-size: 16px;
+  min-width: 0;
+  word-break: break-word;
+}
+
+body.talkroom-ui .talk-room-card__head {
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px 8px;
+}
+
+body.talkroom-ui .talk-room-card__body {
+  min-width: 0;
 }
 
 body.talkroom-ui .talk-room-card__stats {
@@ -367,6 +380,11 @@ body.talkroom-ui .talk-room-detail__hero {
   box-shadow: var(--talkroom-shadow);
 }
 
+body.talkroom-ui .talk-room-detail__head {
+  flex: 1;
+  min-width: 0;
+}
+
 body.talkroom-ui .talk-room-detail__avatar {
   width: 72px;
   height: 72px;
@@ -480,13 +498,21 @@ body.talkroom-ui .talk-room-detail__actions {
 @media (max-width: 639px) {
   body.talkroom-ui .talk-room-detail__actions {
     position: sticky;
-    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(8px + var(--talkroom-mobile-bottom));
     z-index: 20;
+    margin-left: 0;
+    margin-right: 0;
   }
 
   body.talkroom-ui .talk-room-detail__actions .talk-page__btn {
-    flex: 1 1 auto;
+    flex: 1 1 calc(50% - 5px);
     justify-content: center;
+    min-width: 0;
+  }
+
+  body.talkroom-ui .talk-room-detail__actions .talk-page__btn--primary,
+  body.talkroom-ui .talk-room-detail__actions .talk-page__btn--manage {
+    flex: 1 1 100%;
   }
 }
 
@@ -1784,5 +1810,129 @@ body.talk-admin-shell .talk-admin-applies__table td:first-child {
 body.talk-admin-shell .talk-admin-applies__table th:last-child,
 body.talk-admin-shell .talk-admin-applies__table td:last-child {
   padding-right: 18px;
+}
+
+/* ── 모바일 공통 (하단 탭 · overflow · 상세 레이아웃) ── */
+@media (max-width: 767px) {
+  body.talkroom-ui:not(.talk-admin-shell) {
+    overflow-x: hidden;
+  }
+
+  body.talkroom-ui:not(.talk-admin-shell) #wrapper,
+  body.talkroom-ui:not(.talk-admin-shell) #container,
+  body.talkroom-ui:not(.talk-admin-shell) .eottae-page-main {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
+  body.talkroom-ui:not(.talk-admin-shell) .mypage-subpage,
+  body.talkroom-ui:not(.talk-admin-shell) .talk-page,
+  body.talkroom-ui:not(.talk-admin-shell) .talk-apply-page,
+  body.talkroom-ui:not(.talk-admin-shell) .talk-applies-page,
+  body.talkroom-ui:not(.talk-admin-shell) .talk-room-detail-page,
+  body.talkroom-ui:not(.talk-admin-shell) .talk-manage-page,
+  body.talkroom-ui:not(.talk-admin-shell) .talk-my-page,
+  body.talkroom-ui:not(.talk-admin-shell) .my-talk-page,
+  body.talkroom-ui:not(.talk-admin-shell) .talk-reports-page {
+    padding-bottom: calc(20px + var(--talkroom-mobile-bottom));
+  }
+
+  body.talkroom-ui:not(.talk-admin-shell) .talk-room-detail-page {
+    padding-bottom: calc(88px + var(--talkroom-mobile-bottom));
+  }
+
+  body.talkroom-ui .board-wrap {
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-bottom: calc(20px + var(--talkroom-mobile-bottom));
+  }
+
+  body.talkroom-ui .talk-room-detail__hero {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+  }
+
+  body.talkroom-ui .talk-room-detail__head {
+    width: 100%;
+  }
+
+  body.talkroom-ui .talk-room-detail__title {
+    font-size: 1.15rem;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+
+  body.talkroom-ui .talk-room-detail__desc {
+    font-size: 13px;
+  }
+
+  body.talkroom-ui .talk-room-detail__tags {
+    justify-content: center;
+  }
+
+  body.talkroom-ui .talk-room-detail__stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  body.talkroom-ui .talk-room-detail__stats div {
+    padding: 8px 6px;
+    font-size: 11px;
+  }
+
+  body.talkroom-ui .talk-room-detail__stats dd {
+    font-size: 13px;
+    word-break: break-all;
+  }
+
+  body.talkroom-ui .talk-invite-share__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.talkroom-ui .talk-invite-share__input,
+  body.talkroom-ui .talk-invite-share__copy {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  body.talkroom-ui .talk-invite-share__copy {
+    justify-content: center;
+  }
+
+  body.talkroom-ui .talk-applies-item__title {
+    font-size: 15px;
+    word-break: break-word;
+  }
+
+  body.talkroom-ui .talk-manage-summary {
+    grid-template-columns: 1fr;
+  }
+
+  body.talkroom-ui .talk-manage-member-list__actions .promo-admin-btn {
+    flex: 1 1 calc(50% - 4px);
+    justify-content: center;
+  }
+
+  body.talkroom-ui .talk-ai-settings-form__actions--sticky {
+    bottom: var(--talkroom-mobile-bottom);
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+
+  body.talkroom-ui .talk-ai-settings-form {
+    padding-bottom: calc(72px + var(--talkroom-mobile-bottom));
+  }
+}
+
+@media (max-width: 399px) {
+  body.talkroom-ui .talk-room-detail__stats {
+    grid-template-columns: 1fr;
+  }
+
+  body.talkroom-ui .talk-room-card__stats {
+    grid-template-columns: 1fr;
+  }
 }
 

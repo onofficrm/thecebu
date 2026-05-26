@@ -304,12 +304,12 @@ $faqs = array(
                 <?php } ?>
             </ul>
             <p class="ai-talk-section__desc">
-                세부어때에서는 회원 누구나 톡방 개설을 신청할 수 있습니다.<br>
-                최고관리자 승인 후 내 톡방이 세부어때에 노출되고,<br>
+                세부어때에서는 회원 누구나 톡방을 바로 만들 수 있습니다.<br>
+                개설 즉시 세부톡방 목록에 노출되고,<br>
                 AI 도우미가 방 분위기를 함께 살려줍니다.
             </p>
             <nav class="ai-talk-hero__actions" aria-label="톡방 개설">
-                <a href="<?php echo $create_url; ?>" class="ai-talk-btn ai-talk-btn--primary">톡방 개설 신청하기</a>
+                <a href="<?php echo $create_url; ?>" class="ai-talk-btn ai-talk-btn--primary">톡방 만들기</a>
                 <a href="<?php echo $list_url; ?>" class="ai-talk-btn ai-talk-btn--ghost ai-talk-btn--on-dark">세부톡방 둘러보기</a>
             </nav>
         </div>

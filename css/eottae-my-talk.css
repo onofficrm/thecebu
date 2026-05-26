@@ -1341,6 +1341,82 @@ body.talkroom-ui .my-talk-bookmark__inner {
   border-radius: var(--talkroom-radius-lg, 16px);
 }
 
+@media (max-width: 767px) {
+  .my-talk-page {
+    padding-bottom: calc(24px + var(--eottae-bottom-nav-h, 64px) + env(safe-area-inset-bottom, 0px));
+    overflow-x: hidden;
+  }
+
+  body.talkroom-ui .my-talk-page {
+    padding-bottom: calc(24px + var(--eottae-bottom-nav-h, 64px) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .my-talk-nav {
+    top: 0;
+  }
+
+  .my-talk-section {
+    scroll-margin-top: 52px;
+  }
+
+  .my-talk-feed-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .my-talk-feed-filters__field {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .my-talk-room-card__meta {
+    grid-template-columns: 1fr;
+  }
+
+  .my-talk-room-card__actions .talk-page__btn,
+  .my-talk-owner-card__actions .talk-page__btn {
+    flex: 1 1 calc(50% - 4px);
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .my-talk-section__head {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .my-talk-section__more {
+    margin-left: auto;
+  }
+
+  .my-talk-super-admin__links .talk-page__btn {
+    flex: 1 1 calc(50% - 4px);
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .my-talk-briefing__inner {
+    flex-direction: column;
+  }
+
+  .my-talk-today-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 479px) {
+  .my-talk-today-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .my-talk-room-card__actions .talk-page__btn,
+  .my-talk-owner-card__actions .talk-page__btn,
+  .my-talk-super-admin__links .talk-page__btn {
+    flex: 1 1 100%;
+  }
+}
+
 /* ── 최고관리자: 세부톡방 관리 ── */
 .my-talk-super-admin {
   border-color: #fde68a;

@@ -36,7 +36,7 @@ g5_page_start('톡방 만들기');
 <main class="mypage-subpage talk-apply-page">
     <p class="mypage-subpage__back"><a href="<?php echo eottae_talkroom_list_url(); ?>">← 세부톡방</a></p>
     <h1 class="mypage-subpage__title">톡방 만들기</h1>
-    <p class="talk-apply-page__intro">톡방 개설 신청서를 작성해 주세요. 최고관리자 승인 후 목록에 노출됩니다.</p>
+    <p class="talk-apply-page__intro">톡방 정보를 입력하면 바로 공개되어 세부톡방 목록에 노출됩니다.</p>
 
     <form class="talk-apply-form" method="post" action="<?php echo $form_action; ?>" novalidate data-talk-apply-form>
         <input type="hidden" name="eottae_talkroom_token" value="<?php echo get_text($apply_token); ?>">
@@ -144,7 +144,7 @@ g5_page_start('톡방 만들기');
         </div>
 
         <div class="talk-apply-form__actions">
-            <button type="submit" class="talk-page__btn talk-page__btn--primary talk-apply-form__submit">개설 신청하기</button>
+            <button type="submit" class="talk-page__btn talk-page__btn--primary talk-apply-form__submit">톡방 만들기</button>
             <a href="<?php echo eottae_talkroom_apply_status_url(); ?>" class="talk-page__btn">내 신청 현황</a>
         </div>
     </form>

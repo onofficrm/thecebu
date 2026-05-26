@@ -212,6 +212,12 @@ g5_page_start('톡방 관리');
             </div>
         </form>
     </section>
+
+    <section class="promo-admin-panel talk-manage-panel talk-manage-panel--danger">
+        <h2 class="promo-admin-panel__title">톡방 종료</h2>
+        <p class="talk-manage-page__danger-desc">톡방을 종료하면 목록과 입장이 차단됩니다. 종료 후에는 다시 공개할 수 없습니다.</p>
+        <button type="button" class="promo-admin-btn" data-talk-owner-stop>톡방 종료하기</button>
+    </section>
 </main>
 
 <script>
@@ -349,6 +355,27 @@ g5_page_start('톡방 관리');
         .then(function (data) {
           alert(data.message || '');
           if (data.success) location.reload();
+        });
+    });
+  }
+
+  var stopBtn = document.querySelector('[data-talk-owner-stop]');
+  if (stopBtn) {
+    stopBtn.addEventListener('click', function () {
+      if (!window.confirm('이 톡방을 종료하시겠습니까?\n종료 후에는 목록에 노출되지 않으며, 다시 이용할 수 없습니다.')) return;
+      stopBtn.disabled = true;
+      postOwnerAction('stop')
+        .then(function (data) {
+          if (data.success) {
+            window.location.href = data.redirect_url || <?php echo json_encode(eottae_talkroom_list_url(), JSON_UNESCAPED_UNICODE); ?>;
+            return;
+          }
+          alert(data.message || '톡방 종료에 실패했습니다.');
+          stopBtn.disabled = false;
+        })
+        .catch(function () {
+          alert('네트워크 오류가 발생했습니다.');
+          stopBtn.disabled = false;
         });
     });
   }

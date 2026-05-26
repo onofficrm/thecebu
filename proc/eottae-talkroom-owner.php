@@ -95,6 +95,16 @@ if ($action === 'kick_member') {
     eottae_talkroom_owner_json(!empty($result['ok']), $result['message']);
 }
 
+if ($action === 'stop') {
+    $result = eottae_talkroom_stop_room($room_id, $member['mb_id'], $is_super);
+    if (!empty($result['ok'])) {
+        eottae_talkroom_owner_token(true);
+    }
+    eottae_talkroom_owner_json(!empty($result['ok']), $result['message'], array(
+        'redirect_url' => eottae_talkroom_list_url(),
+    ));
+}
+
 $report_id = isset($_POST['report_id']) ? (int) $_POST['report_id'] : 0;
 if ($report_id > 0 && in_array($action, array('report_review', 'report_dismiss', 'report_delete_content', 'report_kick_member'), true)) {
     $report_row = eottae_talkroom_get_report($report_id);

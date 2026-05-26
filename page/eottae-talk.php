@@ -37,7 +37,7 @@ g5_page_start('세부톡방');
         <nav class="talk-page__actions" aria-label="세부톡방 주요 메뉴">
             <a href="<?php echo eottae_talkroom_create_url(); ?>" class="talk-page__btn talk-page__btn--primary">톡방 만들기</a>
             <a href="<?php echo eottae_talkroom_my_url(); ?>" class="talk-page__btn">내 톡방</a>
-            <a href="<?php echo eottae_talkroom_apply_status_url(); ?>" class="talk-page__btn">개설 신청 현황</a>
+            <a href="<?php echo eottae_talkroom_apply_status_url(); ?>" class="talk-page__btn">내가 만든 톡방</a>
         </nav>
     </header>
 

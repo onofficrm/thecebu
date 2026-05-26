@@ -151,6 +151,153 @@ if (!function_exists('eottae_business_coupon_format_benefit')) {
     }
 }
 
+if (!function_exists('eottae_coupon_shop_name_for_coupon')) {
+    /**
+     * 쿠폰에 표시할 업체명 (사업자 등록 업소 → 닉네임 순)
+     */
+    function eottae_coupon_shop_name_for_coupon(array $coupon)
+    {
+        $owner_mb_id = isset($coupon['cp_owner_mb_id']) ? trim((string) $coupon['cp_owner_mb_id']) : '';
+        if ($owner_mb_id !== '' && function_exists('eottae_business_shop_posts')) {
+            $posts = eottae_business_shop_posts($owner_mb_id, 1);
+            if (!empty($posts[0]['subject'])) {
+                return get_text($posts[0]['subject']);
+            }
+            $owner = get_member($owner_mb_id);
+            if (!empty($owner['mb_nick'])) {
+                return get_text($owner['mb_nick']);
+            }
+        }
+
+        if (isset($coupon['cp_type']) && $coupon['cp_type'] === 'business') {
+            return '제휴 업체';
+        }
+
+        return function_exists('g5site_cfg') ? g5site_cfg('site_name', '세부어때') : '세부어때';
+    }
+}
+
+if (!function_exists('eottae_coupon_visual_present')) {
+    /**
+     * 쿠폰 티켓 UI용 표시 데이터
+     *
+     * @param array<string, mixed> $coupon
+     * @param array<string, mixed> $opts used(bool)
+     * @return array<string, string>
+     */
+    function eottae_coupon_visual_present(array $coupon, array $opts = array())
+    {
+        $is_used = !empty($opts['used']) || (isset($coupon['ci_status']) && $coupon['ci_status'] === 'used');
+        $cp_type = isset($coupon['cp_type']) ? trim((string) $coupon['cp_type']) : '';
+        $is_business = ($cp_type === 'business');
+
+        $present = array(
+            'shop_name'        => eottae_coupon_shop_name_for_coupon($coupon),
+            'headline'         => '',
+            'headline_suffix'  => '',
+            'benefit_label'    => '',
+            'detail_line'      => '',
+            'variant'          => 'general',
+            'badge'            => $is_business ? '업체 쿠폰' : '세부어때 쿠폰',
+            'code'             => isset($coupon['ci_code']) ? get_text($coupon['ci_code']) : '',
+            'meta_line'        => '',
+            'is_used'          => $is_used ? '1' : '0',
+            'compact_headline' => '0',
+        );
+
+        if ($is_business) {
+            $type = isset($coupon['cp_benefit_type']) ? trim((string) $coupon['cp_benefit_type']) : '';
+            $percent = isset($coupon['cp_percent']) ? (int) $coupon['cp_percent'] : 0;
+            $free_item = isset($coupon['cp_free_item']) ? trim((string) $coupon['cp_free_item']) : '';
+            $min_amount = isset($coupon['cp_min_amount']) ? trim((string) $coupon['cp_min_amount']) : '';
+            $condition_menu = isset($coupon['cp_condition_menu']) ? trim((string) $coupon['cp_condition_menu']) : '';
+            $order_benefit = isset($coupon['cp_order_benefit']) ? (string) $coupon['cp_order_benefit'] : 'percent';
+
+            if ($type === 'percent' && $percent > 0) {
+                $present['headline'] = (string) $percent;
+                $present['headline_suffix'] = '%';
+                $present['benefit_label'] = '할인';
+                $present['variant'] = 'percent';
+            } elseif ($type === 'visit_free') {
+                $item = $free_item !== '' ? $free_item : '혜택';
+                $present['headline'] = $item;
+                $present['benefit_label'] = '무료';
+                $present['variant'] = 'free';
+                $present['compact_headline'] = (function_exists('mb_strlen') ? mb_strlen($item, 'UTF-8') : strlen($item)) > 8 ? '1' : '0';
+            } elseif ($type === 'order_discount') {
+                $cond = array();
+                if ($min_amount !== '') {
+                    $cond[] = $min_amount.' 이상';
+                }
+                if ($condition_menu !== '') {
+                    $cond[] = $condition_menu;
+                }
+                $present['detail_line'] = !empty($cond) ? implode(' · ', $cond) : '';
+
+                if ($order_benefit === 'free' && $free_item !== '') {
+                    $present['headline'] = $free_item;
+                    $present['benefit_label'] = '무료';
+                    $present['variant'] = 'free';
+                    $present['compact_headline'] = (function_exists('mb_strlen') ? mb_strlen($free_item, 'UTF-8') : strlen($free_item)) > 8 ? '1' : '0';
+                } elseif ($percent > 0) {
+                    $present['headline'] = (string) $percent;
+                    $present['headline_suffix'] = '%';
+                    $present['benefit_label'] = '할인';
+                    $present['variant'] = 'percent';
+                } else {
+                    $present['headline'] = '혜택';
+                    $present['benefit_label'] = '쿠폰';
+                    $present['variant'] = 'general';
+                }
+            } else {
+                $copy = eottae_business_coupon_build_copy($coupon);
+                $present['headline'] = $copy['title'];
+                $present['benefit_label'] = '쿠폰';
+                $present['variant'] = 'general';
+                $present['compact_headline'] = '1';
+            }
+
+            if ($present['detail_line'] === '') {
+                $present['detail_line'] = eottae_business_coupon_format_benefit($coupon);
+            }
+        } else {
+            $title = isset($coupon['cp_title']) ? trim((string) $coupon['cp_title']) : '';
+            $desc = isset($coupon['cp_desc']) ? trim((string) $coupon['cp_desc']) : '';
+
+            if ($cp_type === 'welcome') {
+                $present['variant'] = 'welcome';
+                $present['headline'] = 'WELCOME';
+                $present['benefit_label'] = '가입 혜택';
+            } elseif ($cp_type === 'review') {
+                $present['variant'] = 'review';
+                $present['headline'] = 'REVIEW';
+                $present['benefit_label'] = '리뷰 감사';
+            } elseif (preg_match('/(\d+)\s*%/u', $title, $m)) {
+                $present['variant'] = 'percent';
+                $present['headline'] = $m[1];
+                $present['headline_suffix'] = '%';
+                $present['benefit_label'] = '할인';
+            } elseif (preg_match('/무료/u', $title.' '.$desc)) {
+                $present['variant'] = 'free';
+                $present['headline'] = 'FREE';
+                $present['benefit_label'] = '무료 혜택';
+            } else {
+                $present['headline'] = $title !== '' ? $title : 'COUPON';
+                $present['benefit_label'] = '혜택';
+                $present['compact_headline'] = '1';
+            }
+
+            $present['detail_line'] = $desc !== '' ? get_text($desc) : get_text($title);
+        }
+
+        if ($present['code'] === '' && !empty($coupon['cp_code'])) {
+            $present['code'] = strtoupper(get_text($coupon['cp_code']));
+        }
+
+        return $present;
+    }
+}
+
 if (!function_exists('eottae_business_coupon_issue_count')) {
     function eottae_business_coupon_issue_count($cp_id)
     {

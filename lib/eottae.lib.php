@@ -1104,6 +1104,18 @@ if (!function_exists('eottae_render_shop_card')) {
     }
 }
 
+if (!function_exists('eottae_render_coupon_visual_card')) {
+    /**
+     * @param array<string, mixed> $coupon
+     * @param array<string, mixed> $opts
+     */
+    function eottae_render_coupon_visual_card(array $coupon, array $opts = array())
+    {
+        $coupon_card_opts = $opts;
+        include G5_PATH.'/components/eottae/coupon-visual-card.php';
+    }
+}
+
 if (!function_exists('eottae_mypage_url')) {
     function eottae_mypage_url()
     {
@@ -3367,6 +3379,274 @@ if (!function_exists('eottae_shop_list_snippet')) {
     function eottae_shop_list_snippet($content, $len = 90)
     {
         return eottae_community_snippet($content, $len);
+    }
+}
+
+if (!function_exists('eottae_shop_list_filters_from_request')) {
+    /**
+     * @return array<string, mixed>
+     */
+    function eottae_shop_list_filters_from_request()
+    {
+        return array(
+            'sca'        => isset($_GET['sca']) ? trim((string) $_GET['sca']) : '',
+            'sfl'        => isset($_GET['sfl']) ? trim((string) $_GET['sfl']) : '',
+            'stx'        => isset($_GET['stx']) ? trim((string) $_GET['stx']) : '',
+            'sst'        => isset($_GET['sst']) ? trim((string) $_GET['sst']) : '',
+            'sod'        => isset($_GET['sod']) ? trim((string) $_GET['sod']) : '',
+            'eottae_lat' => isset($_GET['eottae_lat']) ? trim((string) $_GET['eottae_lat']) : '',
+            'eottae_lng' => isset($_GET['eottae_lng']) ? trim((string) $_GET['eottae_lng']) : '',
+        );
+    }
+}
+
+if (!function_exists('eottae_shop_list_write_table')) {
+    function eottae_shop_list_write_table($bo_table)
+    {
+        global $g5;
+
+        $bo_table = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
+        if ($bo_table === '') {
+            return '';
+        }
+
+        $master = function_exists('eottae_shop_segment_master_category')
+            ? eottae_shop_segment_master_category($bo_table)
+            : '';
+
+        return $master !== '' ? $g5['write_prefix'].eottae_shop_table() : $g5['write_prefix'].$bo_table;
+    }
+}
+
+if (!function_exists('eottae_shop_list_where_parts')) {
+    /**
+     * @param string $bo_table
+     * @param array<string, mixed> $args
+     * @return array<int, string>
+     */
+    function eottae_shop_list_where_parts($bo_table, array $args = array())
+    {
+        $where = array('wr_is_comment = 0');
+
+        $master = function_exists('eottae_shop_segment_master_category')
+            ? eottae_shop_segment_master_category($bo_table)
+            : '';
+        if ($master !== '') {
+            $where[] = "wr_1 = '".sql_escape_string($master)."'";
+        }
+
+        $sca = isset($args['sca']) ? trim((string) $args['sca']) : '';
+        $sfl = isset($args['sfl']) ? trim((string) $args['sfl']) : '';
+        $stx = isset($args['stx']) ? trim((string) $args['stx']) : '';
+
+        if ($sca !== '') {
+            $where[] = "ca_name = '".sql_escape_string($sca)."'";
+        }
+
+        if ($stx !== '') {
+            $stx_sql = sql_escape_string($stx);
+            if ($sfl === 'wr_2') {
+                $where[] = "wr_2 = '{$stx_sql}'";
+            } elseif ($sfl === 'wr_subject||wr_content') {
+                $where[] = "(wr_subject like '%{$stx_sql}%' or wr_content like '%{$stx_sql}%')";
+            } elseif (in_array($sfl, array('wr_subject', 'wr_content', 'wr_1', 'wr_2', 'wr_3'), true)) {
+                $where[] = "{$sfl} like '%{$stx_sql}%'";
+            }
+        }
+
+        return $where;
+    }
+}
+
+if (!function_exists('eottae_shop_infinite_batch_limit')) {
+    function eottae_shop_infinite_batch_limit($offset)
+    {
+        $offset = max(0, (int) $offset);
+        if ($offset < 1) {
+            return 20;
+        }
+        if ($offset < 21) {
+            return 30;
+        }
+
+        return 40;
+    }
+}
+
+if (!function_exists('eottae_shop_list_order_sql')) {
+    /**
+     * @param array<string, mixed> $args
+     */
+    function eottae_shop_list_order_sql(array $args = array())
+    {
+        $sst = isset($args['sst']) ? trim((string) $args['sst']) : '';
+        $sod = isset($args['sod']) ? strtolower(trim((string) $args['sod'])) : 'desc';
+        if ($sod !== 'asc' && $sod !== 'desc') {
+            $sod = 'desc';
+        }
+
+        if ($sst === 'near') {
+            return ' order by wr_id desc ';
+        }
+
+        $allowed = array(
+            'wr_datetime' => 'wr_datetime',
+            'wr_hit'      => 'wr_hit',
+            'wr_comment'  => 'wr_comment',
+            'wr_good'     => 'wr_good',
+        );
+
+        if (isset($allowed[$sst])) {
+            return ' order by '.$allowed[$sst].' '.$sod.', wr_id desc ';
+        }
+
+        return ' order by wr_datetime desc, wr_id desc ';
+    }
+}
+
+if (!function_exists('eottae_shop_fetch_raw_rows')) {
+    /**
+     * 필터에 맞는 업체 원본 행 (지도·목록 공통)
+     *
+     * @param string $bo_table
+     * @param array<string, mixed> $args
+     * @return array{total:int, rows:array<int, array<string, mixed>>}
+     */
+    function eottae_shop_fetch_raw_rows($bo_table, array $args = array())
+    {
+        $bo_table = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
+        if ($bo_table === '' || !function_exists('eottae_is_shop_board') || !eottae_is_shop_board($bo_table)) {
+            return array('total' => 0, 'rows' => array());
+        }
+
+        $write_table = eottae_shop_list_write_table($bo_table);
+        if ($write_table === '') {
+            return array('total' => 0, 'rows' => array());
+        }
+
+        $exists = sql_fetch(" show tables like '".sql_escape_string($write_table)."' ");
+        if (empty($exists)) {
+            return array('total' => 0, 'rows' => array());
+        }
+
+        $where_sql = implode(' and ', eottae_shop_list_where_parts($bo_table, $args));
+        $count = sql_fetch(" select count(*) as cnt from `{$write_table}` where {$where_sql} ");
+        $total = isset($count['cnt']) ? (int) $count['cnt'] : 0;
+        if ($total < 1) {
+            return array('total' => 0, 'rows' => array());
+        }
+
+        $max_rows = isset($args['max_rows']) ? max(1, (int) $args['max_rows']) : 2000;
+        $max_rows = min(2000, max($total, $max_rows));
+
+        $sst = isset($args['sst']) ? trim((string) $args['sst']) : '';
+        $user_lat = isset($args['eottae_lat']) ? trim((string) $args['eottae_lat']) : '';
+        $user_lng = isset($args['eottae_lng']) ? trim((string) $args['eottae_lng']) : '';
+
+        if ($sst === 'near' && $user_lat !== '' && $user_lng !== '' && is_numeric($user_lat) && is_numeric($user_lng)) {
+            $result = sql_query(" select * from `{$write_table}` where {$where_sql} order by wr_id desc limit {$max_rows} ", false);
+            $rows = array();
+            if ($result) {
+                while ($row = sql_fetch_array($result)) {
+                    $rows[] = $row;
+                }
+            }
+            eottae_shop_sort_list_by_distance($rows, $user_lat, $user_lng);
+
+            return array('total' => $total, 'rows' => $rows);
+        }
+
+        $order_sql = eottae_shop_list_order_sql($args);
+        $offset = isset($args['offset']) ? max(0, (int) $args['offset']) : 0;
+        $limit = isset($args['limit']) ? max(1, (int) $args['limit']) : $max_rows;
+
+        if ($offset > 0 || $limit < $max_rows) {
+            $sql = " select * from `{$write_table}` where {$where_sql} {$order_sql} limit {$offset}, {$limit} ";
+        } else {
+            $sql = " select * from `{$write_table}` where {$where_sql} {$order_sql} limit {$max_rows} ";
+        }
+
+        $result = sql_query($sql, false);
+        $rows = array();
+        if ($result) {
+            while ($row = sql_fetch_array($result)) {
+                $rows[] = $row;
+            }
+        }
+
+        return array('total' => $total, 'rows' => $rows);
+    }
+}
+
+if (!function_exists('eottae_shop_list_chunk')) {
+    /**
+     * 무한 스크롤용 목록 청크
+     *
+     * @param string $bo_table
+     * @param array<string, mixed> $board
+     * @param string $board_skin_url
+     * @param array<string, mixed> $args offset, limit, filters
+     * @return array{list:array<int, array<string, mixed>>, total_count:int, has_more:bool}
+     */
+    function eottae_shop_list_chunk($bo_table, $board, $board_skin_url, array $args = array())
+    {
+        $offset = isset($args['offset']) ? max(0, (int) $args['offset']) : 0;
+        $limit = isset($args['limit']) ? max(1, (int) $args['limit']) : eottae_shop_infinite_batch_limit($offset);
+
+        $sst = isset($args['sst']) ? trim((string) $args['sst']) : '';
+        $fetch_args = $args;
+        unset($fetch_args['offset'], $fetch_args['limit']);
+
+        if ($sst === 'near'
+            && !empty($args['eottae_lat']) && is_numeric($args['eottae_lat'])
+            && !empty($args['eottae_lng']) && is_numeric($args['eottae_lng'])
+        ) {
+            $fetch_args['max_rows'] = 2000;
+            $bundle = eottae_shop_fetch_raw_rows($bo_table, $fetch_args);
+            $slice = array_slice($bundle['rows'], $offset, $limit);
+        } else {
+            $fetch_args['offset'] = $offset;
+            $fetch_args['limit'] = $limit;
+            $bundle = eottae_shop_fetch_raw_rows($bo_table, $fetch_args);
+            $slice = $bundle['rows'];
+        }
+
+        $total = (int) ($bundle['total'] ?? 0);
+        $subject_len = G5_IS_MOBILE ? (int) $board['bo_mobile_subject_len'] : (int) $board['bo_subject_len'];
+        $list = array();
+        foreach ($slice as $row) {
+            $list[] = get_list($row, $board, $board_skin_url, $subject_len);
+        }
+
+        return array(
+            'list'         => $list,
+            'total_count'  => $total,
+            'has_more'     => ($offset + count($list)) < $total,
+            'next_offset'  => $offset + count($list),
+        );
+    }
+}
+
+if (!function_exists('eottae_shop_render_cards_html')) {
+    /**
+     * @param array<int, array<string, mixed>> $list
+     */
+    function eottae_shop_render_cards_html($list, $bo_table = '')
+    {
+        if (!is_array($list) || count($list) === 0) {
+            return '';
+        }
+
+        ob_start();
+        foreach ($list as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $row['bo_table'] = $bo_table;
+            eottae_render_shop_card($row, $bo_table, 'list');
+        }
+
+        return (string) ob_get_clean();
     }
 }
 

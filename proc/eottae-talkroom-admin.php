@@ -58,7 +58,7 @@ if ($action === 'reject') {
 }
 
 if ($action === 'stop') {
-    $result = eottae_talkroom_stop_room($room_id, $member['mb_id']);
+    $result = eottae_talkroom_stop_room($room_id, $member['mb_id'], true);
     if (!empty($result['ok'])) {
         eottae_talkroom_admin_token(true);
     }

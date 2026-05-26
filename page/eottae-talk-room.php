@@ -29,6 +29,13 @@ g5_page_start($room['room_name']);
 <main class="mypage-subpage talk-room-detail-page">
     <p class="mypage-subpage__back"><a href="<?php echo eottae_talkroom_list_url(); ?>">← 세부톡방</a></p>
 
+    <?php if (!empty($_GET['created'])) { ?>
+    <div class="talk-applies-page__success" role="status">
+        <strong>톡방이 만들어졌습니다.</strong>
+        <p>지금 바로 대화를 시작해 보세요. 방장은 톡방 관리에서 정보를 수정하거나 톡방을 종료할 수 있습니다.</p>
+    </div>
+    <?php } ?>
+
     <?php if ($ctx['can_view_notice'] && $room['room_notice'] !== '') { ?>
     <aside class="talk-room-detail__banner" role="note">
         <strong class="talk-room-detail__banner-label">공지</strong>

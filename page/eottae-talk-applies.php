@@ -15,12 +15,12 @@ g5_page_start('개설 신청 현황');
 <main class="mypage-subpage talk-applies-page">
     <p class="mypage-subpage__back"><a href="<?php echo eottae_talkroom_list_url(); ?>">← 세부톡방</a></p>
     <h1 class="mypage-subpage__title">개설 신청 현황</h1>
-    <p class="talk-applies-page__intro">내가 신청한 톡방 개설 내역입니다. 승인 결과는 이 화면에서 확인할 수 있습니다.</p>
+    <p class="talk-applies-page__intro">내가 만든 톡방 목록입니다. 운영 상태를 확인할 수 있습니다.</p>
 
     <?php if ($submitted) { ?>
     <div class="talk-applies-page__success" role="status">
-        <strong>톡방 개설 신청이 접수되었습니다.</strong>
-        <p>최고관리자 승인 후 세부톡방 목록에 노출됩니다.</p>
+        <strong>톡방이 생성되었습니다.</strong>
+        <p>바로 세부톡방 목록에 노출되며 이용을 시작할 수 있습니다.</p>
     </div>
     <?php } ?>
 

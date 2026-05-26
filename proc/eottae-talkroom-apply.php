@@ -27,10 +27,14 @@ if (!empty($errors)) {
 
 $room_id = eottae_talkroom_insert_apply($member['mb_id'], $data);
 if (!$room_id) {
-    alert('신청 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.', eottae_talkroom_create_url());
+    alert('톡방 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.', eottae_talkroom_create_url());
+}
+
+$approve = eottae_talkroom_approve_room($room_id, $member['mb_id']);
+if (empty($approve['ok'])) {
+    alert($approve['message'] ?? '톡방을 공개하는 데 실패했습니다. 고객센터로 문의해 주세요.', eottae_talkroom_apply_status_url());
 }
 
 eottae_talkroom_apply_token(true);
 
-$redirect = eottae_talkroom_apply_status_url().'?submitted=1';
-goto_url($redirect);
+goto_url(eottae_talkroom_enter_url($room_id).'?created=1');

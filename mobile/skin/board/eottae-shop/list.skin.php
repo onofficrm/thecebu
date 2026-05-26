@@ -11,25 +11,33 @@ $sort_links = eottae_shop_sort_links(isset($sst) ? $sst : '');
 $list_base = get_pretty_url($bo_table);
 $current_region = (isset($sfl) && $sfl === 'wr_2' && !empty($stx)) ? get_text($stx) : '';
 $eottae_user_coords = eottae_shop_user_coords_from_request();
-if (isset($sst) && $sst === 'near' && $eottae_user_coords && is_array($list)) {
-    $nearby = eottae_shop_build_nearby_list($bo_table, $board, $board_skin_url, $eottae_user_coords['lat'], $eottae_user_coords['lng'], array(
-        'sca' => isset($sca) ? $sca : '',
-        'sfl' => isset($sfl) ? $sfl : '',
-        'stx' => isset($stx) ? $stx : '',
-        'page' => isset($page) ? $page : 1,
-        'page_rows' => isset($list_page_rows) ? $list_page_rows : 15,
-    ));
-    if (!empty($nearby)) {
-        $list = $nearby['list'];
-        $total_count = $nearby['total_count'];
-        $write_pages = $nearby['write_pages'];
-    } else {
-        eottae_shop_sort_list_by_distance($list, $eottae_user_coords['lat'], $eottae_user_coords['lng']);
-    }
+$eottae_list_filters = eottae_shop_list_filters_from_request();
+if ($eottae_list_filters['sst'] === '' && isset($sst)) {
+    $eottae_list_filters['sst'] = trim((string) $sst);
 }
-$shop_map_markers = eottae_shop_map_markers($list, $bo_table);
+if ($eottae_list_filters['sod'] === '' && isset($sod)) {
+    $eottae_list_filters['sod'] = trim((string) $sod);
+}
+if ($eottae_user_coords) {
+    $eottae_list_filters['eottae_lat'] = (string) $eottae_user_coords['lat'];
+    $eottae_list_filters['eottae_lng'] = (string) $eottae_user_coords['lng'];
+}
+
+$eottae_initial_chunk = eottae_shop_list_chunk($bo_table, $board, $board_skin_url, array_merge($eottae_list_filters, array(
+    'offset' => 0,
+    'limit'  => eottae_shop_infinite_batch_limit(0),
+)));
+$list = $eottae_initial_chunk['list'];
+$total_count = $eottae_initial_chunk['total_count'];
+$write_pages = '';
+$eottae_list_has_more = !empty($eottae_initial_chunk['has_more']);
+$eottae_list_next_offset = (int) $eottae_initial_chunk['next_offset'];
+
+$shop_map_markers = array();
 $eottae_maps_enabled = eottae_enqueue_google_maps();
 $eottae_near_enabled = true;
+$eottae_shop_list_api = G5_URL.'/proc/eottae-shop-list.php';
+add_javascript('<script src="'.G5_JS_URL.'/eottae-shop-near-infinite.js"></script>', 26);
 
 function eottae_shop_build_list_url($bo_table, $params = array())
 {
@@ -150,15 +158,20 @@ function eottae_shop_build_list_url($bo_table, $params = array())
             <?php } ?>
         </header>
 
-        <div class="shop-near-results__list">
+        <div class="shop-near-results__list"
+             id="shopNearResultsList"
+             data-shop-infinite-list
+             data-shop-api="<?php echo get_text($eottae_shop_list_api); ?>"
+             data-bo-table="<?php echo get_text($bo_table); ?>"
+             data-next-offset="<?php echo (int) $eottae_list_next_offset; ?>"
+             data-has-more="<?php echo $eottae_list_has_more ? '1' : '0'; ?>"
+             data-total="<?php echo (int) $total_count; ?>">
             <?php
-            for ($i = 0; $i < count($list); $i++) {
-                $list[$i]['bo_table'] = $bo_table;
-                eottae_render_shop_card($list[$i], $bo_table, 'list');
-            }
-            if (count($list) === 0) {
+            if (count($list) > 0) {
+                echo eottae_shop_render_cards_html($list, $bo_table);
+            } else {
             ?>
-            <div class="empty-state">
+            <div class="empty-state" data-shop-empty-state>
                 <p class="empty-state__title">등록된 업체가 없습니다</p>
                 <p>조건을 변경하거나 첫 업체를 등록해 보세요.</p>
                 <?php if ($write_href) { ?><a href="<?php echo $write_href; ?>" class="shop-near-results__write" style="margin-top:12px;display:inline-flex">업체 등록</a><?php } ?>
@@ -166,7 +179,7 @@ function eottae_shop_build_list_url($bo_table, $params = array())
             <?php } ?>
         </div>
 
-        <nav class="board-paging shop-near-paging" aria-label="페이지"><?php echo $write_pages; ?></nav>
+        <p class="shop-near-infinite__status" id="shopNearInfiniteStatus" data-shop-infinite-status hidden aria-live="polite"></p>
     </div>
     </form>
 </aside>

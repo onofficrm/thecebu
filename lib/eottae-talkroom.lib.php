@@ -1865,19 +1865,30 @@ if (!function_exists('eottae_talkroom_reject_room')) {
 }
 
 if (!function_exists('eottae_talkroom_stop_room')) {
-    function eottae_talkroom_stop_room($room_id, $admin_mb_id)
+    /**
+     * 톡방 운영 종료 (목록·입장 비공개). 최고관리자 또는 방장만 가능.
+     *
+     * @param int    $room_id
+     * @param string $actor_mb_id
+     * @param bool   $is_super_admin
+     */
+    function eottae_talkroom_stop_room($room_id, $actor_mb_id, $is_super_admin = false)
     {
         $room = eottae_talkroom_get_room($room_id);
         if (!$room) {
             return array('ok' => false, 'message' => '톡방을 찾을 수 없습니다.');
         }
         if (!in_array($room['status'], array('approved', 'active'), true)) {
-            return array('ok' => false, 'message' => '운영 중인 톡방만 중지할 수 있습니다.');
+            return array('ok' => false, 'message' => '운영 중인 톡방만 종료할 수 있습니다.');
+        }
+
+        $actor_mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $actor_mb_id);
+        if (!$is_super_admin && !eottae_talkroom_is_room_owner($room, $actor_mb_id)) {
+            return array('ok' => false, 'message' => '톡방을 종료할 권한이 없습니다.');
         }
 
         $tables = eottae_talkroom_table_names();
         $room_id = (int) $room_id;
-        $admin_mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $admin_mb_id);
         $now = G5_TIME_YMDHIS;
 
         $ok = (bool) sql_query("
@@ -1889,12 +1900,12 @@ if (!function_exists('eottae_talkroom_stop_room')) {
         ", false);
 
         if (!$ok) {
-            return array('ok' => false, 'message' => '운영중지 처리에 실패했습니다.');
+            return array('ok' => false, 'message' => '톡방 종료 처리에 실패했습니다.');
         }
 
-        eottae_talkroom_write_log($room_id, $admin_mb_id, 'stop', 'room', $room_id, '톡방 운영중지');
+        eottae_talkroom_write_log($room_id, $actor_mb_id, 'stop', 'room', $room_id, '톡방 운영 종료');
 
-        return array('ok' => true, 'message' => '톡방 운영을 중지했습니다.');
+        return array('ok' => true, 'message' => '톡방을 종료했습니다.');
     }
 }
 
