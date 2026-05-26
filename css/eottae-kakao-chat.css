@@ -374,3 +374,32 @@ body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat.public-group-chat-
 body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat.public-group-chat--kakao .public-group-chat__messages {
   min-height: 200px;
 }
+
+@media (max-width: 767px) {
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat.public-group-chat--kakao {
+    min-height: 0;
+  }
+
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat.public-group-chat--kakao .public-group-chat__inner {
+    min-height: 0 !important;
+    height: 100%;
+  }
+
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat.public-group-chat--kakao .public-group-chat__messages {
+    min-height: 0 !important;
+    background: var(--kakao-chat-bg);
+  }
+
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat.public-group-chat--kakao .public-group-chat__head {
+    flex: 0 0 auto;
+    padding: 10px 12px;
+  }
+
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat.public-group-chat--kakao .public-group-chat__title {
+    font-size: 0.95rem;
+  }
+
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat.public-group-chat--kakao .public-group-chat__desc {
+    font-size: 0.7rem;
+  }
+}

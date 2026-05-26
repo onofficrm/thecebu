@@ -432,6 +432,12 @@ if (!function_exists('eottae_talkroom_load_ui_assets')) {
 
         add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-talkroom-ui.css">', 21);
         eottae_talkroom_append_body_class('talkroom-ui');
+
+        $script = basename($_SERVER['SCRIPT_FILENAME'] ?? $_SERVER['SCRIPT_NAME'] ?? '');
+        if ($script === 'eottae-talk-room.php') {
+            eottae_talkroom_append_body_class('talk-room-chat-active');
+        }
+
         $loaded = true;
     }
 }

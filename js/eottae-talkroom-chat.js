@@ -331,10 +331,105 @@
     }, POLL_MS);
   }
 
+  function bindMobileChatLayout(section) {
+    if (!section || !global.matchMedia || !global.matchMedia('(max-width: 767px)').matches) {
+      return;
+    }
+
+    var page = section.closest('.talk-room-detail-page--chat');
+    var drawer = page ? page.querySelector('.talk-room-detail__drawer') : null;
+    var mq = global.matchMedia('(max-width: 767px)');
+
+    function setDrawerOpenState() {
+      if (!drawer) {
+        return;
+      }
+      document.body.classList.toggle('talk-room-drawer-open', !!drawer.open);
+    }
+
+    function measureTopChrome() {
+      if (!page) {
+        return 0;
+      }
+
+      var top = 0;
+      var back = page.querySelector('.mypage-subpage__back');
+      var flash = page.querySelector('.talk-room-detail__flash');
+      if (back) {
+        top += back.offsetHeight;
+      }
+      if (flash) {
+        top += flash.offsetHeight;
+      }
+      if (drawer) {
+        top += drawer.offsetHeight;
+      }
+      return top;
+    }
+
+    function updateChatHeight() {
+      if (!mq.matches) {
+        section.style.removeProperty('--talkroom-chat-height');
+        document.body.classList.remove('talk-room-drawer-open');
+        return;
+      }
+
+      setDrawerOpenState();
+
+      var viewportH = global.visualViewport ? global.visualViewport.height : global.innerHeight;
+      var header = document.getElementById('hd');
+      var headerH = header ? Math.ceil(header.getBoundingClientRect().height) : 0;
+      var chatTop = section.getBoundingClientRect().top;
+      var safeBottom = 0;
+
+      if (global.visualViewport && global.visualViewport.offsetTop > 0) {
+        chatTop = Math.max(chatTop, headerH);
+      }
+
+      var available = Math.max(220, Math.floor(viewportH - chatTop - safeBottom));
+      section.style.setProperty('--talkroom-chat-height', available + 'px');
+      document.documentElement.style.setProperty('--talkroom-chat-top', measureTopChrome() + 'px');
+    }
+
+    updateChatHeight();
+
+    if (drawer) {
+      drawer.addEventListener('toggle', function () {
+        setDrawerOpenState();
+        global.setTimeout(updateChatHeight, 0);
+        global.setTimeout(updateChatHeight, 180);
+      });
+    }
+
+    if (global.visualViewport) {
+      global.visualViewport.addEventListener('resize', updateChatHeight);
+      global.visualViewport.addEventListener('scroll', updateChatHeight);
+    }
+
+    global.addEventListener('resize', updateChatHeight);
+    global.addEventListener('orientationchange', function () {
+      global.setTimeout(updateChatHeight, 120);
+    });
+
+    if (global.ResizeObserver && page) {
+      var ro = new global.ResizeObserver(function () {
+        updateChatHeight();
+      });
+      var back = page.querySelector('.mypage-subpage__back');
+      if (back) {
+        ro.observe(back);
+      }
+      if (drawer) {
+        ro.observe(drawer);
+      }
+    }
+  }
+
   function init() {
     var section = getSection();
     if (section) {
       bindSection(section);
+      bindMobileChatLayout(section);
     }
   }
 
