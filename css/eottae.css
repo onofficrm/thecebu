@@ -516,7 +516,9 @@ img[data-eottae-logo] {
 #root header a.eottae-home-header-pill,
 #root header a.eottae-gnb-header__btn--register,
 #root header a.eottae-gnb-header__btn--talk,
-#root header a.eottae-gnb-header__btn--calendar {
+#root header a.eottae-gnb-header__btn--calendar,
+#root header a[href*="bo_table=shop"][href*="write"]:not([href*="안내"]),
+#root header a[href*="bo_table%3Dshop"][href*="write"]:not([href*="안내"]) {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -532,15 +534,25 @@ img[data-eottae-logo] {
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08) !important;
 }
 
-#root header a.eottae-gnb-header__btn--register {
-  background: var(--eottae-gnb-primary) !important;
+#root header a.eottae-gnb-header__btn--register,
+#root header a.eottae-home-header-pill.eottae-gnb-header__btn--register,
+#root header a[href*="bo_table=shop"][href*="write"]:not([href*="안내"]),
+#root header a[href*="bo_table%3Dshop"][href*="write"]:not([href*="안내"]) {
+  background: #0099ec !important;
+  background-color: #0099ec !important;
+  background-image: none !important;
   color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
   font-weight: 700 !important;
 }
 
-#root header a.eottae-gnb-header__btn--register:hover {
-  background: var(--eottae-gnb-primary-dark) !important;
+#root header a.eottae-gnb-header__btn--register:hover,
+#root header a[href*="bo_table=shop"][href*="write"]:not([href*="안내"]):hover,
+#root header a[href*="bo_table%3Dshop"][href*="write"]:not([href*="안내"]):hover {
+  background: #005fec !important;
+  background-color: #005fec !important;
   color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
 }
 
 #root header a.eottae-gnb-header__btn--talk {

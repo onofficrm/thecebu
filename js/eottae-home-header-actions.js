@@ -8,6 +8,22 @@
     return global.__EOTTae_HOME_HEADER_ACTIONS__ || null;
   }
 
+  function isShopWriteLabel(text) {
+    var label = (text || '').replace(/\s+/g, '');
+    return label === '업소등록' || label === '업체등록';
+  }
+
+  function isShopWriteHref(href) {
+    if (!href) {
+      return false;
+    }
+    if (href.indexOf('안내') !== -1) {
+      return false;
+    }
+    return (href.indexOf('bo_table=shop') !== -1 || href.indexOf('bo_table%3Dshop') !== -1)
+      && href.indexOf('write') !== -1;
+  }
+
   function findShopWriteLink(scope) {
     if (!scope) {
       return null;
@@ -15,13 +31,18 @@
 
     var links = scope.querySelectorAll('a');
     var i;
+    var hrefMatch = null;
     for (i = 0; i < links.length; i += 1) {
-      if ((links[i].textContent || '').trim() === '업소등록') {
-        return links[i];
+      var link = links[i];
+      if (isShopWriteLabel(link.textContent)) {
+        return link;
+      }
+      if (!hrefMatch && isShopWriteHref(link.getAttribute('href') || '')) {
+        hrefMatch = link;
       }
     }
 
-    return null;
+    return hrefMatch;
   }
 
   function buildActionButton(data, extraClass, attrName, href, label) {
@@ -58,7 +79,8 @@
       return;
     }
 
-    /* React Tailwind(bg-primary-500 등)이 GNB pill 색상을 덮어쓰지 않도록 클래스 교체 */
+    /* React Tailwind(bg-primary-500·text-white 등)이 GNB pill 색상을 덮어쓰지 않도록 클래스·인라인 스타일 제거 */
+    link.removeAttribute('style');
     link.className = 'eottae-gnb-header__btn eottae-gnb-header__btn--register eottae-home-header-pill'
       + (isMobile
         ? ' eottae-gnb-header__btn--mobile-action col-span-2'
@@ -100,7 +122,7 @@
     var i;
     for (i = 0; i < links.length; i += 1) {
       var link = links[i];
-      if ((link.textContent || '').trim() !== '업소등록') {
+      if (!isShopWriteLabel(link.textContent) && !isShopWriteHref(link.getAttribute('href') || '')) {
         continue;
       }
       if ((link.className || '').indexOf('col-span-2') !== -1) {
@@ -170,12 +192,19 @@
       mount();
     };
 
+    var schedule = function () {
+      run();
+      global.setTimeout(run, 400);
+      global.setTimeout(run, 1200);
+      global.setTimeout(run, 2800);
+    };
+
     if (typeof global.eottaeHomeAfterReactReady === 'function') {
-      global.eottaeHomeAfterReactReady(run);
+      global.eottaeHomeAfterReactReady(schedule);
       return;
     }
 
-    global.setTimeout(run, 1500);
+    schedule();
   }
 
   if (document.readyState === 'loading') {
