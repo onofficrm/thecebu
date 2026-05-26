@@ -79,6 +79,7 @@ if (!function_exists('eottae_site_footer_html')) {
     }
 }
 
+/* tail.php 등에서 include 시에만 출력. 빌더 주입 시에는 EOTTAE_SITE_FOOTER_RETURN_ONLY 정의 후 include */
 if (!defined('EOTTAE_SITE_FOOTER_RETURN_ONLY')) {
     echo eottae_site_footer_html();
 }

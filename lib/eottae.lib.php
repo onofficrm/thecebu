@@ -1082,6 +1082,9 @@ if (!function_exists('eottae_builder_inject_site_footer')) {
         }
 
         if (!function_exists('eottae_site_footer_html')) {
+            if (!defined('EOTTAE_SITE_FOOTER_RETURN_ONLY')) {
+                define('EOTTAE_SITE_FOOTER_RETURN_ONLY', true);
+            }
             include_once G5_PATH.'/components/eottae/site-footer.php';
         }
 
@@ -1109,7 +1112,6 @@ if (!function_exists('eottae_builder_inject_html')) {
 
         $html = eottae_builder_inject_home_map($html);
         $html = eottae_builder_inject_home_public_chat($html);
-        $html = eottae_builder_inject_site_footer($html);
 
         $head_script = eottae_builder_inject_logo_head_script();
         if ($head_script !== '') {
@@ -1134,10 +1136,12 @@ if (!function_exists('eottae_builder_inject_html')) {
         }
 
         if (preg_match('#</body>#i', $html)) {
-            return preg_replace('#</body>#i', $body_scripts.'</body>', $html, 1);
+            $html = preg_replace('#</body>#i', $body_scripts.'</body>', $html, 1);
+        } else {
+            $html .= $body_scripts;
         }
 
-        return $html.$body_scripts;
+        return eottae_builder_inject_site_footer($html);
     }
 }
 
