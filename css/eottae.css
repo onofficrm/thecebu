@@ -723,12 +723,17 @@ body.eottae-page hr {
 
 @media (min-width: 768px) {
   .eottae-gnb-footer__grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 
   .eottae-gnb-footer__brand {
     grid-column: span 2;
   }
+}
+
+/* React 홈 푸터 숨김 — PHP site-footer 사용 */
+#root > footer {
+  display: none !important;
 }
 
 .eottae-gnb-footer__logo {

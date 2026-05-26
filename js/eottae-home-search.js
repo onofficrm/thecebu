@@ -26,6 +26,7 @@
     tour: '투어',
     rentcar: '렌트카',
     cafe: '카페',
+    golf: '골프',
   };
 
   function cfg() {

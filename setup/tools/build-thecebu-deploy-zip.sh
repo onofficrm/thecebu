@@ -51,6 +51,8 @@ LIB_FILES=(
 
 CSS_FILES=(
   css/eottae.css
+  css/eottae-kakao-chat.css
+  css/eottae-talkroom-ui.css
   css/eottae-media-boards.css
   css/g5b-board.css
   css/custom.css
@@ -60,6 +62,9 @@ JS_FILES=(
   js/eottae.js
   js/eottae-shop-map.js
   js/eottae-home-map.js
+  js/eottae-home-public-chat.js
+  js/eottae-home-footer.js
+  js/eottae-talkroom-chat.js
 )
 
 PROC_FILES=(

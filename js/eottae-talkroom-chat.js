@@ -1,5 +1,5 @@
 /**
- * 홈(빌더) — 히어로 3열: 검색 | 공개단체채팅 | 로그인+이벤트
+ * 톡방 상세 — 카카오톡 스타일 실시간 채팅
  */
 (function (global) {
   'use strict';
@@ -35,6 +35,14 @@
     });
   }
 
+  function getSection() {
+    return document.getElementById('eottae-talkroom-chat');
+  }
+
+  function getMessagesEl(section) {
+    return section ? section.querySelector('#eottae-talkroom-chat-messages') : null;
+  }
+
   function authUrls(section) {
     return {
       login: section.getAttribute('data-login-url') || '/bbs/login.php',
@@ -42,10 +50,11 @@
     };
   }
 
+  function requiresAuth(section) {
+    return section.getAttribute('data-is-member') !== '1' || section.getAttribute('data-can-send') !== '1';
+  }
+
   function clearAuthNotice(section) {
-    if (!section) {
-      return;
-    }
     var notice = section.querySelector('.public-group-chat__auth-notice');
     if (notice && notice.parentNode) {
       notice.parentNode.removeChild(notice);
@@ -53,41 +62,27 @@
   }
 
   function showAuthNotice(section, message) {
-    if (!section) {
-      return;
-    }
-
-    var urls = authUrls(section);
     var panel = section.querySelector('.public-group-chat__panel');
     if (!panel) {
-      window.alert(message || '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.');
+      global.alert(message || '로그인이 필요합니다.');
       return;
     }
 
     clearAuthNotice(section);
-
+    var urls = authUrls(section);
     var notice = document.createElement('div');
     notice.className = 'public-group-chat__auth-notice';
     notice.setAttribute('role', 'alert');
-    notice.innerHTML = ''
-      + '<p class="public-group-chat__auth-notice-text">' + esc(message || '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.') + '</p>'
+    notice.innerHTML =
+      '<p class="public-group-chat__auth-notice-text">' + esc(message) + '</p>'
       + '<div class="public-group-chat__auth-notice-actions">'
       + '<a href="' + esc(urls.login) + '" class="public-group-chat__action">로그인</a>'
       + '<a href="' + esc(urls.register) + '" class="public-group-chat__action public-group-chat__action--register">회원가입</a>'
       + '</div>';
-
     panel.appendChild(notice);
   }
 
-  function requiresAuth(section) {
-    if (!section) {
-      return true;
-    }
-    return section.getAttribute('data-is-member') !== '1' || section.getAttribute('data-can-send') !== '1';
-  }
-
   function handleAuthRequired(section, message, data) {
-    var urls = authUrls(section);
     if (data && data.login_url) {
       section.setAttribute('data-login-url', data.login_url);
     }
@@ -97,138 +92,9 @@
     showAuthNotice(section, message || '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.');
   }
 
-  function findHeroGrid() {
-    var headings = document.querySelectorAll('h1');
-    var i;
-    for (i = 0; i < headings.length; i += 1) {
-      if ((headings[i].textContent || '').indexOf('세부어때') !== -1) {
-        var section = headings[i].closest('section');
-        if (section && section.parentElement) {
-          return section.parentElement;
-        }
-      }
-    }
-    return null;
-  }
-
-  function findHeroMainColumn(grid) {
-    if (!grid) {
-      return null;
-    }
-
-    var nodes = grid.children;
-    var i;
-    for (i = 0; i < nodes.length; i += 1) {
-      if ((nodes[i].className || '').indexOf('lg:col-span-8') !== -1) {
-        return nodes[i];
-      }
-    }
-
-    return nodes.length ? nodes[0] : null;
-  }
-
-  function findHeroSidebarColumn(grid) {
-    if (!grid) {
-      return null;
-    }
-
-    var nodes = grid.children;
-    var i;
-    for (i = 0; i < nodes.length; i += 1) {
-      if ((nodes[i].className || '').indexOf('lg:col-span-4') !== -1) {
-        return nodes[i];
-      }
-    }
-
-    return nodes.length > 1 ? nodes[nodes.length - 1] : null;
-  }
-
-  function hideMainColumnEvents(mainCol) {
-    if (!mainCol) {
-      return;
-    }
-
-    var sections = mainCol.querySelectorAll('section');
-    var i;
-    for (i = 0; i < sections.length; i += 1) {
-      var h2 = sections[i].querySelector('h2');
-      if (h2 && (h2.textContent || '').indexOf('업체 이벤트') !== -1) {
-        sections[i].style.display = 'none';
-      }
-    }
-  }
-
-  function getSection() {
-    return document.getElementById('eottae-home-public-chat');
-  }
-
-  function unwrapPendingSlot(chat) {
-    var pending = chat.closest('.eottae-home-slot-pending');
-    if (pending && pending.parentNode) {
-      pending.parentNode.insertBefore(chat, pending);
-      pending.parentNode.removeChild(pending);
-    }
-  }
-
-  function cleanupLegacyHeroWidgets(grid) {
-    if (!grid) {
-      return;
-    }
-
-    var legacy = grid.querySelectorAll('[data-eottae-home-plaza-hero], [data-eottae-home-talk-sidebar]');
-    var i;
-    for (i = 0; i < legacy.length; i += 1) {
-      if (legacy[i].parentNode) {
-        legacy[i].parentNode.removeChild(legacy[i]);
-      }
-    }
-
-    var feed = document.getElementById('eottae-home-talk-feed');
-    if (feed && feed.parentNode) {
-      feed.parentNode.removeChild(feed);
-    }
-  }
-
-  function mountHero() {
-    var chat = getSection();
-    if (!chat || chat.dataset.heroMounted === '1') {
-      return false;
-    }
-
-    var grid = findHeroGrid();
-    var mainCol = findHeroMainColumn(grid);
-    var sidebar = findHeroSidebarColumn(grid);
-    if (!grid || !mainCol) {
-      return false;
-    }
-
-    cleanupLegacyHeroWidgets(grid);
-    hideMainColumnEvents(mainCol);
-    unwrapPendingSlot(chat);
-
-    chat.classList.add('public-group-chat--hero', 'public-group-chat--kakao', 'home-hero-chat-column');
-    grid.classList.add('eottae-home-hero-grid--3col');
-
-    if (sidebar) {
-      grid.insertBefore(chat, sidebar);
-    } else {
-      grid.appendChild(chat);
-    }
-
-    chat.dataset.heroMounted = '1';
-    return true;
-  }
-
-  function getMessagesEl(section) {
-    return section ? section.querySelector('#eottae-public-chat-messages') : null;
-  }
-
   function removeEmptyState(messagesEl) {
-    if (!messagesEl) {
-      return;
-    }
     var empty = messagesEl.querySelector('.public-group-chat__empty');
-    if (empty) {
+    if (empty && empty.parentNode) {
       empty.parentNode.removeChild(empty);
     }
   }
@@ -247,8 +113,8 @@
     }
 
     var author = message.is_ai
-      ? (message.ai_display_name || message.author || '어때봇 · AI 도우미')
-      : (message.author || '익명');
+      ? message.ai_display_name || message.author || '어때봇 · AI 도우미'
+      : message.author || '익명';
     var badge = message.is_ai
       ? '<span class="talk-ai-msg__badge talk-ai-msg__badge--sm" aria-label="AI 도우미">'
         + '<span class="talk-ai-msg__icon" aria-hidden="true">🤖</span>'
@@ -286,7 +152,7 @@
   function appendMessages(section, messages) {
     var messagesEl = getMessagesEl(section);
     if (!messagesEl || !messages || !messages.length) {
-      return 0;
+      return;
     }
 
     var html = '';
@@ -306,25 +172,30 @@
     }
 
     if (!html) {
-      return lastId;
+      return;
     }
 
     removeEmptyState(messagesEl);
     messagesEl.insertAdjacentHTML('beforeend', html);
     section.setAttribute('data-last-wr-id', String(lastId));
     messagesEl.scrollTop = messagesEl.scrollHeight;
-
-    return lastId;
   }
 
   function poll(section) {
     var pollUrl = section.getAttribute('data-poll-url');
-    if (!pollUrl) {
+    var roomId = section.getAttribute('data-room-id');
+    if (!pollUrl || !roomId) {
       return Promise.resolve();
     }
 
     var since = parseInt(section.getAttribute('data-last-wr-id') || '0', 10) || 0;
-    var url = pollUrl + (pollUrl.indexOf('?') >= 0 ? '&' : '?') + 'action=poll&since_wr_id=' + encodeURIComponent(String(since));
+    var url =
+      pollUrl
+      + (pollUrl.indexOf('?') >= 0 ? '&' : '?')
+      + 'action=poll&room_id='
+      + encodeURIComponent(roomId)
+      + '&since_wr_id='
+      + encodeURIComponent(String(since));
 
     return fetch(url, {
       credentials: 'same-origin',
@@ -341,13 +212,14 @@
   }
 
   function sendMessage(section, form) {
-    var input = form.querySelector('#eottae-public-chat-input');
+    var input = form.querySelector('#eottae-talkroom-chat-input');
     var sendBtn = form.querySelector('.public-group-chat__send');
     var sendUrl = section.getAttribute('data-send-url');
+    var roomId = section.getAttribute('data-room-id');
     var token = section.getAttribute('data-member-token') || '';
     var message = input ? input.value.trim() : '';
 
-    if (!sendUrl || message === '') {
+    if (!sendUrl || !roomId || message === '') {
       return;
     }
 
@@ -364,6 +236,7 @@
 
     var body = new FormData();
     body.append('action', 'send');
+    body.append('room_id', roomId);
     body.append('message', message);
     body.append('eottae_talkroom_member_token', token);
 
@@ -385,18 +258,11 @@
 
         if (input) {
           input.value = '';
+          input.style.height = '';
         }
 
         if (data.message_row) {
           appendMessages(section, [data.message_row]);
-        } else if (data.wr_id) {
-          appendMessages(section, [{
-            wr_id: data.wr_id,
-            author: '',
-            text: message,
-            time_label: '방금 전',
-            is_mine: 1,
-          }]);
         }
       })
       .catch(function (err) {
@@ -405,7 +271,7 @@
           handleAuthRequired(section, errMessage);
           return;
         }
-        window.alert(errMessage);
+        global.alert(errMessage);
       })
       .then(function () {
         if (sendBtn) {
@@ -414,29 +280,50 @@
       });
   }
 
-  function bindSection(section) {
-    if (!section || section.dataset.bound === '1') {
+  function bindComposer(section) {
+    var form = section.querySelector('#eottae-talkroom-chat-form');
+    if (!form || form.dataset.bound === '1') {
       return;
     }
-    section.dataset.bound = '1';
+    form.dataset.bound = '1';
 
-    var form = section.querySelector('#eottae-public-chat-form');
-    if (form) {
-      form.addEventListener('submit', function (event) {
-        event.preventDefault();
-        sendMessage(section, form);
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      sendMessage(section, form);
+    });
+
+    var input = form.querySelector('#eottae-talkroom-chat-input');
+    if (input) {
+      input.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault();
+          sendMessage(section, form);
+        }
       });
 
-      var input = form.querySelector('#eottae-public-chat-input');
-      if (input) {
-        input.addEventListener('keydown', function (event) {
-          if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault();
-            sendMessage(section, form);
-          }
-        });
-      }
+      input.addEventListener('input', function () {
+        input.style.height = 'auto';
+        input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+      });
     }
+  }
+
+  function scrollMessagesToEnd() {
+    var section = getSection();
+    var messagesEl = getMessagesEl(section);
+    if (messagesEl) {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+  }
+
+  function bindSection(section) {
+    if (!section || section.dataset.chatBound === '1') {
+      return;
+    }
+    section.dataset.chatBound = '1';
+
+    bindComposer(section);
+    scrollMessagesToEnd();
 
     poll(section);
     global.setInterval(function () {
@@ -444,27 +331,11 @@
     }, POLL_MS);
   }
 
-  function runMount() {
-    if (mountHero()) {
-      var section = getSection();
-      if (section) {
-        bindSection(section);
-      }
-      return true;
-    }
-    return false;
-  }
-
   function init() {
-    var schedule = function () {
-      if (typeof global.eottaeHomeAfterReactReady === 'function') {
-        global.eottaeHomeAfterReactReady(runMount);
-        return;
-      }
-      global.setTimeout(runMount, 1500);
-    };
-
-    schedule();
+    var section = getSection();
+    if (section) {
+      bindSection(section);
+    }
   }
 
   if (document.readyState === 'loading') {
@@ -473,9 +344,5 @@
     init();
   }
 
-  global.initEottaeHomePublicChat = init;
-  global.findEottaeHeroGrid = findHeroGrid;
-  global.findEottaeHeroSidebarColumn = function () {
-    return findHeroSidebarColumn(findHeroGrid());
-  };
-}(window));
+  global.initEottaeTalkroomChat = init;
+}(typeof window !== 'undefined' ? window : this));

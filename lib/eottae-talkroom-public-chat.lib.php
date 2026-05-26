@@ -615,3 +615,219 @@ if (!function_exists('eottae_talkroom_public_group_send_message')) {
         );
     }
 }
+
+if (!function_exists('eottae_talkroom_room_send_message')) {
+    /**
+     * 톡방 상세 — 실시간 채팅 메시지 전송 (공개·비공개 모든 운영 톡방)
+     *
+     * @return array{ok:bool, message:string, wr_id?:int, message_row?:array<string, mixed>|null}
+     */
+    function eottae_talkroom_room_send_message($room_id, $mb_id, $message)
+    {
+        global $g5, $member;
+
+        if (!function_exists('eottae_talkroom_join_room')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
+        }
+
+        $room_id = (int) $room_id;
+        $room = eottae_talkroom_get_operating_room($room_id);
+        if (!$room) {
+            return array('ok' => false, 'message' => '운영 중인 톡방을 찾을 수 없습니다.');
+        }
+
+        $mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $mb_id);
+        if ($mb_id === '') {
+            return array('ok' => false, 'message' => '로그인이 필요합니다.');
+        }
+
+        $message = trim(strip_tags((string) $message));
+        if ($message === '') {
+            return array('ok' => false, 'message' => '메시지를 입력해 주세요.');
+        }
+
+        if (function_exists('mb_strlen') && mb_strlen($message, 'UTF-8') > 500) {
+            return array('ok' => false, 'message' => '메시지는 500자 이내로 작성해 주세요.');
+        }
+
+        $member_row = eottae_talkroom_get_member_row($room_id, $mb_id);
+        if (!$member_row || ($member_row['status'] ?? '') !== 'active') {
+            if (($room['join_type'] ?? 'open') !== 'open') {
+                return array('ok' => false, 'message' => '참여 승인 후 메시지를 보낼 수 있습니다.');
+            }
+
+            $join = eottae_talkroom_join_room($room_id, $mb_id);
+            if (empty($join['ok']) && ($join['message'] ?? '') !== '이미 참여 중인 톡방입니다.') {
+                return array('ok' => false, 'message' => $join['message'] ?? '참여에 실패했습니다.');
+            }
+
+            $member_row = eottae_talkroom_get_member_row($room_id, $mb_id);
+        }
+
+        if (!eottae_talkroom_can_write_posts($room, $member_row, $mb_id)) {
+            return array('ok' => false, 'message' => '메시지를 보낼 수 없습니다.');
+        }
+
+        $write_table = eottae_talkroom_write_table();
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', eottae_talkroom_board_table());
+        if ($write_table === '' || $bo_table === '') {
+            return array('ok' => false, 'message' => '게시판 설정을 찾을 수 없습니다.');
+        }
+
+        $mb = is_array($member) ? $member : array();
+        $wr_name = get_text($mb['mb_nick'] ?? ($mb['mb_name'] ?? $mb_id));
+        if ($wr_name === '') {
+            $wr_name = $mb_id;
+        }
+
+        $subject = function_exists('cut_str') ? cut_str($message, 40, '…') : mb_substr($message, 0, 40, 'UTF-8');
+        $subject_sql = sql_escape_string($subject);
+        $content_sql = sql_escape_string($message);
+        $mb_id_sql = sql_escape_string($mb_id);
+        $wr_name_sql = sql_escape_string($wr_name);
+        $wr_email_sql = sql_escape_string($mb['mb_email'] ?? ($mb_id.'@local'));
+        $seo = sql_escape_string(preg_replace('/[^a-z0-9_-]+/i', '-', strtolower($subject)));
+
+        sql_query(" INSERT INTO `{$write_table}` SET
+            wr_num = (SELECT IFNULL(MIN(wr_num) - 1, -1) FROM `{$write_table}` AS sq),
+            wr_reply = '',
+            wr_comment = 0,
+            ca_name = '한마디',
+            wr_option = '',
+            wr_subject = '{$subject_sql}',
+            wr_content = '{$content_sql}',
+            wr_seo_title = '{$seo}',
+            wr_link1 = '',
+            wr_link2 = '',
+            wr_link1_hit = 0,
+            wr_link2_hit = 0,
+            wr_hit = 0,
+            wr_good = 0,
+            wr_nogood = 0,
+            mb_id = '{$mb_id_sql}',
+            wr_password = '',
+            wr_name = '{$wr_name_sql}',
+            wr_email = '{$wr_email_sql}',
+            wr_homepage = '',
+            wr_datetime = '".G5_TIME_YMDHIS."',
+            wr_last = '".G5_TIME_YMDHIS."',
+            wr_ip = '".sql_escape_string($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1')."',
+            wr_1 = '{$room_id}',
+            wr_2 = '',
+            wr_3 = 'web:room_chat',
+            wr_4 = '',
+            wr_5 = '',
+            wr_6 = '',
+            wr_7 = '',
+            wr_8 = '',
+            wr_9 = '',
+            wr_10 = '' ", false);
+
+        $wr_id = (int) sql_insert_id();
+        if ($wr_id < 1) {
+            return array('ok' => false, 'message' => '메시지 전송에 실패했습니다.');
+        }
+
+        sql_query(" UPDATE `{$write_table}` SET wr_parent = '{$wr_id}' WHERE wr_id = '{$wr_id}' ", false);
+        sql_query(" INSERT INTO {$g5['board_new_table']}
+            (bo_table, wr_id, wr_parent, bn_datetime, mb_id)
+            VALUES ('{$bo_table}', '{$wr_id}', '{$wr_id}', '".G5_TIME_YMDHIS."', '{$mb_id_sql}') ", false);
+        sql_query(" UPDATE {$g5['board_table']} SET bo_count_write = bo_count_write + 1 WHERE bo_table = '{$bo_table}' ", false);
+
+        if (function_exists('delete_cache_latest')) {
+            delete_cache_latest($bo_table);
+        }
+
+        if (function_exists('eottae_talkroom_ai_schedule_reaction_for_post')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom-ai-reaction.lib.php';
+            eottae_talkroom_ai_schedule_reaction_for_post($wr_id);
+        }
+
+        $row = sql_fetch(" SELECT wr_id, wr_subject, wr_content, wr_name, wr_datetime, mb_id, wr_3, wr_1
+            FROM `{$write_table}` WHERE wr_id = '{$wr_id}' LIMIT 1 ");
+
+        return array(
+            'ok'          => true,
+            'message'     => '전송되었습니다.',
+            'wr_id'       => $wr_id,
+            'message_row' => $row ? eottae_talkroom_public_group_format_message($row, $mb_id) : null,
+        );
+    }
+}
+
+if (!function_exists('eottae_talkroom_room_chat_payload')) {
+    /**
+     * 톡방 상세 페이지 — 채팅 UI 초기 데이터
+     *
+     * @param array<string, mixed>|null $ctx eottae_talkroom_build_detail_context()
+     * @return array<string, mixed>
+     */
+    function eottae_talkroom_room_chat_payload($room_id, $viewer_mb_id = '', ?array $ctx = null)
+    {
+        global $is_member;
+
+        if (!function_exists('eottae_talkroom_build_detail_context')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
+        }
+
+        $room_id = (int) $room_id;
+        $viewer_mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $viewer_mb_id);
+
+        if ($ctx === null) {
+            $ctx = eottae_talkroom_build_detail_context($room_id, $viewer_mb_id);
+        }
+
+        if (!$ctx || empty($ctx['room'])) {
+            return array(
+                'room_id'    => 0,
+                'messages'   => array(),
+                'last_wr_id' => 0,
+            );
+        }
+
+        $room = $ctx['room'];
+        $messages = array();
+        $last_wr_id = 0;
+
+        if (!empty($ctx['can_view_posts'])) {
+            foreach (eottae_talkroom_public_group_list_messages($room_id, 50) as $row) {
+                $message = eottae_talkroom_public_group_format_message($row, $viewer_mb_id);
+                if ($message['text'] === '') {
+                    continue;
+                }
+                $messages[] = $message;
+                $last_wr_id = max($last_wr_id, (int) ($message['wr_id'] ?? 0));
+            }
+        }
+
+        $can_send = !empty($is_member) && !empty($ctx['can_write']);
+        $needs_join = false;
+        if ($can_send && $viewer_mb_id !== '') {
+            $member_row = !empty($ctx['member_row']) ? $ctx['member_row'] : eottae_talkroom_get_member_row($room_id, $viewer_mb_id);
+            $needs_join = !$member_row || ($member_row['status'] ?? '') !== 'active';
+        }
+
+        $return_url = function_exists('eottae_talkroom_enter_url')
+            ? eottae_talkroom_enter_url($room_id)
+            : G5_URL;
+
+        return array(
+            'room_id'       => $room_id,
+            'room_name'     => get_text($room['room_name'] ?? ''),
+            'room_emoji'    => get_text($room['emoji'] ?? '💬'),
+            'room_desc'     => get_text($room['room_description'] ?? ''),
+            'messages'      => $messages,
+            'last_wr_id'    => $last_wr_id,
+            'is_member'     => !empty($is_member) ? 1 : 0,
+            'can_send'      => $can_send ? 1 : 0,
+            'can_view'      => !empty($ctx['can_view_posts']) ? 1 : 0,
+            'needs_join'    => $needs_join ? 1 : 0,
+            'login_href'    => function_exists('eottae_login_url') ? eottae_login_url($return_url) : G5_BBS_URL.'/login.php?url='.urlencode($return_url),
+            'register_href' => function_exists('eottae_register_url') ? eottae_register_url() : G5_BBS_URL.'/register.php',
+            'member_token'  => !empty($is_member) && function_exists('eottae_talkroom_member_token')
+                ? eottae_talkroom_member_token()
+                : '',
+            'join_hint'     => get_text($ctx['join_blocked_reason'] ?? ''),
+        );
+    }
+}

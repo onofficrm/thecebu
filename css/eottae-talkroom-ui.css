@@ -1942,3 +1942,166 @@ body.talk-admin-shell .talk-admin-applies__table td:last-child {
   }
 }
 
+/* ── 톡방 상세 — 카카오톡 스타일 채팅 ── */
+body.talkroom-ui .talk-room-detail-page--chat {
+  display: flex;
+  flex-direction: column;
+  max-width: 640px;
+  min-height: calc(100dvh - var(--eottae-header-h, 64px) - 24px);
+  padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+}
+
+body.talkroom-ui .talk-room-detail-page--chat .mypage-subpage__back {
+  flex: 0 0 auto;
+  margin: 0 0 8px;
+}
+
+body.talkroom-ui .talk-room-detail__flash {
+  flex: 0 0 auto;
+  margin-bottom: 8px;
+}
+
+body.talkroom-ui .talk-room-detail__drawer {
+  flex: 0 0 auto;
+  margin: 0 0 10px;
+  border-radius: var(--talkroom-radius-lg);
+  background: var(--talkroom-surface);
+  border: 1px solid var(--talkroom-line);
+  box-shadow: var(--talkroom-shadow);
+  overflow: hidden;
+}
+
+body.talkroom-ui .talk-room-detail__drawer-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 800;
+  color: var(--talkroom-text);
+}
+
+body.talkroom-ui .talk-room-detail__drawer-summary::-webkit-details-marker {
+  display: none;
+}
+
+body.talkroom-ui .talk-room-detail__drawer-summary::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  border-right: 2px solid #94a3b8;
+  border-bottom: 2px solid #94a3b8;
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+body.talkroom-ui .talk-room-detail__drawer[open] .talk-room-detail__drawer-summary::after {
+  transform: rotate(-135deg);
+  margin-top: 4px;
+}
+
+body.talkroom-ui .talk-room-detail__drawer-emoji {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+body.talkroom-ui .talk-room-detail__drawer-label {
+  font-size: 14px;
+}
+
+body.talkroom-ui .talk-room-detail__drawer-meta {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--talkroom-muted);
+}
+
+body.talkroom-ui .talk-room-detail__drawer-body {
+  padding: 0 12px 12px;
+  border-top: 1px solid var(--talkroom-line);
+}
+
+body.talkroom-ui .talk-room-detail__hero--compact {
+  padding: 12px 0 0;
+  margin: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+body.talkroom-ui .talk-room-detail__hero--compact .talk-room-detail__avatar {
+  display: none;
+}
+
+body.talkroom-ui .talk-room-detail__section--inner {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: var(--talkroom-radius-md);
+  box-shadow: none;
+  border: 1px solid #eef2f6;
+}
+
+body.talkroom-ui .talk-room-detail__actions--drawer {
+  position: static;
+  margin: 12px 0 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: auto;
+}
+
+body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .public-group-chat__inner {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 420px;
+}
+
+body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .public-group-chat__head {
+  flex: 0 0 auto;
+  margin-bottom: 8px;
+  padding: 0 2px;
+}
+
+body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .public-group-chat__panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .talk-room-chat__messages,
+body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .public-group-chat__messages {
+  flex: 1 1 auto;
+  min-height: 200px;
+  max-height: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .public-group-chat__composer {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 639px) {
+  body.talkroom-ui:not(.talk-admin-shell) .talk-room-detail-page--chat {
+    min-height: calc(100dvh - var(--eottae-header-h, 56px) - 8px);
+    padding-bottom: calc(8px + var(--talkroom-mobile-bottom));
+  }
+
+  body.talkroom-ui .talk-room-detail__drawer-meta {
+    display: none;
+  }
+}
+

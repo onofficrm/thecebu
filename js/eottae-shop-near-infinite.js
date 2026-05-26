@@ -35,6 +35,30 @@
     this.sentinel = null;
   }
 
+  ShopInfiniteList.prototype.scrollRoot = function () {
+    return this.root.closest('.shop-near-page__panel') || null;
+  };
+
+  ShopInfiniteList.prototype.loadedCardCount = function () {
+    return this.root.querySelectorAll('[data-shop-card]').length;
+  };
+
+  ShopInfiniteList.prototype.targetTotal = function () {
+    return parseInt(this.root.getAttribute('data-total'), 10) || 0;
+  };
+
+  ShopInfiniteList.prototype.fillUntilComplete = function () {
+    var self = this;
+    var total = self.targetTotal();
+    if (!self.hasMore || self.loading || total < 1) {
+      return;
+    }
+    if (self.loadedCardCount() >= total) {
+      return;
+    }
+    self.loadMore();
+  };
+
   ShopInfiniteList.prototype.setStatus = function (text, visible) {
     if (!this.statusEl) return;
     this.statusEl.textContent = text || '';
@@ -109,6 +133,8 @@
         if (!self.hasMore && self.sentinel && self.sentinel.parentNode) {
           self.sentinel.parentNode.removeChild(self.sentinel);
         }
+
+        self.fillUntilComplete();
       })
       .catch(function (err) {
         self.setStatus(err.message || '목록을 불러오지 못했습니다.', true);
@@ -129,15 +155,35 @@
     self.sentinel.setAttribute('aria-hidden', 'true');
     self.root.parentNode.appendChild(self.sentinel);
 
+    var panel = self.scrollRoot();
+
+    function sentinelNearVisible() {
+      if (!self.sentinel) {
+        return false;
+      }
+      var sentinelRect = self.sentinel.getBoundingClientRect();
+      if (panel) {
+        var panelRect = panel.getBoundingClientRect();
+        return sentinelRect.top <= panelRect.bottom + 240;
+      }
+      return sentinelRect.top <= global.innerHeight + 240;
+    }
+
+    function onScrollNearEnd() {
+      if (!self.hasMore || self.loading) {
+        return;
+      }
+      if (sentinelNearVisible()) {
+        self.loadMore();
+      }
+    }
+
+    if (panel) {
+      panel.addEventListener('scroll', onScrollNearEnd, { passive: true });
+    }
+
     if (!('IntersectionObserver' in global)) {
-      var panel = self.root.closest('.shop-near-page__panel') || self.root;
-      panel.addEventListener('scroll', function () {
-        if (!self.hasMore || self.loading) return;
-        var rect = self.root.getBoundingClientRect();
-        if (rect.bottom < global.innerHeight + 200) {
-          self.loadMore();
-        }
-      });
+      global.addEventListener('scroll', onScrollNearEnd, { passive: true });
       return;
     }
 
@@ -149,7 +195,7 @@
           }
         });
       },
-      { root: null, rootMargin: '240px 0px', threshold: 0 }
+      { root: panel, rootMargin: '240px 0px', threshold: 0 }
     );
 
     observer.observe(self.sentinel);
@@ -162,6 +208,7 @@
     }
     var list = new ShopInfiniteList(root);
     list.bindScroll();
+    list.fillUntilComplete();
   }
 
   if (global.document.readyState === 'loading') {

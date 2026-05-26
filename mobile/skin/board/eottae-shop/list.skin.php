@@ -11,27 +11,29 @@ $sort_links = eottae_shop_sort_links(isset($sst) ? $sst : '');
 $list_base = get_pretty_url($bo_table);
 $current_region = (isset($sfl) && $sfl === 'wr_2' && !empty($stx)) ? get_text($stx) : '';
 $eottae_user_coords = eottae_shop_user_coords_from_request();
-$eottae_list_filters = eottae_shop_list_filters_from_request();
-if ($eottae_list_filters['sst'] === '' && isset($sst)) {
-    $eottae_list_filters['sst'] = trim((string) $sst);
-}
-if ($eottae_list_filters['sod'] === '' && isset($sod)) {
-    $eottae_list_filters['sod'] = trim((string) $sod);
-}
-if ($eottae_user_coords) {
-    $eottae_list_filters['eottae_lat'] = (string) $eottae_user_coords['lat'];
-    $eottae_list_filters['eottae_lng'] = (string) $eottae_user_coords['lng'];
-}
+if (empty($eottae_shop_list_ready)) {
+    $eottae_list_filters = eottae_shop_list_filters_from_request();
+    if ($eottae_list_filters['sst'] === '' && isset($sst)) {
+        $eottae_list_filters['sst'] = trim((string) $sst);
+    }
+    if ($eottae_list_filters['sod'] === '' && isset($sod)) {
+        $eottae_list_filters['sod'] = trim((string) $sod);
+    }
+    if ($eottae_user_coords) {
+        $eottae_list_filters['eottae_lat'] = (string) $eottae_user_coords['lat'];
+        $eottae_list_filters['eottae_lng'] = (string) $eottae_user_coords['lng'];
+    }
 
-$eottae_initial_chunk = eottae_shop_list_chunk($bo_table, $board, $board_skin_url, array_merge($eottae_list_filters, array(
-    'offset' => 0,
-    'limit'  => eottae_shop_infinite_batch_limit(0),
-)));
-$list = $eottae_initial_chunk['list'];
-$total_count = $eottae_initial_chunk['total_count'];
-$write_pages = '';
-$eottae_list_has_more = !empty($eottae_initial_chunk['has_more']);
-$eottae_list_next_offset = (int) $eottae_initial_chunk['next_offset'];
+    $eottae_initial_chunk = eottae_shop_list_chunk($bo_table, $board, $board_skin_url, array_merge($eottae_list_filters, array(
+        'offset' => 0,
+        'limit'  => eottae_shop_infinite_batch_limit(0),
+    )));
+    $list = $eottae_initial_chunk['list'];
+    $total_count = $eottae_initial_chunk['total_count'];
+    $write_pages = '';
+    $eottae_list_has_more = !empty($eottae_initial_chunk['has_more']);
+    $eottae_list_next_offset = (int) $eottae_initial_chunk['next_offset'];
+}
 
 $shop_map_markers = array();
 $eottae_maps_enabled = eottae_enqueue_google_maps();
@@ -75,7 +77,7 @@ function eottae_shop_build_list_url($bo_table, $params = array())
                 <option value="<?php echo get_text($region); ?>"<?php echo ($current_region === $region) ? ' selected' : ''; ?>><?php echo get_text($region); ?></option>
                 <?php } ?>
             </select>
-            <input type="hidden" name="sfl" value="<?php echo $current_region ? 'wr_2' : (isset($sfl) ? $sfl : ''); ?>">
+            <input type="hidden" name="sfl" value="<?php echo $current_region ? 'wr_2' : ''; ?>">
         </form>
 
         <form class="shop-near-search__bar" method="get" action="<?php echo G5_BBS_URL; ?>/board.php">

@@ -321,4 +321,35 @@ if ($board['bo_use_rss_view']) {
 }
 
 $stx = get_text(stripslashes($stx));
+
+$eottae_shop_list_ready = false;
+if (function_exists('eottae_is_shop_board') && eottae_is_shop_board($bo_table)) {
+    include_once(G5_LIB_PATH.'/eottae.lib.php');
+    $eottae_list_filters = eottae_shop_list_filters_from_request();
+    if ($eottae_list_filters['sst'] === '' && !empty($sst)) {
+        $eottae_list_filters['sst'] = trim((string) $sst);
+    }
+    if ($eottae_list_filters['sod'] === '' && !empty($sod)) {
+        $eottae_list_filters['sod'] = trim((string) $sod);
+    }
+    $eottae_user_coords = eottae_shop_user_coords_from_request();
+    if ($eottae_user_coords) {
+        $eottae_list_filters['eottae_lat'] = (string) $eottae_user_coords['lat'];
+        $eottae_list_filters['eottae_lng'] = (string) $eottae_user_coords['lng'];
+    }
+    $eottae_initial_chunk = eottae_shop_list_chunk($bo_table, $board, $board_skin_url, array_merge($eottae_list_filters, array(
+        'offset' => 0,
+        'limit'  => eottae_shop_infinite_batch_limit(0),
+    )));
+    $list = $eottae_initial_chunk['list'];
+    $total_count = $eottae_initial_chunk['total_count'];
+    $write_pages = '';
+    $eottae_list_has_more = !empty($eottae_initial_chunk['has_more']);
+    $eottae_list_next_offset = (int) $eottae_initial_chunk['next_offset'];
+    $sca = $eottae_list_filters['sca'];
+    $stx = get_text($eottae_list_filters['stx']);
+    $sfl = $eottae_list_filters['sfl'];
+    $eottae_shop_list_ready = true;
+}
+
 include_once($board_skin_path.'/list.skin.php');

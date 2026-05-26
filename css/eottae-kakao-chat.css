@@ -1,0 +1,376 @@
+@charset "utf-8";
+
+/**
+ * 세부공개단체톡 · 톡방 채팅 — 카카오톡 오픈채팅 톤앤매너
+ * .public-group-chat--kakao (메인 히어로 · 단톡방 공통)
+ */
+
+.public-group-chat--kakao {
+  --kakao-chat-bg: #bacee0;
+  --kakao-chat-bg-deep: #a8bdd3;
+  --kakao-bubble-mine: #fee500;
+  --kakao-bubble-mine-border: #f5d900;
+  --kakao-bubble-other: #ffffff;
+  --kakao-bubble-ai: #ffffff;
+  --kakao-text: #111111;
+  --kakao-text-muted: #6b7280;
+  --kakao-time: rgba(17, 17, 17, 0.45);
+  --kakao-header-text: #191919;
+  --kakao-composer-bg: #ffffff;
+  --kakao-composer-border: #d1d5db;
+  --kakao-send-bg: #fee500;
+  --kakao-send-text: #191919;
+  --kakao-radius-bubble: 18px;
+  --kakao-radius-shell: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+}
+
+/* ── 셸 ── */
+.public-group-chat--kakao .public-group-chat__inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  gap: 0;
+  padding: 0;
+  border-radius: var(--kakao-radius-shell);
+  background: var(--kakao-chat-bg);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+/* ── 헤더 (카톡 채팅방 상단) ── */
+.public-group-chat--kakao .public-group-chat__head {
+  flex: 0 0 auto;
+  align-items: center;
+  margin: 0;
+  padding: 12px 14px;
+  gap: 10px;
+  background: var(--kakao-chat-bg-deep);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.public-group-chat--kakao .public-group-chat__emoji {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  font-size: 1.2rem;
+  background: #fff;
+  border: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.public-group-chat--kakao .public-group-chat__title {
+  margin: 0 0 2px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--kakao-header-text);
+}
+
+.public-group-chat--kakao .public-group-chat__desc {
+  font-size: 0.72rem;
+  color: var(--kakao-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.public-group-chat--kakao .public-group-chat__live-badge {
+  padding: 3px 7px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  background: #ff3342;
+  box-shadow: none;
+}
+
+.public-group-chat--kakao .public-group-chat__enter {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--kakao-header-text);
+  background: rgba(255, 255, 255, 0.92);
+  border: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.public-group-chat--kakao .public-group-chat__enter:hover {
+  background: #fff;
+}
+
+/* ── 대화 패널 ── */
+.public-group-chat--kakao .public-group-chat__panel {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--kakao-chat-bg);
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.public-group-chat--kakao .public-group-chat__messages {
+  flex: 1 1 auto;
+  min-height: 180px;
+  max-height: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 12px 10px;
+  gap: 12px;
+  background: var(--kakao-chat-bg);
+}
+
+.public-group-chat--kakao .public-group-chat__empty {
+  margin: auto;
+  font-size: 0.82rem;
+  color: var(--kakao-text-muted);
+}
+
+/* ── 메시지 행 ── */
+.public-group-chat--kakao .public-group-chat__message {
+  display: block;
+  max-width: 100%;
+}
+
+.public-group-chat--kakao .public-group-chat__message-inner {
+  display: flex;
+  flex-direction: column;
+  max-width: 82%;
+  gap: 4px;
+}
+
+.public-group-chat--kakao .public-group-chat__message--mine {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.public-group-chat--kakao .public-group-chat__message--mine .public-group-chat__message-inner {
+  align-items: flex-end;
+}
+
+.public-group-chat--kakao .public-group-chat__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 4px;
+}
+
+.public-group-chat--kakao .public-group-chat__author {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--kakao-text-muted);
+}
+
+.public-group-chat--kakao .public-group-chat__message--ai .talk-ai-msg__badge {
+  margin: 0;
+}
+
+.public-group-chat--kakao .public-group-chat__bubble-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.public-group-chat--kakao .public-group-chat__message--mine .public-group-chat__bubble-row {
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+.public-group-chat--kakao .public-group-chat__bubble {
+  max-width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--kakao-radius-bubble);
+  background: var(--kakao-bubble-other);
+  border: 0;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06);
+}
+
+.public-group-chat--kakao .public-group-chat__message--mine .public-group-chat__bubble {
+  border-radius: var(--kakao-radius-bubble);
+  background: var(--kakao-bubble-mine);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.public-group-chat--kakao .public-group-chat__message--ai .public-group-chat__bubble {
+  background: var(--kakao-bubble-ai);
+  border: 1px solid rgba(14, 165, 233, 0.12);
+}
+
+.public-group-chat--kakao .public-group-chat__text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--kakao-text);
+  word-break: break-word;
+}
+
+.public-group-chat--kakao .public-group-chat__time {
+  flex: 0 0 auto;
+  margin: 0;
+  padding-bottom: 2px;
+  font-size: 0.62rem;
+  line-height: 1.2;
+  color: var(--kakao-time);
+  white-space: nowrap;
+}
+
+/* ── 입력창 ── */
+.public-group-chat--kakao .public-group-chat__composer {
+  flex: 0 0 auto;
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--kakao-composer-bg);
+}
+
+.public-group-chat--kakao .public-group-chat__composer-field {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 6px 6px 6px 12px;
+  border: 1px solid var(--kakao-composer-border);
+  border-radius: 22px;
+  background: #f9fafb;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.public-group-chat--kakao .public-group-chat__composer-field:focus-within {
+  border-color: #9ca3af;
+  background: #fff;
+  box-shadow: none;
+}
+
+.public-group-chat--kakao .public-group-chat__composer-field .public-group-chat__input {
+  min-height: 36px;
+  max-height: 100px;
+  padding: 6px 0;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: var(--kakao-text);
+}
+
+.public-group-chat--kakao .public-group-chat__send {
+  min-height: 34px;
+  min-width: 52px;
+  padding: 0 14px;
+  border-radius: 18px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--kakao-send-text);
+  background: var(--kakao-send-bg);
+  box-shadow: none;
+}
+
+.public-group-chat--kakao .public-group-chat__send:hover:not(:disabled) {
+  background: #f5d900;
+}
+
+.public-group-chat--kakao .public-group-chat__send:disabled {
+  opacity: 0.4;
+}
+
+.public-group-chat--kakao .public-group-chat__join {
+  color: var(--kakao-send-text);
+  background: var(--kakao-send-bg);
+  border: 0;
+}
+
+.public-group-chat--kakao .public-group-chat__action {
+  border-radius: 18px;
+}
+
+.public-group-chat--kakao .public-group-chat__action--register {
+  color: var(--kakao-send-text);
+  background: var(--kakao-send-bg);
+  border: 0;
+}
+
+.public-group-chat--kakao .public-group-chat__hint {
+  font-size: 0.8rem;
+  color: var(--kakao-text-muted);
+}
+
+/* ── 히어로(메인) — eottae.css hero 레이아웃 덮어쓰기 ── */
+.public-group-chat--hero.public-group-chat--kakao {
+  height: 100%;
+}
+
+.public-group-chat--hero.public-group-chat--kakao .public-group-chat__inner {
+  min-height: 0;
+  padding: 0;
+  background: var(--kakao-chat-bg);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+}
+
+.public-group-chat--hero.public-group-chat--kakao .public-group-chat__head {
+  margin-bottom: 0;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: var(--kakao-chat-bg-deep);
+}
+
+.public-group-chat--hero.public-group-chat--kakao .public-group-chat__panel {
+  border: 0;
+  border-radius: 0;
+  background: var(--kakao-chat-bg);
+  box-shadow: none;
+}
+
+.public-group-chat--hero.public-group-chat--kakao .public-group-chat__messages {
+  min-height: 140px;
+  max-height: none;
+  padding: 14px 12px 10px;
+  background: var(--kakao-chat-bg);
+}
+
+.public-group-chat--hero.public-group-chat--kakao .public-group-chat__composer {
+  padding: 8px 10px 10px;
+  background: var(--kakao-composer-bg);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 1023px) {
+  .public-group-chat--hero.public-group-chat--kakao .public-group-chat__head {
+    flex-wrap: wrap;
+  }
+
+  .public-group-chat--hero.public-group-chat--kakao .public-group-chat__head-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .public-group-chat--hero.public-group-chat--kakao .public-group-chat__desc {
+    white-space: normal;
+  }
+}
+
+/* ── 단톡방 상세 ── */
+body.talkroom-ui .talk-room-chat.public-group-chat--kakao {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat.public-group-chat--kakao .public-group-chat__inner {
+  flex: 1 1 auto;
+  min-height: 420px;
+}
+
+body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat.public-group-chat--kakao .public-group-chat__head {
+  margin-bottom: 0;
+  padding: 10px 12px;
+  background: var(--kakao-chat-bg-deep);
+}
+
+body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat.public-group-chat--kakao .public-group-chat__messages {
+  min-height: 200px;
+}

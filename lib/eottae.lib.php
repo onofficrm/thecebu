@@ -914,6 +914,26 @@ if (!function_exists('eottae_builder_inject_home_events_banner_script')) {
     }
 }
 
+if (!function_exists('eottae_builder_inject_home_map_categories_script')) {
+    function eottae_builder_inject_home_map_categories_script()
+    {
+        $shop_table = function_exists('eottae_shop_table') ? eottae_shop_table() : 'shop';
+        $payload = array(
+            'bbsUrl'    => G5_BBS_URL.'/board.php',
+            'shopTable' => $shop_table,
+        );
+        $payload_json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($payload_json === false) {
+            return '';
+        }
+
+        $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-map-categories.js' : '/js/eottae-home-map-categories.js';
+
+        return '<script>window.__EOTTae_HOME_MAP_CATEGORIES__='.$payload_json.';</script>'
+            .'<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
+    }
+}
+
 if (!function_exists('eottae_builder_inject_home_header_actions_script')) {
     function eottae_builder_inject_home_header_actions_script()
     {
@@ -1033,6 +1053,53 @@ if (!function_exists('eottae_builder_inject_home_plaza_feed')) {
     }
 }
 
+if (!function_exists('eottae_builder_inject_site_footer_script')) {
+    function eottae_builder_inject_site_footer_script()
+    {
+        if (!defined('G5_JS_URL')) {
+            return '';
+        }
+
+        $payload = array(
+            'talk_url'                  => G5_URL.'/talk/ai.php',
+            'coupon_guide_url'          => G5_URL.'/page/eottae-coupon-guide.php',
+            'business_coupon_guide_url' => G5_URL.'/page/eottae-business-coupon-guide.php',
+        );
+
+        return '<style>#root>footer,[data-eottae-react-footer]{display:none!important}</style>'
+            .'<script>window.__EOTTae_HOME_FOOTER__='
+            .json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)
+            .';</script>'
+            .'<script src="'.G5_JS_URL.'/eottae-home-footer.js" defer></script>';
+    }
+}
+
+if (!function_exists('eottae_builder_inject_site_footer')) {
+    function eottae_builder_inject_site_footer($html)
+    {
+        if (!is_string($html) || $html === '') {
+            return $html;
+        }
+
+        if (!function_exists('eottae_site_footer_html')) {
+            include_once G5_PATH.'/components/eottae/site-footer.php';
+        }
+
+        if (!function_exists('eottae_site_footer_html')) {
+            return $html;
+        }
+
+        $footer = '<div id="ft" class="site-footer-wrap">'.eottae_site_footer_html().'</div>';
+        $footer .= eottae_builder_inject_site_footer_script();
+
+        if (preg_match('#</body>#i', $html)) {
+            return preg_replace('#</body>#i', $footer.'</body>', $html, 1);
+        }
+
+        return $html.$footer;
+    }
+}
+
 if (!function_exists('eottae_builder_inject_html')) {
     function eottae_builder_inject_html($html, $id)
     {
@@ -1042,6 +1109,7 @@ if (!function_exists('eottae_builder_inject_html')) {
 
         $html = eottae_builder_inject_home_map($html);
         $html = eottae_builder_inject_home_public_chat($html);
+        $html = eottae_builder_inject_site_footer($html);
 
         $head_script = eottae_builder_inject_logo_head_script();
         if ($head_script !== '') {
@@ -1059,6 +1127,7 @@ if (!function_exists('eottae_builder_inject_html')) {
         $body_scripts .= eottae_builder_inject_home_public_chat_script();
         $body_scripts .= eottae_builder_inject_home_events_banner_script();
         $body_scripts .= eottae_builder_inject_home_header_actions_script();
+        $body_scripts .= eottae_builder_inject_home_map_categories_script();
 
         if ($body_scripts === '') {
             return $html;
@@ -3287,30 +3356,7 @@ if (!function_exists('eottae_shop_build_nearby_list')) {
             return array();
         }
 
-        $where = array("wr_is_comment = 0");
-        if ($master !== '') {
-            $where[] = "wr_1 = '".sql_escape_string($master)."'";
-        }
-        $sca = isset($args['sca']) ? trim((string) $args['sca']) : '';
-        $sfl = isset($args['sfl']) ? trim((string) $args['sfl']) : '';
-        $stx = isset($args['stx']) ? trim((string) $args['stx']) : '';
-
-        if ($sca !== '') {
-            $where[] = "ca_name = '".sql_escape_string($sca)."'";
-        }
-
-        if ($stx !== '') {
-            $stx_sql = sql_escape_string($stx);
-            if ($sfl === 'wr_2') {
-                $where[] = "wr_2 = '{$stx_sql}'";
-            } elseif ($sfl === 'wr_subject||wr_content') {
-                $where[] = "(wr_subject like '%{$stx_sql}%' or wr_content like '%{$stx_sql}%')";
-            } elseif (in_array($sfl, array('wr_subject', 'wr_content', 'wr_1', 'wr_2', 'wr_3'), true)) {
-                $where[] = "{$sfl} like '%{$stx_sql}%'";
-            }
-        }
-
-        $where_sql = implode(' and ', $where);
+        $where_sql = implode(' and ', eottae_shop_list_where_parts($bo_table, $args));
         $count = sql_fetch(" select count(*) as cnt from {$write_table} where {$where_sql} ");
         $total_count = isset($count['cnt']) ? (int) $count['cnt'] : 0;
 
@@ -3411,10 +3457,23 @@ if (!function_exists('eottae_shop_list_filters_from_request')) {
      */
     function eottae_shop_list_filters_from_request()
     {
+        $sca = isset($_GET['sca']) ? trim((string) $_GET['sca']) : '';
+        $sfl = isset($_GET['sfl']) ? trim((string) $_GET['sfl']) : '';
+        $stx = isset($_GET['stx']) ? trim((string) $_GET['stx']) : '';
+
+        if ($stx === '') {
+            $sfl = '';
+        } elseif ($sfl === 'wr_2' && function_exists('eottae_shop_region_options')) {
+            $regions = eottae_shop_region_options();
+            if (!in_array($stx, $regions, true)) {
+                $sfl = 'wr_subject||wr_content';
+            }
+        }
+
         return array(
-            'sca'        => isset($_GET['sca']) ? trim((string) $_GET['sca']) : '',
-            'sfl'        => isset($_GET['sfl']) ? trim((string) $_GET['sfl']) : '',
-            'stx'        => isset($_GET['stx']) ? trim((string) $_GET['stx']) : '',
+            'sca'        => $sca,
+            'sfl'        => $sfl,
+            'stx'        => $stx,
             'sst'        => isset($_GET['sst']) ? trim((string) $_GET['sst']) : '',
             'sod'        => isset($_GET['sod']) ? trim((string) $_GET['sod']) : '',
             'eottae_lat' => isset($_GET['eottae_lat']) ? trim((string) $_GET['eottae_lat']) : '',
@@ -3463,7 +3522,8 @@ if (!function_exists('eottae_shop_list_where_parts')) {
         $stx = isset($args['stx']) ? trim((string) $args['stx']) : '';
 
         if ($sca !== '') {
-            $where[] = "ca_name = '".sql_escape_string($sca)."'";
+            $esc = sql_escape_string($sca);
+            $where[] = "(ca_name = '{$esc}' or wr_1 = '{$esc}')";
         }
 
         if ($stx !== '') {
@@ -3641,11 +3701,14 @@ if (!function_exists('eottae_shop_list_chunk')) {
             $list[] = get_list($row, $board, $board_skin_url, $subject_len);
         }
 
+        $loaded = count($list);
+        $has_more = ($offset + $loaded) < $total;
+
         return array(
             'list'         => $list,
             'total_count'  => $total,
-            'has_more'     => ($offset + count($list)) < $total,
-            'next_offset'  => $offset + count($list),
+            'has_more'     => $has_more,
+            'next_offset'  => $offset + $loaded,
         );
     }
 }

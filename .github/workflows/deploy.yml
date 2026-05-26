@@ -13,52 +13,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Inject local site config secrets
+      - name: Inject deploy secrets (크론 키만 — API 키는 FTP _site.config.local.php 수동 관리)
         env:
-          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
-          GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
           TALKROOM_MAINTENANCE_KEY: ${{ secrets.TALKROOM_MAINTENANCE_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           mkdir -p _deploy_secrets/data
           echo "HAS_DEPLOY_SECRETS=0" >> "$GITHUB_ENV"
           echo "HAS_MAINTENANCE_KEY=0" >> "$GITHUB_ENV"
-          php <<'PHP'
-          <?php
-          $cfg = array();
-          if ($key = getenv('GOOGLE_MAPS_API_KEY')) {
-              $cfg['google_maps_api_key'] = $key;
-          }
-          if ($key = getenv('OPENAI_API_KEY')) {
-              $cfg['ai_generate_enabled'] = true;
-              $cfg['ai_generate_api_key'] = $key;
-          }
-          if ($id = getenv('GOOGLE_OAUTH_CLIENT_ID')) {
-              $cfg['google_oauth_client_id'] = $id;
-          }
-          if ($secret = getenv('GOOGLE_OAUTH_CLIENT_SECRET')) {
-              $cfg['google_oauth_client_secret'] = $secret;
-          }
-          if (!$cfg) {
-              exit(0);
-          }
-          $root = "<?php\nif (!defined('_GNUBOARD_')) exit;\n";
-          file_put_contents('_deploy_secrets/_site.config.local.php', $root.'$site_config_override = '.var_export($cfg, true).";\n");
-          if (!empty($cfg['google_maps_api_key'])) {
-              $data_cfg = array('google_maps_api_key' => $cfg['google_maps_api_key']);
-              if (!empty($cfg['ai_generate_api_key'])) {
-                  $data_cfg['ai_generate_enabled'] = true;
-                  $data_cfg['ai_generate_api_key'] = $cfg['ai_generate_api_key'];
-                  $data_cfg['ai_generate_model'] = 'gpt-4o-mini';
-                  $data_cfg['ai_generate_image_model'] = 'gpt-image-1';
-              }
-              file_put_contents(
-                  '_deploy_secrets/data/eottae-secrets.local.php',
-                  $root.'$eottae_secrets_override = '.var_export($data_cfg, true).";\n"
-              );
-          }
-          PHP
           MAINT_KEY="${TALKROOM_MAINTENANCE_KEY:-$OPENAI_API_KEY}"
           if [ -n "$MAINT_KEY" ]; then
             export MAINT_KEY
@@ -72,7 +34,7 @@ jobs:
             '
             echo "HAS_MAINTENANCE_KEY=1" >> "$GITHUB_ENV"
           fi
-          if [ -f _deploy_secrets/_site.config.local.php ] || [ -f _deploy_secrets/data/eottae-secrets.local.php ] || [ -f _deploy_secrets/data/eottae-maintenance.local.php ]; then
+          if [ -f _deploy_secrets/data/eottae-maintenance.local.php ]; then
             echo "HAS_DEPLOY_SECRETS=1" >> "$GITHUB_ENV"
           fi
 
@@ -106,7 +68,7 @@ jobs:
             data/dbconfig.local.php
             _site.config.local.php
 
-      - name: Deploy secrets via FTP
+      - name: Deploy secrets via FTP (data/ only)
         if: env.HAS_DEPLOY_SECRETS == '1'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -120,6 +82,9 @@ jobs:
           server-dir: /public_html/
           state-name: thecebu-secrets-v1
           log-level: minimal
+          exclude: |
+            _site.config.local.php
+            **/_site.config.local.php
 
       - name: Approve pending talkroom applications
         if: env.HAS_MAINTENANCE_KEY == '1'

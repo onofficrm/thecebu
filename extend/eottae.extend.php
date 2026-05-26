@@ -316,6 +316,7 @@ add_event('board_head_before', 'eottae_on_promo_board_view', 20, 3);
 
 if (eottae_should_load_assets()) {
     add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae.css">', 20);
+    add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-kakao-chat.css">', 21);
     $eottae_ai_cfg = function_exists('eottae_ai_generate_bootstrap_config')
         ? eottae_ai_generate_bootstrap_config()
         : array('enabled' => false, 'api_key' => '');
