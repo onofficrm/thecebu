@@ -36,6 +36,19 @@ if (!eottae_talkroom_verify_admin_token($token)) {
 $action = isset($_POST['action']) ? trim((string) $_POST['action']) : '';
 $room_id = isset($_POST['room_id']) ? (int) $_POST['room_id'] : 0;
 
+if ($action === 'batch_approve') {
+    $result = eottae_talkroom_approve_all_pending_rooms($member['mb_id']);
+    if (!empty($result['ok'])) {
+        eottae_talkroom_admin_token(true);
+    }
+    eottae_talkroom_admin_json(!empty($result['ok']), (string) ($result['message'] ?? ''), array(
+        'total'   => (int) ($result['total'] ?? 0),
+        'success' => (int) ($result['success'] ?? 0),
+        'failed'  => (int) ($result['failed'] ?? 0),
+        'items'   => isset($result['items']) && is_array($result['items']) ? $result['items'] : array(),
+    ));
+}
+
 if ($room_id < 1) {
     eottae_talkroom_admin_json(false, '톡방 정보가 올바르지 않습니다.');
 }

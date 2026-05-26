@@ -10,10 +10,12 @@ include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
 
 header('Content-Type: text/plain; charset=utf-8');
 
-function eottae_talkroom_maintenance_expected_key()
+function eottae_talkroom_maintenance_valid_keys()
 {
+    $keys = array();
+
     if (defined('EOTTAE_MAINTENANCE_BATCH_KEY')) {
-        return trim((string) EOTTAE_MAINTENANCE_BATCH_KEY);
+        $keys[] = trim((string) EOTTAE_MAINTENANCE_BATCH_KEY);
     }
 
     if (defined('G5_DATA_PATH') && is_file(G5_DATA_PATH.'/eottae-maintenance.local.php')) {
@@ -21,16 +23,45 @@ function eottae_talkroom_maintenance_expected_key()
     }
 
     if (defined('EOTTAE_MAINTENANCE_BATCH_KEY')) {
-        return trim((string) EOTTAE_MAINTENANCE_BATCH_KEY);
+        $keys[] = trim((string) EOTTAE_MAINTENANCE_BATCH_KEY);
     }
 
-    return '';
+    if (function_exists('g5site_cfg')) {
+        foreach (array('talkroom_ai_cron_key', 'ai_generate_api_key') as $cfg_key) {
+            $cfg_val = trim((string) g5site_cfg($cfg_key, ''));
+            if ($cfg_val !== '') {
+                $keys[] = $cfg_val;
+            }
+        }
+    }
+
+    $keys = array_values(array_unique(array_filter($keys, static function ($key) {
+        return $key !== '';
+    })));
+
+    return $keys;
 }
 
-$expected_key = eottae_talkroom_maintenance_expected_key();
+function eottae_talkroom_maintenance_verify_key($provided_key, array $valid_keys)
+{
+    $provided_key = trim((string) $provided_key);
+    if ($provided_key === '' || !$valid_keys) {
+        return false;
+    }
+
+    foreach ($valid_keys as $valid_key) {
+        if (hash_equals((string) $valid_key, $provided_key)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+$valid_keys = eottae_talkroom_maintenance_valid_keys();
 $provided_key = isset($_GET['key']) ? trim((string) $_GET['key']) : '';
 
-if ($expected_key === '' || $provided_key === '' || !hash_equals($expected_key, $provided_key)) {
+if (!eottae_talkroom_maintenance_verify_key($provided_key, $valid_keys)) {
     http_response_code(403);
     exit("Forbidden\n");
 }
