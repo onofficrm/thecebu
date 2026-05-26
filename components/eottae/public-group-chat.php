@@ -18,7 +18,7 @@ if (!function_exists('eottae_public_group_chat_html')) {
         ob_start();
         ?>
         <section
-            class="public-group-chat public-group-chat--kakao"
+            class="public-group-chat public-group-chat--kakao public-group-chat--hero home-hero-chat-column"
             id="eottae-home-public-chat"
             aria-labelledby="public-group-chat-title"
             data-room-id="<?php echo (int) $payload['room_id']; ?>"

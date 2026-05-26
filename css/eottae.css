@@ -512,6 +512,34 @@ img[data-eottae-logo] {
   color: #181600;
 }
 
+/* 홈(React) 헤더 — 세부일정·세부톡·업소등록 pill 크기 통일 (업소등록 기준) */
+#root header a.eottae-home-header-pill,
+#root header a.eottae-gnb-header__btn--register,
+#root header a.eottae-gnb-header__btn--talk,
+#root header a.eottae-gnb-header__btn--calendar,
+#root header a[href*="write.php?bo_table=shop"]:not([href*="안내"]) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  min-height: 0 !important;
+  padding: 10px 18px !important;
+  border-radius: 9999px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+}
+
+#root header a.eottae-gnb-header__btn--mobile-action,
+#root header a.col-span-2[href*="write.php?bo_table=shop"] {
+  width: 100% !important;
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+  text-align: center !important;
+}
+
 @media (max-width: 639px) {
   .eottae-gnb-header__btn--desktop {
     display: none !important;
@@ -8791,7 +8819,7 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   letter-spacing: -0.02em;
 }
 
-.public-group-chat--hero {
+.public-group-chat--hero:not(.public-group-chat--kakao) {
   width: 100%;
   margin-top: 0;
   height: 100%;
@@ -8801,7 +8829,7 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   min-height: 0;
 }
 
-.public-group-chat--hero .public-group-chat__inner {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__inner {
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -8815,14 +8843,14 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
 }
 
-.public-group-chat--hero .public-group-chat__head {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__head {
   align-items: center;
   margin-bottom: 10px;
   padding-bottom: 10px;
   border-bottom: 1px solid #f1f5f9;
 }
 
-.public-group-chat--hero .public-group-chat__emoji {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__emoji {
   width: 34px;
   height: 34px;
   border-radius: 10px;
@@ -8831,14 +8859,14 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   border: 1px solid #e2e8f0;
 }
 
-.public-group-chat--hero .public-group-chat__title {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__title {
   margin: 0 0 2px;
   font-size: 0.98rem;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
 
-.public-group-chat--hero .public-group-chat__desc {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__desc {
   font-size: 0.72rem;
   color: #94a3b8;
   white-space: nowrap;
@@ -8846,23 +8874,23 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   text-overflow: ellipsis;
 }
 
-.public-group-chat--hero .public-group-chat__head-actions {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__head-actions {
   flex-shrink: 0;
 }
 
-.public-group-chat--hero .public-group-chat__live-badge {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__live-badge {
   padding: 3px 7px;
   font-size: 9px;
   box-shadow: none;
 }
 
-.public-group-chat--hero .public-group-chat__enter {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__enter {
   min-height: 32px;
   padding: 0 11px;
   font-size: 11px;
 }
 
-.public-group-chat--hero .public-group-chat__panel {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__panel {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
@@ -8873,7 +8901,7 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   background: #f8fafc;
 }
 
-.public-group-chat--hero .public-group-chat__messages {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__messages {
   flex: 1 1 auto;
   min-height: 120px;
   max-height: none;
@@ -8882,69 +8910,69 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   background: transparent;
 }
 
-.public-group-chat--hero .public-group-chat__empty {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__empty {
   font-size: 0.78rem;
   color: #94a3b8;
 }
 
-.public-group-chat--hero .public-group-chat__bubble {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__bubble {
   padding: 8px 10px;
   border-radius: 12px;
 }
 
-.public-group-chat--hero .public-group-chat__text {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__text {
   font-size: 0.8rem;
 }
 
-.public-group-chat--hero .public-group-chat__composer {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__composer {
   flex: 0 0 auto;
   padding: 8px 10px 10px;
   background: #fff;
   border-top: 1px solid #eef2f6;
 }
 
-.public-group-chat--hero .public-group-chat__composer--login,
-.public-group-chat--hero .public-group-chat__composer--disabled {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__composer--login,
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__composer--disabled {
   padding: 10px;
 }
 
-.public-group-chat--hero .public-group-chat__hint {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__hint {
   margin-bottom: 8px;
   font-size: 0.76rem;
 }
 
-.public-group-chat--hero .public-group-chat__composer-field {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__composer-field {
   padding: 6px 6px 6px 10px;
 }
 
-.public-group-chat--hero .public-group-chat__composer-field .public-group-chat__input {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__composer-field .public-group-chat__input {
   min-height: 36px;
   max-height: 72px;
   padding: 6px 0;
   font-size: 0.82rem;
 }
 
-.public-group-chat--hero .public-group-chat__composer-field .public-group-chat__send {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__composer-field .public-group-chat__send {
   min-height: 32px;
   padding: 0 12px;
   font-size: 12px;
 }
 
-.public-group-chat--hero .public-group-chat__footer {
+.public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__footer {
   display: none;
 }
 
 @media (max-width: 1023px) {
-  .public-group-chat--hero .public-group-chat__head {
+  .public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__head {
     flex-wrap: wrap;
   }
 
-  .public-group-chat--hero .public-group-chat__head-actions {
+  .public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__head-actions {
     width: 100%;
     justify-content: flex-end;
   }
 
-  .public-group-chat--hero .public-group-chat__desc {
+  .public-group-chat--hero:not(.public-group-chat--kakao) .public-group-chat__desc {
     white-space: normal;
   }
 }

@@ -27,7 +27,7 @@
   function buildActionButton(data, extraClass, attrName, href, label) {
     var btn = document.createElement('a');
     btn.href = href;
-    btn.className = 'eottae-gnb-header__btn ' + (extraClass || '');
+    btn.className = 'eottae-gnb-header__btn eottae-home-header-pill ' + (extraClass || '');
     btn.setAttribute(attrName, '1');
     btn.textContent = label;
     return btn;
@@ -53,6 +53,19 @@
     );
   }
 
+  function normalizeShopWriteLink(link, isMobile) {
+    if (!link) {
+      return;
+    }
+
+    link.classList.add('eottae-gnb-header__btn', 'eottae-gnb-header__btn--register', 'eottae-home-header-pill');
+    if (isMobile) {
+      link.classList.add('eottae-gnb-header__btn--mobile-action');
+    } else {
+      link.classList.add('eottae-gnb-header__btn--desktop');
+    }
+  }
+
   function mountDesktop(data) {
     var header = document.querySelector('header');
     if (!header) {
@@ -63,6 +76,8 @@
     if (!shopWrite || !shopWrite.parentNode) {
       return;
     }
+
+    normalizeShopWriteLink(shopWrite, false);
 
     if (!header.querySelector('[data-eottae-home-calendar-btn="1"]') && data.calendar_url) {
       var calendarBtn = buildCalendarButton(data, 'eottae-gnb-header__btn--desktop hidden sm:inline-flex');
@@ -99,20 +114,16 @@
       return;
     }
 
+    normalizeShopWriteLink(shopWrite, true);
+
     if (!header.querySelector('[data-eottae-home-calendar-btn="mobile"]') && data.calendar_url) {
-      var calendarBtn = buildCalendarButton(
-        data,
-        'eottae-home-header-calendar-btn--mobile col-span-2 rounded-xl py-3 text-center text-sm font-bold'
-      );
+      var calendarBtn = buildCalendarButton(data, 'eottae-gnb-header__btn--mobile-action');
       calendarBtn.setAttribute('data-eottae-home-calendar-btn', 'mobile');
       shopWrite.parentNode.insertBefore(calendarBtn, shopWrite);
     }
 
     if (!header.querySelector('[data-eottae-home-talk-btn="mobile"]') && data.talk_url) {
-      var talkBtn = buildTalkButton(
-        data,
-        'eottae-home-header-talk-btn--mobile col-span-2 rounded-xl py-3 text-center text-sm font-bold'
-      );
+      var talkBtn = buildTalkButton(data, 'eottae-gnb-header__btn--mobile-action');
       talkBtn.setAttribute('data-eottae-home-talk-btn', 'mobile');
       shopWrite.parentNode.insertBefore(talkBtn, shopWrite);
     }

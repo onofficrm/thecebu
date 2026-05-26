@@ -1103,6 +1103,40 @@ if (!function_exists('eottae_builder_inject_site_footer')) {
     }
 }
 
+if (!function_exists('eottae_builder_inject_home_stylesheets')) {
+    /**
+     * 빌더 홈 — GNUBoard head 없이도 카카오톡 채팅 UI CSS 로드
+     */
+    function eottae_builder_inject_home_stylesheets($html)
+    {
+        if (!is_string($html) || $html === '') {
+            return $html;
+        }
+
+        if (stripos($html, 'eottae-kakao-chat.css') !== false) {
+            return $html;
+        }
+
+        $css_url = defined('G5_CSS_URL') ? G5_CSS_URL.'/eottae-kakao-chat.css' : '/css/eottae-kakao-chat.css';
+        $link = '<link rel="stylesheet" href="'.htmlspecialchars($css_url, ENT_QUOTES, 'UTF-8').'">';
+
+        if (preg_match('#<link[^>]+href=["\'][^"\']*eottae\.css["\'][^>]*>#i', $html)) {
+            return preg_replace(
+                '#(<link[^>]+href=["\'][^"\']*eottae\.css["\'][^>]*>)#i',
+                '$1'."\n    ".$link,
+                $html,
+                1
+            );
+        }
+
+        if (preg_match('#</head>#i', $html)) {
+            return preg_replace('#</head>#i', '    '.$link."\n".'</head>', $html, 1);
+        }
+
+        return $html;
+    }
+}
+
 if (!function_exists('eottae_builder_inject_html')) {
     function eottae_builder_inject_html($html, $id)
     {
@@ -1110,6 +1144,7 @@ if (!function_exists('eottae_builder_inject_html')) {
             return $html;
         }
 
+        $html = eottae_builder_inject_home_stylesheets($html);
         $html = eottae_builder_inject_home_map($html);
         $html = eottae_builder_inject_home_public_chat($html);
 
