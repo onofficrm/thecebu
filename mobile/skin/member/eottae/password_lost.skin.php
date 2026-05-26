@@ -10,7 +10,6 @@ add_stylesheet('<link rel="stylesheet" href="'.$member_skin_url.'/style.css">', 
         <p class="auth-layout__sub">가입 시 등록한 정보로 비밀번호를 재설정할 수 있습니다</p>
 
         <form name="fpasswordlost" action="<?php echo $action_url ?>" onsubmit="return fpasswordlost_submit(this);" method="post" autocomplete="off">
-        <input type="hidden" name="token" value="<?php echo $token ?>">
 
         <div class="eottae-field">
             <label for="mb_email">E-mail</label>
