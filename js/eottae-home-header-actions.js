@@ -58,12 +58,11 @@
       return;
     }
 
-    link.classList.add('eottae-gnb-header__btn', 'eottae-gnb-header__btn--register', 'eottae-home-header-pill');
-    if (isMobile) {
-      link.classList.add('eottae-gnb-header__btn--mobile-action');
-    } else {
-      link.classList.add('eottae-gnb-header__btn--desktop');
-    }
+    /* React Tailwind(bg-primary-500 등)이 GNB pill 색상을 덮어쓰지 않도록 클래스 교체 */
+    link.className = 'eottae-gnb-header__btn eottae-gnb-header__btn--register eottae-home-header-pill'
+      + (isMobile
+        ? ' eottae-gnb-header__btn--mobile-action col-span-2'
+        : ' eottae-gnb-header__btn--desktop hidden sm:inline-flex');
   }
 
   function mountDesktop(data) {
