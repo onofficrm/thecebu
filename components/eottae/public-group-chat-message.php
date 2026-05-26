@@ -30,6 +30,17 @@ if (!function_exists('eottae_public_group_chat_message_html')) {
             : ($message['author'] ?? '익명');
         $time_label = isset($message['time_label']) ? (string) $message['time_label'] : '';
         $text = isset($message['text']) ? (string) $message['text'] : '';
+        $action_label = trim((string) ($message['action_label'] ?? ''));
+        $action_url = trim((string) ($message['action_url'] ?? ''));
+        $has_action = $action_label !== '' && $action_url !== '' && preg_match('#^https?://#i', $action_url);
+        $poll_html = '';
+        if (!empty($message['poll_options']) && function_exists('eottae_public_ai_poll_render_html')) {
+            include_once G5_LIB_PATH.'/eottae-public-ai-poll.lib.php';
+            $poll_html = eottae_public_ai_poll_render_html($message['poll_options']);
+        } elseif (!empty($message['poll_options_raw'])) {
+            include_once G5_LIB_PATH.'/eottae-public-ai-poll.lib.php';
+            $poll_html = eottae_public_ai_poll_render_html($message['poll_options_raw']);
+        }
 
         ob_start();
         ?>
@@ -40,8 +51,7 @@ if (!function_exists('eottae_public_group_chat_message_html')) {
                     <?php if ($is_ai) {
                         $ai_badge = eottae_talkroom_ai_message_render_badge($message, 'sm');
                         echo str_replace('talk-ai-msg__badge', 'talk-ai-msg__badge public-ai-badge', $ai_badge);
-                    } ?>
-                    <?php } else { ?>
+                    } else { ?>
                     <strong class="public-group-chat__author"><?php echo $author; ?></strong>
                     <?php } ?>
                 </div>
@@ -52,6 +62,12 @@ if (!function_exists('eottae_public_group_chat_message_html')) {
                     <?php } ?>
                     <div class="public-group-chat__bubble">
                         <p class="public-group-chat__text"><?php echo nl2br(get_text($text)); ?></p>
+                        <?php if ($poll_html !== '') { echo $poll_html; } ?>
+                        <?php if ($has_action) { ?>
+                        <p class="public-group-chat__action-wrap">
+                            <a href="<?php echo htmlspecialchars($action_url, ENT_QUOTES, 'UTF-8'); ?>" class="public-group-chat__cta" target="_blank" rel="noopener noreferrer"><?php echo get_text($action_label); ?></a>
+                        </p>
+                        <?php } ?>
                     </div>
                     <?php if (!$is_mine && $time_label !== '') { ?>
                     <time class="public-group-chat__time"><?php echo $time_label; ?></time>

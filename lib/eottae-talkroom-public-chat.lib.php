@@ -342,19 +342,26 @@ if (!function_exists('eottae_talkroom_public_group_format_message')) {
             include_once G5_PATH.'/components/eottae/talk-ai-message-ui.php';
         }
 
+        $action_url = trim((string) ($row['wr_link1'] ?? ''));
+        if ($action_url !== '' && !preg_match('#^https?://#i', $action_url)) {
+            $action_url = '';
+        }
+
         $post_row = array(
-            'wr_id'      => (int) ($row['wr_id'] ?? 0),
-            'wr_name'    => $row['wr_name'] ?? '',
-            'mb_id'      => $row['mb_id'] ?? '',
-            'wr_3'       => $row['wr_3'] ?? '',
-            'author'     => get_text($row['wr_name'] ?? ''),
-            'text'       => eottae_talkroom_public_group_message_text($row),
-            'time_label' => function_exists('eottae_community_relative_time')
+            'wr_id'        => (int) ($row['wr_id'] ?? 0),
+            'wr_name'      => $row['wr_name'] ?? '',
+            'mb_id'        => $row['mb_id'] ?? '',
+            'wr_3'         => $row['wr_3'] ?? '',
+            'author'       => get_text($row['wr_name'] ?? ''),
+            'text'         => eottae_talkroom_public_group_message_text($row),
+            'time_label'   => function_exists('eottae_community_relative_time')
                 ? eottae_community_relative_time($row['wr_datetime'] ?? '')
                 : substr((string) ($row['wr_datetime'] ?? ''), 11, 5),
-            'href'       => function_exists('eottae_talkroom_post_view_url')
+            'href'         => function_exists('eottae_talkroom_post_view_url')
                 ? eottae_talkroom_post_view_url((int) ($row['wr_id'] ?? 0), (int) ($row['wr_1'] ?? 0))
                 : '',
+            'action_label' => get_text($row['wr_link2'] ?? ''),
+            'action_url'   => $action_url,
         );
 
         if (function_exists('eottae_talkroom_ai_message_enrich_post_row')) {
@@ -368,6 +375,24 @@ if (!function_exists('eottae_talkroom_public_group_format_message')) {
                 ? get_text($post_row['ai_display_name'])
                 : get_text($post_row['author'] ?? '어때봇 · AI 도우미');
             $post_row['ai_display_name'] = $post_row['author'];
+        }
+
+        if (strpos((string) ($post_row['text'] ?? ''), "\n\n1.") !== false) {
+            $parts = preg_split("/\n\n(?=\d+\.)/u", (string) $post_row['text'], 2);
+            if (is_array($parts) && count($parts) === 2) {
+                $post_row['text'] = $parts[0];
+                $poll_lines = preg_split('/\n/u', trim($parts[1]));
+                $opts = array();
+                foreach ($poll_lines as $line) {
+                    if (preg_match('/^\d+\.\s*(.+)$/u', trim($line), $m)) {
+                        $opts[] = trim($m[1]);
+                    }
+                }
+                if ($opts && function_exists('eottae_public_ai_poll_encode_options')) {
+                    include_once G5_LIB_PATH.'/eottae-public-ai-poll.lib.php';
+                    $post_row['poll_options'] = eottae_public_ai_poll_encode_options($opts);
+                }
+            }
         }
 
         return $post_row;
@@ -396,7 +421,7 @@ if (!function_exists('eottae_talkroom_public_group_list_messages')) {
         $where_since = $since_wr_id > 0 ? " AND wr_id > '{$since_wr_id}' " : '';
 
         $result = sql_query("
-            SELECT wr_id, wr_subject, wr_content, wr_name, wr_datetime, mb_id, wr_3, wr_1
+            SELECT wr_id, wr_subject, wr_content, wr_name, wr_datetime, mb_id, wr_3, wr_1, wr_link1, wr_link2
             FROM `{$write_table}`
             WHERE wr_is_comment = 0
               AND wr_1 = '{$room_id}'

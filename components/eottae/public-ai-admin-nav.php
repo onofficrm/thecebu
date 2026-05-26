@@ -18,6 +18,8 @@ if (!function_exists('eottae_public_ai_render_admin_nav')) {
             <a href="<?php echo eottae_public_ai_admin_candidates_url('pending'); ?>" class="talk-admin-nav__item<?php echo $active === 'candidates' ? ' is-active' : ''; ?>">
                 AI 후보 메시지<?php if ($pending > 0) { ?> (<?php echo number_format($pending); ?>)<?php } ?>
             </a>
+            <a href="<?php echo G5_URL; ?>/page/eottae-admin-public-ai-weather.php" class="talk-admin-nav__item<?php echo $active === 'weather' ? ' is-active' : ''; ?>">날씨 데이터</a>
+            <a href="<?php echo G5_URL; ?>/page/eottae-admin-public-ai-news.php" class="talk-admin-nav__item<?php echo $active === 'news' ? ' is-active' : ''; ?>">외부뉴스</a>
             <a href="<?php echo eottae_public_ai_admin_logs_url(); ?>" class="talk-admin-nav__item<?php echo $active === 'logs' ? ' is-active' : ''; ?>">AI 발행 로그</a>
         </nav>
         <?php

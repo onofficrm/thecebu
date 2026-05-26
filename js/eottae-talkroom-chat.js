@@ -134,6 +134,13 @@
       ? '<time class="public-group-chat__time">' + esc(message.time_label) + '</time>'
       : '';
 
+    var actionHtml = '';
+    if (message.action_label && message.action_url && /^https?:\/\//i.test(message.action_url)) {
+      actionHtml = '<p class="public-group-chat__action-wrap"><a href="' + esc(message.action_url)
+        + '" class="public-group-chat__cta" target="_blank" rel="noopener noreferrer">'
+        + esc(message.action_label) + '</a></p>';
+    }
+
     return ''
       + '<article class="' + classes.join(' ') + '" data-wr-id="' + esc(message.wr_id) + '">'
       + '<div class="public-group-chat__message-inner">'
@@ -142,6 +149,7 @@
       + timeBefore
       + '<div class="public-group-chat__bubble">'
       + '<p class="public-group-chat__text">' + esc(message.text).replace(/\n/g, '<br>') + '</p>'
+      + actionHtml
       + '</div>'
       + timeAfter
       + '</div>'

@@ -51,6 +51,18 @@ if (is_file(G5_LIB_PATH.'/eottae-public-ai.lib.php')) {
         eottae_public_ai_ensure_schema();
     }
 }
+if (is_file(G5_LIB_PATH.'/eottae-public-ai-generator.lib.php')) {
+    include_once G5_LIB_PATH.'/eottae-public-ai-generator.lib.php';
+}
+if (is_file(G5_LIB_PATH.'/eottae-public-ai-publish.lib.php')) {
+    include_once G5_LIB_PATH.'/eottae-public-ai-publish.lib.php';
+}
+foreach (array('guard', 'weather', 'news', 'poll', 'openai') as $public_ai_module) {
+    $public_ai_lib = G5_LIB_PATH.'/eottae-public-ai-'.$public_ai_module.'.lib.php';
+    if (is_file($public_ai_lib)) {
+        include_once $public_ai_lib;
+    }
+}
 if (function_exists('eottae_ad_ensure_table')) {
     eottae_ad_ensure_table();
 }

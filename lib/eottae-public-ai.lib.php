@@ -45,6 +45,7 @@ if (!function_exists('eottae_public_ai_trigger_types')) {
         return array(
             'calendar_today'     => '오늘 일정',
             'calendar_tomorrow'  => '내일 일정',
+            'calendar_day_after' => '모레 일정',
             'holiday'            => '공휴일',
             'weather'            => '날씨',
             'talk_room_activity' => '세부톡방 활동',
@@ -52,6 +53,7 @@ if (!function_exists('eottae_public_ai_trigger_types')) {
             'business_event'     => '업체 이벤트',
             'quiet_chat'         => '조용한 공개톡',
             'daily_question'     => '오늘의 질문',
+            'external_news'      => '외부뉴스',
             'admin_manual'       => '관리자 수동',
         );
     }
@@ -173,6 +175,28 @@ if (!function_exists('eottae_public_ai_ensure_schema')) {
             ", false);
         }
 
+        if (is_file(G5_LIB_PATH.'/eottae-public-ai-weather.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-public-ai-weather.lib.php';
+            if (function_exists('eottae_public_ai_weather_ensure_schema')) {
+                eottae_public_ai_weather_ensure_schema();
+            }
+        }
+        if (is_file(G5_LIB_PATH.'/eottae-public-ai-news.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-public-ai-news.lib.php';
+            if (function_exists('eottae_public_ai_external_news_ensure_schema')) {
+                eottae_public_ai_external_news_ensure_schema();
+            }
+        }
+
+        eottae_public_ai_upgrade_candidate_columns();
+
+        if (is_file(G5_LIB_PATH.'/eottae-public-ai-openai.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-public-ai-openai.lib.php';
+            if (function_exists('eottae_public_ai_openai_ensure_schema')) {
+                eottae_public_ai_openai_ensure_schema();
+            }
+        }
+
         if (!eottae_talkroom_table_exists($logs_table)) {
             $ok = $ok && (bool) sql_query("
                 CREATE TABLE IF NOT EXISTS `{$logs_table}` (
@@ -223,6 +247,33 @@ if (!function_exists('eottae_public_ai_ensure_schema')) {
     }
 }
 
+if (!function_exists('eottae_public_ai_upgrade_candidate_columns')) {
+    function eottae_public_ai_upgrade_candidate_columns()
+    {
+        if (!function_exists('eottae_talkroom_table_exists')) {
+            return;
+        }
+
+        $table = eottae_public_ai_candidates_table();
+        if (!eottae_talkroom_table_exists($table)) {
+            return;
+        }
+
+        $columns = array(
+            'is_sensitive'          => "ADD `is_sensitive` tinyint(1) NOT NULL DEFAULT '0'",
+            'poll_options'          => "ADD `poll_options` text NOT NULL",
+            'force_admin_approval'  => "ADD `force_admin_approval` tinyint(1) NOT NULL DEFAULT '0'",
+        );
+
+        foreach ($columns as $col => $ddl) {
+            $row = sql_fetch(" SHOW COLUMNS FROM `{$table}` LIKE '{$col}' ", false);
+            if (empty($row['Field'])) {
+                sql_query(" ALTER TABLE `{$table}` {$ddl} ", false);
+            }
+        }
+    }
+}
+
 if (!function_exists('eottae_public_ai_default_settings')) {
     function eottae_public_ai_default_settings()
     {
@@ -243,6 +294,14 @@ if (!function_exists('eottae_public_ai_default_settings')) {
             'use_popular_posts'      => 1,
             'use_business_events'    => 1,
             'use_external_news'      => 0,
+            'openai_enabled'            => 0,
+            'openai_model'              => 'gpt-4o-mini',
+            'openai_api_key'            => '',
+            'openai_api_key_masked'     => '',
+            'openai_api_key_source'     => '',
+            'openai_max_calls_per_day'  => 20,
+            'openai_max_message_length' => 400,
+            'openai_fallback_template'  => 1,
         );
     }
 }
@@ -273,7 +332,7 @@ if (!function_exists('eottae_public_ai_get_settings')) {
             return $defaults;
         }
 
-        return array(
+        $settings = array(
             'ai_enabled'             => (int) !empty($row['ai_enabled']),
             'ai_name'                => trim((string) ($row['ai_name'] ?? $defaults['ai_name'])) ?: $defaults['ai_name'],
             'ai_persona'             => trim((string) ($row['ai_persona'] ?? $defaults['ai_persona'])),
@@ -293,7 +352,24 @@ if (!function_exists('eottae_public_ai_get_settings')) {
             'updated_by'             => trim((string) ($row['updated_by'] ?? '')),
             'created_at'             => trim((string) ($row['created_at'] ?? '')),
             'updated_at'             => trim((string) ($row['updated_at'] ?? '')),
+            'openai_enabled'            => (int) !empty($row['openai_enabled']),
+            'openai_model'              => trim((string) ($row['openai_model'] ?? 'gpt-4o-mini')) ?: 'gpt-4o-mini',
+            'openai_api_key'            => '',
+            'openai_api_key_masked'     => '',
+            'openai_api_key_source'     => '',
+            'openai_max_calls_per_day'  => max(1, min(200, (int) ($row['openai_max_calls_per_day'] ?? 20))),
+            'openai_max_message_length' => max(80, min(1000, (int) ($row['openai_max_message_length'] ?? 400))),
+            'openai_fallback_template'  => (int) !empty($row['openai_fallback_template'] ?? 1),
         );
+
+        if (is_file(G5_LIB_PATH.'/eottae-public-ai-openai.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-public-ai-openai.lib.php';
+            $key = eottae_public_ai_openai_resolve_api_key();
+            $settings['openai_api_key_masked'] = eottae_public_ai_openai_mask_api_key($key);
+            $settings['openai_api_key_source'] = eottae_public_ai_openai_api_key_source();
+        }
+
+        return $settings;
     }
 }
 
@@ -325,6 +401,24 @@ if (!function_exists('eottae_public_ai_save_settings')) {
             $ai_persona = mb_substr($ai_persona, 0, 255, 'UTF-8');
         }
 
+        $openai_model = trim(strip_tags((string) ($data['openai_model'] ?? 'gpt-4o-mini')));
+        if ($openai_model === '') {
+            $openai_model = 'gpt-4o-mini';
+        }
+        if (function_exists('mb_substr')) {
+            $openai_model = mb_substr($openai_model, 0, 40, 'UTF-8');
+        }
+
+        $openai_key_sql = '';
+        if (is_file(G5_LIB_PATH.'/eottae-public-ai-openai.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-public-ai-openai.lib.php';
+            $new_key = trim((string) ($data['openai_api_key'] ?? ''));
+            $is_masked = $new_key === '' || preg_match('/^[•*.\s]+$/u', $new_key) || strpos($new_key, '…') !== false;
+            if (!$is_masked && $new_key !== '') {
+                $openai_key_sql = " openai_api_key = '".sql_escape_string($new_key)."', ";
+            }
+        }
+
         $ok = (bool) sql_query("
             INSERT INTO `{$table}` SET
                 id = 1,
@@ -344,6 +438,11 @@ if (!function_exists('eottae_public_ai_save_settings')) {
                 use_popular_posts = '".(!empty($data['use_popular_posts']) ? 1 : 0)."',
                 use_business_events = '".(!empty($data['use_business_events']) ? 1 : 0)."',
                 use_external_news = '".(!empty($data['use_external_news']) ? 1 : 0)."',
+                openai_enabled = '".(!empty($data['openai_enabled']) ? 1 : 0)."',
+                openai_model = '".sql_escape_string($openai_model)."',
+                openai_max_calls_per_day = '".max(1, min(200, (int) ($data['openai_max_calls_per_day'] ?? 20)))."',
+                openai_max_message_length = '".max(80, min(1000, (int) ($data['openai_max_message_length'] ?? 400)))."',
+                openai_fallback_template = '".(!empty($data['openai_fallback_template']) ? 1 : 0)."',
                 updated_by = '".sql_escape_string($admin_mb_id)."',
                 created_at = '{$now}',
                 updated_at = '{$now}'
@@ -364,6 +463,12 @@ if (!function_exists('eottae_public_ai_save_settings')) {
                 use_popular_posts = VALUES(use_popular_posts),
                 use_business_events = VALUES(use_business_events),
                 use_external_news = VALUES(use_external_news),
+                openai_enabled = VALUES(openai_enabled),
+                openai_model = VALUES(openai_model),
+                openai_max_calls_per_day = VALUES(openai_max_calls_per_day),
+                openai_max_message_length = VALUES(openai_max_message_length),
+                openai_fallback_template = VALUES(openai_fallback_template),
+                {$openai_key_sql}
                 updated_by = VALUES(updated_by),
                 updated_at = VALUES(updated_at)
         ", false);
@@ -409,6 +514,9 @@ if (!function_exists('eottae_public_ai_format_candidate_row')) {
             'published_at'   => trim((string) ($row['published_at'] ?? '')),
             'created_at'     => trim((string) ($row['created_at'] ?? '')),
             'updated_at'     => trim((string) ($row['updated_at'] ?? '')),
+            'is_sensitive'   => (int) !empty($row['is_sensitive']),
+            'poll_options'   => trim((string) ($row['poll_options'] ?? '')),
+            'force_admin_approval' => (int) !empty($row['force_admin_approval']),
         );
     }
 }
@@ -709,38 +817,6 @@ if (!function_exists('eottae_public_ai_admin_list_logs')) {
     }
 }
 
-if (!function_exists('eottae_public_ai_test_publish_candidate')) {
-    /**
-     * 3단계에서 공개톡 발행과 연결 — 현재는 로그만 기록
-     */
-    function eottae_public_ai_test_publish_candidate($candidate_id, $admin_mb_id = '')
-    {
-        global $is_admin;
-
-        if ($is_admin !== 'super') {
-            return array('ok' => false, 'message' => '권한이 없습니다.');
-        }
-
-        $candidate = eottae_public_ai_get_candidate($candidate_id);
-        if (!$candidate) {
-            return array('ok' => false, 'message' => '후보 메시지를 찾을 수 없습니다.');
-        }
-
-        eottae_public_ai_insert_log(array(
-            'candidate_id'    => $candidate['candidate_id'],
-            'trigger_type'    => $candidate['trigger_type'],
-            'message'         => $candidate['message'],
-            'publish_status'  => 'skipped',
-            'chat_message_id' => 0,
-            'error_message'   => '테스트 발행은 3단계에서 공개톡 연동 예정입니다.',
-        ));
-
-        return array(
-            'ok'      => true,
-            'message' => '테스트 발행 요청을 기록했습니다. (실제 공개톡 발행은 다음 단계에서 연결됩니다)',
-        );
-    }
-}
 
 if (!function_exists('eottae_public_ai_admin_settings_url')) {
     function eottae_public_ai_admin_settings_url()
@@ -800,5 +876,278 @@ if (!function_exists('eottae_public_ai_pending_count')) {
     function eottae_public_ai_pending_count()
     {
         return eottae_public_ai_admin_count_candidates('pending');
+    }
+}
+
+if (!function_exists('eottae_public_ai_today_ymd')) {
+    function eottae_public_ai_today_ymd($now = null)
+    {
+        $now = $now ?: (defined('G5_TIME_YMDHIS') ? G5_TIME_YMDHIS : date('Y-m-d H:i:s'));
+
+        return substr($now, 0, 10);
+    }
+}
+
+if (!function_exists('eottae_public_ai_day_start_datetime')) {
+    function eottae_public_ai_day_start_datetime($ymd = '')
+    {
+        $ymd = preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $ymd)
+            ? (string) $ymd
+            : eottae_public_ai_today_ymd();
+
+        return $ymd.' 00:00:00';
+    }
+}
+
+if (!function_exists('eottae_public_ai_is_within_active_hours')) {
+    function eottae_public_ai_is_within_active_hours(array $settings, $now = null)
+    {
+        $now = $now ?: (defined('G5_TIME_YMDHIS') ? G5_TIME_YMDHIS : date('Y-m-d H:i:s'));
+        $current = date('H:i:s', strtotime($now));
+        $start = eottae_public_ai_normalize_time($settings['active_start_time'] ?? '08:00:00');
+        $end = eottae_public_ai_normalize_time($settings['active_end_time'] ?? '22:00:00');
+
+        if ($start <= $end) {
+            return $current >= $start && $current <= $end;
+        }
+
+        return $current >= $start || $current <= $end;
+    }
+}
+
+if (!function_exists('eottae_public_ai_candidate_exists_today')) {
+    function eottae_public_ai_candidate_exists_today($source_type, $source_id, $now = null)
+    {
+        eottae_public_ai_ensure_schema();
+        $source_type = trim((string) $source_type);
+        $source_id = max(0, (int) $source_id);
+        if ($source_type === '' || $source_id < 1) {
+            return false;
+        }
+
+        $table = eottae_public_ai_candidates_table();
+        $day_start = eottae_public_ai_day_start_datetime(eottae_public_ai_today_ymd($now));
+        $row = sql_fetch("
+            SELECT candidate_id
+            FROM `{$table}`
+            WHERE source_type = '".sql_escape_string($source_type)."'
+              AND source_id = '{$source_id}'
+              AND created_at >= '".sql_escape_string($day_start)."'
+              AND status NOT IN ('rejected', 'deleted')
+            LIMIT 1
+        ", false);
+
+        return !empty($row['candidate_id']);
+    }
+}
+
+if (!function_exists('eottae_public_ai_count_candidates_today_by_trigger')) {
+    function eottae_public_ai_count_candidates_today_by_trigger($trigger_type, $now = null)
+    {
+        eottae_public_ai_ensure_schema();
+        $trigger_type = trim((string) $trigger_type);
+        if ($trigger_type === '') {
+            return 0;
+        }
+
+        $table = eottae_public_ai_candidates_table();
+        $day_start = eottae_public_ai_day_start_datetime(eottae_public_ai_today_ymd($now));
+        $row = sql_fetch("
+            SELECT COUNT(*) AS cnt
+            FROM `{$table}`
+            WHERE trigger_type = '".sql_escape_string($trigger_type)."'
+              AND created_at >= '".sql_escape_string($day_start)."'
+              AND status NOT IN ('rejected', 'deleted')
+        ", false);
+
+        return (int) ($row['cnt'] ?? 0);
+    }
+}
+
+if (!function_exists('eottae_public_ai_count_candidates_today')) {
+    function eottae_public_ai_count_candidates_today($now = null)
+    {
+        eottae_public_ai_ensure_schema();
+        $table = eottae_public_ai_candidates_table();
+        $day_start = eottae_public_ai_day_start_datetime(eottae_public_ai_today_ymd($now));
+        $row = sql_fetch("
+            SELECT COUNT(*) AS cnt
+            FROM `{$table}`
+            WHERE created_at >= '".sql_escape_string($day_start)."'
+              AND status NOT IN ('rejected', 'deleted')
+        ", false);
+
+        return (int) ($row['cnt'] ?? 0);
+    }
+}
+
+if (!function_exists('eottae_public_ai_normalize_message_compare')) {
+    function eottae_public_ai_normalize_message_compare($message)
+    {
+        $message = trim(strip_tags((string) $message));
+        $message = preg_replace('/\s+/u', ' ', $message);
+        if (function_exists('mb_strtolower')) {
+            $message = mb_strtolower($message, 'UTF-8');
+        } else {
+            $message = strtolower($message);
+        }
+
+        return $message;
+    }
+}
+
+if (!function_exists('eottae_public_ai_messages_are_similar')) {
+    function eottae_public_ai_messages_are_similar($a, $b)
+    {
+        $a = eottae_public_ai_normalize_message_compare($a);
+        $b = eottae_public_ai_normalize_message_compare($b);
+        if ($a === '' || $b === '') {
+            return false;
+        }
+        if ($a === $b) {
+            return true;
+        }
+
+        $len_a = function_exists('mb_strlen') ? mb_strlen($a, 'UTF-8') : strlen($a);
+        $len_b = function_exists('mb_strlen') ? mb_strlen($b, 'UTF-8') : strlen($b);
+        $prefix_len = min(40, $len_a, $len_b);
+        if ($prefix_len > 0) {
+            $prefix_a = function_exists('mb_substr') ? mb_substr($a, 0, $prefix_len, 'UTF-8') : substr($a, 0, $prefix_len);
+            $prefix_b = function_exists('mb_substr') ? mb_substr($b, 0, $prefix_len, 'UTF-8') : substr($b, 0, $prefix_len);
+            if ($prefix_a === $prefix_b) {
+                return true;
+            }
+        }
+
+        similar_text($a, $b, $percent);
+
+        return $percent >= 82.0;
+    }
+}
+
+if (!function_exists('eottae_public_ai_has_similar_published_message')) {
+    function eottae_public_ai_has_similar_published_message($message, $days = 14)
+    {
+        eottae_public_ai_ensure_schema();
+        $message = trim((string) $message);
+        if ($message === '') {
+            return false;
+        }
+
+        $table = eottae_public_ai_candidates_table();
+        $since = date('Y-m-d H:i:s', strtotime('-'.max(1, (int) $days).' days'));
+        $result = sql_query("
+            SELECT message
+            FROM `{$table}`
+            WHERE status = 'published'
+              AND published_at >= '".sql_escape_string($since)."'
+            ORDER BY published_at DESC
+            LIMIT 30
+        ", false);
+
+        if (!$result) {
+            return false;
+        }
+
+        while ($row = sql_fetch_array($result)) {
+            if (eottae_public_ai_messages_are_similar($message, $row['message'] ?? '')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+if (!function_exists('eottae_public_ai_insert_pending_candidate')) {
+    function eottae_public_ai_insert_pending_candidate(array $candidate)
+    {
+        eottae_public_ai_ensure_schema();
+        $table = eottae_public_ai_candidates_table();
+        $trigger_types = array_keys(eottae_public_ai_trigger_types());
+        $source_types = array_keys(eottae_public_ai_source_types());
+
+        $trigger_type = trim((string) ($candidate['trigger_type'] ?? ''));
+        if (!in_array($trigger_type, $trigger_types, true)) {
+            return array('ok' => false, 'message' => 'invalid_trigger', 'candidate_id' => 0);
+        }
+
+        $source_type = trim((string) ($candidate['source_type'] ?? ''));
+        if (!in_array($source_type, $source_types, true)) {
+            return array('ok' => false, 'message' => 'invalid_source', 'candidate_id' => 0);
+        }
+
+        $message = trim(strip_tags((string) ($candidate['message'] ?? '')));
+        if ($message === '') {
+            return array('ok' => false, 'message' => 'empty_message', 'candidate_id' => 0);
+        }
+
+        $title = trim(strip_tags((string) ($candidate['title'] ?? '')));
+        $action_label = trim(strip_tags((string) ($candidate['action_label'] ?? '')));
+        $action_url = trim((string) ($candidate['action_url'] ?? ''));
+        $admin_memo = trim(strip_tags((string) ($candidate['admin_memo'] ?? '')));
+        $source_id = max(0, (int) ($candidate['source_id'] ?? 0));
+        $is_sensitive = !empty($candidate['is_sensitive']) ? 1 : 0;
+        $force_admin = !empty($candidate['force_admin_approval']) ? 1 : 0;
+        $poll_options = trim((string) ($candidate['poll_options'] ?? ''));
+        if ($poll_options !== '' && function_exists('eottae_public_ai_poll_decode_options')) {
+            include_once G5_LIB_PATH.'/eottae-public-ai-poll.lib.php';
+            $decoded = eottae_public_ai_poll_decode_options($poll_options);
+            $poll_options = eottae_public_ai_poll_encode_options($decoded);
+        }
+        $now = defined('G5_TIME_YMDHIS') ? G5_TIME_YMDHIS : date('Y-m-d H:i:s');
+
+        $ok = (bool) sql_query("
+            INSERT INTO `{$table}` SET
+                trigger_type = '".sql_escape_string($trigger_type)."',
+                source_type = '".sql_escape_string($source_type)."',
+                source_id = '{$source_id}',
+                title = '".sql_escape_string($title)."',
+                message = '".sql_escape_string($message)."',
+                action_label = '".sql_escape_string($action_label)."',
+                action_url = '".sql_escape_string($action_url)."',
+                status = 'pending',
+                admin_memo = '".sql_escape_string($admin_memo)."',
+                is_sensitive = '{$is_sensitive}',
+                poll_options = '".sql_escape_string($poll_options)."',
+                force_admin_approval = '{$force_admin}',
+                created_at = '{$now}',
+                updated_at = '{$now}'
+        ", false);
+
+        $new_id = (int) sql_insert_id();
+
+        return array(
+            'ok'           => $ok && $new_id > 0,
+            'message'      => ($ok && $new_id > 0) ? 'saved' : 'insert_failed',
+            'candidate_id' => $new_id,
+        );
+    }
+}
+
+if (!function_exists('eottae_public_ai_verify_cron_key')) {
+    function eottae_public_ai_verify_cron_key($provided_key)
+    {
+        if (function_exists('eottae_talkroom_ai_verify_cron_key')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom-ai.lib.php';
+            if (eottae_talkroom_ai_verify_cron_key($provided_key)) {
+                return true;
+            }
+        }
+
+        if (!function_exists('g5site_cfg') && is_file(G5_PATH.'/_site.config.php')) {
+            include_once G5_PATH.'/_site.config.php';
+        }
+
+        $secret = function_exists('g5site_cfg') ? trim((string) g5site_cfg('public_ai_cron_key', '')) : '';
+        if ($secret === '' && function_exists('g5site_cfg')) {
+            $secret = trim((string) g5site_cfg('talkroom_ai_cron_key', ''));
+        }
+
+        if ($secret === '') {
+            return php_sapi_name() === 'cli';
+        }
+
+        return is_string($provided_key) && hash_equals($secret, (string) $provided_key);
     }
 }

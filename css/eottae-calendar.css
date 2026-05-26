@@ -46,6 +46,12 @@ body.calendar-ui .sebu-cal-page__intro {
 
 body.calendar-ui .sebu-cal-page__actions {
   display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+body.calendar-ui .sebu-cal-page__actions-secondary {
+  display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
@@ -71,6 +77,77 @@ body.calendar-ui .sebu-cal-btn--primary {
   background: linear-gradient(135deg, var(--sebu-cal-primary) 0%, #38bdf8 100%);
   border-color: #7dd3fc;
   color: #fff;
+}
+
+/* 일정 등록 CTA — 히어로·빈 목록 */
+body.calendar-ui .sebu-cal-btn--register {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 22px;
+  gap: 10px;
+  font-size: 1.02rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #78350f;
+  background: linear-gradient(135deg, #fef08a 0%, #facc15 42%, #f59e0b 100%);
+  border: 2px solid #eab308;
+  box-shadow:
+    0 4px 16px rgba(245, 158, 11, 0.42),
+    0 2px 4px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+body.calendar-ui .sebu-cal-btn--register:hover,
+body.calendar-ui .sebu-cal-btn--register:focus-visible {
+  color: #713f12;
+  filter: brightness(1.03);
+  transform: translateY(-1px);
+  box-shadow:
+    0 8px 22px rgba(245, 158, 11, 0.48),
+    0 2px 6px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+body.calendar-ui .sebu-cal-btn--register:active {
+  transform: translateY(0);
+  filter: brightness(0.98);
+}
+
+body.calendar-ui .sebu-cal-btn__icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 8px;
+  background: rgba(120, 53, 15, 0.14);
+  position: relative;
+}
+
+body.calendar-ui .sebu-cal-btn__icon::before,
+body.calendar-ui .sebu-cal-btn__icon::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: #78350f;
+  border-radius: 2px;
+  transform: translate(-50%, -50%);
+}
+
+body.calendar-ui .sebu-cal-btn__icon::before {
+  width: 12px;
+  height: 2px;
+}
+
+body.calendar-ui .sebu-cal-btn__icon::after {
+  width: 2px;
+  height: 12px;
+}
+
+body.calendar-ui .sebu-cal-empty .sebu-cal-btn--register {
+  width: auto;
+  max-width: 100%;
+  margin-top: 12px;
 }
 
 body.calendar-ui .sebu-cal-btn--danger {
@@ -563,13 +640,9 @@ body.calendar-ui .sebu-cal-empty {
 }
 
 @media (max-width: 767px) {
-  body.calendar-ui .sebu-cal-page__actions .sebu-cal-btn {
+  body.calendar-ui .sebu-cal-page__actions-secondary .sebu-cal-btn {
     flex: 1 1 calc(50% - 4px);
     min-width: 0;
-  }
-
-  body.calendar-ui .sebu-cal-page__actions .sebu-cal-btn--primary {
-    flex: 1 1 100%;
   }
 
   body.calendar-ui .sebu-cal-month__cell {
@@ -590,6 +663,16 @@ body.calendar-ui .sebu-cal-empty {
   body.calendar-ui .sebu-cal-page {
     padding-top: 20px;
     padding-bottom: 40px;
+  }
+
+  body.calendar-ui .sebu-cal-btn--register {
+    width: auto;
+    min-width: 220px;
+    align-self: flex-start;
+  }
+
+  body.calendar-ui .sebu-cal-page__actions-secondary .sebu-cal-btn {
+    min-width: 140px;
   }
 }
 
