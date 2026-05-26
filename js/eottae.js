@@ -889,6 +889,9 @@
             if (body && data.content_html) {
               body.innerHTML = data.content_html;
             }
+            if (data.token) {
+              root.setAttribute('data-shop-content-token', data.token);
+            }
             setStatus(data.message || '저장했습니다.', 'success');
             showView();
           })

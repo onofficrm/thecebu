@@ -96,7 +96,9 @@ sql_query(" update {$write_table}
         wr_last = '".G5_TIME_YMDHIS."'
     where wr_id = '{$wr_id}' ");
 
-set_session('eottae_shop_content_token', '');
+$next_token = function_exists('eottae_shop_content_token')
+    ? eottae_shop_content_token(true)
+    : '';
 
 $view_content = conv_content($wr_content, 1);
 if (function_exists('get_view_thumbnail')) {
@@ -106,4 +108,5 @@ if (function_exists('get_view_thumbnail')) {
 
 eottae_shop_content_update_json(true, '본문을 저장했습니다.', array(
     'content_html' => $view_content,
+    'token'        => $next_token,
 ));

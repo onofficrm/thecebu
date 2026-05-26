@@ -13,7 +13,7 @@ $shop_content_editor_html = '';
 $shop_content_token = '';
 
 if ($shop_can_edit_content) {
-    $shop_content_token = eottae_shop_content_token(true);
+    $shop_content_token = eottae_shop_content_token(false);
     $shop_content_raw = isset($view['wr_content']) ? $view['wr_content'] : '';
 
     if ($shop_content_use_editor) {
