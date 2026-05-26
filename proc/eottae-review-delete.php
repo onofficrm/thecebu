@@ -70,6 +70,48 @@ if ($review_wr_id < 1 || $shop_wr_id < 1) {
     eottae_review_delete_json(false, '리뷰 정보가 올바르지 않습니다.');
 }
 
+if ($action === 'author_delete') {
+    if (eottae_is_business_member($member)) {
+        eottae_review_delete_json(false, '사업자 회원은 이 방식으로 리뷰를 삭제할 수 없습니다. 삭제 요청을 이용해 주세요.');
+    }
+
+    $write_table = eottae_review_write_table();
+    include_once G5_LIB_PATH.'/eottae-review-manage.lib.php';
+    $visible = eottae_review_visible_sql();
+    $row = sql_fetch(" select * from {$write_table}
+        where wr_id = '{$review_wr_id}' and wr_is_comment = 0 and {$visible} limit 1 ");
+    if (empty($row['wr_id'])) {
+        eottae_review_delete_json(false, '삭제할 리뷰를 찾을 수 없습니다.');
+    }
+
+    $review = eottae_review_from_write($row);
+    if (!eottae_review_user_can_delete($review, $member['mb_id'], $is_admin)) {
+        eottae_review_delete_json(false, '본인이 작성한 리뷰만 삭제할 수 있습니다.');
+    }
+
+    $token = isset($_POST['eottae_review_delete_token']) ? trim($_POST['eottae_review_delete_token']) : '';
+    $session_token = get_session('eottae_review_delete_token');
+    if ($token === '' || $session_token === '' || !hash_equals($session_token, $token)) {
+        $token = isset($_POST['eottae_review_token']) ? trim((string) $_POST['eottae_review_token']) : '';
+        $session_token = get_session('eottae_review_token');
+    }
+    if ($token === '' || $session_token === '' || !hash_equals($session_token, $token)) {
+        eottae_review_delete_json(false, '보안 토큰이 만료되었습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.');
+    }
+
+    $result = eottae_review_delete_execute($review_wr_id);
+    if (!empty($result['ok'])) {
+        set_session('eottae_review_delete_token', '');
+        set_session('eottae_review_token', '');
+    }
+
+    eottae_review_delete_json(
+        !empty($result['ok']),
+        $result['message'],
+        array('shop_wr_id' => isset($result['shop_wr_id']) ? (int) $result['shop_wr_id'] : $shop_wr_id)
+    );
+}
+
 if ($action === 'super_delete') {
     if ($is_admin !== 'super') {
         eottae_review_delete_json(false, '최고관리자만 리뷰를 삭제할 수 있습니다.');

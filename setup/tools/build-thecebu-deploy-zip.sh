@@ -71,6 +71,8 @@ PROC_FILES=(
   proc/_eottae_json_bootstrap.php
   proc/eottae-review-reply.php
   proc/eottae-review-submit.php
+  proc/eottae-review-update.php
+  proc/eottae-review-delete.php
   proc/eottae-geocode.php
   proc/eottae-coupon-use.php
   proc/eottae-shop-save.php

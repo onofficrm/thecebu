@@ -20,6 +20,51 @@ if (!function_exists('eottae_review_cards_html')) {
     }
 }
 
+if (!function_exists('eottae_review_write_form_html')) {
+    /**
+     * @param array{variant?:string,form_id?:string,rating_id?:string} $opts
+     */
+    function eottae_review_write_form_html($shop_wr_id, $shop_name, $token, array $opts = array())
+    {
+        $variant = isset($opts['variant']) ? (string) $opts['variant'] : 'inline';
+        $suffix = $variant === 'modal' ? '' : '-inline';
+        $form_id = isset($opts['form_id']) ? (string) $opts['form_id'] : 'eottaeReviewForm'.$suffix;
+        $rating_id = isset($opts['rating_id']) ? (string) $opts['rating_id'] : 'eottaeReviewRating'.$suffix;
+        $shop_wr_id = (int) $shop_wr_id;
+        $shop_name = $shop_name !== '' ? get_text($shop_name) : '';
+
+        ob_start();
+        ?>
+        <form class="review-write-form__form" id="<?php echo $form_id; ?>" method="post" action="/proc/eottae-review-submit.php" enctype="multipart/form-data" data-review-write-form>
+            <input type="hidden" name="shop_wr_id" value="<?php echo $shop_wr_id; ?>">
+            <input type="hidden" name="shop_name" value="<?php echo $shop_name; ?>">
+            <input type="hidden" name="eottae_review_token" value="<?php echo get_text($token); ?>">
+            <input type="hidden" name="rating" id="<?php echo $rating_id; ?>" value="5" data-review-rating-input>
+
+            <div class="review-write-form__stars" role="radiogroup" aria-label="별점 선택" data-review-stars>
+                <?php for ($s = 1; $s <= 5; $s++) { ?>
+                <button type="button" class="review-write-form__star" data-star="<?php echo $s; ?>" aria-label="<?php echo $s; ?>점">★</button>
+                <?php } ?>
+            </div>
+
+            <div class="eottae-field">
+                <label for="review_content<?php echo $suffix; ?>">리뷰 내용</label>
+                <textarea id="review_content<?php echo $suffix; ?>" name="content" required minlength="10" maxlength="1000" rows="4" placeholder="이 업체 이용 경험을 10자 이상 작성해 주세요."></textarea>
+            </div>
+
+            <div class="eottae-field">
+                <label for="review_photo<?php echo $suffix; ?>">사진 (선택, 1장)</label>
+                <input type="file" id="review_photo<?php echo $suffix; ?>" name="photo" accept="image/jpeg,image/png,image/webp">
+            </div>
+
+            <button type="submit" class="review-write-form__submit">리뷰 등록</button>
+        </form>
+        <?php
+
+        return ob_get_clean();
+    }
+}
+
 if (!function_exists('eottae_review_section_html')) {
     function eottae_review_section_html($shop_wr_id, $shop_name = '')
     {
@@ -27,6 +72,7 @@ if (!function_exists('eottae_review_section_html')) {
 
         eottae_load_component('review-card');
         include_once G5_LIB_PATH.'/eottae-review-delete.lib.php';
+        include_once G5_LIB_PATH.'/eottae-review-manage.lib.php';
         eottae_review_delete_ensure_schema();
 
         $shop_wr_id = (int) $shop_wr_id;
@@ -38,34 +84,22 @@ if (!function_exists('eottae_review_section_html')) {
         $has_more_reviews = (int) $summary['count'] > $loaded_count;
         $is_biz = $is_member && eottae_is_business_member($member);
         $already_reviewed = $is_member && eottae_user_reviewed_shop($member['mb_id'], $shop_wr_id);
+        $can_write_review = $is_member && !$is_biz && !$already_reviewed;
         $return_url = G5_BBS_URL.'/board.php?bo_table='.EOTTae_SHOP_TABLE.'&wr_id='.$shop_wr_id;
-        $login_url = eottae_login_url($return_url);
+        $login_url = eottae_login_url($return_url.'#shop-review-write');
         $token = eottae_review_token(true);
-        $reply_token = eottae_review_reply_token(true);
-        $delete_token = eottae_review_delete_token(true);
-        $owns_shop = $is_member && $is_biz && eottae_business_owns_shop($member['mb_id'], $shop_wr_id);
-        $show_biz_reply = $owns_shop;
-        $show_super_delete = $is_admin === 'super';
-        $show_biz_delete_request = $owns_shop && $is_admin !== 'super';
-        $pending_delete_ids = ($show_biz_delete_request || $show_super_delete)
+        $review_card_opts = eottae_review_manage_card_opts($shop_wr_id);
+        $pending_delete_ids = ($review_card_opts['show_biz_delete_request'] || $review_card_opts['show_super_manage'])
             ? eottae_review_delete_pending_ids_for_shop($shop_wr_id)
             : array();
-        $review_card_opts = array(
-            'show_reply_btn' => $show_biz_reply,
-            'reply_token' => $reply_token,
-            'shop_wr_id' => $shop_wr_id,
-            'show_super_delete' => $show_super_delete,
-            'show_biz_delete_request' => $show_biz_delete_request,
-            'delete_token' => $delete_token,
-        );
 
         ob_start();
         ?>
         <section class="review-summary shop-detail-page__reviews" id="shop-reviews" data-shop-id="<?php echo $shop_wr_id; ?>">
             <div class="review-summary__head">
                 <h2 class="review-summary__title">리뷰</h2>
-                <?php if ($is_member && !$already_reviewed && !$is_biz) { ?>
-                <button type="button" class="review-summary__write-btn" data-review-open="1">리뷰 작성</button>
+                <?php if ($can_write_review) { ?>
+                <a href="#shop-review-write" class="review-summary__write-btn">리뷰 작성</a>
                 <?php } elseif (!$is_member) { ?>
                 <a href="<?php echo $login_url; ?>" class="review-summary__write-btn">로그인 후 리뷰 작성</a>
                 <?php } ?>
@@ -121,40 +155,22 @@ if (!function_exists('eottae_review_section_html')) {
             <?php } ?>
             <?php } ?>
 
+            <div class="review-summary__write-box" id="shop-review-write">
+                <h3 class="review-summary__write-title">리뷰 작성</h3>
+                <?php if ($can_write_review) { ?>
+                <p class="review-summary__write-hint"><?php echo $shop_name; ?> 이용 후기를 남겨 주세요.</p>
+                <?php echo eottae_review_write_form_html($shop_wr_id, $shop_name, $token, array('variant' => 'inline')); ?>
+                <?php } elseif (!$is_member) { ?>
+                <p class="review-summary__write-hint">리뷰를 작성하려면 <a href="<?php echo $login_url; ?>">로그인</a>해 주세요.</p>
+                <?php } elseif ($is_biz) { ?>
+                <p class="review-summary__write-hint">사업자 회원은 리뷰를 작성할 수 없습니다. 부적절한 리뷰는 각 리뷰의 「삭제 요청」으로 관리자에게 알릴 수 있습니다.</p>
+                <?php } elseif ($already_reviewed) { ?>
+                <p class="review-summary__write-hint">이 업체에는 이미 리뷰를 작성하셨습니다. 작성한 리뷰는 아래 목록에서 수정·삭제할 수 있습니다.</p>
+                <?php } ?>
+            </div>
+
             <p class="review-summary__point-note">리뷰 작성 시 <?php echo number_format(defined('EOTTae_REVIEW_POINT_BASE') ? EOTTae_REVIEW_POINT_BASE : 30); ?>P가 지급됩니다. 사진 첨부 시 추가 <?php echo number_format(defined('EOTTae_REVIEW_POINT_PHOTO') ? EOTTae_REVIEW_POINT_PHOTO : 20); ?>P.</p>
         </section>
-
-        <div class="eottae-review-modal" id="eottaeReviewModal" aria-hidden="true">
-            <div class="eottae-review-modal__panel review-write-form">
-                <button type="button" class="eottae-review-modal__close" data-review-close aria-label="닫기">&times;</button>
-                <h3 class="review-write-form__title">리뷰 작성</h3>
-                <p class="review-write-form__shop"><?php echo $shop_name; ?></p>
-                <form class="review-write-form__form" id="eottaeReviewForm" method="post" action="/proc/eottae-review-submit.php" enctype="multipart/form-data">
-                    <input type="hidden" name="shop_wr_id" value="<?php echo $shop_wr_id; ?>">
-                    <input type="hidden" name="shop_name" value="<?php echo $shop_name; ?>">
-                    <input type="hidden" name="eottae_review_token" value="<?php echo $token; ?>">
-                    <input type="hidden" name="rating" id="eottaeReviewRating" value="5">
-
-                    <div class="review-write-form__stars" role="radiogroup" aria-label="별점 선택">
-                        <?php for ($s = 1; $s <= 5; $s++) { ?>
-                        <button type="button" class="review-write-form__star" data-star="<?php echo $s; ?>" aria-label="<?php echo $s; ?>점">★</button>
-                        <?php } ?>
-                    </div>
-
-                    <div class="eottae-field">
-                        <label for="review_content">리뷰 내용</label>
-                        <textarea id="review_content" name="content" required minlength="10" maxlength="1000" placeholder="이 업체 이용 경험을 10자 이상 작성해 주세요."></textarea>
-                    </div>
-
-                    <div class="eottae-field">
-                        <label for="review_photo">사진 (선택, 1장)</label>
-                        <input type="file" id="review_photo" name="photo" accept="image/jpeg,image/png,image/webp">
-                    </div>
-
-                    <button type="submit" class="review-write-form__submit">리뷰 등록</button>
-                </form>
-            </div>
-        </div>
         <?php
 
         return ob_get_clean();

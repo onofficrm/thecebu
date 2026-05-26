@@ -1879,10 +1879,11 @@
     initShopCoordinatePicker();
     initMemberType();
     initTalkApplyForm();
-    initReviewModal();
+    initReviewWriteForms();
     initReviewReply();
     initReviewLoadMore();
     initReviewDelete();
+    initReviewEdit();
     initShopSave();
     initShopDetailGallery();
     initShopDetailContentEditor();
@@ -1892,58 +1893,47 @@
     initBusinessSnippetsManager();
   });
 
-  function initReviewModal() {
-    var modal = qs('#eottaeReviewModal');
-    if (!modal) return;
+  function bindReviewStarPicker(root, ratingInput) {
+    if (!root || !ratingInput) return;
 
-    var form = qs('#eottaeReviewForm', modal);
-    var ratingInput = qs('#eottaeReviewRating', modal);
-    var starBtns = qsa('.review-write-form__star', modal);
+    var starBtns = qsa('.review-write-form__star', root);
 
     function setRating(value) {
-      if (ratingInput) ratingInput.value = String(value);
+      ratingInput.value = String(value);
       starBtns.forEach(function (btn) {
         var star = parseInt(btn.getAttribute('data-star'), 10);
         btn.classList.toggle('is-active', star <= value);
       });
     }
 
-    setRating(ratingInput ? parseInt(ratingInput.value, 10) || 5 : 5);
+    setRating(parseInt(ratingInput.value, 10) || 5);
 
     starBtns.forEach(function (btn) {
       btn.addEventListener('click', function () {
         setRating(parseInt(btn.getAttribute('data-star'), 10));
       });
     });
+  }
 
-    document.addEventListener('click', function (e) {
-      if (e.target.closest('[data-review-open]')) {
-        e.preventDefault();
-        modal.classList.add('is-open');
-        modal.setAttribute('aria-hidden', 'false');
-      }
-      if (e.target.closest('[data-review-close]') || e.target === modal) {
-        modal.classList.remove('is-open');
-        modal.setAttribute('aria-hidden', 'true');
-      }
-    });
+  function initReviewWriteForms() {
+    var forms = qsa('[data-review-write-form]');
+    if (!forms.length) return;
 
-    if (form) {
+    forms.forEach(function (form) {
+      var ratingInput = qs('[data-review-rating-input]', form);
+      var starsWrap = qs('[data-review-stars]', form) || form;
+      bindReviewStarPicker(starsWrap, ratingInput);
+
       form.addEventListener('submit', function (e) {
         e.preventDefault();
-        var fd = new FormData(form);
         var submitBtn = qs('.review-write-form__submit', form);
         if (submitBtn) submitBtn.disabled = true;
 
-        fetch(form.action, { method: 'POST', body: fd, credentials: 'same-origin' })
+        fetch(form.action, { method: 'POST', body: new FormData(form), credentials: 'same-origin' })
           .then(function (res) { return parseJsonResponse(res); })
           .then(function (data) {
             if (data.success) {
-              if (data.redirect_url) {
-                window.location.href = data.redirect_url;
-              } else {
-                window.location.reload();
-              }
+              window.location.href = data.redirect_url || window.location.href.split('#')[0] + '#shop-reviews';
               return;
             }
             alert(data.message || '리뷰 등록에 실패했습니다.');
@@ -1954,7 +1944,79 @@
             if (submitBtn) submitBtn.disabled = false;
           });
       });
-    }
+    });
+
+    document.addEventListener('click', function (e) {
+      var jump = e.target.closest('a[href="#shop-review-write"]');
+      if (!jump) return;
+      var target = qs('#shop-review-write');
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        var ta = qs('textarea', target);
+        if (ta) ta.focus();
+      }
+    });
+  }
+
+  function initReviewEdit() {
+    document.addEventListener('click', function (e) {
+      var openBtn = e.target.closest('[data-review-edit-open]');
+      if (openBtn) {
+        e.preventDefault();
+        var card = openBtn.closest('.review-card');
+        if (!card) return;
+        var body = qs('[data-review-body]', card);
+        var form = qs('[data-review-edit-form]', card);
+        if (body) body.hidden = true;
+        if (form) {
+          form.hidden = false;
+          var ratingInput = qs('[data-review-rating-input]', form);
+          var starsWrap = qs('[data-review-stars]', form);
+          bindReviewStarPicker(starsWrap, ratingInput);
+        }
+        return;
+      }
+
+      var cancelBtn = e.target.closest('[data-review-edit-cancel]');
+      if (cancelBtn) {
+        e.preventDefault();
+        var card2 = cancelBtn.closest('.review-card');
+        if (!card2) return;
+        var body2 = qs('[data-review-body]', card2);
+        var form2 = qs('[data-review-edit-form]', card2);
+        if (body2) body2.hidden = false;
+        if (form2) form2.hidden = true;
+      }
+    });
+
+    document.addEventListener('submit', function (e) {
+      var form = e.target.closest('[data-review-edit-form]');
+      if (!form || form.hidden) return;
+      e.preventDefault();
+
+      var submitBtn = qs('.review-card__edit-save', form);
+      if (submitBtn) submitBtn.disabled = true;
+
+      fetch(form.action, { method: 'POST', body: new FormData(form), credentials: 'same-origin' })
+        .then(function (res) { return parseJsonResponse(res); })
+        .then(function (data) {
+          if (data.success) {
+            if (data.redirect_url) {
+              window.location.href = data.redirect_url;
+            } else {
+              window.location.reload();
+            }
+            return;
+          }
+          alert(data.message || '리뷰 수정에 실패했습니다.');
+          if (submitBtn) submitBtn.disabled = false;
+        })
+        .catch(function () {
+          alert('네트워크 오류가 발생했습니다.');
+          if (submitBtn) submitBtn.disabled = false;
+        });
+    });
   }
 
   function initReviewReply() {
@@ -2050,15 +2112,23 @@
   }
 
   function initReviewDelete() {
-    function postReviewDelete(action, btn) {
+    function postReviewDelete(action, btn, extraFields) {
       var reviewId = btn.getAttribute('data-review-id');
       var shopId = btn.getAttribute('data-shop-id');
-      var token = btn.getAttribute('data-delete-token') || '';
+      var token = btn.getAttribute('data-delete-token') || btn.getAttribute('data-manage-token') || '';
       var fd = new FormData();
       fd.append('action', action);
       fd.append('review_wr_id', reviewId);
       fd.append('shop_wr_id', shopId);
       fd.append('eottae_review_delete_token', token);
+      if (action === 'author_delete') {
+        fd.append('eottae_review_token', btn.getAttribute('data-manage-token') || token);
+      }
+      if (extraFields) {
+        Object.keys(extraFields).forEach(function (key) {
+          fd.append(key, extraFields[key]);
+        });
+      }
 
       btn.disabled = true;
       return fetch('/proc/eottae-review-delete.php', {
@@ -2076,6 +2146,11 @@
           var card = btn.closest('.review-card');
           if (card) {
             card.remove();
+            var section = qs('#shop-reviews');
+            var list = section ? qs('[data-review-list]', section) : null;
+            if (list && !list.children.length) {
+              window.location.reload();
+            }
           } else {
             window.location.reload();
           }
@@ -2087,11 +2162,12 @@
     }
 
     document.addEventListener('click', function (e) {
-      var superBtn = e.target.closest('[data-review-super-delete]');
-      if (superBtn) {
+      var deleteBtn = e.target.closest('[data-review-super-delete], [data-review-author-delete]');
+      if (deleteBtn && deleteBtn.getAttribute('data-review-id')) {
         e.preventDefault();
+        var isSuper = deleteBtn.getAttribute('data-review-super-delete') === '1';
         if (!confirm('이 리뷰를 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.')) return;
-        postReviewDelete('super_delete', superBtn);
+        postReviewDelete(isSuper ? 'super_delete' : 'author_delete', deleteBtn);
         return;
       }
 
