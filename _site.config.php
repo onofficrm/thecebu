@@ -74,6 +74,9 @@ $site_config = array(
     /* 세부톡방 AI — bot 계정·크론 키 (_site.config.local.php 권장) */
     'talkroom_ai_bot_mb_id'     => 'sebu_ai',
     'talkroom_ai_cron_key'      => '',
+    /* 세부어때 캘린더 — Google Calendar ID·동기화 크론 키 */
+    'calendar_google_id'        => '4932d5025ebdd69d35ff4827f24d5fe976d7ac73a6020d89dd8fdc380b30c99c@group.calendar.google.com',
+    'calendar_sync_cron_key'    => '',
     'talkroom_ai_summary_start_time' => '21:00:00',
     'talkroom_ai_summary_end_time'   => '23:00:00',
     'talkroom_ai_summary_min_activity' => 5,

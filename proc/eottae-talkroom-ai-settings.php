@@ -10,6 +10,10 @@ include_once G5_LIB_PATH.'/eottae-talkroom-ai.lib.php';
 include_once G5_LIB_PATH.'/eottae-talkroom-ai-daily-question.lib.php';
 include_once G5_LIB_PATH.'/eottae-talkroom-ai-admin.lib.php';
 
+eottae_talkroom_ensure_schema();
+eottae_talkroom_ai_ensure_schema();
+eottae_talkroom_ensure_board();
+
 header('Content-Type: application/json; charset=utf-8');
 
 function eottae_talkroom_ai_settings_json($success, $message, $extra = array())

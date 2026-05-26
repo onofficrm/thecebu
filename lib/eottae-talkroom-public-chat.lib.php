@@ -524,7 +524,7 @@ if (!function_exists('eottae_talkroom_public_group_send_message')) {
             $member_row = eottae_talkroom_get_member_row($room_id, $mb_id);
         }
 
-        if (!eottae_talkroom_can_write_posts($room, $member_row)) {
+        if (!eottae_talkroom_can_write_posts($room, $member_row, $mb_id)) {
             return array('ok' => false, 'message' => '메시지를 보낼 수 없습니다.');
         }
 

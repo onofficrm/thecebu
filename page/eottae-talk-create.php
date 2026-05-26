@@ -22,7 +22,6 @@ $old = array(
     'category'         => '',
     'emoji'            => '💬',
     'rules'            => '',
-    'contact'          => '',
     'apply_reason'     => '',
     'visibility'       => 'public',
     'join_type'        => 'open',
@@ -37,6 +36,7 @@ g5_page_start('톡방 만들기');
     <p class="mypage-subpage__back"><a href="<?php echo eottae_talkroom_list_url(); ?>">← 세부톡방</a></p>
     <h1 class="mypage-subpage__title">톡방 만들기</h1>
     <p class="talk-apply-page__intro">톡방 정보를 입력하면 바로 공개되어 세부톡방 목록에 노출됩니다.</p>
+    <p class="talk-apply-page__owner">방장: <?php echo get_text($member['mb_nick'] ?? $member['mb_id'] ?? ''); ?></p>
 
     <form class="talk-apply-form" method="post" action="<?php echo $form_action; ?>" novalidate data-talk-apply-form>
         <input type="hidden" name="eottae_talkroom_token" value="<?php echo get_text($apply_token); ?>">
@@ -104,11 +104,6 @@ g5_page_start('톡방 만들기');
                 <button type="button" class="talk-apply-form__field-ai" data-talk-apply-ai="rules">AI 작성</button>
             </div>
             <textarea id="talk_rules" name="rules" class="talk-apply-form__textarea" rows="4" maxlength="5000" required placeholder="예: 광고·욕설 금지, 세부 지역 관련 정보만 공유"><?php echo get_text($old['rules']); ?></textarea>
-        </div>
-
-        <div class="talk-apply-form__field">
-            <label for="talk_contact">방장 연락처 또는 카카오톡 ID <span class="talk-apply-form__required">*</span></label>
-            <input type="text" id="talk_contact" name="contact" class="talk-apply-form__input" maxlength="255" required placeholder="관리자·승인 문의용 (목록에 노출되지 않음)" value="<?php echo get_text($old['contact']); ?>">
         </div>
 
         <fieldset class="talk-apply-form__fieldset">

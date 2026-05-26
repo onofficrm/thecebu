@@ -3,6 +3,7 @@ include_once(dirname(__FILE__).'/_init.php');
 include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
 include_once G5_LIB_PATH.'/eottae-talkroom-ai.lib.php';
 include_once G5_LIB_PATH.'/eottae-talkroom-ai-admin.lib.php';
+include_once G5_LIB_PATH.'/eottae-talkroom-ai-guard.lib.php';
 include_once G5_PATH.'/components/eottae/talk-ai-settings-form.php';
 
 if (!$is_member) {
@@ -10,6 +11,7 @@ if (!$is_member) {
 }
 
 eottae_talkroom_ai_ensure_schema();
+eottae_talkroom_ensure_board();
 
 $room_id = isset($_GET['room_id']) ? (int) $_GET['room_id'] : 0;
 $is_super = ($is_admin === 'super');
@@ -51,7 +53,11 @@ $admin_token = $is_super ? eottae_talkroom_admin_token() : '';
 $form_token = $is_super && $admin_token !== '' ? $admin_token : $owner_token;
 $form_token_field = $is_super && $admin_token !== '' ? 'eottae_talkroom_admin_token' : 'eottae_talkroom_owner_token';
 $can_test = eottae_talkroom_ai_can_edit_settings($room_id, $member['mb_id'], $is_super);
-$room_today_count = eottae_talkroom_ai_get_today_message_count($room_id);
+$ai_limit_status = eottae_talkroom_ai_daily_limit_status($room_id, $settings);
+$room_today_count = (int) ($ai_limit_status['today_count'] ?? 0);
+$room_effective_limit = (int) ($ai_limit_status['effective_limit'] ?? eottae_talkroom_ai_min_messages_per_day());
+$room_max_cap = (int) ($ai_limit_status['max_cap'] ?? (int) $settings['max_messages_per_day']);
+$room_member_activity = (int) ($ai_limit_status['member_activity'] ?? 0);
 $test_triggers = array(
     'quiet_room'     => '조용한 방 화제',
     'daily_question' => '오늘의 질문',
@@ -72,7 +78,7 @@ g5_page_start('AI 도우미 설정');
         <?php } ?>
     </p>
     <h1 class="mypage-subpage__title">AI 도우미 설정</h1>
-    <p class="talk-manage-page__intro"><?php echo eottae_talkroom_display_emoji($detail['emoji'], $detail['category_code'] ?? ''); ?> <?php echo get_text($detail['room_name']); ?> · 오늘 AI 발언 <?php echo number_format($room_today_count); ?> / <?php echo number_format((int) $settings['max_messages_per_day']); ?>회</p>
+    <p class="talk-manage-page__intro"><?php echo eottae_talkroom_display_emoji($detail['emoji'], $detail['category_code'] ?? ''); ?> <?php echo get_text($detail['room_name']); ?> · 오늘 AI 발언 <?php echo number_format($room_today_count); ?> / <?php echo number_format($room_effective_limit); ?>회<?php if ($room_max_cap > $room_effective_limit) { ?> <span class="talk-ai-settings__limit-note">(최대 <?php echo number_format($room_max_cap); ?>회 · 오늘 대화 <?php echo number_format($room_member_activity); ?>건)</span><?php } elseif ($room_member_activity > 0) { ?> <span class="talk-ai-settings__limit-note">(오늘 대화 <?php echo number_format($room_member_activity); ?>건)</span><?php } ?></p>
 
     <section class="promo-admin-panel talk-manage-panel">
         <?php
@@ -122,6 +128,20 @@ g5_page_start('AI 도우미 설정');
   var tokenValue = <?php echo json_encode((string) $form_token, JSON_UNESCAPED_UNICODE); ?>;
   var lastTestPostId = 0;
 
+  function parseJsonResponse(response) {
+    return response.text().then(function (text) {
+      var trimmed = (text || '').trim();
+      if (!trimmed) {
+        throw new Error('서버 응답이 비어 있습니다.');
+      }
+      try {
+        return JSON.parse(trimmed);
+      } catch (e) {
+        throw new Error('서버 응답 형식이 올바르지 않습니다.');
+      }
+    });
+  }
+
   function runTest(trigger, dryRun, btn) {
     var fd = new FormData();
     fd.append('action', 'test_ai_trigger');
@@ -131,14 +151,14 @@ g5_page_start('AI 도우미 설정');
     fd.append(tokenField, tokenValue);
 
   return fetch('<?php echo G5_URL; ?>/proc/eottae-talkroom-ai-settings.php', { method: 'POST', body: fd, credentials: 'same-origin' })
-      .then(function (r) { return r.json(); })
+      .then(parseJsonResponse)
       .then(function (data) {
         if (btn) btn.disabled = false;
         return data;
       })
-      .catch(function () {
+      .catch(function (err) {
         if (btn) btn.disabled = false;
-        alert('네트워크 오류가 발생했습니다.');
+        alert(err && err.message ? err.message : '네트워크 오류가 발생했습니다.');
         return null;
       });
   }
@@ -190,7 +210,7 @@ g5_page_start('AI 도우미 설정');
       fd.append('wr_id', String(lastTestPostId));
       fd.append('eottae_talkroom_admin_token', tokenValue);
       fetch('<?php echo G5_URL; ?>/proc/eottae-talkroom-ai-admin.php', { method: 'POST', body: fd, credentials: 'same-origin' })
-        .then(function (r) { return r.json(); })
+        .then(parseJsonResponse)
         .then(function (data) {
           alert(data.message || (data.success ? '삭제했습니다.' : '실패했습니다.'));
           if (data.success) {
@@ -199,8 +219,8 @@ g5_page_start('AI 도우미 설정');
           }
           deleteBtn.disabled = false;
         })
-        .catch(function () {
-          alert('네트워크 오류가 발생했습니다.');
+        .catch(function (err) {
+          alert(err && err.message ? err.message : '네트워크 오류가 발생했습니다.');
           deleteBtn.disabled = false;
         });
     });
@@ -221,7 +241,7 @@ g5_page_start('AI 도우미 설정');
       fd.set('ai_enabled', aiEnabled.value === '1' ? '1' : '0');
     }
     fetch(form.action, { method: 'POST', body: fd, credentials: 'same-origin' })
-      .then(function (r) { return r.json(); })
+      .then(parseJsonResponse)
       .then(function (data) {
         if (data.success && data.redirect_url) {
           window.location.href = data.redirect_url;
@@ -229,7 +249,9 @@ g5_page_start('AI 도우미 설정');
         }
         alert(data.message || (data.success ? '저장되었습니다.' : '저장에 실패했습니다.'));
       })
-      .catch(function () { alert('네트워크 오류가 발생했습니다.'); });
+      .catch(function (err) {
+        alert(err && err.message ? err.message : '네트워크 오류가 발생했습니다.');
+      });
   });
 })();
 </script>

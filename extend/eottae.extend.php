@@ -18,6 +18,9 @@ include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
 include_once G5_LIB_PATH.'/eottae-talkroom-ai.lib.php';
 include_once G5_LIB_PATH.'/eottae-talkroom-reads.lib.php';
 include_once G5_LIB_PATH.'/eottae-talkroom-notify.lib.php';
+include_once G5_LIB_PATH.'/eottae-calendar.lib.php';
+include_once G5_LIB_PATH.'/eottae-calendar-google.lib.php';
+include_once G5_LIB_PATH.'/eottae-calendar-report.lib.php';
 
 if (function_exists('eottae_merge_runtime_secrets')) {
     eottae_merge_runtime_secrets();
@@ -34,6 +37,9 @@ if (function_exists('eottae_review_delete_ensure_schema')) {
 }
 if (function_exists('eottae_talkroom_ensure_schema')) {
     eottae_talkroom_ensure_schema();
+}
+if (function_exists('eottae_calendar_ensure_schema')) {
+    eottae_calendar_ensure_schema();
 }
 if (function_exists('eottae_talkroom_ai_ensure_schema')) {
     eottae_talkroom_ai_ensure_schema();
@@ -419,6 +425,61 @@ if (!function_exists('eottae_talkroom_load_ui_assets')) {
 
 eottae_talkroom_load_ui_assets();
 
+if (!function_exists('eottae_calendar_should_load_ui')) {
+    function eottae_calendar_should_load_ui()
+    {
+        $script = basename($_SERVER['SCRIPT_FILENAME'] ?? '');
+        $calendar_scripts = array(
+            'index.php',
+            'eottae-calendar.php',
+            'eottae-calendar-create.php',
+            'eottae-calendar-edit.php',
+            'eottae-calendar-event.php',
+            'eottae-admin-calendar-reports.php',
+        );
+        if (in_array($script, $calendar_scripts, true)) {
+            return true;
+        }
+
+        $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
+
+        return (bool) preg_match('#/(?:calendar)(?:[/?]|$)|/page/eottae-calendar#', $uri);
+    }
+}
+
+if (!function_exists('eottae_calendar_is_admin_shell_page')) {
+    function eottae_calendar_is_admin_shell_page()
+    {
+        $script = basename($_SERVER['SCRIPT_FILENAME'] ?? '');
+
+        return $script === 'eottae-admin-calendar-reports.php';
+    }
+}
+
+if (!function_exists('eottae_calendar_load_ui_assets')) {
+    function eottae_calendar_load_ui_assets()
+    {
+        static $loaded = false;
+        if ($loaded) {
+            return;
+        }
+
+        if (!function_exists('eottae_should_load_assets') || !eottae_should_load_assets()) {
+            return;
+        }
+        if (!function_exists('eottae_calendar_should_load_ui') || !eottae_calendar_should_load_ui()) {
+            return;
+        }
+
+        add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-calendar.css">', 21);
+        add_javascript('<script src="'.G5_JS_URL.'/eottae-calendar.js" defer></script>', 21);
+        eottae_talkroom_append_body_class('calendar-ui');
+        $loaded = true;
+    }
+}
+
+eottae_calendar_load_ui_assets();
+
 if (!function_exists('eottae_talkroom_admin_shell_scripts')) {
     function eottae_talkroom_admin_shell_scripts()
     {
@@ -435,6 +496,7 @@ if (!function_exists('eottae_talkroom_admin_shell_scripts')) {
             'eottae-admin-plaza-ai.php',
             'eottae-admin-review-deletes.php',
             'eottae-admin-promo-coupons.php',
+            'eottae-admin-calendar-reports.php',
         );
     }
 }
@@ -729,7 +791,7 @@ if (!function_exists('eottae_talkroom_on_bbs_write')) {
         }
 
         $member_row = eottae_talkroom_get_member_row($room_id, $member['mb_id']);
-        if (!eottae_talkroom_can_write_posts($room, $member_row)) {
+        if (!eottae_talkroom_can_write_posts($room, $member_row, $member['mb_id'])) {
             alert('톡방 참여자만 글을 작성할 수 있습니다.', eottae_talkroom_enter_url($room_id));
         }
     }

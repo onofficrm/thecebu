@@ -1,5 +1,5 @@
 /**
- * 홈(빌더) — 헤더 액션 버튼(세부톡)을 페이지 GNB와 동일하게 맞춤
+ * 홈(빌더) — 헤더 액션 버튼(세부톡·세부일정)을 페이지 GNB와 동일하게 맞춤
  */
 (function (global) {
   'use strict';
@@ -24,18 +24,38 @@
     return null;
   }
 
-  function buildTalkButton(data, extraClass) {
+  function buildActionButton(data, extraClass, attrName, href, label) {
     var btn = document.createElement('a');
-    btn.href = data.talk_url;
-    btn.className = 'eottae-gnb-header__btn eottae-gnb-header__btn--talk ' + (extraClass || '');
-    btn.setAttribute('data-eottae-home-talk-btn', '1');
-    btn.textContent = data.talk_label || '세부톡';
+    btn.href = href;
+    btn.className = 'eottae-gnb-header__btn ' + (extraClass || '');
+    btn.setAttribute(attrName, '1');
+    btn.textContent = label;
     return btn;
+  }
+
+  function buildTalkButton(data, extraClass) {
+    return buildActionButton(
+      data,
+      'eottae-gnb-header__btn--talk ' + (extraClass || ''),
+      'data-eottae-home-talk-btn',
+      data.talk_url,
+      data.talk_label || '세부톡'
+    );
+  }
+
+  function buildCalendarButton(data, extraClass) {
+    return buildActionButton(
+      data,
+      'eottae-gnb-header__btn--calendar ' + (extraClass || ''),
+      'data-eottae-home-calendar-btn',
+      data.calendar_url,
+      data.calendar_label || '세부일정'
+    );
   }
 
   function mountDesktop(data) {
     var header = document.querySelector('header');
-    if (!header || header.querySelector('[data-eottae-home-talk-btn="1"]')) {
+    if (!header) {
       return;
     }
 
@@ -44,13 +64,20 @@
       return;
     }
 
-    var btn = buildTalkButton(data, 'eottae-gnb-header__btn--desktop hidden sm:inline-flex');
-    shopWrite.parentNode.insertBefore(btn, shopWrite);
+    if (!header.querySelector('[data-eottae-home-calendar-btn="1"]') && data.calendar_url) {
+      var calendarBtn = buildCalendarButton(data, 'eottae-gnb-header__btn--desktop hidden sm:inline-flex');
+      shopWrite.parentNode.insertBefore(calendarBtn, shopWrite);
+    }
+
+    if (!header.querySelector('[data-eottae-home-talk-btn="1"]') && data.talk_url) {
+      var talkBtn = buildTalkButton(data, 'eottae-gnb-header__btn--desktop hidden sm:inline-flex');
+      shopWrite.parentNode.insertBefore(talkBtn, shopWrite);
+    }
   }
 
   function mountMobile(data) {
     var header = document.querySelector('header');
-    if (!header || header.querySelector('[data-eottae-home-talk-btn="mobile"]')) {
+    if (!header) {
       return;
     }
 
@@ -72,19 +99,60 @@
       return;
     }
 
-    var btn = buildTalkButton(data, 'eottae-home-header-talk-btn--mobile col-span-2 rounded-xl py-3 text-center text-sm font-bold');
-    btn.setAttribute('data-eottae-home-talk-btn', 'mobile');
-    shopWrite.parentNode.insertBefore(btn, shopWrite);
+    if (!header.querySelector('[data-eottae-home-calendar-btn="mobile"]') && data.calendar_url) {
+      var calendarBtn = buildCalendarButton(
+        data,
+        'eottae-home-header-calendar-btn--mobile col-span-2 rounded-xl py-3 text-center text-sm font-bold'
+      );
+      calendarBtn.setAttribute('data-eottae-home-calendar-btn', 'mobile');
+      shopWrite.parentNode.insertBefore(calendarBtn, shopWrite);
+    }
+
+    if (!header.querySelector('[data-eottae-home-talk-btn="mobile"]') && data.talk_url) {
+      var talkBtn = buildTalkButton(
+        data,
+        'eottae-home-header-talk-btn--mobile col-span-2 rounded-xl py-3 text-center text-sm font-bold'
+      );
+      talkBtn.setAttribute('data-eottae-home-talk-btn', 'mobile');
+      shopWrite.parentNode.insertBefore(talkBtn, shopWrite);
+    }
+  }
+
+  function hideRentcarMenuLinks() {
+    var links = document.querySelectorAll('a[href*="bo_table=rentcar"], a[href*="bo_table%3Drentcar"]');
+    var i;
+    for (i = 0; i < links.length; i += 1) {
+      var link = links[i];
+      if (link.parentNode) {
+        link.parentNode.removeChild(link);
+      }
+    }
+
+    var textLinks = document.querySelectorAll('a, button');
+    for (i = 0; i < textLinks.length; i += 1) {
+      var node = textLinks[i];
+      if ((node.textContent || '').replace(/\s+/g, '') === '렌트카') {
+        var item = node.closest('li') || node.closest('nav') || node.parentElement;
+        if (item && item.parentNode && item !== document.body) {
+          item.parentNode.removeChild(item);
+        } else if (node.parentNode) {
+          node.parentNode.removeChild(node);
+        }
+      }
+    }
   }
 
   function mount() {
+    hideRentcarMenuLinks();
+
     var data = cfg();
-    if (!data || !data.talk_url) {
+    if (!data) {
       return;
     }
 
     mountDesktop(data);
     mountMobile(data);
+    hideRentcarMenuLinks();
   }
 
   function init() {

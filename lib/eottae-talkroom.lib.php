@@ -230,6 +230,11 @@ if (!function_exists('eottae_talkroom_ensure_schema')) {
 
         eottae_talkroom_upgrade_schema();
 
+        $board_result = eottae_talkroom_ensure_board();
+        if (is_array($board_result)) {
+            $results[] = $board_result;
+        }
+
         return $results;
     }
 }
@@ -283,6 +288,11 @@ if (!function_exists('eottae_talkroom_schema_status')) {
                 'exists' => eottae_talkroom_table_exists($table),
             );
         }
+
+        $status['board'] = array(
+            'table'  => eottae_talkroom_board_table(),
+            'exists' => eottae_talkroom_board_exists(false),
+        );
 
         return $status;
     }
@@ -675,7 +685,6 @@ if (!function_exists('eottae_talkroom_parse_apply_input')) {
             'category'         => $category,
             'emoji'            => eottae_talkroom_resolve_emoji($post['emoji'] ?? '', $category),
             'rules'            => eottae_talkroom_clean_text($post['rules'] ?? '', 5000),
-            'contact'          => eottae_talkroom_clean_text($post['contact'] ?? '', 255),
             'apply_reason'     => eottae_talkroom_clean_text($post['apply_reason'] ?? '', 2000),
             'visibility'       => $visibility,
             'join_type'        => $join_type,
@@ -719,10 +728,6 @@ if (!function_exists('eottae_talkroom_validate_apply')) {
             $errors[] = '운영 규칙을 5자 이상 입력해 주세요.';
         }
 
-        if ($data['contact'] === '') {
-            $errors[] = '방장 연락처 또는 카카오톡 ID를 입력해 주세요.';
-        }
-
         $reason_len = function_exists('mb_strlen') ? mb_strlen($data['apply_reason'], 'UTF-8') : strlen($data['apply_reason']);
         if ($reason_len < 10) {
             $errors[] = '신청 사유를 10자 이상 입력해 주세요.';
@@ -764,7 +769,7 @@ if (!function_exists('eottae_talkroom_insert_apply')) {
                 visibility = '".sql_escape_string($data['visibility'])."',
                 join_type = '".sql_escape_string($data['join_type'])."',
                 rules = '".sql_escape_string($data['rules'])."',
-                contact = '".sql_escape_string($data['contact'])."',
+                contact = '',
                 apply_reason = '".sql_escape_string($data['apply_reason'])."',
                 reject_reason = '',
                 created_at = '{$now}',
@@ -845,10 +850,144 @@ if (!function_exists('eottae_talkroom_board_table')) {
     }
 }
 
-if (!function_exists('eottae_talkroom_board_exists')) {
-    function eottae_talkroom_board_exists()
+if (!function_exists('eottae_talkroom_board_def')) {
+    function eottae_talkroom_board_def()
+    {
+        return array(
+            'bo_table'         => eottae_talkroom_board_table(),
+            'bo_subject'       => '세부톡방',
+            'bo_skin'          => 'eottae-community',
+            'bo_mobile_skin'   => 'eottae-community',
+            'gr_id'            => 'community',
+            'bo_read_level'    => 1,
+            'bo_write_level'   => 2,
+            'bo_comment_level' => 2,
+            'bo_use_category'  => 1,
+            'bo_category_list' => '일반|질문|정보|모임|모임모집|모임공지|공지',
+            'bo_upload_count'  => 7,
+            'bo_order'         => 20,
+            'bo_1_subj'        => '톡방 ID',
+            'bo_2_subj'        => '삭제상태',
+            'bo_3_subj'        => '삭제자',
+        );
+    }
+}
+
+if (!function_exists('eottae_talkroom_board_exists_cache_ref')) {
+    function &eottae_talkroom_board_exists_cache_ref()
     {
         static $cached = null;
+
+        return $cached;
+    }
+}
+
+if (!function_exists('eottae_talkroom_reset_board_exists_cache')) {
+    function eottae_talkroom_reset_board_exists_cache()
+    {
+        $cached = &eottae_talkroom_board_exists_cache_ref();
+        $cached = null;
+    }
+}
+
+if (!function_exists('eottae_talkroom_ensure_board')) {
+    /**
+     * 톡방 게시글 저장용 그누보드 talkroom 게시판 자동 생성
+     *
+     * @return array<string, mixed>|null
+     */
+    function eottae_talkroom_ensure_board()
+    {
+        if (eottae_talkroom_board_exists(false)) {
+            return array(
+                'table'   => eottae_talkroom_board_table(),
+                'key'     => 'board',
+                'existed' => true,
+                'ok'      => true,
+                'action'  => 'skip',
+                'message' => eottae_talkroom_board_table().' already exists',
+            );
+        }
+
+        static $running = false;
+        if ($running) {
+            return null;
+        }
+        $running = true;
+
+        $install_lib = G5_PATH.'/setup/tools/eottae-install.lib.php';
+        if (!is_file($install_lib)) {
+            $running = false;
+
+            return array(
+                'table'  => eottae_talkroom_board_table(),
+                'key'    => 'board',
+                'ok'     => false,
+                'action' => 'error',
+                'message'=> 'install helper missing',
+            );
+        }
+
+        include_once $install_lib;
+
+        if (!function_exists('eottae_install_create_board') || !function_exists('eottae_install_ensure_group')) {
+            $running = false;
+
+            return array(
+                'table'  => eottae_talkroom_board_table(),
+                'key'    => 'board',
+                'ok'     => false,
+                'action' => 'error',
+                'message'=> 'install helper incomplete',
+            );
+        }
+
+        eottae_install_ensure_group('community', '커뮤니티');
+        $result = eottae_install_create_board(eottae_talkroom_board_def());
+
+        if (!empty($result['ok'])) {
+            eottae_talkroom_reset_board_exists_cache();
+            if (function_exists('run_event')) {
+                run_event('cache_delete', 'board');
+            }
+        }
+
+        $running = false;
+
+        return array(
+            'table'   => eottae_talkroom_board_table(),
+            'key'     => 'board',
+            'existed' => (($result['action'] ?? '') === 'skip'),
+            'ok'      => !empty($result['ok']),
+            'action'  => $result['action'] ?? 'error',
+            'message' => $result['message'] ?? '',
+        );
+    }
+}
+
+if (!function_exists('eottae_talkroom_require_board')) {
+    /**
+     * talkroom 게시판 존재 보장 — AI·글쓰기 등 게시판 의존 기능용
+     *
+     * @return array{ok: bool, message: string}
+     */
+    function eottae_talkroom_require_board()
+    {
+        if (eottae_talkroom_board_exists(true)) {
+            return array('ok' => true, 'message' => '');
+        }
+
+        return array(
+            'ok'      => false,
+            'message' => '톡방 게시판을 찾을 수 없습니다. 잠시 후 다시 시도해 주세요.',
+        );
+    }
+}
+
+if (!function_exists('eottae_talkroom_board_exists')) {
+    function eottae_talkroom_board_exists($ensure = true)
+    {
+        $cached = &eottae_talkroom_board_exists_cache_ref();
         if ($cached !== null) {
             return $cached;
         }
@@ -861,9 +1000,28 @@ if (!function_exists('eottae_talkroom_board_exists')) {
         }
 
         $row = sql_fetch(" SELECT bo_table FROM ".G5_TABLE_PREFIX."board WHERE bo_table = '{$bo}' ", false);
-        $cached = !empty($row['bo_table']);
+        if (!empty($row['bo_table'])) {
+            $cached = true;
 
-        return $cached;
+            return true;
+        }
+
+        static $ensuring = false;
+        if ($ensure && !$ensuring && function_exists('eottae_talkroom_ensure_board')) {
+            $ensuring = true;
+            eottae_talkroom_ensure_board();
+            $ensuring = false;
+            eottae_talkroom_reset_board_exists_cache();
+
+            $row = sql_fetch(" SELECT bo_table FROM ".G5_TABLE_PREFIX."board WHERE bo_table = '{$bo}' ", false);
+            $cached = !empty($row['bo_table']);
+
+            return $cached;
+        }
+
+        $cached = false;
+
+        return false;
     }
 }
 
@@ -1509,6 +1667,7 @@ if (!function_exists('eottae_talkroom_format_admin_room')) {
             'rules'            => get_text($row['rules'] ?? ''),
             'room_notice'      => get_text($row['room_notice'] ?? ''),
             'contact'          => get_text($row['contact'] ?? ''),
+            'owner_display'    => get_text($owner_nick),
             'apply_reason'     => get_text($row['apply_reason'] ?? ''),
             'visibility'       => trim((string) ($row['visibility'] ?? 'public')),
             'visibility_label' => eottae_talkroom_visibility_label($row['visibility'] ?? 'public'),
@@ -2144,10 +2303,27 @@ if (!function_exists('eottae_talkroom_can_view_full_detail')) {
 }
 
 if (!function_exists('eottae_talkroom_can_write_posts')) {
-    function eottae_talkroom_can_write_posts(array $room, $member_row = null)
+    function eottae_talkroom_can_write_posts(array $room, $member_row = null, $mb_id = '')
     {
-        return eottae_talkroom_is_active_member($member_row)
-            && eottae_talkroom_is_operating_room($room['status'] ?? '');
+        if (!eottae_talkroom_is_operating_room($room['status'] ?? '')) {
+            return false;
+        }
+
+        if (eottae_talkroom_is_active_member($member_row)) {
+            return true;
+        }
+
+        $mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $mb_id);
+        if ($mb_id === '' || !eottae_talkroom_is_room_owner($room, $mb_id, $member_row)) {
+            return false;
+        }
+
+        $room_id = (int) ($room['room_id'] ?? 0);
+        if ($room_id > 0 && !eottae_talkroom_is_active_member($member_row)) {
+            eottae_talkroom_ensure_owner_member($room_id, $mb_id, $mb_id);
+        }
+
+        return true;
     }
 }
 
@@ -2442,7 +2618,7 @@ if (!function_exists('eottae_talkroom_build_detail_context')) {
         $membership = eottae_talkroom_membership_state($room, $member_row, $mb_id);
         $can_view_posts = eottae_talkroom_can_view_posts($room, $member_row);
         $can_view_full = eottae_talkroom_can_view_full_detail($room, $member_row);
-        $can_write = eottae_talkroom_can_write_posts($room, $member_row);
+        $can_write = eottae_talkroom_can_write_posts($room, $member_row, $mb_id);
         $can_join = false;
         $can_leave = false;
         $join_blocked_reason = '';
@@ -2985,7 +3161,6 @@ if (!function_exists('eottae_talkroom_parse_owner_update_input')) {
             'room_detail'      => eottae_talkroom_clean_text($post['room_detail'] ?? '', 5000),
             'emoji'            => eottae_talkroom_resolve_emoji($post['emoji'] ?? '', isset($post['category']) ? (string) $post['category'] : ''),
             'rules'            => eottae_talkroom_clean_text($post['rules'] ?? '', 5000),
-            'contact'          => eottae_talkroom_clean_text($post['contact'] ?? '', 255),
             'join_type'        => $join_type,
             'room_notice'      => eottae_talkroom_clean_text($post['room_notice'] ?? '', 2000),
         );
@@ -3010,10 +3185,6 @@ if (!function_exists('eottae_talkroom_validate_owner_update')) {
         $rules_len = function_exists('mb_strlen') ? mb_strlen($data['rules'], 'UTF-8') : strlen($data['rules']);
         if ($rules_len < 5) {
             $errors[] = '운영 규칙을 5자 이상 입력해 주세요.';
-        }
-
-        if ($data['contact'] === '') {
-            $errors[] = '연락처를 입력해 주세요.';
         }
 
         return $errors;
@@ -3043,7 +3214,6 @@ if (!function_exists('eottae_talkroom_update_room_by_owner')) {
                 room_detail = '".sql_escape_string($data['room_detail'])."',
                 emoji = '".sql_escape_string($data['emoji'])."',
                 rules = '".sql_escape_string($data['rules'])."',
-                contact = '".sql_escape_string($data['contact'])."',
                 join_type = '".sql_escape_string($data['join_type'])."',
                 room_notice = '".sql_escape_string($data['room_notice'])."',
                 updated_at = '{$now}'
@@ -3416,7 +3586,7 @@ if (!function_exists('eottae_talkroom_assert_talkroom_member_action')) {
             return array('ok' => false, 'message' => '강퇴된 톡방에서는 글쓰기와 댓글 작성이 불가합니다.', 'redirect' => eottae_talkroom_enter_url($room_id));
         }
 
-        if (!eottae_talkroom_can_write_posts($room, $member_row)) {
+        if (!eottae_talkroom_can_write_posts($room, $member_row, $mb_id)) {
             return array('ok' => false, 'message' => '톡방 참여자만 이용할 수 있습니다.', 'redirect' => eottae_talkroom_enter_url($room_id));
         }
 
@@ -3544,7 +3714,7 @@ if (!function_exists('eottae_talkroom_user_can_edit_write')) {
         }
 
         $member_row = eottae_talkroom_get_member_row($room_id, $mb_id);
-        if (!eottae_talkroom_can_write_posts($room, $member_row)) {
+        if (!eottae_talkroom_can_write_posts($room, $member_row, $mb_id)) {
             return false;
         }
 
@@ -3583,7 +3753,7 @@ if (!function_exists('eottae_talkroom_can_comment_on_post')) {
 
         $member_row = eottae_talkroom_get_member_row($room_id, $mb_id);
 
-        return eottae_talkroom_can_write_posts($room, $member_row);
+        return eottae_talkroom_can_write_posts($room, $member_row, $mb_id);
     }
 }
 
@@ -4203,7 +4373,7 @@ if (!function_exists('eottae_talkroom_can_submit_report')) {
         }
 
         $member_row = eottae_talkroom_get_member_row($room_id, $reporter_mb_id);
-        if (!eottae_talkroom_can_write_posts($room, $member_row)) {
+        if (!eottae_talkroom_can_write_posts($room, $member_row, $reporter_mb_id)) {
             return array('ok' => false, 'message' => '톡방 참여자만 신고할 수 있습니다.');
         }
 

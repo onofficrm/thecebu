@@ -9347,6 +9347,14 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   color: var(--eottae-muted);
 }
 
+.talk-apply-page__owner,
+.talk-manage-page__owner {
+  margin: -8px 0 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--eottae-text, #0f172a);
+}
+
 .talk-apply-form {
   display: grid;
   gap: 16px;
@@ -10061,11 +10069,16 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   margin-bottom: 10px;
 }
 
-.talk-room-detail__write-link {
+.talk-room-detail__write-link,
+.talk-room-detail__empty-link {
   font-size: 13px;
   font-weight: 700;
   color: var(--eottae-primary);
   text-decoration: none;
+}
+
+.talk-room-detail__empty-link:hover {
+  text-decoration: underline;
 }
 
 .talk-room-post-list {

@@ -153,6 +153,11 @@ if (function_exists('eottae_talkroom_render_post_report_button')) {
     eottae_talkroom_render_post_report_button($board, $write, $member, $is_admin);
 }
 
+if (function_exists('eottae_calendar_render_post_calendar_button')) {
+    include_once G5_PATH.'/components/eottae/calendar-report.php';
+    eottae_calendar_render_post_calendar_button($board, $write, $member, $is_admin);
+}
+
 if (function_exists('eottae_talkroom_render_post_bookmark_button')) {
     include_once G5_PATH.'/components/eottae/talk-bookmark.php';
     eottae_talkroom_render_post_bookmark_button($board, $write, $member, $is_admin);

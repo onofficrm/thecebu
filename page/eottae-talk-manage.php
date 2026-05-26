@@ -190,10 +190,7 @@ g5_page_start('톡방 관리');
                 <label for="talk_manage_rules">운영 규칙</label>
                 <textarea id="talk_manage_rules" name="rules" class="talk-apply-form__textarea" rows="4" maxlength="5000" required><?php echo get_text($detail['rules']); ?></textarea>
             </div>
-            <div class="talk-apply-form__field">
-                <label for="talk_manage_contact">연락처</label>
-                <input type="text" id="talk_manage_contact" name="contact" class="talk-apply-form__input" maxlength="255" required value="<?php echo get_text($detail['contact']); ?>">
-            </div>
+            <p class="talk-manage-page__owner">방장: <?php echo get_text($member['mb_nick'] ?? $member['mb_id'] ?? ''); ?></p>
             <fieldset class="talk-apply-form__fieldset">
                 <legend>가입 방식</legend>
                 <label class="talk-apply-form__radio">

@@ -61,8 +61,8 @@ g5_talk_admin_page_start('톡방 신청 상세');
                 <dd class="talk-admin-detail__multiline"><?php echo nl2br($room['rules']); ?></dd>
             </div>
             <div class="talk-admin-detail__row">
-                <dt>연락처</dt>
-                <dd><?php echo $room['contact']; ?></dd>
+                <dt>방장</dt>
+                <dd><?php echo $room['owner_nick']; ?></dd>
             </div>
             <div class="talk-admin-detail__row">
                 <dt>공개 여부</dt>

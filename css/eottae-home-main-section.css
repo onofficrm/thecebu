@@ -1,0 +1,394 @@
+/* 홈 — 이번 3일 세부 일정 + 커뮤니티 인기글 */
+.sebu-home-main-section {
+  display: grid;
+  gap: 24px;
+}
+
+.sebu-cal-summary {
+  display: grid;
+  gap: 16px;
+}
+
+.sebu-cal-summary__head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sebu-cal-summary__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.sebu-cal-summary__desc {
+  margin: 4px 0 0;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.sebu-cal-summary__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sebu-cal-summary__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #334155;
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.sebu-cal-summary__btn--primary {
+  border-color: #0ea5e9;
+  background: #f0f9ff;
+  color: #0369a1;
+}
+
+.sebu-cal-summary__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.sebu-cal-summary-day {
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.sebu-cal-summary-day__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.sebu-cal-summary-day__label {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.sebu-cal-summary-day__date {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.sebu-cal-summary-day__count {
+  margin-left: auto;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0369a1;
+}
+
+.sebu-cal-summary-day__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.sebu-cal-summary-day__empty {
+  padding: 10px 0 4px;
+  color: #64748b;
+  font-size: 0.86rem;
+}
+
+.sebu-cal-summary-day__empty p {
+  margin: 0;
+}
+
+.sebu-cal-summary-day__empty-sub {
+  margin-top: 4px !important;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.sebu-cal-summary-event__link {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f8fafc;
+  text-decoration: none;
+  color: inherit;
+}
+
+.sebu-cal-summary-event__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.sebu-cal-summary-event__category,
+.sebu-cal-summary-event__badge,
+.sebu-cal-summary-event__source {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.sebu-cal-summary-event__category {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.sebu-cal-summary-event__badge {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.sebu-cal-summary-event__source {
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.sebu-cal-summary-event__title {
+  display: block;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: #0f172a;
+}
+
+.sebu-cal-summary-event__meta {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.sebu-cal-summary-talk {
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid #bae6fd;
+  background: linear-gradient(180deg, #f0f9ff 0%, #fff 100%);
+}
+
+.sebu-cal-summary-talk__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0369a1;
+}
+
+.sebu-cal-summary-talk__list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.sebu-cal-summary-talk__link {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  color: inherit;
+}
+
+.sebu-cal-summary-talk__day {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #0369a1;
+}
+
+.sebu-cal-summary-talk__name {
+  font-size: 0.88rem;
+  color: #0f172a;
+}
+
+.sebu-cal-summary-talk__time {
+  margin-left: auto;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.sebu-popular {
+  display: grid;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.sebu-popular__title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.sebu-popular__tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.sebu-popular__tab {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sebu-popular__tab.is-active {
+  border-color: #0ea5e9;
+  background: #f0f9ff;
+  color: #0369a1;
+}
+
+.sebu-popular__mobile-panels {
+  display: block;
+}
+
+.sebu-popular-panel {
+  display: none;
+}
+
+.sebu-popular-panel.is-active {
+  display: block;
+}
+
+.sebu-popular-panel__title {
+  margin: 0 0 10px;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #334155;
+}
+
+.sebu-popular__desktop-grid {
+  display: none;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.sebu-popular-col {
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.sebu-popular-col__title {
+  margin: 0 0 10px;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #334155;
+}
+
+.sebu-popular-panel__list,
+.sebu-popular-col .sebu-popular-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.sebu-popular-item__link {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f8fafc;
+  text-decoration: none;
+  color: inherit;
+}
+
+.sebu-popular-item__board {
+  display: inline-block;
+  margin-bottom: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #0369a1;
+}
+
+.sebu-popular-item__title {
+  display: block;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: #0f172a;
+}
+
+.sebu-popular-item__meta {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.76rem;
+  color: #64748b;
+}
+
+.sebu-popular-panel__empty {
+  margin: 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.86rem;
+}
+
+.eottae-gnb-header__btn--calendar {
+  border-color: #bae6fd;
+  background: #f0f9ff;
+  color: #0369a1;
+}
+
+@media (min-width: 768px) {
+  .sebu-cal-summary__head {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .sebu-cal-summary__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .sebu-popular__tabs,
+  .sebu-popular__mobile-panels {
+    display: none;
+  }
+
+  .sebu-popular__desktop-grid {
+    display: grid;
+  }
+}
+
+@media (max-width: 767px) {
+  .sebu-cal-summary__btn {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 0;
+  }
+
+  .sebu-cal-summary__btn--primary {
+    flex: 1 1 100%;
+  }
+}

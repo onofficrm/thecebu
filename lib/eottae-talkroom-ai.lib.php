@@ -240,6 +240,9 @@ if (!function_exists('eottae_talkroom_ai_get_settings')) {
         $merged = array_merge($defaults, $row);
         $merged['room_id'] = $room_id;
         $merged['admin_force_disabled'] = (int) !empty($row['admin_force_disabled']);
+        if (function_exists('eottae_talkroom_ai_normalize_max_messages_per_day')) {
+            $merged['max_messages_per_day'] = eottae_talkroom_ai_normalize_max_messages_per_day($merged['max_messages_per_day'] ?? 2);
+        }
 
         return $merged;
     }
@@ -386,7 +389,7 @@ if (!function_exists('eottae_talkroom_ai_parse_settings_input')) {
             'meetup_suggest_enabled'   => !empty($post['meetup_suggest_enabled']) ? 1 : 0,
             'summary_enabled'          => !empty($post['summary_enabled']) ? 1 : 0,
             'reaction_enabled'         => !empty($post['reaction_enabled']) ? 1 : 0,
-            'max_messages_per_day'     => isset($post['max_messages_per_day']) ? (int) $post['max_messages_per_day'] : 2,
+            'max_messages_per_day'     => eottae_talkroom_ai_normalize_max_messages_per_day(isset($post['max_messages_per_day']) ? (int) $post['max_messages_per_day'] : 2),
             'min_silence_minutes'      => isset($post['min_silence_minutes']) ? (int) $post['min_silence_minutes'] : 360,
             'active_start_time'        => isset($post['active_start_time']) ? trim((string) $post['active_start_time']) : '09:00',
             'active_end_time'          => isset($post['active_end_time']) ? trim((string) $post['active_end_time']) : '22:00',
@@ -421,8 +424,9 @@ if (!function_exists('eottae_talkroom_ai_validate_settings')) {
             if ($data['ai_tone'] === '' || !isset($tones[$data['ai_tone']])) {
                 $errors[] = 'AI 말투를 선택해 주세요.';
             }
-            if ($data['max_messages_per_day'] < 1 || $data['max_messages_per_day'] > 20) {
-                $errors[] = '하루 최대 AI 발언 수는 1~20 사이로 설정해 주세요.';
+            if ($data['max_messages_per_day'] < eottae_talkroom_ai_min_messages_per_day()
+                || $data['max_messages_per_day'] > eottae_talkroom_ai_max_messages_per_day_cap()) {
+                $errors[] = '하루 최대 AI 발언 수는 '.eottae_talkroom_ai_min_messages_per_day().'~'.eottae_talkroom_ai_max_messages_per_day_cap().' 사이로 설정해 주세요.';
             }
             if ($data['min_silence_minutes'] < 30 || $data['min_silence_minutes'] > 10080) {
                 $errors[] = '조용한 방 판단 기준은 30분~7일(10080분) 사이로 설정해 주세요.';
@@ -1194,8 +1198,9 @@ if (!function_exists('eottae_talkroom_ai_insert_post')) {
         }
 
         $room_id = (int) $room_id;
-        if ($room_id < 1 || !eottae_talkroom_board_exists()) {
-            return array('ok' => false, 'message' => '톡방 게시판을 찾을 수 없습니다.');
+        $board_check = eottae_talkroom_require_board();
+        if ($room_id < 1 || empty($board_check['ok'])) {
+            return array('ok' => false, 'message' => $board_check['message'] ?? '톡방 게시판을 찾을 수 없습니다.');
         }
 
         $room = eottae_talkroom_get_operating_room($room_id);
@@ -1360,8 +1365,9 @@ if (!function_exists('eottae_talkroom_ai_insert_comment')) {
 
         $room_id = (int) $room_id;
         $parent_wr_id = (int) $parent_wr_id;
-        if ($room_id < 1 || $parent_wr_id < 1 || !eottae_talkroom_board_exists()) {
-            return array('ok' => false, 'message' => '댓글을 등록할 게시글 정보가 올바르지 않습니다.');
+        $board_check = eottae_talkroom_require_board();
+        if ($room_id < 1 || $parent_wr_id < 1 || empty($board_check['ok'])) {
+            return array('ok' => false, 'message' => $board_check['message'] ?? '댓글을 등록할 게시글 정보가 올바르지 않습니다.');
         }
 
         $write_table = eottae_talkroom_write_table();

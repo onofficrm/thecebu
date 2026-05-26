@@ -94,6 +94,122 @@ if (!function_exists('eottae_talkroom_ai_get_today_site_message_count')) {
     }
 }
 
+if (!function_exists('eottae_talkroom_ai_min_messages_per_day')) {
+    function eottae_talkroom_ai_min_messages_per_day()
+    {
+        return 2;
+    }
+}
+
+if (!function_exists('eottae_talkroom_ai_max_messages_per_day_cap')) {
+    function eottae_talkroom_ai_max_messages_per_day_cap()
+    {
+        return 10;
+    }
+}
+
+if (!function_exists('eottae_talkroom_ai_normalize_max_messages_per_day')) {
+    function eottae_talkroom_ai_normalize_max_messages_per_day($value)
+    {
+        $min = eottae_talkroom_ai_min_messages_per_day();
+        $max = eottae_talkroom_ai_max_messages_per_day_cap();
+        $value = (int) $value;
+
+        if ($value < $min) {
+            return $min;
+        }
+        if ($value > $max) {
+            return $max;
+        }
+
+        return $value;
+    }
+}
+
+if (!function_exists('eottae_talkroom_ai_room_member_activity_total')) {
+    /**
+     * 오늘 톡방 회원 대화량 (AI·봇 제외 글+댓글)
+     */
+    function eottae_talkroom_ai_room_member_activity_total($room_id, $target_date = null)
+    {
+        if (!function_exists('eottae_talkroom_ai_fetch_room_activity_for_date')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom-ai-summary.lib.php';
+        }
+
+        $activity = eottae_talkroom_ai_fetch_room_activity_for_date((int) $room_id, $target_date ?: G5_TIME_YMD);
+
+        return (int) ($activity['total'] ?? 0);
+    }
+}
+
+if (!function_exists('eottae_talkroom_ai_effective_daily_limit')) {
+    /**
+     * 대화량에 따라 2~설정 최대값 사이에서 오늘 허용 AI 발언 수 계산
+     */
+    function eottae_talkroom_ai_effective_daily_limit($room_id, $settings = null, $target_date = null)
+    {
+        $room_id = (int) $room_id;
+        $target_date = $target_date ?: G5_TIME_YMD;
+
+        if (!is_array($settings)) {
+            $settings = eottae_talkroom_ai_get_settings($room_id);
+        }
+
+        $min_cap = eottae_talkroom_ai_min_messages_per_day();
+        $max_cap = eottae_talkroom_ai_normalize_max_messages_per_day($settings['max_messages_per_day'] ?? $min_cap);
+        if ($max_cap <= $min_cap) {
+            return $min_cap;
+        }
+
+        $activity = eottae_talkroom_ai_room_member_activity_total($room_id, $target_date);
+        $range = $max_cap - $min_cap;
+
+        if ($activity <= 0) {
+            $boost = 0;
+        } elseif ($activity <= 3) {
+            $boost = 0;
+        } elseif ($activity <= 8) {
+            $boost = (int) max(1, ceil($range * 0.25));
+        } elseif ($activity <= 15) {
+            $boost = (int) max(1, ceil($range * 0.5));
+        } elseif ($activity <= 30) {
+            $boost = (int) max(1, ceil($range * 0.75));
+        } else {
+            $boost = $range;
+        }
+
+        return min($max_cap, $min_cap + min($boost, $range));
+    }
+}
+
+if (!function_exists('eottae_talkroom_ai_daily_limit_status')) {
+    /**
+     * @return array{today_count:int, effective_limit:int, max_cap:int, min_cap:int, member_activity:int}
+     */
+    function eottae_talkroom_ai_daily_limit_status($room_id, $settings = null, $target_date = null)
+    {
+        $room_id = (int) $room_id;
+        $target_date = $target_date ?: G5_TIME_YMD;
+
+        if (!is_array($settings)) {
+            $settings = eottae_talkroom_ai_get_settings($room_id);
+        }
+
+        $min_cap = eottae_talkroom_ai_min_messages_per_day();
+        $max_cap = eottae_talkroom_ai_normalize_max_messages_per_day($settings['max_messages_per_day'] ?? $min_cap);
+        $member_activity = eottae_talkroom_ai_room_member_activity_total($room_id, $target_date);
+        $effective_limit = eottae_talkroom_ai_effective_daily_limit($room_id, $settings, $target_date);
+
+        return array(
+            'today_count'     => eottae_talkroom_ai_get_today_message_count($room_id, $target_date),
+            'effective_limit' => $effective_limit,
+            'max_cap'         => $max_cap,
+            'min_cap'         => $min_cap,
+            'member_activity' => $member_activity,
+        );
+    }
+}
+
 if (!function_exists('eottae_talkroom_ai_is_site_daily_limit_reached')) {
     function eottae_talkroom_ai_is_site_daily_limit_reached($target_date = null)
     {
@@ -183,8 +299,9 @@ if (!function_exists('eottae_talkroom_ai_evaluate_shared_limits')) {
                 return array('ok' => false, 'reason' => 'site_daily_limit_reached', 'settings' => $settings);
             }
 
-            $max_per_day = max(1, (int) ($settings['max_messages_per_day'] ?? 2));
-            if (eottae_talkroom_ai_get_today_message_count($room_id, substr($now, 0, 10)) >= $max_per_day) {
+            $limit_status = eottae_talkroom_ai_daily_limit_status($room_id, $settings, substr($now, 0, 10));
+            $max_per_day = (int) ($limit_status['effective_limit'] ?? eottae_talkroom_ai_min_messages_per_day());
+            if ((int) ($limit_status['today_count'] ?? 0) >= $max_per_day) {
                 return array('ok' => false, 'reason' => 'daily_limit_reached', 'settings' => $settings);
             }
         }

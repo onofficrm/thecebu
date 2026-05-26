@@ -311,6 +311,23 @@ if (!function_exists('eottae_install_get_board_defs')) {
                 eottae_install_community_board_def('youtube', '유튜브', 15, 'Vlog|맛집|정보|기타', 'youtube-list'),
                 array('bo_1_subj' => '유튜브 URL')
             ),
+            function_exists('eottae_talkroom_board_def') ? eottae_talkroom_board_def() : array(
+                'bo_table'         => 'talkroom',
+                'bo_subject'       => '세부톡방',
+                'bo_skin'          => 'eottae-community',
+                'bo_mobile_skin'   => 'eottae-community',
+                'gr_id'            => 'community',
+                'bo_read_level'    => 1,
+                'bo_write_level'   => 2,
+                'bo_comment_level' => 2,
+                'bo_use_category'  => 1,
+                'bo_category_list' => '일반|질문|정보|모임|모임모집|모임공지|공지',
+                'bo_upload_count'  => 7,
+                'bo_order'         => 20,
+                'bo_1_subj'        => '톡방 ID',
+                'bo_2_subj'        => '삭제상태',
+                'bo_3_subj'        => '삭제자',
+            ),
             array(
                 'bo_table'         => 'inquiry',
                 'bo_subject'       => '문의·상담',

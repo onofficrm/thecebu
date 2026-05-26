@@ -3,6 +3,7 @@ include_once(dirname(__FILE__).'/_init.php');
 include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
 include_once G5_LIB_PATH.'/eottae-talkroom-ai.lib.php';
 include_once G5_LIB_PATH.'/eottae-talkroom-reads.lib.php';
+include_once G5_LIB_PATH.'/eottae-calendar.lib.php';
 include_once G5_PATH.'/components/eottae/talk-ai-message-ui.php';
 
 $room_id = isset($_GET['room_id']) ? (int) $_GET['room_id'] : 0;
@@ -19,6 +20,11 @@ if ($is_member && $mb_id !== '') {
 
 $room = $ctx['room'];
 $member_token = $is_member ? eottae_talkroom_member_token() : '';
+$is_super = ($is_admin === 'super');
+$can_register_calendar = $is_member && eottae_calendar_can_create_from_talk($room_id, $mb_id, $is_super);
+$calendar_create_href = $can_register_calendar
+    ? eottae_calendar_create_from_talk_url($room_id, array('room_name' => $room['room_name'] ?? ''))
+    : '';
 $login_url = function_exists('eottae_login_url')
     ? eottae_login_url(eottae_talkroom_enter_url($room_id))
     : G5_BBS_URL.'/login.php';
@@ -100,6 +106,9 @@ g5_page_start($room['room_name']);
         <?php if ($ctx['can_write'] && $room['write_href'] !== '') { ?>
         <a href="<?php echo $room['write_href']; ?>" class="talk-page__btn talk-page__btn--primary">글쓰기</a>
         <?php } ?>
+        <?php if ($calendar_create_href !== '') { ?>
+        <a href="<?php echo $calendar_create_href; ?>" class="talk-page__btn talk-page__btn--calendar">캘린더에 등록</a>
+        <?php } ?>
         <?php } elseif ($ctx['membership'] === 'pending') { ?>
         <span class="talk-room-detail__status talk-room-detail__status--pending">참여 승인 대기중</span>
         <p class="talk-room-detail__hint">방장 승인 후 글쓰기가 가능합니다.</p>
@@ -124,7 +133,7 @@ g5_page_start($room['room_name']);
         <?php if (!$ctx['can_view_posts']) { ?>
         <p class="talk-room-detail__empty">비공개 톡방은 참여 승인 후 게시글을 볼 수 있습니다.</p>
         <?php } elseif (empty($ctx['posts'])) { ?>
-        <p class="talk-room-detail__empty">아직 게시글이 없습니다.<?php if ($ctx['can_write']) { ?> 첫 글을 작성해 보세요.<?php } ?></p>
+        <p class="talk-room-detail__empty">아직 게시글이 없습니다.<?php if ($ctx['can_write'] && $room['write_href'] !== '') { ?> <a href="<?php echo $room['write_href']; ?>" class="talk-room-detail__empty-link">첫 글을 작성해 보세요.</a><?php } elseif ($ctx['can_write']) { ?> 첫 글을 작성해 보세요.<?php } ?></p>
         <?php } else { ?>
         <ul class="talk-room-post-list">
             <?php foreach ($ctx['posts'] as $post) {

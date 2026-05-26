@@ -838,6 +838,26 @@ if (!function_exists('eottae_builder_inject_home_talk_feed_script')) {
     }
 }
 
+if (!function_exists('eottae_builder_inject_home_main_section_script')) {
+    function eottae_builder_inject_home_main_section_script()
+    {
+        include_once G5_LIB_PATH.'/eottae-calendar-home.lib.php';
+
+        $payload = eottae_home_main_section_payload();
+        $payload_json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($payload_json === false) {
+            return '';
+        }
+
+        $css = defined('G5_CSS_URL') ? G5_CSS_URL.'/eottae-home-main-section.css' : '/css/eottae-home-main-section.css';
+        $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-main-section.js' : '/js/eottae-home-main-section.js';
+
+        return '<link rel="stylesheet" href="'.htmlspecialchars($css, ENT_QUOTES, 'UTF-8').'">'
+            .'<script>window.__EOTTae_HOME_MAIN_SECTION__='.$payload_json.';</script>'
+            .'<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
+    }
+}
+
 if (!function_exists('eottae_builder_inject_home_hero_talk_script')) {
     function eottae_builder_inject_home_hero_talk_script()
     {
@@ -898,8 +918,10 @@ if (!function_exists('eottae_builder_inject_home_header_actions_script')) {
     function eottae_builder_inject_home_header_actions_script()
     {
         $payload = array(
-            'talk_url'   => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk',
-            'talk_label' => '세부톡',
+            'talk_url'      => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk',
+            'talk_label'    => '세부톡',
+            'calendar_url'  => function_exists('eottae_calendar_list_url') ? eottae_calendar_list_url() : G5_URL.'/calendar/',
+            'calendar_label'=> '세부일정',
         );
         $payload_json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if ($payload_json === false) {
@@ -1033,7 +1055,7 @@ if (!function_exists('eottae_builder_inject_html')) {
         $body_scripts = eottae_builder_inject_home_react_ready_script();
         $body_scripts .= eottae_builder_inject_featured_carousel_script();
         $body_scripts .= eottae_builder_inject_home_search_script();
-        $body_scripts .= eottae_builder_inject_home_hero_talk_script();
+        $body_scripts .= eottae_builder_inject_home_main_section_script();
         $body_scripts .= eottae_builder_inject_home_public_chat_script();
         $body_scripts .= eottae_builder_inject_home_events_banner_script();
         $body_scripts .= eottae_builder_inject_home_header_actions_script();
@@ -4555,7 +4577,6 @@ if (!function_exists('eottae_gnb_nav_links')) {
             array('key' => 'shop', 'label' => '내주변', 'href' => eottae_board_list_url(eottae_shop_table())),
             array('key' => 'food', 'label' => '맛집', 'href' => eottae_board_list_url(defined('EOTTae_FOOD_TABLE') ? EOTTae_FOOD_TABLE : 'food')),
             array('key' => 'massage', 'label' => '마사지', 'href' => eottae_board_list_url(defined('EOTTae_MASSAGE_TABLE') ? EOTTae_MASSAGE_TABLE : 'massage')),
-            array('key' => 'rentcar', 'label' => '렌트카', 'href' => eottae_board_list_url(defined('EOTTae_RENTCAR_TABLE') ? EOTTae_RENTCAR_TABLE : 'rentcar')),
             array('key' => 'tour', 'label' => '투어', 'href' => eottae_board_list_url(defined('EOTTae_TOUR_TABLE') ? EOTTae_TOUR_TABLE : 'tour')),
             array('key' => 'community', 'label' => '커뮤니티', 'href' => eottae_community_list_url()),
             array('key' => 'people', 'label' => '사람찾기', 'href' => eottae_board_list_url(defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people')),
@@ -4564,6 +4585,7 @@ if (!function_exists('eottae_gnb_nav_links')) {
             array('key' => 'gallery', 'label' => '갤러리', 'href' => eottae_board_list_url(defined('EOTTae_GALLERY_TABLE') ? EOTTae_GALLERY_TABLE : 'gallery')),
             array('key' => 'youtube', 'label' => '유튜브', 'href' => eottae_board_list_url(defined('EOTTae_YOUTUBE_TABLE') ? EOTTae_YOUTUBE_TABLE : 'youtube')),
             array('key' => 'talk', 'label' => '세부톡', 'href' => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk', 'desktop_action' => true),
+            array('key' => 'calendar', 'label' => '세부일정', 'href' => function_exists('eottae_calendar_list_url') ? eottae_calendar_list_url() : G5_URL.'/calendar/'),
         );
     }
 }
@@ -4608,7 +4630,6 @@ if (!function_exists('eottae_gnb_link_is_active')) {
             'shop'      => eottae_shop_table(),
             'food'      => defined('EOTTae_FOOD_TABLE') ? EOTTae_FOOD_TABLE : 'food',
             'massage'   => defined('EOTTae_MASSAGE_TABLE') ? EOTTae_MASSAGE_TABLE : 'massage',
-            'rentcar'   => defined('EOTTae_RENTCAR_TABLE') ? EOTTae_RENTCAR_TABLE : 'rentcar',
             'tour'      => defined('EOTTae_TOUR_TABLE') ? EOTTae_TOUR_TABLE : 'tour',
             'community' => eottae_community_board_table(),
             'people'    => defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people',
@@ -4623,6 +4644,8 @@ if (!function_exists('eottae_gnb_link_is_active')) {
                 return defined('_INDEX_');
             case 'talk':
                 return strpos($uri, '/talk') !== false || strpos($uri, '/page/eottae-talk') !== false;
+            case 'calendar':
+                return strpos($uri, '/calendar') !== false || strpos($uri, '/page/eottae-calendar') !== false;
             case 'mypage':
                 return strpos($uri, '/page/eottae-') !== false;
             default:

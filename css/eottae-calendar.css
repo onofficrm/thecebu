@@ -1,0 +1,698 @@
+@charset "utf-8";
+
+/**
+ * 세부어때 캘린더 — 모바일 우선
+ * 스코프: body.calendar-ui
+ * 클래스 prefix: sebu-cal-
+ */
+
+body.calendar-ui {
+  --sebu-cal-primary: var(--eottae-primary, #0ea5e9);
+  --sebu-cal-line: #e2e8f0;
+  --sebu-cal-muted: #64748b;
+  --sebu-cal-surface: #fff;
+  --sebu-cal-radius: 16px;
+  --sebu-cal-touch: 44px;
+}
+
+body.calendar-ui .sebu-cal-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 12px 14px calc(24px + var(--eottae-bottom-nav-h, 64px) + env(safe-area-inset-bottom, 0px));
+}
+
+body.calendar-ui .sebu-cal-page__hero {
+  margin-bottom: 16px;
+  padding: 18px 16px;
+  border-radius: var(--sebu-cal-radius);
+  background: linear-gradient(145deg, #fff 0%, #f0f9ff 55%, #ecfdf5 100%);
+  border: 1px solid rgba(14, 165, 233, 0.15);
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06);
+}
+
+body.calendar-ui .sebu-cal-page__title {
+  margin: 0 0 8px;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+body.calendar-ui .sebu-cal-page__intro {
+  margin: 0 0 14px;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--sebu-cal-muted);
+}
+
+body.calendar-ui .sebu-cal-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+body.calendar-ui .sebu-cal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--sebu-cal-touch);
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--sebu-cal-line);
+  background: var(--sebu-cal-surface);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--eottae-text, #0f172a);
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+
+body.calendar-ui .sebu-cal-btn--primary {
+  background: linear-gradient(135deg, var(--sebu-cal-primary) 0%, #38bdf8 100%);
+  border-color: #7dd3fc;
+  color: #fff;
+}
+
+body.calendar-ui .sebu-cal-btn--danger {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+/* ── 요약 카드 (오늘/내일/모레) ── */
+body.calendar-ui .sebu-cal-summary {
+  margin-bottom: 16px;
+}
+
+body.calendar-ui .sebu-cal-summary__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 640px) {
+  body.calendar-ui .sebu-cal-summary__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+body.calendar-ui .sebu-cal-summary__card {
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--sebu-cal-surface);
+  border: 1px solid var(--sebu-cal-line);
+}
+
+body.calendar-ui .sebu-cal-summary__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+body.calendar-ui .sebu-cal-summary__label {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+body.calendar-ui .sebu-cal-summary__count {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--sebu-cal-primary);
+}
+
+body.calendar-ui .sebu-cal-summary__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+body.calendar-ui .sebu-cal-summary__list a {
+  display: block;
+  padding: 4px 0;
+  font-size: 0.84rem;
+  color: var(--eottae-text, #0f172a);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.calendar-ui .sebu-cal-summary__empty {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--sebu-cal-muted);
+}
+
+/* ── 분류 필터 칩 ── */
+body.calendar-ui .sebu-cal-filter {
+  margin-bottom: 12px;
+}
+
+body.calendar-ui .sebu-cal-filter__scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+body.calendar-ui .sebu-cal-filter__scroll::-webkit-scrollbar {
+  display: none;
+}
+
+body.calendar-ui .sebu-cal-filter__chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--sebu-cal-line);
+  background: var(--sebu-cal-surface);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--sebu-cal-muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+body.calendar-ui .sebu-cal-filter__chip.is-active {
+  border-color: var(--sebu-cal-primary);
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+/* ── 보기 탭 ── */
+body.calendar-ui .sebu-cal-view-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+body.calendar-ui .sebu-cal-view-tabs__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--sebu-cal-line);
+  background: var(--sebu-cal-surface);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--sebu-cal-muted);
+  text-decoration: none;
+}
+
+body.calendar-ui .sebu-cal-view-tabs__btn.is-active {
+  border-color: var(--sebu-cal-primary);
+  background: #f0f9ff;
+  color: #0369a1;
+}
+
+/* ── 월간 캘린더 ── */
+body.calendar-ui .sebu-cal-month__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+body.calendar-ui .sebu-cal-month__title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+body.calendar-ui .sebu-cal-month__nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--sebu-cal-line);
+  background: var(--sebu-cal-surface);
+  font-size: 1.25rem;
+  text-decoration: none;
+  color: var(--eottae-text, #0f172a);
+}
+
+body.calendar-ui .sebu-cal-month__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  margin-bottom: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--sebu-cal-muted);
+  text-align: center;
+}
+
+body.calendar-ui .sebu-cal-month__week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+body.calendar-ui .sebu-cal-month__cell {
+  min-height: 72px;
+  padding: 6px 4px;
+  border-radius: 10px;
+  background: var(--sebu-cal-surface);
+  border: 1px solid var(--sebu-cal-line);
+}
+
+body.calendar-ui .sebu-cal-month__cell.is-today {
+  border-color: var(--sebu-cal-primary);
+  background: #f0f9ff;
+}
+
+body.calendar-ui .sebu-cal-month__cell--empty {
+  background: transparent;
+  border-color: transparent;
+}
+
+body.calendar-ui .sebu-cal-month__day {
+  font-size: 0.75rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+body.calendar-ui .sebu-cal-month__event {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 2px;
+  padding: 2px 4px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: inherit;
+  background: rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+}
+
+body.calendar-ui .sebu-cal-month__event-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.calendar-ui .sebu-cal-month__event-badge {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+body.calendar-ui .sebu-cal-month__more {
+  font-size: 0.62rem;
+  color: var(--sebu-cal-muted);
+}
+
+/* ── 리스트 · 이벤트 카드 ── */
+body.calendar-ui .sebu-cal-list__title {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+body.calendar-ui .sebu-cal-list__items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+body.calendar-ui .sebu-cal-event-card {
+  border-radius: 14px;
+  background: var(--sebu-cal-surface);
+  border: 1px solid var(--sebu-cal-line);
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+}
+
+body.calendar-ui .sebu-cal-event-card__link {
+  display: block;
+  padding: 14px;
+  text-decoration: none;
+  color: inherit;
+}
+
+body.calendar-ui .sebu-cal-event-card__head {
+  margin-bottom: 8px;
+}
+
+body.calendar-ui .sebu-cal-event-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+body.calendar-ui .sebu-cal-event-card__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+body.calendar-ui .sebu-cal-event-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--sebu-cal-muted);
+}
+
+body.calendar-ui .sebu-cal-event-card__location {
+  margin: 8px 0 0;
+  font-size: 0.82rem;
+  color: var(--sebu-cal-muted);
+}
+
+body.calendar-ui .sebu-cal-event-card__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 0.78rem;
+  color: var(--sebu-cal-muted);
+}
+
+body.calendar-ui .sebu-cal-event-card__room {
+  color: var(--sebu-cal-primary);
+  font-weight: 700;
+}
+
+/* ── 분류 색상 ── */
+body.calendar-ui .sebu-cal-cat--holiday { background: #fef3c7; color: #92400e; }
+body.calendar-ui .sebu-cal-cat--talk { background: #dbeafe; color: #1d4ed8; }
+body.calendar-ui .sebu-cal-cat--festival { background: #fce7f3; color: #9d174d; }
+body.calendar-ui .sebu-cal-cat--event { background: #e0e7ff; color: #4338ca; }
+body.calendar-ui .sebu-cal-cat--meetup { background: #d1fae5; color: #047857; }
+body.calendar-ui .sebu-cal-cat--travel { background: #cffafe; color: #0e7490; }
+body.calendar-ui .sebu-cal-cat--life { background: #f3e8ff; color: #7e22ce; }
+body.calendar-ui .sebu-cal-cat--business { background: #ffedd5; color: #c2410c; }
+body.calendar-ui .sebu-cal-cat--etc { background: #f1f5f9; color: #475569; }
+
+body.calendar-ui .sebu-cal-event-card__category,
+body.calendar-ui .sebu-cal-detail__category {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+/* ── 배지 스타일 ── */
+body.calendar-ui .calendar-badge-default { background: #e2e8f0; color: #475569; }
+body.calendar-ui .calendar-badge-important { background: #1e293b; color: #fff; }
+body.calendar-ui .calendar-badge-recommend { background: #fef08a; color: #854d0e; }
+body.calendar-ui .calendar-badge-new { background: #bbf7d0; color: #166534; }
+body.calendar-ui .calendar-badge-hot { background: #fecaca; color: #991b1b; }
+body.calendar-ui .calendar-badge-free { background: #a7f3d0; color: #065f46; }
+body.calendar-ui .calendar-badge-paid { background: #ddd6fe; color: #5b21b6; }
+body.calendar-ui .calendar-badge-deadline { background: #fb923c; color: #fff; }
+
+body.calendar-ui .sebu-cal-event-card__badge,
+body.calendar-ui .sebu-cal-detail__badge {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+/* ── 상세 ── */
+body.calendar-ui .sebu-cal-detail {
+  padding: 18px 16px;
+  border-radius: var(--sebu-cal-radius);
+  background: var(--sebu-cal-surface);
+  border: 1px solid var(--sebu-cal-line);
+}
+
+body.calendar-ui .sebu-cal-detail__title {
+  margin: 0 0 12px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+body.calendar-ui .sebu-cal-detail__meta {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 16px;
+}
+
+body.calendar-ui .sebu-cal-detail__meta div {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 8px;
+  font-size: 0.88rem;
+}
+
+body.calendar-ui .sebu-cal-detail__meta dt {
+  margin: 0;
+  font-weight: 700;
+  color: var(--sebu-cal-muted);
+}
+
+body.calendar-ui .sebu-cal-detail__meta dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+body.calendar-ui .sebu-cal-detail__section-title {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+body.calendar-ui .sebu-cal-detail__content {
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+body.calendar-ui .sebu-cal-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+body.calendar-ui .sebu-cal-detail__delete-form {
+  margin: 0;
+}
+
+/* ── 등록 폼 ── */
+body.calendar-ui .sebu-cal-form {
+  display: grid;
+  gap: 14px;
+}
+
+body.calendar-ui .sebu-cal-form__field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+body.calendar-ui .sebu-cal-form__required {
+  color: #ef4444;
+}
+
+body.calendar-ui .sebu-cal-form__input,
+body.calendar-ui .sebu-cal-form__select,
+body.calendar-ui .sebu-cal-form__textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: var(--sebu-cal-touch);
+  padding: 10px 12px;
+  border: 1px solid var(--sebu-cal-line);
+  border-radius: 12px;
+  font-size: 16px;
+  background: #fff;
+}
+
+body.calendar-ui .sebu-cal-form__textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+body.calendar-ui .sebu-cal-form__grid--2 {
+  display: grid;
+  gap: 12px;
+}
+
+@media (min-width: 560px) {
+  body.calendar-ui .sebu-cal-form__grid--2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+body.calendar-ui .sebu-cal-form__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--sebu-cal-touch);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+body.calendar-ui .sebu-cal-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+body.calendar-ui .sebu-cal-empty {
+  padding: 32px 16px;
+  text-align: center;
+  border-radius: 14px;
+  border: 1px dashed var(--sebu-cal-line);
+  color: var(--sebu-cal-muted);
+}
+
+@media (max-width: 767px) {
+  body.calendar-ui .sebu-cal-page__actions .sebu-cal-btn {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 0;
+  }
+
+  body.calendar-ui .sebu-cal-page__actions .sebu-cal-btn--primary {
+    flex: 1 1 100%;
+  }
+
+  body.calendar-ui .sebu-cal-month__cell {
+    min-height: 56px;
+  }
+
+  body.calendar-ui .sebu-cal-month__event-title {
+    display: none;
+  }
+
+  body.calendar-ui .sebu-cal-month__event-badge {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+@media (min-width: 768px) {
+  body.calendar-ui .sebu-cal-page {
+    padding-top: 20px;
+    padding-bottom: 40px;
+  }
+}
+
+/* ── Google 출처·신고 UI ── */
+body.calendar-ui .sebu-cal-detail__source,
+body.calendar-ui .sebu-cal-event-card__source {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+body.calendar-ui .sebu-cal-btn--ghost {
+  border: 1px solid var(--sebu-cal-line);
+  background: var(--sebu-cal-surface);
+  color: var(--sebu-cal-muted);
+}
+
+body.calendar-ui .sebu-cal-event-card {
+  position: relative;
+}
+
+body.calendar-ui .sebu-cal-event-card__report-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+body.calendar-ui .sebu-cal-report-modal[hidden] {
+  display: none !important;
+}
+
+body.calendar-ui .sebu-cal-report-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+body.calendar-ui .sebu-cal-report-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+body.calendar-ui .sebu-cal-report-modal__panel {
+  position: relative;
+  width: min(100%, 420px);
+  max-height: 90vh;
+  overflow: auto;
+  padding: 20px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+}
+
+body.calendar-ui .sebu-cal-report-form__reasons {
+  border: 0;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+body.calendar-ui .sebu-cal-report-form__radio {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+body.calendar-ui .sebu-cal-report-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+body.calendar-ui .sebu-cal-detail__related .sebu-cal-btn {
+  margin-right: 8px;
+}
+
+.talk-page__btn--calendar {
+  border-color: #0ea5e9;
+  color: #0369a1;
+}
+
+.talk-calendar-actions--post {
+  margin-top: 12px;
+}
+

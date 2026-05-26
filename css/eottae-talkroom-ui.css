@@ -1036,6 +1036,12 @@ body.talkroom-ui .talk-ai-settings__hint {
   color: var(--talkroom-muted, #64748b);
 }
 
+body.talkroom-ui .talk-ai-settings__limit-note {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--talkroom-muted, #64748b);
+}
+
 body.talkroom-ui .talk-ai-settings__features .talk-ai-settings__feature {
   display: flex;
   align-items: center;
