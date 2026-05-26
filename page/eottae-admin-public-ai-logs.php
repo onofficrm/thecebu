@@ -21,6 +21,7 @@ g5_page_start('공개톡 AI 발행 로그');
 <main class="promo-admin-page talk-admin-page public-ai-admin-page">
     <header class="promo-admin-page__header">
         <div class="promo-admin-page__header-top">
+            <?php eottae_public_ai_render_admin_page_mypage_back(); ?>
             <a href="<?php echo eottae_public_ai_admin_settings_url(); ?>" class="promo-admin-page__back">← AI 기본 설정</a>
             <a href="<?php echo eottae_public_ai_admin_candidates_url('pending'); ?>" class="promo-admin-page__back">후보 메시지</a>
         </div>

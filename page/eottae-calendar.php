@@ -99,18 +99,28 @@ g5_page_start('세부어때 캘린더');
 
 <main class="mypage-subpage sebu-cal-page" data-sebu-cal-page>
     <header class="sebu-cal-page__hero">
-        <h1 class="sebu-cal-page__title">세부어때 캘린더</h1>
-        <p class="sebu-cal-page__intro">세부의 공휴일, 세부톡 모임, 축제, 이벤트 일정을 한눈에 확인해보세요.</p>
-        <div class="sebu-cal-page__actions">
-            <a href="<?php echo $create_href; ?>" class="sebu-cal-btn sebu-cal-btn--register">
-                <span class="sebu-cal-btn__icon" aria-hidden="true"></span>
-                일정 등록하기
-            </a>
-            <div class="sebu-cal-page__actions-secondary">
-                <a href="<?php echo eottae_calendar_list_url(array_merge($url_params, array('range' => 'today', 'view' => 'list'))); ?>" class="sebu-cal-btn sebu-cal-btn--ghost">오늘 일정 보기</a>
-                <a href="<?php echo eottae_calendar_list_url(array_merge($url_params, array('range' => 'week', 'view' => 'list'))); ?>" class="sebu-cal-btn sebu-cal-btn--ghost">이번 주 일정 보기</a>
+        <div class="sebu-cal-page__hero-main">
+            <h1 class="sebu-cal-page__title">세부어때 캘린더</h1>
+            <p class="sebu-cal-page__intro">세부의 공휴일, 세부톡 모임, 축제, 이벤트 일정을 한눈에 확인해보세요.</p>
+            <div class="sebu-cal-page__actions">
+                <a href="<?php echo $create_href; ?>" class="sebu-cal-btn sebu-cal-btn--register">
+                    <span class="sebu-cal-btn__icon" aria-hidden="true"></span>
+                    일정 등록하기
+                </a>
+                <div class="sebu-cal-page__actions-secondary">
+                    <a href="<?php echo eottae_calendar_list_url(array_merge($url_params, array('range' => 'today', 'view' => 'list'))); ?>" class="sebu-cal-btn sebu-cal-btn--ghost">오늘 일정 보기</a>
+                    <a href="<?php echo eottae_calendar_list_url(array_merge($url_params, array('range' => 'week', 'view' => 'list'))); ?>" class="sebu-cal-btn sebu-cal-btn--ghost">이번 주 일정 보기</a>
+                </div>
             </div>
         </div>
+        <?php
+        if (function_exists('eottae_load_component')) {
+            eottae_load_component('calendar-hero-art');
+        }
+        if (function_exists('eottae_render_calendar_hero_art')) {
+            eottae_render_calendar_hero_art();
+        }
+        ?>
     </header>
 
     <section class="sebu-cal-summary" aria-label="오늘·내일·모레 일정 요약">

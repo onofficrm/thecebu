@@ -21,6 +21,10 @@ g5_page_start('공개톡 AI 날씨 데이터');
 
 <main class="promo-admin-page talk-admin-page public-ai-admin-page">
     <header class="promo-admin-page__header">
+        <div class="promo-admin-page__header-top">
+            <?php eottae_public_ai_render_admin_page_mypage_back(); ?>
+            <a href="<?php echo eottae_public_ai_admin_settings_url(); ?>" class="promo-admin-page__back">← AI 기본 설정</a>
+        </div>
         <h1 class="promo-admin-page__title">날씨 데이터</h1>
         <p class="promo-admin-page__desc">API 키가 없을 때는 수동 입력으로 후보 메시지를 생성합니다. 날씨는 변동될 수 있으니 부드러운 표현으로 안내합니다.</p>
         <?php eottae_public_ai_render_admin_nav('weather'); ?>

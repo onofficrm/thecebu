@@ -9,6 +9,10 @@ include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
 include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
 include_once G5_LIB_PATH.'/eottae-shop-owner.lib.php';
 include_once G5_PATH.'/components/eottae/talk-admin-nav.php';
+include_once G5_PATH.'/components/eottae/public-ai-admin-nav.php';
+if (is_file(G5_LIB_PATH.'/eottae-public-ai.lib.php')) {
+    include_once G5_LIB_PATH.'/eottae-public-ai.lib.php';
+}
 
 $is_biz = eottae_is_business_member($member);
 $point = isset($member['mb_point']) ? (int) $member['mb_point'] : 0;
@@ -61,6 +65,8 @@ g5_page_start('마이페이지');
         <a href="<?php echo function_exists('eottae_talkroom_admin_rooms_url') ? eottae_talkroom_admin_rooms_url() : G5_URL.'/page/eottae-admin-talk-rooms.php'; ?>" class="mypage-quick-menu__item">톡방 목록</a>
         <a href="<?php echo function_exists('eottae_talkroom_admin_kicked_url') ? eottae_talkroom_admin_kicked_url() : G5_URL.'/page/eottae-admin-talk-kicked.php'; ?>" class="mypage-quick-menu__item">강퇴 회원<?php if ($talk_kicked_count > 0) { ?> (<?php echo number_format($talk_kicked_count); ?>)<?php } ?></a>
         <a href="<?php echo function_exists('eottae_talkroom_admin_reports_url') ? eottae_talkroom_admin_reports_url('pending') : G5_URL.'/page/eottae-admin-talk-reports.php?status=pending'; ?>" class="mypage-quick-menu__item">신고 관리<?php if ($talk_report_pending > 0) { ?> (<?php echo number_format($talk_report_pending); ?>)<?php } ?></a>
+            <?php $public_ai_pending = function_exists('eottae_public_ai_pending_count') ? eottae_public_ai_pending_count() : 0; ?>
+        <a href="<?php echo function_exists('eottae_public_ai_mypage_admin_url') ? eottae_public_ai_mypage_admin_url() : G5_URL.'/page/eottae-admin-public-ai.php'; ?>" class="mypage-quick-menu__item">공개단톡 AI<?php if ($public_ai_pending > 0) { ?> (<?php echo number_format($public_ai_pending); ?>)<?php } ?></a>
         <?php } ?>
         <a href="<?php echo G5_URL; ?>/page/eottae-business-snippets.php" class="mypage-quick-menu__item">홍보 문구</a>
         <?php if ($is_biz) { ?><a href="<?php echo G5_URL; ?>/page/eottae-business-coupons.php" class="mypage-quick-menu__item">쿠폰 발행</a><?php } ?>
@@ -71,6 +77,9 @@ g5_page_start('마이페이지');
     </nav>
 
     <?php if ($is_admin === 'super') {
+        if (function_exists('eottae_public_ai_render_mypage_admin_section')) {
+            eottae_public_ai_render_mypage_admin_section();
+        }
         eottae_talkroom_render_mypage_super_admin_talk_tools(8);
     } ?>
 

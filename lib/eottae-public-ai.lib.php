@@ -818,6 +818,13 @@ if (!function_exists('eottae_public_ai_admin_list_logs')) {
 }
 
 
+if (!function_exists('eottae_public_ai_mypage_admin_url')) {
+    function eottae_public_ai_mypage_admin_url()
+    {
+        return G5_URL.'/page/eottae-mypage.php#sebu-public-ai-admin';
+    }
+}
+
 if (!function_exists('eottae_public_ai_admin_settings_url')) {
     function eottae_public_ai_admin_settings_url()
     {

@@ -21,7 +21,8 @@ g5_page_start('공개톡 AI 기본 설정');
 <main class="promo-admin-page talk-admin-page public-ai-admin-page">
     <header class="promo-admin-page__header">
         <div class="promo-admin-page__header-top">
-            <a href="<?php echo G5_URL; ?>/" class="promo-admin-page__back">← 홈</a>
+            <?php eottae_public_ai_render_admin_page_mypage_back(); ?>
+            <a href="<?php echo G5_URL; ?>/" class="promo-admin-page__back">홈</a>
             <a href="<?php echo G5_ADMIN_URL; ?>/" class="promo-admin-page__back">그누보드 관리자</a>
         </div>
         <h1 class="promo-admin-page__title">공개톡 AI 관리</h1>

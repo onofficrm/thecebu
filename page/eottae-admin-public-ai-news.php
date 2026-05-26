@@ -29,6 +29,10 @@ g5_page_start('공개톡 AI 외부뉴스');
 
 <main class="promo-admin-page talk-admin-page public-ai-admin-page">
     <header class="promo-admin-page__header">
+        <div class="promo-admin-page__header-top">
+            <?php eottae_public_ai_render_admin_page_mypage_back(); ?>
+            <a href="<?php echo eottae_public_ai_admin_settings_url(); ?>" class="promo-admin-page__back">← AI 기본 설정</a>
+        </div>
         <h1 class="promo-admin-page__title">외부뉴스 소스</h1>
         <p class="promo-admin-page__desc">외부뉴스는 <strong>후보만 자동 생성</strong>되며, 관리자 승인 후에만 공개톡에 발행됩니다. 민감 주제는 자동 제외됩니다.</p>
         <?php eottae_public_ai_render_admin_nav('news'); ?>

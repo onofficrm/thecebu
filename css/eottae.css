@@ -1667,7 +1667,7 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 
 .inquiry-button--list.shop-list-card__actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 4fr 4fr 2fr;
   gap: 8px;
   margin-top: auto;
   padding-top: 4px;
@@ -1703,6 +1703,42 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   color: #334155;
   border: 1px solid var(--shop-list-border);
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.inquiry-button--list .inquiry-button__btn--share-compact {
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: 6px 4px;
+  background: #fff;
+  color: #475569;
+  border: 1px solid var(--shop-list-border);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.inquiry-button--list .inquiry-button__btn--share-compact:hover {
+  background: #f8fafc;
+  color: #334155;
+}
+
+.inquiry-button--list .inquiry-button__btn--share-compact .inquiry-button__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.inquiry-button--list .inquiry-button__btn--share-compact .inquiry-button__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.inquiry-button--list .inquiry-button__btn--share-compact .inquiry-button__label {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
 /* ── Home map (builder bridge) ── */
@@ -4255,6 +4291,54 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 .mypage-dashboard .my-talk-super-admin {
   border-color: #bae6fd;
   background: linear-gradient(180deg, #f0f9ff 0%, #fff 48%);
+}
+
+.mypage-dashboard .my-public-ai-admin {
+  margin-top: 20px;
+  border-color: #ddd6fe;
+  background: linear-gradient(180deg, #f5f3ff 0%, #fff 52%);
+}
+
+.mypage-dashboard .my-public-ai-admin__status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.mypage-dashboard .my-public-ai-admin__status-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+.mypage-dashboard .my-public-ai-admin__status-item.is-on {
+  color: #5b21b6;
+  background: #ede9fe;
+  border-color: #c4b5fd;
+}
+
+.mypage-dashboard .my-public-ai-admin__status-item.is-off {
+  color: #94a3b8;
+  background: #f8fafc;
+}
+
+.mypage-dashboard .my-public-ai-admin__status-item.is-pending {
+  color: #b45309;
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.mypage-dashboard .my-public-ai-admin__links {
+  margin-top: 0;
 }
 
 .business-dashboard {

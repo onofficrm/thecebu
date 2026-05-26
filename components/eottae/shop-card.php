@@ -167,6 +167,7 @@ if (!function_exists('eottae_shop_list_card_html')) {
                     'lat'           => $shop['lat'],
                     'lng'           => $shop['lng'],
                     'address'       => $shop['address'],
+                    'share_url'     => $href,
                 ));
                 ?>
             </div>

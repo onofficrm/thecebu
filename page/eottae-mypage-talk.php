@@ -4,6 +4,7 @@ include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
 include_once G5_LIB_PATH.'/eottae-talkroom-dashboard.lib.php';
 include_once G5_PATH.'/components/eottae/talk-mypage-dashboard.php';
 include_once G5_PATH.'/components/eottae/talk-admin-nav.php';
+include_once G5_PATH.'/components/eottae/public-ai-admin-nav.php';
 
 if (is_file(G5_LIB_PATH.'/eottae-talkroom-ai.lib.php')) {
     include_once G5_LIB_PATH.'/eottae-talkroom-ai.lib.php';
@@ -38,7 +39,12 @@ g5_page_start('내 세부톡방');
     <h1 class="mypage-subpage__title">내 세부톡방</h1>
     <p class="my-talk-page__intro">참여 중인 톡방 활동을 한 화면에서 관리하세요.</p>
 
-    <?php eottae_talkroom_render_mypage_super_admin_talk_tools(8); ?>
+    <?php
+    if ($is_admin === 'super' && function_exists('eottae_public_ai_render_mypage_admin_section')) {
+        eottae_public_ai_render_mypage_admin_section();
+    }
+    eottae_talkroom_render_mypage_super_admin_talk_tools(8);
+    ?>
 
     <?php eottae_talkroom_render_mypage_dashboard($ctx); ?>
 </main>
