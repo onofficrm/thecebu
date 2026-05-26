@@ -269,7 +269,14 @@
       + '</section>';
   }
 
+  var mountScheduled = false;
+  var mountDone = false;
+
   function mount() {
+    if (mountDone) {
+      return true;
+    }
+
     var data = cfg();
     if (!data || !data.calendar) {
       return false;
@@ -281,6 +288,7 @@
     }
 
     if (section.querySelector('[data-eottae-home-main-mounted]')) {
+      mountDone = true;
       return true;
     }
 
@@ -293,13 +301,35 @@
       section.removeChild(section.firstChild);
     }
     section.appendChild(mountRoot);
+    mountDone = true;
 
     return true;
   }
 
+  function scheduleMount(retryCount) {
+    if (mountDone || mountScheduled) {
+      return;
+    }
+
+    mountScheduled = true;
+    global.requestAnimationFrame(function () {
+      mountScheduled = false;
+      if (mount()) {
+        return;
+      }
+
+      var tries = typeof retryCount === 'number' ? retryCount : 0;
+      if (tries < 8) {
+        global.setTimeout(function () {
+          scheduleMount(tries + 1);
+        }, 250);
+      }
+    });
+  }
+
   function init() {
     var run = function () {
-      mount();
+      scheduleMount(0);
     };
 
     if (typeof global.eottaeHomeAfterReactReady === 'function') {
@@ -307,22 +337,6 @@
     } else {
       global.setTimeout(run, 1500);
     }
-
-    if (typeof MutationObserver === 'undefined') {
-      return;
-    }
-
-    var root = document.getElementById('root');
-    if (!root) {
-      return;
-    }
-
-    new MutationObserver(function () {
-      mount();
-    }).observe(root, {
-      childList: true,
-      subtree: true,
-    });
   }
 
   if (document.readyState === 'loading') {
