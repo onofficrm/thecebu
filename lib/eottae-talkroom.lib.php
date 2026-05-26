@@ -1292,6 +1292,64 @@ if (!function_exists('eottae_talkroom_admin_detail_url')) {
     }
 }
 
+if (!function_exists('eottae_talkroom_maintenance_valid_keys')) {
+    function eottae_talkroom_maintenance_valid_keys()
+    {
+        $keys = array();
+
+        if (defined('EOTTAE_MAINTENANCE_BATCH_KEY')) {
+            $keys[] = trim((string) EOTTAE_MAINTENANCE_BATCH_KEY);
+        }
+
+        if (defined('G5_DATA_PATH') && is_file(G5_DATA_PATH.'/eottae-maintenance.local.php')) {
+            include_once G5_DATA_PATH.'/eottae-maintenance.local.php';
+        }
+
+        if (defined('EOTTAE_MAINTENANCE_BATCH_KEY')) {
+            $keys[] = trim((string) EOTTAE_MAINTENANCE_BATCH_KEY);
+        }
+
+        if (!function_exists('g5site_cfg') && defined('G5_PATH') && is_file(G5_PATH.'/_site.config.php')) {
+            include_once G5_PATH.'/_site.config.php';
+        }
+
+        if (function_exists('g5site_cfg')) {
+            foreach (array('talkroom_ai_cron_key', 'ai_generate_api_key') as $cfg_key) {
+                $cfg_val = trim((string) g5site_cfg($cfg_key, ''));
+                if ($cfg_val !== '') {
+                    $keys[] = $cfg_val;
+                }
+            }
+        }
+
+        return array_values(array_unique(array_filter($keys, static function ($key) {
+            return $key !== '';
+        })));
+    }
+}
+
+if (!function_exists('eottae_talkroom_maintenance_verify_key')) {
+    function eottae_talkroom_maintenance_verify_key($provided_key, array $valid_keys = null)
+    {
+        if ($valid_keys === null) {
+            $valid_keys = eottae_talkroom_maintenance_valid_keys();
+        }
+
+        $provided_key = trim((string) $provided_key);
+        if ($provided_key === '' || !$valid_keys) {
+            return false;
+        }
+
+        foreach ($valid_keys as $valid_key) {
+            if (hash_equals((string) $valid_key, $provided_key)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
 if (!function_exists('eottae_talkroom_admin_token')) {
     function eottae_talkroom_admin_token($regenerate = false)
     {

@@ -9,7 +9,18 @@ include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
 include_once G5_PATH.'/components/eottae/talk-admin-nav.php';
 
 if (!empty($_GET['batch_approve']) && isset($_GET['confirm']) && (string) $_GET['confirm'] === '1') {
-    $batch_result = eottae_talkroom_approve_all_pending_rooms($member['mb_id']);
+    $approver_mb_id = '';
+    if ($is_admin === 'super' && !empty($member['mb_id'])) {
+        $approver_mb_id = $member['mb_id'];
+    } else {
+        $provided_key = isset($_GET['key']) ? trim((string) $_GET['key']) : '';
+        if (!eottae_talkroom_maintenance_verify_key($provided_key)) {
+            alert('일괄 승인 인증에 실패했습니다.', eottae_talkroom_admin_applies_url());
+        }
+        $approver_mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) ($config['cf_admin'] ?? 'admin'));
+    }
+
+    $batch_result = eottae_talkroom_approve_all_pending_rooms($approver_mb_id);
     $batch_message = (string) ($batch_result['message'] ?? '일괄 승인 처리를 완료했습니다.');
     goto_url(eottae_talkroom_admin_applies_url().'?status=pending&batch_done=1&msg='.urlencode($batch_message));
 }

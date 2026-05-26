@@ -29,6 +29,10 @@ if ($is_cli) {
 include_once $g5_path.'/common.php';
 include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
 
+if (!function_exists('g5site_cfg') && defined('G5_PATH') && is_file(G5_PATH.'/_site.config.php')) {
+    include_once G5_PATH.'/_site.config.php';
+}
+
 if (!defined('_GNUBOARD_')) {
     if ($is_cli) {
         fwrite(STDERR, "GNUBoard bootstrap failed\n");
@@ -44,12 +48,14 @@ if ($is_cli) {
 } else {
     header('Content-Type: text/plain; charset=utf-8');
     $provided_key = isset($_GET['key']) ? (string) $_GET['key'] : '';
-    if (!function_exists('eottae_talkroom_ai_verify_cron_key')) {
-        include_once G5_LIB_PATH.'/eottae-talkroom-ai-quiet.lib.php';
-    }
-    if (!eottae_talkroom_ai_verify_cron_key($provided_key)) {
-        http_response_code(403);
-        exit("Forbidden\n");
+    if (!eottae_talkroom_maintenance_verify_key($provided_key)) {
+        if (!function_exists('eottae_talkroom_ai_verify_cron_key')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom-ai-quiet.lib.php';
+        }
+        if (!eottae_talkroom_ai_verify_cron_key($provided_key)) {
+            http_response_code(403);
+            exit("Forbidden\n");
+        }
     }
     $dry_run = !empty($_GET['dry_run']);
 }
