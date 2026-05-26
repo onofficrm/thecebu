@@ -415,7 +415,6 @@ if (!function_exists('eottae_talkroom_should_load_ui')) {
             'eottae-talk-my.php',
             'eottae-mypage-talk.php',
             'eottae-talk-reports.php',
-            'eottae-admin-talk-applies.php',
             'eottae-admin-talk-rooms.php',
             'eottae-admin-talk-detail.php',
             'eottae-admin-talk-kicked.php',
@@ -524,7 +523,6 @@ if (!function_exists('eottae_talkroom_admin_shell_scripts')) {
     function eottae_talkroom_admin_shell_scripts()
     {
         return array(
-            'eottae-admin-talk-applies.php',
             'eottae-admin-talk-rooms.php',
             'eottae-admin-talk-detail.php',
             'eottae-admin-talk-kicked.php',

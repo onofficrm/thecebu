@@ -72,16 +72,12 @@ if (!function_exists('eottae_talkroom_admin_page_assets')) {
 eottae_talkroom_admin_page_assets();
 
 if (!function_exists('eottae_talkroom_render_admin_nav')) {
-    function eottae_talkroom_render_admin_nav($active = 'applies')
+    function eottae_talkroom_render_admin_nav($active = 'rooms')
     {
-        $pending = function_exists('eottae_talkroom_pending_count') ? eottae_talkroom_pending_count() : 0;
         $report_pending = function_exists('eottae_talkroom_admin_pending_report_count') ? eottae_talkroom_admin_pending_report_count() : 0;
         ?>
         <nav class="talk-admin-nav" aria-label="세부톡방 관리">
             <a href="<?php echo eottae_talkroom_admin_rooms_url(); ?>" class="talk-admin-nav__item<?php echo $active === 'rooms' ? ' is-active' : ''; ?>">톡방 목록</a>
-            <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>" class="talk-admin-nav__item<?php echo $active === 'applies' ? ' is-active' : ''; ?>">
-                개설 신청 관리<?php if ($pending > 0) { ?> (<?php echo number_format($pending); ?>)<?php } ?>
-            </a>
             <a href="<?php echo eottae_talkroom_admin_kicked_url(); ?>" class="talk-admin-nav__item<?php echo $active === 'kicked' ? ' is-active' : ''; ?>">
                 강퇴 회원<?php
                 $kicked_total = function_exists('eottae_talkroom_admin_kicked_count') ? eottae_talkroom_admin_kicked_count() : 0;
@@ -114,7 +110,6 @@ if (!function_exists('eottae_talkroom_render_mypage_super_admin_talk_tools')) {
             return;
         }
 
-        $pending = function_exists('eottae_talkroom_pending_count') ? eottae_talkroom_pending_count() : 0;
         $kicked_total = function_exists('eottae_talkroom_admin_kicked_count') ? eottae_talkroom_admin_kicked_count() : 0;
         $report_pending = function_exists('eottae_talkroom_admin_pending_report_count') ? eottae_talkroom_admin_pending_report_count() : 0;
         $preview_limit = max(1, min(20, (int) $preview_limit));
@@ -124,9 +119,8 @@ if (!function_exists('eottae_talkroom_render_mypage_super_admin_talk_tools')) {
         ?>
         <section class="my-talk-section my-talk-section--panel my-talk-super-admin" id="my-talk-super-admin" aria-labelledby="my-talk-super-admin-title">
             <h2 class="my-talk-section__title" id="my-talk-super-admin-title">세부톡방 관리 (최고관리자)</h2>
-            <p class="my-talk-section__desc">개설 신청, 강퇴 회원, 신고 등 사이트 전체 톡방을 관리할 수 있습니다.</p>
+            <p class="my-talk-section__desc">톡방 목록에서 운영중지·신고·강퇴 회원을 관리합니다.</p>
             <div class="my-talk-super-admin__links">
-                <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>" class="my-talk-btn my-talk-btn--ghost my-talk-btn--sm">개설 신청<?php if ($pending > 0) { ?> (<?php echo number_format($pending); ?>)<?php } ?></a>
                 <a href="<?php echo eottae_talkroom_admin_rooms_url(); ?>" class="my-talk-btn my-talk-btn--ghost my-talk-btn--sm">톡방 목록</a>
                 <a href="<?php echo eottae_talkroom_admin_kicked_url(); ?>" class="my-talk-btn my-talk-btn--primary my-talk-btn--sm">강퇴 회원<?php if ($kicked_total > 0) { ?> (<?php echo number_format($kicked_total); ?>)<?php } ?></a>
                 <a href="<?php echo eottae_talkroom_admin_reports_url('pending'); ?>" class="my-talk-btn my-talk-btn--ghost my-talk-btn--sm">신고 관리<?php if ($report_pending > 0) { ?> (<?php echo number_format($report_pending); ?>)<?php } ?></a>

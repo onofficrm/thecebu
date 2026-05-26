@@ -66,6 +66,9 @@ if (!function_exists('eottae_shop_card_html')) {
 }
 
 if (!function_exists('eottae_shop_card_thumb')) {
+    /**
+     * 목록 카드 썸네일 — 지도 마커·listing과 동일 우선순위 (지도 전용 → GNUBoard thumb → 첨부 → 대표)
+     */
     function eottae_shop_card_thumb($row, $bo_table = '')
     {
         if (!is_array($row)) {
@@ -73,15 +76,31 @@ if (!function_exists('eottae_shop_card_thumb')) {
         }
 
         if ($bo_table === '') {
-            $bo_table = defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop';
+            $bo_table = !empty($row['bo_table']) ? (string) $row['bo_table'] : (defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop');
         }
 
-        if (function_exists('get_list_thumbnail')) {
-            $table = !empty($row['bo_table']) ? $row['bo_table'] : $bo_table;
-            if (function_exists('eottae_shop_storage_bo_table')) {
-                $table = eottae_shop_storage_bo_table($table);
+        $bo_table = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
+        $wr_id = (int) ($row['wr_id'] ?? 0);
+        if ($wr_id < 1) {
+            return '';
+        }
+
+        $storage_bo = function_exists('eottae_shop_storage_bo_table')
+            ? eottae_shop_storage_bo_table($bo_table)
+            : $bo_table;
+
+        if (function_exists('eottae_shop_map_thumb_get')) {
+            $map_thumb = eottae_shop_map_thumb_get($storage_bo, $wr_id);
+            if (!empty($map_thumb['url'])) {
+                return $map_thumb['url'];
             }
-            $t = get_list_thumbnail($table, $row['wr_id'], 400, 400, false, true);
+        }
+
+        if (!function_exists('get_list_thumbnail')) {
+            include_once G5_LIB_PATH.'/thumbnail.lib.php';
+        }
+        if (function_exists('get_list_thumbnail')) {
+            $t = get_list_thumbnail($storage_bo, $wr_id, 400, 400, false, true);
             if (!empty($t['src'])) {
                 return $t['src'];
             }
@@ -91,10 +110,10 @@ if (!function_exists('eottae_shop_card_thumb')) {
             return $row['file'][0]['path'].'/'.$row['file'][0]['file'];
         }
 
-        if (function_exists('eottae_shop_listing_thumb_url')) {
-            $thumb = eottae_shop_listing_thumb_url($bo_table, (int) $row['wr_id'], $row);
-            if ($thumb !== '') {
-                return $thumb;
+        if (function_exists('eottae_shop_representative_image_url')) {
+            $representative = eottae_shop_representative_image_url($storage_bo, $wr_id);
+            if ($representative !== '') {
+                return $representative;
             }
         }
 

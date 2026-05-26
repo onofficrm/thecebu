@@ -30,6 +30,8 @@ g5_page_start('공개톡 AI 기본 설정');
         <?php eottae_public_ai_render_admin_nav('settings'); ?>
     </header>
 
+    <?php eottae_public_ai_render_admin_dashboard_stats(); ?>
+
     <?php if ($saved) { ?>
     <p class="talk-ai-settings__saved" role="status">설정을 저장했습니다.</p>
     <?php } ?>

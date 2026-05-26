@@ -432,9 +432,9 @@ if (!function_exists('eottae_talkroom_status_label')) {
     {
         $status = trim((string) $status);
         $map = array(
-            'pending'  => '승인대기',
-            'approved' => '승인완료',
-            'active'   => '승인완료',
+            'pending'  => '개설 처리중',
+            'approved' => '운영중',
+            'active'   => '운영중',
             'rejected' => '반려',
             'closed'   => '운영중지',
             'stopped'  => '운영중지',
@@ -507,7 +507,65 @@ if (!function_exists('eottae_talkroom_upgrade_schema')) {
             }
         }
 
+        eottae_talkroom_migrate_legacy_pending_rooms();
+
         $done = true;
+    }
+}
+
+if (!function_exists('eottae_talkroom_migrate_legacy_pending_rooms')) {
+    /**
+     * 예전 승인 대기(pending) 톡방을 운영중(active)으로 일괄 전환
+     */
+    function eottae_talkroom_migrate_legacy_pending_rooms()
+    {
+        static $migrated = false;
+        if ($migrated) {
+            return;
+        }
+        $migrated = true;
+
+        $tables = eottae_talkroom_table_names();
+        if (!eottae_talkroom_table_exists($tables['rooms'])) {
+            return;
+        }
+
+        $result = sql_query("
+            SELECT room_id, owner_mb_id, created_at
+            FROM `{$tables['rooms']}`
+            WHERE LOWER(TRIM(status)) = 'pending'
+            LIMIT 200
+        ", false);
+        if (!$result) {
+            return;
+        }
+
+        $now = defined('G5_TIME_YMDHIS') ? G5_TIME_YMDHIS : date('Y-m-d H:i:s');
+        while ($row = sql_fetch_array($result)) {
+            $room_id = (int) ($row['room_id'] ?? 0);
+            $owner_mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) ($row['owner_mb_id'] ?? ''));
+            if ($room_id < 1 || $owner_mb_id === '') {
+                continue;
+            }
+            $created_at = trim((string) ($row['created_at'] ?? ''));
+            if ($created_at === '' || strpos($created_at, '0000-00-00') === 0) {
+                $created_at = $now;
+            }
+
+            sql_query("
+                UPDATE `{$tables['rooms']}` SET
+                    status = 'active',
+                    approved_at = '".sql_escape_string($created_at)."',
+                    approved_by = '".sql_escape_string($owner_mb_id)."',
+                    updated_at = '{$now}'
+                WHERE room_id = '{$room_id}'
+                  AND LOWER(TRIM(status)) = 'pending'
+            ", false);
+
+            if (function_exists('eottae_talkroom_ensure_owner_member')) {
+                eottae_talkroom_ensure_owner_member($room_id, $owner_mb_id, $owner_mb_id, $created_at);
+            }
+        }
     }
 }
 
@@ -737,6 +795,42 @@ if (!function_exists('eottae_talkroom_validate_apply')) {
     }
 }
 
+if (!function_exists('eottae_talkroom_finalize_created_room')) {
+    /**
+     * 개설 직후 방장 등록·로그 (승인 절차 없이 즉시 운영)
+     */
+    function eottae_talkroom_finalize_created_room($room_id, $owner_mb_id)
+    {
+        $room_id = (int) $room_id;
+        $owner_mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $owner_mb_id);
+        if ($room_id < 1 || $owner_mb_id === '') {
+            return false;
+        }
+
+        $room = eottae_talkroom_get_room($room_id);
+        if (!$room) {
+            return false;
+        }
+
+        $requested_at = trim((string) ($room['created_at'] ?? ''));
+        if ($requested_at === '' || strpos($requested_at, '0000-00-00') === 0) {
+            $requested_at = defined('G5_TIME_YMDHIS') ? G5_TIME_YMDHIS : date('Y-m-d H:i:s');
+        }
+
+        if (!eottae_talkroom_ensure_owner_member($room_id, $owner_mb_id, $owner_mb_id, $requested_at)) {
+            return false;
+        }
+
+        eottae_talkroom_write_log($room_id, $owner_mb_id, 'create', 'room', $room_id, '톡방 개설');
+
+        if (function_exists('eottae_talkroom_ai_schedule_welcome')) {
+            eottae_talkroom_ai_schedule_welcome($room_id, $owner_mb_id);
+        }
+
+        return true;
+    }
+}
+
 if (!function_exists('eottae_talkroom_insert_apply')) {
     /**
      * @param string $mb_id
@@ -765,7 +859,7 @@ if (!function_exists('eottae_talkroom_insert_apply')) {
                 category = '".sql_escape_string($data['category'])."',
                 emoji = '".sql_escape_string($data['emoji'])."',
                 owner_mb_id = '".sql_escape_string($mb_id)."',
-                status = 'pending',
+                status = 'active',
                 visibility = '".sql_escape_string($data['visibility'])."',
                 join_type = '".sql_escape_string($data['join_type'])."',
                 rules = '".sql_escape_string($data['rules'])."',
@@ -773,8 +867,8 @@ if (!function_exists('eottae_talkroom_insert_apply')) {
                 apply_reason = '".sql_escape_string($data['apply_reason'])."',
                 reject_reason = '',
                 created_at = '{$now}',
-                approved_at = '0000-00-00 00:00:00',
-                approved_by = '',
+                approved_at = '{$now}',
+                approved_by = '".sql_escape_string($mb_id)."',
                 updated_at = '{$now}'
         ";
 
@@ -782,7 +876,16 @@ if (!function_exists('eottae_talkroom_insert_apply')) {
             return false;
         }
 
-        return (int) sql_insert_id();
+        $room_id = (int) sql_insert_id();
+        if ($room_id < 1) {
+            return false;
+        }
+
+        if (!eottae_talkroom_finalize_created_room($room_id, $mb_id)) {
+            return false;
+        }
+
+        return $room_id;
     }
 }
 
@@ -1432,14 +1535,20 @@ if (!function_exists('eottae_talkroom_render_card')) {
 if (!function_exists('eottae_talkroom_admin_applies_url')) {
     function eottae_talkroom_admin_applies_url()
     {
-        return G5_URL.'/page/eottae-admin-talk-applies.php';
+        return eottae_talkroom_admin_rooms_url();
     }
 }
 
 if (!function_exists('eottae_talkroom_admin_rooms_url')) {
-    function eottae_talkroom_admin_rooms_url()
+    function eottae_talkroom_admin_rooms_url($status = '')
     {
-        return G5_URL.'/page/eottae-admin-talk-rooms.php';
+        $url = G5_URL.'/page/eottae-admin-talk-rooms.php';
+        $status = trim((string) $status);
+        if ($status !== '' && $status !== 'all') {
+            $url .= '?status='.rawurlencode($status);
+        }
+
+        return $url;
     }
 }
 
@@ -1814,9 +1923,10 @@ if (!function_exists('eottae_talkroom_admin_list_applications')) {
 
 if (!function_exists('eottae_talkroom_admin_list_rooms')) {
     /**
+     * @param string $status_filter all|active|stopped|rejected|closed
      * @return array<int, array<string, mixed>>
      */
-    function eottae_talkroom_admin_list_rooms($limit = 200)
+    function eottae_talkroom_admin_list_rooms($limit = 200, $status_filter = 'all')
     {
         $tables = eottae_talkroom_table_names();
         if (!eottae_talkroom_table_exists($tables['rooms'])) {
@@ -1824,15 +1934,35 @@ if (!function_exists('eottae_talkroom_admin_list_rooms')) {
         }
 
         $limit = max(1, min(500, (int) $limit));
+        $status_filter = trim((string) $status_filter);
+        if ($status_filter === '') {
+            $status_filter = 'all';
+        }
+
+        $where = '';
+        if ($status_filter === 'active') {
+            $where = " WHERE LOWER(TRIM(r.status)) IN ('approved', 'active') ";
+        } elseif (in_array($status_filter, array('stopped', 'rejected', 'closed'), true)) {
+            $where = " WHERE LOWER(TRIM(r.status)) = '".sql_escape_string(strtolower($status_filter))."' ";
+        }
+
         $member_table = G5_TABLE_PREFIX.'member';
         $result = sql_query("
             SELECT r.*, m.mb_nick AS owner_nick, m.mb_email AS owner_email, m.mb_name AS owner_name
             FROM `{$tables['rooms']}` r
             LEFT JOIN `{$member_table}` m ON m.mb_id = r.owner_mb_id
-            WHERE r.status IN ('approved', 'active', 'stopped', 'closed')
+            {$where}
             ORDER BY
-                CASE r.status WHEN 'approved' THEN 0 WHEN 'active' THEN 1 ELSE 2 END,
-                r.approved_at DESC,
+                CASE LOWER(TRIM(r.status))
+                    WHEN 'active' THEN 0
+                    WHEN 'approved' THEN 1
+                    WHEN 'stopped' THEN 2
+                    WHEN 'closed' THEN 3
+                    WHEN 'rejected' THEN 4
+                    WHEN 'pending' THEN 5
+                    ELSE 6
+                END,
+                CASE WHEN r.updated_at > '0000-00-00 00:00:00' THEN r.updated_at ELSE r.created_at END DESC,
                 r.room_id DESC
             LIMIT {$limit}
         ", false);

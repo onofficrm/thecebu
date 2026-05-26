@@ -99,15 +99,15 @@ eottae_shop_representative_image_url(bo_table, wr_id)
 
 ### 4.3 `eottae_shop_card_thumb` — **목록 카드** (`components/eottae/shop-card.php`)
 
-**우선순위**
+**우선순위** (2026-05-26 정책 통일 — 지도·목록 동일)
 
-1. GNUBoard `get_list_thumbnail` (400×400)
-2. `row['file'][0]` (첨부 경로)
-3. `eottae_shop_listing_thumb_url` → 여기서 **지도 전용** 또는 대표 이미지
+1. 지도 전용 썸네일 (`eottae_shop_map_thumb_get`)
+2. GNUBoard `get_list_thumbnail` (400×400)
+3. `row['file'][0]` (첨부 경로)
+4. `eottae_shop_representative_image_url`
 
-> **주의**: 목록 카드는 **GNUBoard 썸네일을 지도 전용보다 먼저** 씁니다.  
-> 지도 마커는 **지도 전용을 최우선**합니다.  
-> 같은 업체가 “카드=첨부 썸네일, 지도=지도 전용”으로 다르게 보일 수 있습니다. 의도된 현재 동작입니다.
+> 목록 카드와 지도 마커·`eottae_shop_listing_thumb_url`이 **지도 전용 → 첨부 계열** 순서로 맞춰져 있습니다.  
+> 지도 전용이 없으면 대표/첨부 썸네일로 동일하게 fallback 합니다.
 
 ### 4.4 `eottae_shop_gallery_images` — **상세 히어로 갤러리**
 
@@ -160,7 +160,7 @@ eottae_shop_representative_image_url(bo_table, wr_id)
 | 화면 | 사용 함수 | 지도 전용 최우선? |
 |------|-----------|-------------------|
 | 지도 마커·InfoWindow | `eottae_shop_map_marker_thumb_url` | **예** |
-| 업체 목록 카드 | `eottae_shop_card_thumb` | 아니오 (GNUBoard thumb 우선) |
+| 업체 목록 카드 | `eottae_shop_card_thumb` | **예** (지도 마커와 동일) |
 | 기타 listing fallback | `eottae_shop_listing_thumb_url` | 예 (1순위) |
 | 상세 갤러리 | `eottae_shop_gallery_images` | 첨부 없을 때만 |
 | 대표 이미지 단독 | `eottae_shop_representative_image_url` | 해당 없음 |
@@ -169,7 +169,7 @@ eottae_shop_representative_image_url(bo_table, wr_id)
 
 ## 8. 운영·개발 체크리스트
 
-- [ ] 지도에 잘 보이게 하려면 **「지도 표시 썸네일」** 또는 AI 생성 사용 (대표만으로는 마커가 첨부 썸네일과 다를 수 있음).
+- [ ] 지도·목록에 동일하게 보이게 하려면 **「지도 표시 썸네일」** 또는 AI 생성 사용 (없으면 대표/첨부로 양쪽 동일 fallback).
 - [ ] 상세 페이지 대문은 **업체 이미지 첨부**가 우선; 지도 전용만 올리면 갤러리 1장으로 보임.
 - [ ] 세그먼트 게시판(`food` 등) 등록 후에도 파일은 `data/file/shop/` 아래에 저장되는지 확인.
 - [ ] 업체 삭제 시 `data/eottae-shop-map-thumb/{file}` 및 DB 행이 함께 제거되는지 확인.
@@ -194,6 +194,5 @@ eottae_shop_representative_image_url(bo_table, wr_id)
 
 ## 10. 변경 시 가이드
 
-- **지도와 카드 이미지를 항상 동일하게** 맞추려면 `eottae_shop_card_thumb` 우선순위를 `map_thumb` 우선으로 조정하는 별도 작업이 필요합니다 (현재는 의도적으로 다름).
 - **갤러리에 지도 썸네일을 항상 포함**하려면 `eottae_shop_gallery_images`의 “첨부 없을 때만” 조건을 변경해야 합니다.
 - 새 노출면을 추가할 때는 위 표에서 **어느 함수를 호출할지** 먼저 정한 뒤 구현하세요. `get_list_thumbnail`만 직접 쓰면 지도 전용 이미지가 빠질 수 있습니다.

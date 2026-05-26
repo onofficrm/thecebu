@@ -45,6 +45,9 @@ if (!function_exists('eottae_public_ai_render_mypage_admin_section')) {
 
         $settings = eottae_public_ai_get_settings();
         $pending = eottae_public_ai_pending_count();
+        $stats = function_exists('eottae_public_ai_mypage_dashboard_stats')
+            ? eottae_public_ai_mypage_dashboard_stats()
+            : array();
         $ai_on = !empty($settings['ai_enabled']);
         $approval = !empty($settings['require_admin_approval']);
         $openai_on = !empty($settings['openai_enabled']);
@@ -52,10 +55,46 @@ if (!function_exists('eottae_public_ai_render_mypage_admin_section')) {
         if ($ai_name === '') {
             $ai_name = '어때봇';
         }
+        $published_today = (int) ($stats['published_today'] ?? 0);
+        $max_per_day = (int) ($stats['max_messages_per_day'] ?? 10);
+        $openai_success = (int) ($stats['openai_calls_success'] ?? 0);
+        $openai_total = (int) ($stats['openai_calls_total'] ?? 0);
+        $openai_max = (int) ($stats['openai_max_calls_per_day'] ?? 20);
+        $last_gen = '';
+        if (!empty($stats['last_candidate_at'])) {
+            $last_gen = function_exists('eottae_public_ai_format_dashboard_datetime')
+                ? eottae_public_ai_format_dashboard_datetime($stats['last_candidate_at'])
+                : substr((string) $stats['last_candidate_at'], 0, 16);
+        } elseif (!empty($stats['last_openai_at'])) {
+            $last_gen = function_exists('eottae_public_ai_format_dashboard_datetime')
+                ? eottae_public_ai_format_dashboard_datetime($stats['last_openai_at'])
+                : substr((string) $stats['last_openai_at'], 0, 16);
+        }
         ?>
         <section class="my-talk-section my-talk-section--panel my-public-ai-admin" id="sebu-public-ai-admin" aria-labelledby="sebu-public-ai-admin-title">
             <h2 class="my-talk-section__title" id="sebu-public-ai-admin-title">세부공개단톡방 AI</h2>
             <p class="my-talk-section__desc">홈 <strong>세부공개단체톡</strong> 분위기 메이커(<?php echo get_text($ai_name); ?>) 설정·후보 승인·발행 로그를 관리합니다.</p>
+
+            <dl class="my-public-ai-admin__metrics" aria-label="오늘 운영 지표">
+                <div class="my-public-ai-admin__metric">
+                    <dt>오늘 발행</dt>
+                    <dd><strong><?php echo number_format($published_today); ?></strong><span class="my-public-ai-admin__metric-sub">/ <?php echo number_format($max_per_day); ?>건</span></dd>
+                </div>
+                <div class="my-public-ai-admin__metric">
+                    <dt>OpenAI 호출</dt>
+                    <dd>
+                        <?php if ($openai_on) { ?>
+                        <strong><?php echo number_format($openai_success); ?></strong><span class="my-public-ai-admin__metric-sub">성공 · 총 <?php echo number_format($openai_total); ?> / 한도 <?php echo number_format($openai_max); ?></span>
+                        <?php } else { ?>
+                        <span class="my-public-ai-admin__metric-muted">OFF</span>
+                        <?php } ?>
+                    </dd>
+                </div>
+                <div class="my-public-ai-admin__metric">
+                    <dt>마지막 생성</dt>
+                    <dd><strong><?php echo $last_gen !== '' ? get_text($last_gen) : '—'; ?></strong></dd>
+                </div>
+            </dl>
 
             <ul class="my-public-ai-admin__status" aria-label="AI 운영 상태">
                 <li class="my-public-ai-admin__status-item<?php echo $ai_on ? ' is-on' : ' is-off'; ?>">
@@ -81,6 +120,75 @@ if (!function_exists('eottae_public_ai_render_mypage_admin_section')) {
                 <a href="<?php echo G5_URL; ?>/page/eottae-admin-public-ai-news.php" class="my-talk-btn my-talk-btn--ghost my-talk-btn--sm">외부뉴스</a>
                 <a href="<?php echo eottae_public_ai_admin_logs_url(); ?>" class="my-talk-btn my-talk-btn--ghost my-talk-btn--sm">발행 로그</a>
             </div>
+        </section>
+        <?php
+    }
+}
+
+if (!function_exists('eottae_public_ai_render_admin_dashboard_stats')) {
+    /**
+     * 공개톡 AI 관리 페이지 상단 운영 지표
+     */
+    function eottae_public_ai_render_admin_dashboard_stats()
+    {
+        include_once G5_LIB_PATH.'/eottae-public-ai.lib.php';
+        eottae_public_ai_ensure_schema();
+
+        $settings = eottae_public_ai_get_settings();
+        $pending = eottae_public_ai_pending_count();
+        $stats = function_exists('eottae_public_ai_mypage_dashboard_stats')
+            ? eottae_public_ai_mypage_dashboard_stats()
+            : array();
+
+        $ai_on = !empty($settings['ai_enabled']);
+        $approval = !empty($settings['require_admin_approval']);
+        $openai_on = !empty($settings['openai_enabled']);
+        $published_today = (int) ($stats['published_today'] ?? 0);
+        $max_per_day = (int) ($stats['max_messages_per_day'] ?? 10);
+        $openai_success = (int) ($stats['openai_calls_success'] ?? 0);
+        $openai_total = (int) ($stats['openai_calls_total'] ?? 0);
+        $openai_max = (int) ($stats['openai_max_calls_per_day'] ?? 20);
+        $last_gen = '';
+        if (!empty($stats['last_candidate_at'])) {
+            $last_gen = function_exists('eottae_public_ai_format_dashboard_datetime')
+                ? eottae_public_ai_format_dashboard_datetime($stats['last_candidate_at'])
+                : substr((string) $stats['last_candidate_at'], 0, 16);
+        } elseif (!empty($stats['last_openai_at'])) {
+            $last_gen = function_exists('eottae_public_ai_format_dashboard_datetime')
+                ? eottae_public_ai_format_dashboard_datetime($stats['last_openai_at'])
+                : substr((string) $stats['last_openai_at'], 0, 16);
+        }
+        ?>
+        <section class="public-ai-admin-dashboard" aria-label="오늘 운영 지표">
+            <dl class="public-ai-admin-dashboard__metrics">
+                <div class="public-ai-admin-dashboard__metric">
+                    <dt>오늘 발행</dt>
+                    <dd><strong><?php echo number_format($published_today); ?></strong><span class="public-ai-admin-dashboard__sub">/ <?php echo number_format($max_per_day); ?>건</span></dd>
+                </div>
+                <div class="public-ai-admin-dashboard__metric">
+                    <dt>OpenAI 호출</dt>
+                    <dd>
+                        <?php if ($openai_on) { ?>
+                        <strong><?php echo number_format($openai_success); ?></strong><span class="public-ai-admin-dashboard__sub">성공 · 총 <?php echo number_format($openai_total); ?> / 한도 <?php echo number_format($openai_max); ?></span>
+                        <?php } else { ?>
+                        <span class="public-ai-admin-dashboard__muted">OFF</span>
+                        <?php } ?>
+                    </dd>
+                </div>
+                <div class="public-ai-admin-dashboard__metric">
+                    <dt>마지막 생성</dt>
+                    <dd><strong><?php echo $last_gen !== '' ? get_text($last_gen) : '—'; ?></strong></dd>
+                </div>
+                <div class="public-ai-admin-dashboard__metric">
+                    <dt>승인 대기 후보</dt>
+                    <dd><strong><?php echo number_format($pending); ?></strong><span class="public-ai-admin-dashboard__sub">건</span></dd>
+                </div>
+            </dl>
+            <ul class="public-ai-admin-dashboard__status" aria-label="AI 운영 상태">
+                <li class="public-ai-admin-dashboard__status-item<?php echo $ai_on ? ' is-on' : ' is-off'; ?>">AI <?php echo $ai_on ? '사용 중' : '꺼짐'; ?></li>
+                <li class="public-ai-admin-dashboard__status-item">발행 <?php echo $approval ? '승인 후' : '자동 가능'; ?></li>
+                <li class="public-ai-admin-dashboard__status-item<?php echo $openai_on ? ' is-on' : ''; ?>">OpenAI <?php echo $openai_on ? 'ON' : 'OFF'; ?></li>
+            </ul>
         </section>
         <?php
     }

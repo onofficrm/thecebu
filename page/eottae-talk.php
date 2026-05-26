@@ -16,14 +16,10 @@ g5_page_start('세부톡방');
         <h1 class="talk-page__title">세부톡방</h1>
         <?php if ($is_admin === 'super') { ?>
         <p class="talk-page__admin-links">
-            <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>">개설 신청 관리</a>
             <?php
             $talk_pending = eottae_talkroom_pending_count();
-            if ($talk_pending > 0) {
-                echo ' ('.number_format($talk_pending).')';
-            }
             ?>
-            · <a href="<?php echo eottae_talkroom_admin_rooms_url(); ?>">톡방 목록 관리</a>
+            <a href="<?php echo eottae_talkroom_admin_rooms_url(); ?>">톡방 목록 관리<?php if ($talk_pending > 0) { ?> (승인 대기 <?php echo number_format($talk_pending); ?>)<?php } ?></a>
             <?php
             $talk_kicked = function_exists('eottae_talkroom_admin_kicked_count') ? eottae_talkroom_admin_kicked_count() : 0;
             ?>

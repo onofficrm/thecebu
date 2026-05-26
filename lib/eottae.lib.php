@@ -1836,7 +1836,7 @@ if (!function_exists('eottae_shop_listing_thumb_url')) {
 
 if (!function_exists('eottae_shop_map_marker_thumb_url')) {
     /**
-     * Google Maps 마커용 썸네일 — 지도 전용 등록 → 리스트 카드와 동일 → 공통 fallback
+     * Google Maps 마커용 썸네일 — 지도 전용 → 목록 카드(eottae_shop_card_thumb)와 동일 우선순위
      */
     function eottae_shop_map_marker_thumb_url($bo_table, $wr_id, $row = null)
     {

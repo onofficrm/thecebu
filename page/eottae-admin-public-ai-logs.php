@@ -31,6 +31,7 @@ g5_page_start('공개톡 AI 발행 로그');
     </header>
 
     <section class="promo-admin-panel talk-admin-panel">
+        <h2 class="promo-admin-panel__title">발행 로그</h2>
         <?php if (empty($logs)) { ?>
         <p class="promo-admin-empty">표시할 로그가 없습니다.</p>
         <?php } else { ?>

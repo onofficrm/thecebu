@@ -94,11 +94,19 @@ $create_href = $is_member
     ? eottae_calendar_create_url()
     : (function_exists('eottae_login_url') ? eottae_login_url(eottae_calendar_create_url()) : G5_BBS_URL.'/login.php');
 
+$eottae_cal_hero_season = 'dry';
+if (function_exists('eottae_load_component')) {
+    eottae_load_component('calendar-hero-art');
+}
+if (function_exists('eottae_calendar_hero_art_season')) {
+    $eottae_cal_hero_season = eottae_calendar_hero_art_season();
+}
+
 g5_page_start('세부어때 캘린더');
 ?>
 
 <main class="mypage-subpage sebu-cal-page" data-sebu-cal-page>
-    <header class="sebu-cal-page__hero">
+    <header class="sebu-cal-page__hero sebu-cal-page__hero--<?php echo htmlspecialchars($eottae_cal_hero_season, ENT_QUOTES, 'UTF-8'); ?>">
         <div class="sebu-cal-page__hero-main">
             <h1 class="sebu-cal-page__title">세부어때 캘린더</h1>
             <p class="sebu-cal-page__intro">세부의 공휴일, 세부톡 모임, 축제, 이벤트 일정을 한눈에 확인해보세요.</p>

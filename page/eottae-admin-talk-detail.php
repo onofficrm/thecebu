@@ -12,26 +12,25 @@ $room_id = isset($_GET['room_id']) ? (int) $_GET['room_id'] : 0;
 $room = eottae_talkroom_get_room($room_id);
 
 if (!$room) {
-    alert('톡방 신청 정보를 찾을 수 없습니다.', eottae_talkroom_admin_applies_url());
+    alert('톡방 정보를 찾을 수 없습니다.', eottae_talkroom_admin_rooms_url());
 }
 
 $admin_token = eottae_talkroom_admin_token();
 
-g5_talk_admin_page_start('톡방 신청 상세');
+g5_talk_admin_page_start('톡방 상세');
 ?>
 
 <main class="promo-admin-page talk-admin-page talk-admin-detail-page">
     <header class="promo-admin-page__header">
         <div class="promo-admin-page__header-top">
-            <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>" class="promo-admin-page__back">← 개설 신청 관리</a>
-            <a href="<?php echo eottae_talkroom_admin_rooms_url(); ?>" class="promo-admin-page__back">톡방 목록</a>
+            <a href="<?php echo eottae_talkroom_admin_rooms_url(); ?>" class="promo-admin-page__back">← 톡방 목록</a>
         </div>
-        <h1 class="promo-admin-page__title">톡방 신청 상세</h1>
+        <h1 class="promo-admin-page__title">톡방 상세</h1>
         <p class="promo-admin-page__desc">
             <?php echo $room['emoji']; ?> <?php echo $room['room_name']; ?>
             <span class="talk-apply-status <?php echo $room['status_class']; ?>"><?php echo $room['status_label']; ?></span>
         </p>
-        <?php eottae_talkroom_render_admin_nav('applies'); ?>
+        <?php eottae_talkroom_render_admin_nav('rooms'); ?>
     </header>
 
     <section class="promo-admin-panel talk-admin-detail">
@@ -102,14 +101,12 @@ g5_talk_admin_page_start('톡방 신청 상세');
         </dl>
 
         <div class="talk-admin-detail__actions">
-            <?php if ($room['status'] === 'pending') { ?>
-            <button type="button" class="promo-admin-btn promo-admin-btn--primary" data-talk-approve="<?php echo (int) $room['room_id']; ?>">승인</button>
-            <button type="button" class="promo-admin-btn" data-talk-reject="<?php echo (int) $room['room_id']; ?>">반려</button>
-            <?php } elseif (in_array($room['status'], array('approved', 'active'), true)) { ?>
+            <?php if (in_array($room['status'], array('approved', 'active'), true)) { ?>
             <button type="button" class="promo-admin-btn" data-talk-stop="<?php echo (int) $room['room_id']; ?>">운영중지</button>
+            <a href="<?php echo eottae_talkroom_enter_url((int) $room['room_id']); ?>" class="promo-admin-btn" target="_blank" rel="noopener noreferrer">톡방 열기</a>
             <a href="<?php echo eottae_talkroom_list_url(); ?>" class="promo-admin-btn" target="_blank" rel="noopener noreferrer">공개 목록 보기</a>
             <?php } ?>
-            <a href="<?php echo eottae_talkroom_admin_applies_url(); ?>" class="promo-admin-btn">목록으로</a>
+            <a href="<?php echo eottae_talkroom_admin_rooms_url(); ?>" class="promo-admin-btn">목록으로</a>
         </div>
     </section>
 </main>

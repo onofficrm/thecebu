@@ -886,6 +886,94 @@ if (!function_exists('eottae_public_ai_pending_count')) {
     }
 }
 
+if (!function_exists('eottae_public_ai_mypage_dashboard_stats')) {
+    /**
+     * 마이페이지 공개단톡 AI 운영 지표
+     *
+     * @return array<string, mixed>
+     */
+    function eottae_public_ai_mypage_dashboard_stats($now = null)
+    {
+        eottae_public_ai_ensure_schema();
+        $settings = eottae_public_ai_get_settings();
+        $now = $now ?: (defined('G5_TIME_YMDHIS') ? G5_TIME_YMDHIS : date('Y-m-d H:i:s'));
+
+        $published_today = 0;
+        if (is_file(G5_LIB_PATH.'/eottae-public-ai-publish.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-public-ai-publish.lib.php';
+            if (function_exists('eottae_public_ai_count_public_chat_published_today')) {
+                $published_today = eottae_public_ai_count_public_chat_published_today($now);
+            }
+        }
+
+        $openai_success = 0;
+        $openai_total = 0;
+        if (is_file(G5_LIB_PATH.'/eottae-public-ai-openai.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-public-ai-openai.lib.php';
+            if (function_exists('eottae_public_ai_openai_count_calls_today')) {
+                $openai_success = eottae_public_ai_openai_count_calls_today(true);
+                $openai_total = eottae_public_ai_openai_count_calls_today(false);
+            }
+        }
+
+        $candidates_table = eottae_public_ai_candidates_table();
+        $last_candidate = sql_fetch("
+            SELECT MAX(created_at) AS last_at
+            FROM `{$candidates_table}`
+        ", false);
+        $last_published = sql_fetch("
+            SELECT MAX(published_at) AS last_at
+            FROM `{$candidates_table}`
+            WHERE status = 'published' AND published_at > '0000-00-00 00:00:00'
+        ", false);
+
+        $last_openai_at = '';
+        if (function_exists('eottae_public_ai_openai_logs_table')) {
+            $openai_table = eottae_public_ai_openai_logs_table();
+            $last_openai = sql_fetch("
+                SELECT MAX(created_at) AS last_at
+                FROM `{$openai_table}`
+                WHERE is_test = 0
+            ", false);
+            $last_openai_at = trim((string) ($last_openai['last_at'] ?? ''));
+        }
+
+        return array(
+            'published_today'          => $published_today,
+            'max_messages_per_day'     => max(1, (int) ($settings['max_messages_per_day'] ?? 10)),
+            'openai_calls_success'     => $openai_success,
+            'openai_calls_total'       => $openai_total,
+            'openai_max_calls_per_day' => max(1, (int) ($settings['openai_max_calls_per_day'] ?? 20)),
+            'openai_enabled'           => !empty($settings['openai_enabled']),
+            'last_candidate_at'        => trim((string) ($last_candidate['last_at'] ?? '')),
+            'last_published_at'        => trim((string) ($last_published['last_at'] ?? '')),
+            'last_openai_at'           => $last_openai_at,
+        );
+    }
+}
+
+if (!function_exists('eottae_public_ai_format_dashboard_datetime')) {
+    function eottae_public_ai_format_dashboard_datetime($datetime)
+    {
+        $datetime = trim((string) $datetime);
+        if ($datetime === '' || strpos($datetime, '0000-00-00') === 0) {
+            return '—';
+        }
+
+        $ts = strtotime($datetime);
+        if ($ts === false) {
+            return '—';
+        }
+
+        $today = defined('G5_TIME_YMD') ? G5_TIME_YMD : date('Y-m-d');
+        if (substr($datetime, 0, 10) === $today) {
+            return '오늘 '.date('H:i', $ts);
+        }
+
+        return date('m/d H:i', $ts);
+    }
+}
+
 if (!function_exists('eottae_public_ai_today_ymd')) {
     function eottae_public_ai_today_ymd($now = null)
     {

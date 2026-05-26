@@ -57,11 +57,9 @@ g5_page_start('마이페이지');
         <a href="<?php echo G5_URL; ?>/page/eottae-events.php" class="mypage-quick-menu__item">이벤트</a>
         <a href="<?php echo function_exists('eottae_mypage_talk_url') ? eottae_mypage_talk_url() : G5_URL.'/mypage/talk.php'; ?>" class="mypage-quick-menu__item">내 세부톡방</a>
         <?php if ($is_admin === 'super') {
-            $talk_pending_count = function_exists('eottae_talkroom_pending_count') ? eottae_talkroom_pending_count() : 0;
             $talk_kicked_count = function_exists('eottae_talkroom_admin_kicked_count') ? eottae_talkroom_admin_kicked_count() : 0;
             $talk_report_pending = function_exists('eottae_talkroom_admin_pending_report_count') ? eottae_talkroom_admin_pending_report_count() : 0;
             ?>
-        <a href="<?php echo function_exists('eottae_talkroom_admin_applies_url') ? eottae_talkroom_admin_applies_url() : G5_URL.'/page/eottae-admin-talk-applies.php'; ?>" class="mypage-quick-menu__item">개설 신청<?php if ($talk_pending_count > 0) { ?> (<?php echo number_format($talk_pending_count); ?>)<?php } ?></a>
         <a href="<?php echo function_exists('eottae_talkroom_admin_rooms_url') ? eottae_talkroom_admin_rooms_url() : G5_URL.'/page/eottae-admin-talk-rooms.php'; ?>" class="mypage-quick-menu__item">톡방 목록</a>
         <a href="<?php echo function_exists('eottae_talkroom_admin_kicked_url') ? eottae_talkroom_admin_kicked_url() : G5_URL.'/page/eottae-admin-talk-kicked.php'; ?>" class="mypage-quick-menu__item">강퇴 회원<?php if ($talk_kicked_count > 0) { ?> (<?php echo number_format($talk_kicked_count); ?>)<?php } ?></a>
         <a href="<?php echo function_exists('eottae_talkroom_admin_reports_url') ? eottae_talkroom_admin_reports_url('pending') : G5_URL.'/page/eottae-admin-talk-reports.php?status=pending'; ?>" class="mypage-quick-menu__item">신고 관리<?php if ($talk_report_pending > 0) { ?> (<?php echo number_format($talk_report_pending); ?>)<?php } ?></a>

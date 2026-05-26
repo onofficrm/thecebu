@@ -6,10 +6,9 @@ include_once(G5_LIB_PATH.'/eottae.lib.php');
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
 
 $quick_categories = eottae_shop_quick_categories($board);
-$region_options = eottae_shop_region_options();
 $sort_links = eottae_shop_sort_links(isset($sst) ? $sst : '');
-$list_base = get_pretty_url($bo_table);
-$current_region = (isset($sfl) && $sfl === 'wr_2' && !empty($stx)) ? get_text($stx) : '';
+$list_base = eottae_shop_build_list_url($bo_table);
+$current_keyword = ($sfl === 'wr_subject||wr_content' && !empty($stx)) ? get_text(stripslashes($stx)) : '';
 $eottae_user_coords = eottae_shop_user_coords_from_request();
 if (empty($eottae_shop_list_ready)) {
     $eottae_list_filters = eottae_shop_list_filters_from_request();
@@ -43,7 +42,7 @@ add_javascript('<script src="'.G5_JS_URL.'/eottae-shop-near-infinite.js"></scrip
 
 function eottae_shop_build_list_url($bo_table, $params = array())
 {
-    $base = G5_BBS_URL.'/board.php?bo_table='.$bo_table;
+    $base = G5_BBS_URL.'/board.php?bo_table='.rawurlencode((string) $bo_table);
     if (empty($params)) {
         return $base;
     }
@@ -60,8 +59,9 @@ function eottae_shop_build_list_url($bo_table, $params = array())
     <section class="shop-near-search">
         <form class="shop-near-search__row" method="get" action="<?php echo G5_BBS_URL; ?>/board.php">
             <input type="hidden" name="bo_table" value="<?php echo $bo_table; ?>">
+            <input type="hidden" name="sfl" value="wr_subject||wr_content">
             <label class="sound_only" for="shop_search_category">카테고리</label>
-            <select id="shop_search_category" name="sca" class="shop-near-search__select" onchange="this.form.submit();">
+            <select id="shop_search_category" name="sca" class="shop-near-search__select">
                 <option value="">카테고리</option>
                 <?php foreach ($quick_categories as $cat) {
                     if ($cat['slug'] === '') {
@@ -70,22 +70,8 @@ function eottae_shop_build_list_url($bo_table, $params = array())
                 <option value="<?php echo get_text($cat['slug']); ?>"<?php echo ($sca === $cat['slug']) ? ' selected' : ''; ?>><?php echo get_text($cat['label']); ?></option>
                 <?php } ?>
             </select>
-            <label class="sound_only" for="shop_search_region">지역</label>
-            <select id="shop_search_region" name="stx" class="shop-near-search__select" onchange="this.form.sfl.value='wr_2'; this.form.submit();">
-                <option value="">지역</option>
-                <?php foreach ($region_options as $region) { ?>
-                <option value="<?php echo get_text($region); ?>"<?php echo ($current_region === $region) ? ' selected' : ''; ?>><?php echo get_text($region); ?></option>
-                <?php } ?>
-            </select>
-            <input type="hidden" name="sfl" value="<?php echo $current_region ? 'wr_2' : ''; ?>">
-        </form>
-
-        <form class="shop-near-search__bar" method="get" action="<?php echo G5_BBS_URL; ?>/board.php">
-            <input type="hidden" name="bo_table" value="<?php echo $bo_table; ?>">
-            <?php if ($sca) { ?><input type="hidden" name="sca" value="<?php echo get_text($sca); ?>"><?php } ?>
-            <input type="hidden" name="sfl" value="wr_subject||wr_content">
             <label class="sound_only" for="shop_search_keyword">검색어</label>
-            <input type="search" id="shop_search_keyword" name="stx" value="<?php echo ($sfl === 'wr_subject||wr_content' && !empty($stx)) ? get_text(stripslashes($stx)) : ''; ?>" class="shop-near-search__input" placeholder="업체명, 키워드 검색">
+            <input type="search" id="shop_search_keyword" name="stx" value="<?php echo $current_keyword; ?>" class="shop-near-search__input" placeholder="업체명, 키워드 검색">
             <button type="submit" class="shop-near-search__submit">검색</button>
         </form>
 
@@ -97,22 +83,10 @@ function eottae_shop_build_list_url($bo_table, $params = array())
             <p class="shop-near-filters__label">빠른 카테고리</p>
             <div class="shop-near-pills">
                 <?php foreach ($quick_categories as $cat) {
-                    $href = $cat['slug'] === '' ? $list_base : get_pretty_url($bo_table, '', 'sca='.urlencode($cat['slug']));
+                    $href = $cat['slug'] === '' ? $list_base : eottae_shop_build_list_url($bo_table, array('sca' => $cat['slug']));
                     $active = ($cat['slug'] === '' && $sca === '') || ($cat['slug'] !== '' && $sca === $cat['slug']);
                     ?>
                 <a href="<?php echo $href; ?>" class="shop-near-pill<?php echo $active ? ' is-active' : ''; ?>"><?php echo get_text($cat['label']); ?></a>
-                <?php } ?>
-            </div>
-        </div>
-
-        <div class="shop-near-filters__group">
-            <p class="shop-near-filters__label">지역 선택</p>
-            <div class="shop-near-pills">
-                <a href="<?php echo $list_base; ?>" class="shop-near-pill<?php echo $current_region === '' ? ' is-active' : ''; ?>">전체</a>
-                <?php foreach ($region_options as $region) {
-                    $href = eottae_shop_build_list_url($bo_table, array('sfl' => 'wr_2', 'stx' => $region));
-                    ?>
-                <a href="<?php echo $href; ?>" class="shop-near-pill<?php echo ($current_region === $region) ? ' is-active' : ''; ?>"><?php echo get_text($region); ?></a>
                 <?php } ?>
             </div>
         </div>
@@ -129,9 +103,9 @@ function eottae_shop_build_list_url($bo_table, $params = array())
                 if ($sca) {
                     $params['sca'] = $sca;
                 }
-                if ($current_region) {
-                    $params['sfl'] = 'wr_2';
-                    $params['stx'] = $current_region;
+                if ($current_keyword !== '') {
+                    $params['sfl'] = 'wr_subject||wr_content';
+                    $params['stx'] = $current_keyword;
                 }
                 $params = eottae_shop_append_coords_query($params);
                 $href = eottae_shop_build_list_url($bo_table, $params);
