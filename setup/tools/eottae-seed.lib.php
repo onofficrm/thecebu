@@ -1010,6 +1010,81 @@ if (!function_exists('eottae_seed_dawon_reviews')) {
     }
 }
 
+if (!function_exists('eottae_seed_update_shop_content')) {
+    /**
+     * 업체 소개(wr_content) 갱신
+     */
+    function eottae_seed_update_shop_content($shop_wr_id, $html_content)
+    {
+        global $g5;
+
+        $shop_wr_id = (int) $shop_wr_id;
+        if ($shop_wr_id < 1) {
+            return eottae_seed_log('shop', 'invalid shop_wr_id', false);
+        }
+
+        $shop_table = $g5['write_prefix'].EOTTae_SHOP_TABLE;
+        $row = sql_fetch(" select wr_id from {$shop_table} where wr_id = '{$shop_wr_id}' and wr_is_comment = 0 ");
+        if (empty($row['wr_id'])) {
+            return eottae_seed_log('shop', 'shop wr_id='.$shop_wr_id.' not found', false);
+        }
+
+        $content = sql_escape_string((string) $html_content);
+        sql_query(" update {$shop_table} set wr_content = '{$content}', wr_last = '".G5_TIME_YMDHIS."' where wr_id = '{$shop_wr_id}' ");
+
+        return eottae_seed_log('shop', 'shop wr_id='.$shop_wr_id.' content updated');
+    }
+}
+
+if (!function_exists('eottae_seed_shiny_carwash_content')) {
+    function eottae_seed_shiny_carwash_content()
+    {
+        return '<p>샤인카세차(SHINY)는 최신 <strong>자동세차 장비</strong>로 빠르고 깨끗하게 세차해 드리는 세부 현지 세차장입니다. '
+            .'손세차 대비 대기 시간이 짧고, 부드러운 브러시·고압 폼으로 차체 스크래치 걱정 없이 균일하게 세척합니다.</p>'
+            .'<p>기본 외부 세차부터 왁스 코팅, 실내 진공·디테일링, 하부 세척까지 맞춤 코스를 운영하며, '
+            .'교민·관광객·렌트카 이용객 모두 편하게 방문하실 수 있습니다. 연중무휴 영업으로 언제든 반짝이는 차를 만나 보세요.</p>';
+    }
+}
+
+if (!function_exists('eottae_seed_shiny_reviews')) {
+    /**
+     * 샤인카세차 SHINY(shop wr_id=36) 소개 갱신 + 샘플 리뷰 39건 — 평점 5.0
+     *
+     * @param int $shop_wr_id
+     * @return array<int, array<string, mixed>>
+     */
+    function eottae_seed_shiny_reviews($shop_wr_id = 36)
+    {
+        global $g5;
+
+        $shop_wr_id = (int) $shop_wr_id;
+        if ($shop_wr_id < 1) {
+            $shop_table = $g5['write_prefix'].EOTTae_SHOP_TABLE;
+            $shop_row = sql_fetch(" select wr_id from {$shop_table} where wr_is_comment = 0 and (wr_subject like '%샤인%' or wr_subject like '%SHINY%') limit 1 ");
+            $shop_wr_id = !empty($shop_row['wr_id']) ? (int) $shop_row['wr_id'] : 0;
+        }
+
+        $logs = array();
+        $logs[] = eottae_seed_update_shop_content($shop_wr_id, eottae_seed_shiny_carwash_content());
+
+        $items_file = __DIR__.'/eottae-seed-shiny-reviews-items.php';
+        if (!is_file($items_file)) {
+            $logs[] = eottae_seed_log('review', 'shiny review items file missing', false);
+
+            return $logs;
+        }
+
+        $items = include $items_file;
+        if (!is_array($items)) {
+            $logs[] = eottae_seed_log('review', 'shiny review items invalid', false);
+
+            return $logs;
+        }
+
+        return array_merge($logs, eottae_seed_shop_reviews_from_items($shop_wr_id, $items));
+    }
+}
+
 if (!function_exists('eottae_seed_sample_events')) {
     function eottae_seed_sample_events()
 

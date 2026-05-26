@@ -4,7 +4,8 @@
  * POST/GET /proc/eottae-sel-reviews-seed.php?shop_wr_id=10&preset=yonggungri
  * POST/GET /proc/eottae-sel-reviews-seed.php?shop_wr_id=9&preset=badachamchi
  * POST/GET /proc/eottae-sel-reviews-seed.php?shop_wr_id=11&preset=dawon
- * 관리자 로그인 또는 key 파라미터로 샘플 리뷰 시드 (preset: sel | yonggungri | badachamchi | dawon)
+ * POST/GET /proc/eottae-sel-reviews-seed.php?shop_wr_id=36&preset=shiny
+ * 관리자 로그인 또는 key 파라미터로 샘플 리뷰 시드 (preset: sel | yonggungri | badachamchi | dawon | shiny)
  */
 include_once dirname(__DIR__).'/common.php';
 include_once G5_LIB_PATH.'/eottae.lib.php';
@@ -33,6 +34,8 @@ if ($preset === 'yonggungri') {
     $default_shop_id = 9;
 } elseif ($preset === 'dawon') {
     $default_shop_id = 11;
+} elseif ($preset === 'shiny') {
+    $default_shop_id = 36;
 }
 $shop_wr_id = isset($_REQUEST['shop_wr_id']) ? (int) $_REQUEST['shop_wr_id'] : $default_shop_id;
 if ($shop_wr_id < 1) {
@@ -48,6 +51,8 @@ if ($preset === 'yonggungri') {
     $seed_fn = 'eottae_seed_badachamchi_reviews';
 } elseif ($preset === 'dawon') {
     $seed_fn = 'eottae_seed_dawon_reviews';
+} elseif ($preset === 'shiny') {
+    $seed_fn = 'eottae_seed_shiny_reviews';
 }
 
 if (!function_exists($seed_fn)) {
