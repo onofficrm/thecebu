@@ -8,6 +8,10 @@ chdir(dirname(__FILE__).'/..');
 include_once dirname(__FILE__).'/../_common.php';
 include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
 
+if (!function_exists('g5site_cfg') && defined('G5_PATH') && is_file(G5_PATH.'/_site.config.php')) {
+    include_once G5_PATH.'/_site.config.php';
+}
+
 header('Content-Type: text/plain; charset=utf-8');
 
 function eottae_talkroom_maintenance_valid_keys()
