@@ -433,7 +433,33 @@
     }
   }
 
+  function collapseStrayHeaderMenu() {
+    var menu = document.getElementById('siteMobileNav');
+    if (menu) {
+      menu.classList.remove('is-open');
+      menu.setAttribute('aria-hidden', 'true');
+    }
+
+    var overlay = document.querySelector('.eottae-gnb-header__overlay, .site-header__overlay');
+    if (overlay) {
+      overlay.classList.remove('is-open');
+    }
+
+    document.querySelectorAll('.eottae-gnb-header__menu-btn, .site-header__menu-btn').forEach(function (btn) {
+      btn.setAttribute('aria-expanded', 'false');
+      btn.setAttribute('aria-label', '메뉴 열기');
+    });
+
+    if (document.body.classList.contains('talk-room-chat-active')) {
+      document.body.style.overflow = '';
+    }
+  }
+
   function init() {
+    if (document.body.classList.contains('talk-room-chat-active')) {
+      collapseStrayHeaderMenu();
+    }
+
     var section = getSection();
     if (section) {
       bindSection(section);

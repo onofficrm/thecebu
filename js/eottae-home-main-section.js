@@ -69,10 +69,13 @@
     }
 
     var href = event.detail_href || '#';
+    var eventId = event.event_id ? String(event.event_id) : '';
 
     return ''
       + '<li class="sebu-cal-summary-event">'
-      + '<a href="' + esc(href) + '" class="sebu-cal-summary-event__link">'
+      + '<a href="' + esc(href) + '" class="sebu-cal-summary-event__link"'
+      + (eventId ? ' data-sebu-cal-event="' + esc(eventId) + '"' : '')
+      + '>'
       + '<div class="sebu-cal-summary-event__head">'
       + '<span class="sebu-cal-summary-event__category ' + esc(event.category_class || '') + '">' + esc(event.category_label || '') + '</span>'
       + (event.badge_label ? '<span class="sebu-cal-summary-event__badge ' + esc(event.badge_class || '') + '">' + esc(event.badge_label) + '</span>' : '')
@@ -125,9 +128,12 @@
     var i;
     for (i = 0; i < talkEvents.length; i += 1) {
       var event = talkEvents[i];
+      var talkEventId = event.event_id ? String(event.event_id) : '';
       html += ''
         + '<li class="sebu-cal-summary-talk__item">'
-        + '<a href="' + esc(event.detail_href || '#') + '" class="sebu-cal-summary-talk__link">'
+        + '<a href="' + esc(event.detail_href || '#') + '" class="sebu-cal-summary-talk__link"'
+        + (talkEventId ? ' data-sebu-cal-event="' + esc(talkEventId) + '"' : '')
+        + '>'
         + '<span class="sebu-cal-summary-talk__day">' + esc(event.day_label || '') + '</span>'
         + '<strong class="sebu-cal-summary-talk__name">' + esc(event.title || '') + '</strong>'
         + (event.time_label ? '<span class="sebu-cal-summary-talk__time">' + esc(event.time_label) + '</span>' : '')

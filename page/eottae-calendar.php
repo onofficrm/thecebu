@@ -142,7 +142,7 @@ g5_page_start('세부어때 캘린더');
                 <?php if (!empty($block['events'])) { ?>
                 <ul class="sebu-cal-summary__list">
                     <?php foreach (array_slice($block['events'], 0, 3) as $event) { ?>
-                    <li><a href="<?php echo $event['detail_href']; ?>"><?php echo get_text($event['title']); ?></a></li>
+                    <li><a href="<?php echo $event['detail_href']; ?>" data-sebu-cal-event="<?php echo (int) $event['event_id']; ?>"><?php echo get_text($event['title']); ?></a></li>
                     <?php } ?>
                 </ul>
                 <?php } else { ?>
@@ -179,7 +179,7 @@ g5_page_start('세부어때 캘린더');
                     <div class="sebu-cal-month__day"><?php echo (int) $cell['day']; ?></div>
                     <div class="sebu-cal-month__events">
                         <?php foreach (array_slice($cell['events'], 0, 3) as $event) { ?>
-                        <a href="<?php echo $event['detail_href']; ?>" class="sebu-cal-month__event <?php echo get_text($event['category_class']); ?>">
+                        <a href="<?php echo $event['detail_href']; ?>" class="sebu-cal-month__event <?php echo get_text($event['category_class']); ?>" data-sebu-cal-event="<?php echo (int) $event['event_id']; ?>">
                             <span class="sebu-cal-month__event-badge <?php echo get_text($event['badge_class']); ?>"></span>
                             <span class="sebu-cal-month__event-title"><?php echo get_text($event['title']); ?></span>
                         </a>
@@ -229,5 +229,7 @@ g5_page_start('세부어때 캘린더');
 
 <?php
 include_once G5_PATH.'/components/eottae/calendar-report.php';
+include_once G5_PATH.'/components/eottae/calendar-event-modal.php';
+eottae_calendar_render_event_modal();
 eottae_calendar_render_report_script();
 g5_page_end();

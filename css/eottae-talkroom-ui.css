@@ -2455,6 +2455,60 @@ body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .public-group-chat
   }
 }
 
+/* ── 모바일 단톡방 채팅 — GNB·헤더 정리 (custom.css 충돌 방지) ── */
+@media (max-width: 767px) {
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header {
+    padding: 6px 8px;
+  }
+
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header__shell {
+    border-radius: 16px;
+  }
+
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header__inner {
+    min-height: 44px;
+    padding: 4px 8px 4px 10px;
+    gap: 6px;
+  }
+
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header__nav {
+    display: none !important;
+  }
+
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header__logo-img,
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd img[data-eottae-logo] {
+    height: 26px !important;
+    max-width: 96px !important;
+    width: auto !important;
+    object-fit: contain !important;
+  }
+
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header__btn--talk,
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header__btn--register,
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header__btn--text {
+    display: none !important;
+  }
+
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header__mobile:not(.is-open) {
+    display: none !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    border: 0 !important;
+  }
+
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header__mobile.is-open {
+    max-height: min(52vh, 420px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #container_title {
+    display: none !important;
+  }
+}
+
 /* ── 모바일 단톡방 채팅 — 뷰포트에 맞게 고정 (메시지 영역만 스크롤) ── */
 @media (max-width: 767px) {
   body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) .mobile-bottom-nav--global {

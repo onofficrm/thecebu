@@ -850,11 +850,25 @@ if (!function_exists('eottae_builder_inject_home_main_section_script')) {
         }
 
         $css = defined('G5_CSS_URL') ? G5_CSS_URL.'/eottae-home-main-section.css' : '/css/eottae-home-main-section.css';
+        $cal_css = defined('G5_CSS_URL') ? G5_CSS_URL.'/eottae-calendar.css' : '/css/eottae-calendar.css';
         $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-main-section.js' : '/js/eottae-home-main-section.js';
+        $cal_js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-calendar.js' : '/js/eottae-calendar.js';
+
+        ob_start();
+        if (is_file(G5_PATH.'/components/eottae/calendar-event-modal.php')) {
+            include_once G5_PATH.'/components/eottae/calendar-event-modal.php';
+            if (function_exists('eottae_calendar_render_event_modal')) {
+                eottae_calendar_render_event_modal();
+            }
+        }
+        $modal_html = (string) ob_get_clean();
 
         return '<link rel="stylesheet" href="'.htmlspecialchars($css, ENT_QUOTES, 'UTF-8').'">'
+            .'<link rel="stylesheet" href="'.htmlspecialchars($cal_css, ENT_QUOTES, 'UTF-8').'">'
             .'<script>window.__EOTTae_HOME_MAIN_SECTION__='.$payload_json.';</script>'
-            .'<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
+            .'<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>'
+            .'<script src="'.htmlspecialchars($cal_js, ENT_QUOTES, 'UTF-8').'" defer></script>'
+            .$modal_html;
     }
 }
 

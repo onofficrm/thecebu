@@ -665,6 +665,62 @@ if (!function_exists('eottae_calendar_present_event')) {
     }
 }
 
+if (!function_exists('eottae_calendar_event_detail_api_payload')) {
+    /**
+     * 일정 상세 팝업용 JSON 페이로드
+     *
+     * @return array<string, mixed>|null
+     */
+    function eottae_calendar_event_detail_api_payload($event_id)
+    {
+        $event = eottae_calendar_get_event((int) $event_id);
+        if (!$event) {
+            return null;
+        }
+
+        global $is_member, $member, $is_admin;
+
+        $mb_id = !empty($is_member) && is_array($member) ? (string) ($member['mb_id'] ?? '') : '';
+        $is_super = (isset($is_admin) && $is_admin === 'super');
+        $can_edit = $is_member && eottae_calendar_can_edit_event($event, $mb_id, $is_super);
+        $can_delete = $is_member && eottae_calendar_can_delete_event($event, $mb_id, $is_super);
+        $is_google = !empty($event['is_google']);
+
+        $description = trim(strip_tags((string) ($event['description'] ?? '')));
+
+        return array(
+            'event_id'          => (int) ($event['event_id'] ?? 0),
+            'title'             => (string) ($event['title'] ?? ''),
+            'category'          => (string) ($event['category'] ?? ''),
+            'category_label'    => (string) ($event['category_label'] ?? ''),
+            'category_class'    => (string) ($event['category_class'] ?? ''),
+            'badge_label'       => (string) ($event['badge_label'] ?? ''),
+            'badge_class'       => (string) ($event['badge_class'] ?? ''),
+            'is_google'         => $is_google ? 1 : 0,
+            'source_label'      => (string) ($event['source_label'] ?? '세부어때'),
+            'date_label'        => (string) ($event['date_label'] ?? ''),
+            'time_label'        => (string) ($event['time_label'] ?? ''),
+            'area_label'        => (string) ($event['area_label'] ?? ''),
+            'location'          => (string) ($event['location'] ?? ''),
+            'writer_display'    => (string) ($event['writer_display'] ?? $event['writer_name'] ?? ''),
+            'created_at'        => substr((string) ($event['created_at'] ?? ''), 0, 16),
+            'updated_at'        => substr((string) ($event['updated_at'] ?? ''), 0, 16),
+            'description'       => $description,
+            'description_html'  => (string) ($event['description_html'] ?? ''),
+            'related_url'       => (string) ($event['related_url'] ?? ''),
+            'related_room_name' => (string) ($event['related_room_name'] ?? ''),
+            'related_room_href' => (string) ($event['related_room_href'] ?? ''),
+            'related_post_url'  => (string) ($event['related_post_url'] ?? ''),
+            'detail_href'       => (string) ($event['detail_href'] ?? ''),
+            'edit_href'         => (string) ($event['edit_href'] ?? ''),
+            'can_edit'          => $can_edit ? 1 : 0,
+            'can_delete'        => $can_delete ? 1 : 0,
+            'delete_label'      => $is_google ? '숨김' : '삭제',
+            'delete_confirm'    => $is_google ? '이 Google 일정을 숨김 처리할까요?' : '이 일정을 삭제할까요?',
+        );
+    }
+}
+
 if (!function_exists('eottae_calendar_list_events')) {
     function eottae_calendar_list_events(array $options = array())
     {

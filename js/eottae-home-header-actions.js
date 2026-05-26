@@ -111,11 +111,84 @@
     }
   }
 
+  function findMobileMenuNav() {
+    var siteNav = document.querySelector('#siteMobileNav .eottae-gnb-header__mobile-nav');
+    if (siteNav) {
+      return siteNav;
+    }
+
+    var mobileNav = document.querySelector('.eottae-gnb-header__mobile-nav');
+    if (mobileNav) {
+      return mobileNav;
+    }
+
+    var header = document.querySelector('header');
+    if (!header) {
+      return null;
+    }
+
+    var links = header.querySelectorAll('a[href]');
+    var i;
+    for (i = 0; i < links.length; i += 1) {
+      var label = (links[i].textContent || '').replace(/\s+/g, '');
+      if (label === '홈' || label === '내주변') {
+        var nav = links[i].closest('nav');
+        if (nav) {
+          return nav;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  function removeMobileHeaderCalendarButtons(header) {
+    if (!header) {
+      return;
+    }
+
+    header.querySelectorAll('[data-eottae-home-calendar-btn]').forEach(function (node) {
+      if (node.parentNode) {
+        node.parentNode.removeChild(node);
+      }
+    });
+  }
+
+  function mountCalendarInMobileMenu(data) {
+    if (!data.calendar_url) {
+      return;
+    }
+
+    var menu = findMobileMenuNav();
+    if (!menu) {
+      return;
+    }
+
+    if (menu.querySelector('[data-eottae-home-calendar-menu="1"]')) {
+      return;
+    }
+
+    var link = document.createElement('a');
+    link.href = data.calendar_url;
+    link.className = 'eottae-gnb-header__mobile-link eottae-gnb-header__mobile-link--accent';
+    link.setAttribute('data-eottae-home-calendar-menu', '1');
+    link.textContent = data.calendar_label || '세부일정';
+
+    var talkMenu = menu.querySelector('[href*="/talk"]');
+    if (talkMenu && talkMenu.parentNode === menu) {
+      menu.insertBefore(link, talkMenu.nextSibling);
+    } else {
+      menu.appendChild(link);
+    }
+  }
+
   function mountMobile(data) {
     var header = document.querySelector('header');
     if (!header) {
       return;
     }
+
+    removeMobileHeaderCalendarButtons(header);
 
     var shopWrite = null;
     var links = header.querySelectorAll('a');
@@ -131,23 +204,17 @@
       }
     }
 
-    if (!shopWrite || !shopWrite.parentNode) {
-      return;
+    if (shopWrite && shopWrite.parentNode) {
+      normalizeShopWriteLink(shopWrite, true);
+
+      if (!header.querySelector('[data-eottae-home-talk-btn="mobile"]') && data.talk_url) {
+        var talkBtn = buildTalkButton(data, 'eottae-gnb-header__btn--mobile-action');
+        talkBtn.setAttribute('data-eottae-home-talk-btn', 'mobile');
+        shopWrite.parentNode.insertBefore(talkBtn, shopWrite);
+      }
     }
 
-    normalizeShopWriteLink(shopWrite, true);
-
-    if (!header.querySelector('[data-eottae-home-calendar-btn="mobile"]') && data.calendar_url) {
-      var calendarBtn = buildCalendarButton(data, 'eottae-gnb-header__btn--mobile-action');
-      calendarBtn.setAttribute('data-eottae-home-calendar-btn', 'mobile');
-      shopWrite.parentNode.insertBefore(calendarBtn, shopWrite);
-    }
-
-    if (!header.querySelector('[data-eottae-home-talk-btn="mobile"]') && data.talk_url) {
-      var talkBtn = buildTalkButton(data, 'eottae-gnb-header__btn--mobile-action');
-      talkBtn.setAttribute('data-eottae-home-talk-btn', 'mobile');
-      shopWrite.parentNode.insertBefore(talkBtn, shopWrite);
-    }
+    mountCalendarInMobileMenu(data);
   }
 
   function hideRentcarMenuLinks() {
@@ -184,6 +251,7 @@
 
     mountDesktop(data);
     mountMobile(data);
+    mountCalendarInMobileMenu(data);
     hideRentcarMenuLinks();
   }
 

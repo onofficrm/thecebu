@@ -19,7 +19,7 @@ if (!function_exists('eottae_calendar_event_card_html')) {
         ob_start();
         ?>
         <article class="sebu-cal-event-card sebu-cal-event-card--<?php echo $variant; ?>">
-            <a href="<?php echo $href; ?>" class="sebu-cal-event-card__link">
+            <a href="<?php echo $href; ?>" class="sebu-cal-event-card__link" data-sebu-cal-event="<?php echo (int) ($event['event_id'] ?? 0); ?>">
                 <div class="sebu-cal-event-card__head">
                     <div class="sebu-cal-event-card__badges">
                         <span class="sebu-cal-event-card__category <?php echo get_text($event['category_class'] ?? ''); ?>"><?php echo get_text($event['category_label'] ?? ''); ?></span>
