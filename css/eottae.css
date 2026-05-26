@@ -9163,37 +9163,6 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   height: 100%;
 }
 
-/* 홈 히어로 — 모바일 공개단체톡 미리보기 너비 확대 (컨테이너 100%, 카드 모서리 제거) */
-@media (max-width: 767px) {
-  #root .eottae-home-hero-grid--3col > .home-hero-chat-column,
-  .home-hero-chat-column.public-group-chat--hero {
-    grid-column: 1 / -1;
-    width: 100%;
-    max-width: none;
-    margin-left: 0;
-    margin-right: 0;
-  }
-
-  #root .home-hero-chat-column.public-group-chat--hero.public-group-chat--kakao,
-  .home-hero-chat-column.public-group-chat--hero.public-group-chat--kakao {
-    width: 100vw;
-    max-width: 100vw;
-    margin-left: calc(50% - 50vw);
-    margin-right: calc(50% - 50vw);
-  }
-
-  .home-hero-chat-column.public-group-chat--hero.public-group-chat--kakao .public-group-chat__inner {
-    border-radius: 0;
-    border-left: 0;
-    border-right: 0;
-    box-shadow: none;
-  }
-
-  .home-hero-chat-column.public-group-chat--hero.public-group-chat--kakao .public-group-chat__head {
-    border-radius: 0;
-  }
-}
-
 .home-hero-talk-legacy-list {
   display: none !important;
 }
