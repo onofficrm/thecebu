@@ -359,11 +359,16 @@
       return;
     }
 
+    if (form.dataset.sending === '1') {
+      return;
+    }
+
     if (requiresAuth(section)) {
       handleAuthRequired(section, '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.');
       return;
     }
 
+    form.dataset.sending = '1';
     if (sendBtn) {
       sendBtn.disabled = true;
     }
@@ -391,6 +396,10 @@
           throw new Error((data && data.message) || '전송에 실패했습니다.');
         }
 
+        if (data.member_token) {
+          section.setAttribute('data-member-token', data.member_token);
+        }
+
         if (input) {
           input.value = '';
         }
@@ -416,6 +425,7 @@
         window.alert(errMessage);
       })
       .then(function () {
+        form.dataset.sending = '0';
         if (sendBtn) {
           sendBtn.disabled = section.getAttribute('data-can-send') !== '1';
         }

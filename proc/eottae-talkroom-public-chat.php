@@ -87,15 +87,13 @@ if (!eottae_talkroom_verify_member_token($token)) {
 if ($action === 'send') {
     $text = isset($_POST['message']) ? (string) $_POST['message'] : '';
     $result = eottae_talkroom_public_group_send_message($room_id, $member['mb_id'], $text);
-    if (!empty($result['ok'])) {
-        eottae_talkroom_member_token(true);
-    }
 
     eottae_talkroom_public_chat_json(!empty($result['ok']), $result['message'] ?? '', array(
         'room_id'     => $room_id,
         'wr_id'       => (int) ($result['wr_id'] ?? 0),
         'message_row' => $result['message_row'] ?? null,
         'last_wr_id'  => (int) ($result['wr_id'] ?? 0),
+        'member_token' => eottae_talkroom_member_token(),
     ));
 }
 

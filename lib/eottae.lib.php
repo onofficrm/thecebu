@@ -567,6 +567,87 @@ if (!function_exists('eottae_should_load_assets')) {
     }
 }
 
+if (!function_exists('eottae_emit_mobile_head_assets')) {
+    /**
+     * 모바일 head.sub.php 종료 직전 — eottae CSS 선출력
+     * (tail.php html_end 미실행 시에도 레이아웃·회원 페이지 스타일 유지)
+     */
+    function eottae_emit_mobile_head_assets()
+    {
+        static $emitted = false;
+
+        if ($emitted || !defined('G5_IS_MOBILE') || !G5_IS_MOBILE) {
+            return;
+        }
+        if (!function_exists('eottae_should_load_assets') || !eottae_should_load_assets()) {
+            return;
+        }
+
+        $emitted = true;
+        if (!defined('EOTTAE_MOBILE_HEAD_ASSETS_EMITTED')) {
+            define('EOTTAE_MOBILE_HEAD_ASSETS_EMITTED', true);
+        }
+
+        $ver = defined('G5_CSS_VER') ? G5_CSS_VER : '';
+        $css_base = defined('G5_CSS_URL') ? G5_CSS_URL : '';
+        $fa_base = defined('G5_JS_URL') ? G5_JS_URL : '';
+
+        echo '<link rel="stylesheet" href="'.$fa_base.'/font-awesome/css/font-awesome.min.css?ver='.$ver.'">'.PHP_EOL;
+        echo '<link rel="stylesheet" href="'.$css_base.'/custom.css?ver='.$ver.'">'.PHP_EOL;
+
+        if (function_exists('g5site_cfg')) {
+            $brand_css = '';
+            $primary = g5site_cfg('primary_color', '');
+            $secondary = g5site_cfg('secondary_color', '');
+            if ($primary !== '' && preg_match('/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/', $primary)) {
+                $brand_css .= '--color-primary:'.$primary.';';
+            }
+            if ($secondary !== '' && preg_match('/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/', $secondary)) {
+                $brand_css .= '--color-secondary:'.$secondary.';--color-muted:'.$secondary.';';
+            }
+            if ($brand_css !== '') {
+                echo '<style>:root{'.$brand_css.'}</style>'.PHP_EOL;
+            }
+        }
+
+        echo '<link rel="stylesheet" href="'.$css_base.'/eottae.css?ver='.$ver.'">'.PHP_EOL;
+        echo '<link rel="stylesheet" href="'.$css_base.'/eottae-kakao-chat.css?ver='.$ver.'">'.PHP_EOL;
+
+        if (function_exists('eottae_talkroom_should_load_ui') && eottae_talkroom_should_load_ui()) {
+            echo '<link rel="stylesheet" href="'.$css_base.'/eottae-talkroom-ui.css?ver='.$ver.'">'.PHP_EOL;
+        }
+    }
+}
+
+if (!function_exists('eottae_filter_mobile_duplicate_head_assets')) {
+    function eottae_filter_mobile_duplicate_head_assets($links, $needles)
+    {
+        if (!defined('EOTTAE_MOBILE_HEAD_ASSETS_EMITTED') || !is_array($links)) {
+            return $links;
+        }
+
+        $filtered = array();
+        foreach ($links as $row) {
+            if (!is_array($row) || !isset($row[1])) {
+                $filtered[] = $row;
+                continue;
+            }
+            $skip = false;
+            foreach ((array) $needles as $needle) {
+                if ($needle !== '' && strpos($row[1], $needle) !== false) {
+                    $skip = true;
+                    break;
+                }
+            }
+            if (!$skip) {
+                $filtered[] = $row;
+            }
+        }
+
+        return array_values($filtered);
+    }
+}
+
 if (!function_exists('eottae_prepare_site_header')) {
     /**
      * site-header.php include 전 공통 변수
@@ -1464,6 +1545,177 @@ if (!function_exists('eottae_get_shop_reviews')) {
         }
 
         return $rows;
+    }
+}
+
+if (!function_exists('eottae_shop_save_count')) {
+    function eottae_shop_save_count($shop_wr_id, $bo_table = '')
+    {
+        global $g5;
+
+        $shop_wr_id = (int) $shop_wr_id;
+        if ($shop_wr_id < 1) {
+            return 0;
+        }
+
+        if ($bo_table === '') {
+            $bo_table = defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop';
+        }
+        $bo_table = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
+
+        $row = sql_fetch(" select count(*) as cnt from {$g5['scrap_table']}
+            where bo_table = '".sql_escape_string($bo_table)."' and wr_id = '{$shop_wr_id}' ");
+
+        return !empty($row['cnt']) ? (int) $row['cnt'] : 0;
+    }
+}
+
+if (!function_exists('eottae_shop_save_counts_batch')) {
+    /**
+     * @param array<int, int> $shop_wr_ids
+     * @return array<int, int>
+     */
+    function eottae_shop_save_counts_batch(array $shop_wr_ids, $bo_table = '')
+    {
+        global $g5;
+
+        $ids = array();
+        foreach ($shop_wr_ids as $id) {
+            $id = (int) $id;
+            if ($id > 0) {
+                $ids[$id] = $id;
+            }
+        }
+        if (count($ids) === 0) {
+            return array();
+        }
+
+        if ($bo_table === '') {
+            $bo_table = defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop';
+        }
+        $bo_table = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
+        $id_list = implode(',', array_values($ids));
+
+        $result = sql_query(" select wr_id, count(*) as cnt from {$g5['scrap_table']}
+            where bo_table = '".sql_escape_string($bo_table)."' and wr_id in ({$id_list})
+            group by wr_id ");
+        $counts = array();
+        while ($row = sql_fetch_array($result)) {
+            $counts[(int) $row['wr_id']] = (int) $row['cnt'];
+        }
+
+        return $counts;
+    }
+}
+
+if (!function_exists('eottae_get_shop_latest_review_previews')) {
+    /**
+     * 업체별 최신 리뷰 1줄 미리보기
+     *
+     * @param array<int, int> $shop_wr_ids
+     * @return array<int, string>
+     */
+    function eottae_get_shop_latest_review_previews(array $shop_wr_ids, $snippet_len = 48)
+    {
+        $ids = array();
+        foreach ($shop_wr_ids as $id) {
+            $id = (int) $id;
+            if ($id > 0) {
+                $ids[$id] = $id;
+            }
+        }
+        if (count($ids) === 0) {
+            return array();
+        }
+
+        $write_table = eottae_review_write_table();
+        $id_list = implode(',', array_values($ids));
+        $result = sql_query(" select wr_1, wr_content from {$write_table}
+            where wr_is_comment = 0
+              and wr_1 in ({$id_list})
+              and (wr_4 = '' or wr_4 = 'visible')
+            order by wr_id desc ");
+
+        $previews = array();
+        while ($row = sql_fetch_array($result)) {
+            $shop_id = (int) $row['wr_1'];
+            if (isset($previews[$shop_id])) {
+                continue;
+            }
+            $text = function_exists('eottae_shop_list_snippet')
+                ? eottae_shop_list_snippet($row['wr_content'], (int) $snippet_len)
+                : cut_str(strip_tags((string) $row['wr_content']), (int) $snippet_len);
+            if ($text !== '') {
+                $previews[$shop_id] = $text;
+            }
+        }
+
+        return $previews;
+    }
+}
+
+if (!function_exists('eottae_shop_list_card_badges')) {
+    /**
+     * @param array<string, mixed> $row
+     * @param array<string, mixed> $summary
+     * @param int $save_count
+     * @return array{is_ad:bool,is_recommended:bool,is_popular:bool}
+     */
+    function eottae_shop_list_card_badges(array $row, array $summary, $save_count = 0)
+    {
+        $average = isset($summary['average']) ? (float) $summary['average'] : 0;
+        $count = isset($summary['count']) ? (int) $summary['count'] : 0;
+        $hit = isset($row['wr_hit']) ? (int) $row['wr_hit'] : 0;
+        $save_count = max(0, (int) $save_count);
+
+        $is_ad = isset($row['wr_link2']) && stripos((string) $row['wr_link2'], 'ad') !== false;
+        $is_recommended = $average >= 4.8 && $count >= 10;
+        $is_popular = !$is_ad && ($hit >= 30 || $save_count >= 3);
+
+        return array(
+            'is_ad'          => $is_ad,
+            'is_recommended' => $is_recommended,
+            'is_popular'     => $is_popular,
+        );
+    }
+}
+
+if (!function_exists('eottae_shop_list_card_attach_meta')) {
+    /**
+     * 목록 카드 렌더 전 일괄 메타(찜 수·최신 리뷰) 부착
+     *
+     * @param array<int, array<string, mixed>> $list
+     * @return array<int, array<string, mixed>>
+     */
+    function eottae_shop_list_card_attach_meta(array $list, $bo_table = '')
+    {
+        if (count($list) === 0) {
+            return $list;
+        }
+
+        $ids = array();
+        foreach ($list as $row) {
+            if (!empty($row['wr_id'])) {
+                $ids[] = (int) $row['wr_id'];
+            }
+        }
+        if (count($ids) === 0) {
+            return $list;
+        }
+
+        $save_counts = eottae_shop_save_counts_batch($ids, $bo_table);
+        $review_previews = eottae_get_shop_latest_review_previews($ids);
+
+        foreach ($list as $idx => $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $wr_id = (int) ($row['wr_id'] ?? 0);
+            $list[$idx]['_eottae_save_count'] = isset($save_counts[$wr_id]) ? (int) $save_counts[$wr_id] : 0;
+            $list[$idx]['_eottae_latest_review'] = isset($review_previews[$wr_id]) ? (string) $review_previews[$wr_id] : '';
+        }
+
+        return $list;
     }
 }
 
@@ -3775,6 +4027,8 @@ if (!function_exists('eottae_shop_render_cards_html')) {
         if (!is_array($list) || count($list) === 0) {
             return '';
         }
+
+        $list = eottae_shop_list_card_attach_meta($list, $bo_table);
 
         ob_start();
         foreach ($list as $row) {

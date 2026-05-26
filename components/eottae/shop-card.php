@@ -138,12 +138,16 @@ if (!function_exists('eottae_shop_list_card_html')) {
             : G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$shop['wr_id'];
         $summary = eottae_get_shop_review_summary((int) $shop['wr_id']);
         $snippet = eottae_shop_list_snippet(isset($row['wr_content']) ? $row['wr_content'] : '');
-        $is_recommended = $summary['average'] >= 4.5 && $summary['count'] > 0;
-        $is_ad = isset($row['wr_link2']) && stripos((string) $row['wr_link2'], 'ad') !== false;
+        $save_count = isset($row['_eottae_save_count']) ? (int) $row['_eottae_save_count'] : 0;
+        $badges = eottae_shop_list_card_badges($row, $summary, $save_count);
+        $latest_review = isset($row['_eottae_latest_review']) ? trim((string) $row['_eottae_latest_review']) : '';
+        $show_review_preview = $summary['count'] >= 3 && $latest_review !== '';
         $distance_label = '';
         if (isset($row['_eottae_distance_km'])) {
             $distance_label = eottae_shop_format_distance_km($row['_eottae_distance_km']);
         }
+        $status_label = trim((string) $shop['status']);
+        $status_open = $status_label === '영업중';
 
         ob_start();
         ?>
@@ -154,10 +158,15 @@ if (!function_exists('eottae_shop_list_card_html')) {
                 <?php } else { ?>
                 <div class="shop-list-card__thumb shop-list-card__thumb--empty" aria-hidden="true"></div>
                 <?php } ?>
-                <?php if ($is_ad) { ?>
+                <?php if ($badges['is_ad']) { ?>
                 <span class="shop-list-card__badge shop-list-card__badge--ad">광고</span>
-                <?php } elseif ($is_recommended) { ?>
+                <?php } else { ?>
+                    <?php if ($badges['is_recommended']) { ?>
                 <span class="shop-list-card__badge shop-list-card__badge--pick">추천</span>
+                    <?php } ?>
+                    <?php if ($badges['is_popular']) { ?>
+                <span class="shop-list-card__badge shop-list-card__badge--hot">인기</span>
+                    <?php } ?>
                 <?php } ?>
             </a>
             <div class="shop-list-card__body">
@@ -169,17 +178,23 @@ if (!function_exists('eottae_shop_list_card_html')) {
                             <span class="shop-list-card__reviews">리뷰 <?php echo number_format($summary['count']); ?></span>
                         </p>
                         <div class="shop-list-card__tags">
-                            <?php if ($shop['category']) { ?><span class="shop-list-card__tag shop-list-card__tag--cate"><?php echo $shop['category']; ?></span><?php } ?>
                             <?php if ($distance_label !== '') { ?>
                             <span class="shop-list-card__tag shop-list-card__distance" data-shop-distance data-lat="<?php echo htmlspecialchars($shop['lat'], ENT_QUOTES, 'UTF-8'); ?>" data-lng="<?php echo htmlspecialchars($shop['lng'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo $distance_label; ?></span>
                             <?php } elseif ($shop['region']) { ?>
                             <span class="shop-list-card__tag shop-list-card__tag--region"><?php echo $shop['region']; ?></span>
                             <?php } ?>
+                            <?php if ($status_label !== '') { ?>
+                            <span class="shop-list-card__tag shop-list-card__tag--status<?php echo $status_open ? ' shop-list-card__tag--status-open' : ''; ?>"><?php echo $status_label; ?></span>
+                            <?php } ?>
+                            <?php if ($shop['category']) { ?><span class="shop-list-card__tag shop-list-card__tag--cate"><?php echo $shop['category']; ?></span><?php } ?>
                         </div>
                     </div>
                 </div>
                 <?php if ($snippet !== '') { ?>
                 <p class="shop-list-card__desc"><?php echo $snippet; ?></p>
+                <?php } ?>
+                <?php if ($show_review_preview) { ?>
+                <p class="shop-list-card__review-preview"><span class="shop-list-card__review-quote" aria-hidden="true">“</span><?php echo $latest_review; ?><span class="shop-list-card__review-quote" aria-hidden="true">”</span></p>
                 <?php } ?>
                 <?php
                 eottae_render_inquiry_buttons('list', array(

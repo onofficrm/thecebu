@@ -362,6 +362,9 @@ if (eottae_should_load_assets()) {
         18
     );
     add_javascript('<script src="'.G5_JS_URL.'/eottae.js" defer></script>', 20);
+    if (defined('G5_IS_MOBILE') && G5_IS_MOBILE) {
+        add_javascript('<script src="'.G5_JS_URL.'/custom.js"></script>', 21);
+    }
     if (function_exists('eottae_coupon_ensure_ready')) {
         eottae_coupon_ensure_ready();
     }
@@ -370,6 +373,19 @@ if (eottae_should_load_assets()) {
     }
     if (strpos($g5['body_script'], 'eottae-page') === false) {
         $g5['body_script'] .= ' class="eottae-page"';
+    }
+
+    if (defined('G5_IS_MOBILE') && G5_IS_MOBILE && function_exists('eottae_filter_mobile_duplicate_head_assets')) {
+        add_replace('html_process_css_files', function ($links) {
+            return eottae_filter_mobile_duplicate_head_assets($links, array(
+                'font-awesome.min.css',
+                '/custom.css',
+                '/eottae.css',
+                '/eottae-kakao-chat.css',
+                '/eottae-talkroom-ui.css',
+                ':root{',
+            ));
+        }, 99, 1);
     }
 }
 

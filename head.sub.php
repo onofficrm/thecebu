@@ -106,6 +106,10 @@ if(G5_IS_MOBILE) {
 }
 if(!defined('G5_IS_ADMIN'))
     echo $config['cf_add_script'];
+
+if (G5_IS_MOBILE && function_exists('eottae_emit_mobile_head_assets')) {
+    eottae_emit_mobile_head_assets();
+}
 ?>
 </head>
 <body<?php echo isset($g5['body_script']) ? $g5['body_script'] : ''; ?>>

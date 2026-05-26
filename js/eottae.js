@@ -73,24 +73,56 @@
     if (nameInput) nameInput.focus();
   }
 
+  function showEottaeToast(message, durationMs) {
+    var text = (message || '').trim();
+    if (!text) {
+      return;
+    }
+
+    durationMs = durationMs || 2200;
+    var toast = document.getElementById('eottaeToast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'eottaeToast';
+      toast.className = 'eottae-toast';
+      toast.setAttribute('role', 'status');
+      toast.setAttribute('aria-live', 'polite');
+      document.body.appendChild(toast);
+    }
+
+    toast.textContent = text;
+    toast.classList.add('is-visible');
+
+    if (showEottaeToast._timer) {
+      clearTimeout(showEottaeToast._timer);
+    }
+    showEottaeToast._timer = setTimeout(function () {
+      toast.classList.remove('is-visible');
+    }, durationMs);
+  }
+
   function handleShare(btn) {
     var url = btn.getAttribute('data-share-url') || window.location.href;
     if (navigator.share) {
-      navigator.share({ title: document.title, url: url }).catch(function () {});
+      navigator.share({ title: document.title, url: url })
+        .then(function () {
+          showEottaeToast('공유했어요');
+        })
+        .catch(function () {});
       return;
     }
-    copyTextToClipboard(url, '링크가 복사되었습니다.');
+    copyTextToClipboard(url, '링크가 복사됐어요');
   }
 
   function copyTextToClipboard(text, successMessage) {
     var value = (text || '').trim();
     if (!value) return Promise.reject();
 
-    successMessage = successMessage || '링크가 복사되었습니다.';
+    successMessage = successMessage || '링크가 복사됐어요';
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
       return navigator.clipboard.writeText(value).then(function () {
-        alert(successMessage);
+        showEottaeToast(successMessage);
       });
     }
 
@@ -104,7 +136,7 @@
       textarea.select();
       try {
         document.execCommand('copy');
-        alert(successMessage);
+        showEottaeToast(successMessage);
         resolve();
       } catch (err) {
         prompt('링크를 복사하세요:', value);

@@ -48,7 +48,7 @@ body.eottae-page .site-aside {
 body.eottae-page #hd {
   min-width: 0 !important;
   height: auto;
-  background: #f8fafc;
+  background: #f8fafc !important;
 }
 
 body.eottae-page #wrapper,
@@ -1563,6 +1563,17 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.8);
 }
 
+.shop-list-card__thumb-wrap .shop-list-card__badge--hot {
+  left: auto;
+  right: 8px;
+}
+
+.shop-list-card__thumb-wrap .shop-list-card__badge--pick + .shop-list-card__badge--hot {
+  top: 32px;
+  right: 8px;
+  left: auto;
+}
+
 .shop-list-card__thumb-wrap .shop-list-card__thumb {
   position: absolute;
   inset: 0;
@@ -1598,6 +1609,10 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 
 .shop-list-card__badge--pick {
   background: rgba(15, 23, 42, 0.82);
+}
+
+.shop-list-card__badge--hot {
+  background: rgba(234, 88, 12, 0.92);
 }
 
 .shop-list-card__badge--ad {
@@ -1659,6 +1674,18 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   border: 1px solid rgba(14, 165, 233, 0.14);
 }
 
+.shop-list-card__tag--status {
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid var(--shop-list-border);
+}
+
+.shop-list-card__tag--status-open {
+  background: rgba(34, 197, 94, 0.12);
+  color: #15803d;
+  border: 1px solid rgba(34, 197, 94, 0.22);
+}
+
 .shop-list-card__tag--region,
 .shop-list-card__distance {
   background: #fff;
@@ -1704,6 +1731,22 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.shop-list-card__review-preview {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #475569;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.shop-list-card__review-quote {
+  color: #94a3b8;
+  font-weight: 700;
 }
 
 .shop-list-card__rating {
@@ -11216,4 +11259,42 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 
 .talk-reports-filter {
   margin-bottom: 16px;
+}
+
+/* ── 토스트 (공유·복사 피드백) ── */
+.eottae-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  z-index: 12050;
+  max-width: min(92vw, 320px);
+  padding: 11px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+  color: #fff;
+  text-align: center;
+  background: rgba(15, 23, 42, 0.92);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
+  transform: translate(-50%, 12px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.eottae-toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 767px) {
+  .eottae-toast {
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  }
+
+  body.talk-room-chat-active .eottae-toast {
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  }
 }

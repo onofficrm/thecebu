@@ -7,6 +7,9 @@ if(defined('G5_THEME_PATH')) {
 }
 
 if (function_exists('eottae_use_site_chrome') && eottae_use_site_chrome()) {
+    if (!defined('EOTTAE_MOBILE_SITE_TAIL')) {
+        define('EOTTAE_MOBILE_SITE_TAIL', true);
+    }
     include_once(G5_PATH.'/tail.php');
     return;
 }

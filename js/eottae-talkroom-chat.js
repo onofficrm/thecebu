@@ -219,6 +219,13 @@
       .catch(function () {});
   }
 
+  function syncMemberToken(section, token) {
+    if (!section || !token) {
+      return;
+    }
+    section.setAttribute('data-member-token', token);
+  }
+
   function sendMessage(section, form) {
     var input = form.querySelector('#eottae-talkroom-chat-input');
     var sendBtn = form.querySelector('.public-group-chat__send');
@@ -231,11 +238,16 @@
       return;
     }
 
+    if (form.dataset.sending === '1') {
+      return;
+    }
+
     if (requiresAuth(section)) {
       handleAuthRequired(section, '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.');
       return;
     }
 
+    form.dataset.sending = '1';
     if (sendBtn) {
       sendBtn.disabled = true;
     }
@@ -264,6 +276,8 @@
           throw new Error((data && data.message) || '전송에 실패했습니다.');
         }
 
+        syncMemberToken(section, data.member_token);
+
         if (input) {
           input.value = '';
           input.style.height = '';
@@ -282,6 +296,7 @@
         global.alert(errMessage);
       })
       .then(function () {
+        form.dataset.sending = '0';
         if (sendBtn) {
           sendBtn.disabled = section.getAttribute('data-can-send') !== '1';
         }

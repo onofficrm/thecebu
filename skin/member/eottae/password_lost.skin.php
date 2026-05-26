@@ -21,7 +21,7 @@ add_stylesheet('<link rel="stylesheet" href="'.$member_skin_url.'/style.css">', 
             <input type="text" name="mb_id" id="mb_id" required class="frm_input" placeholder="아이디">
         </div>
 
-        <?php if ($is_use_captcha) { echo $captcha_html; } ?>
+        <?php echo captcha_html(); ?>
 
         <button type="submit" class="btn_submit">인증메일 보내기</button>
         </form>
@@ -35,7 +35,7 @@ add_stylesheet('<link rel="stylesheet" href="'.$member_skin_url.'/style.css">', 
 
 <script>
 function fpasswordlost_submit(f) {
-    <?php echo $captcha_js; ?>
+    <?php echo chk_captcha_js(); ?>
     return true;
 }
 </script>
