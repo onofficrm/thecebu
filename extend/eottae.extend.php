@@ -333,8 +333,23 @@ if (!function_exists('eottae_on_promo_board_view')) {
 add_event('board_head_before', 'eottae_on_promo_board_view', 20, 3);
 
 if (eottae_should_load_assets()) {
+    add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/custom.css">', 10);
+    if (function_exists('g5site_cfg')) {
+        $eottae_brand_css = '';
+        $eottae_primary = g5site_cfg('primary_color', '');
+        $eottae_secondary = g5site_cfg('secondary_color', '');
+        if ($eottae_primary !== '' && preg_match('/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/', $eottae_primary)) {
+            $eottae_brand_css .= '--color-primary:'.$eottae_primary.';';
+        }
+        if ($eottae_secondary !== '' && preg_match('/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/', $eottae_secondary)) {
+            $eottae_brand_css .= '--color-secondary:'.$eottae_secondary.';--color-muted:'.$eottae_secondary.';';
+        }
+        if ($eottae_brand_css !== '') {
+            add_stylesheet('<style>:root{'.$eottae_brand_css.'}</style>', 11);
+        }
+    }
     add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae.css">', 20);
-    add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-kakao-chat.css">', 21);
+    add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-kakao-chat.css">', 22);
     $eottae_ai_cfg = function_exists('eottae_ai_generate_bootstrap_config')
         ? eottae_ai_generate_bootstrap_config()
         : array('enabled' => false, 'api_key' => '');
@@ -450,7 +465,7 @@ if (!function_exists('eottae_talkroom_load_ui_assets')) {
             return;
         }
 
-        add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-talkroom-ui.css">', 21);
+        add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-talkroom-ui.css">', 23);
         eottae_talkroom_append_body_class('talkroom-ui');
 
         $script = basename($_SERVER['SCRIPT_FILENAME'] ?? $_SERVER['SCRIPT_NAME'] ?? '');

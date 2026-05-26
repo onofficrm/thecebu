@@ -378,6 +378,7 @@
     function updateChatHeight() {
       if (!mq.matches) {
         section.style.removeProperty('--talkroom-chat-height');
+        section.style.removeProperty('min-height');
         document.body.classList.remove('talk-room-drawer-open');
         return;
       }
@@ -386,17 +387,17 @@
 
       var viewportH = global.visualViewport ? global.visualViewport.height : global.innerHeight;
       var header = document.getElementById('hd');
-      var headerH = header ? Math.ceil(header.getBoundingClientRect().height) : 0;
       var chatTop = section.getBoundingClientRect().top;
-      var safeBottom = 0;
-
-      if (global.visualViewport && global.visualViewport.offsetTop > 0) {
-        chatTop = Math.max(chatTop, headerH);
-      }
-
-      var available = Math.max(220, Math.floor(viewportH - chatTop - safeBottom));
+      var available = Math.max(280, Math.floor(viewportH - chatTop - 8));
       section.style.setProperty('--talkroom-chat-height', available + 'px');
+      section.style.minHeight = available + 'px';
       document.documentElement.style.setProperty('--talkroom-chat-top', measureTopChrome() + 'px');
+      if (header && header.getBoundingClientRect) {
+        document.documentElement.style.setProperty(
+          '--eottae-header-h',
+          Math.ceil(header.getBoundingClientRect().height) + 'px'
+        );
+      }
     }
 
     updateChatHeight();
@@ -456,8 +457,10 @@
   }
 
   function init() {
+    collapseStrayHeaderMenu();
+
     if (document.body.classList.contains('talk-room-chat-active')) {
-      collapseStrayHeaderMenu();
+      document.documentElement.classList.add('talk-room-chat-page');
     }
 
     var section = getSection();

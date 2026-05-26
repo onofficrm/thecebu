@@ -2455,161 +2455,168 @@ body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .public-group-chat
   }
 }
 
-/* ── 모바일 단톡방 채팅 — GNB·헤더 정리 (custom.css 충돌 방지) ── */
+/* ── 모바일 세부톡 — GNUBoard mobile.css #hd 충돌 해소 + GNB 컴팩트 ── */
 @media (max-width: 767px) {
-  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header {
-    padding: 6px 8px;
+  body.talkroom-ui.eottae-page #hd {
+    background: #f8fafc !important;
+    min-height: 0;
   }
 
-  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header__shell {
-    border-radius: 16px;
-  }
-
-  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header__inner {
-    min-height: 44px;
-    padding: 4px 8px 4px 10px;
-    gap: 6px;
-  }
-
-  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header__nav {
+  body.talkroom-ui #container_title {
     display: none !important;
   }
 
-  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header__logo-img,
-  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd img[data-eottae-logo] {
-    height: 26px !important;
-    max-width: 96px !important;
+  body.talkroom-ui:not(.talk-admin-shell) #hd .eottae-gnb-header {
+    padding: 8px 10px;
+  }
+
+  body.talkroom-ui:not(.talk-admin-shell) #hd .eottae-gnb-header__shell {
+    border-radius: 18px;
+    overflow: hidden;
+  }
+
+  body.talkroom-ui:not(.talk-admin-shell) #hd .eottae-gnb-header__inner {
+    min-height: 44px;
+    padding: 4px 8px 4px 10px;
+    gap: 8px;
+  }
+
+  body.talkroom-ui:not(.talk-admin-shell) #hd .eottae-gnb-header__left {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  body.talkroom-ui:not(.talk-admin-shell) #hd .eottae-gnb-header__nav {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+  }
+
+  body.talkroom-ui:not(.talk-admin-shell) #hd .eottae-gnb-header__logo,
+  body.talkroom-ui:not(.talk-admin-shell) #hd .eottae-gnb-header__logo-img,
+  body.talkroom-ui:not(.talk-admin-shell) #hd img[data-eottae-logo] {
+    display: block;
+    height: 28px !important;
+    max-height: 28px !important;
+    max-width: 104px !important;
     width: auto !important;
     object-fit: contain !important;
   }
 
-  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header__btn--talk,
-  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header__btn--register,
-  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header__btn--text {
+  body.talkroom-ui:not(.talk-admin-shell) #hd .eottae-gnb-header__btn--talk,
+  body.talkroom-ui:not(.talk-admin-shell) #hd .eottae-gnb-header__btn--register,
+  body.talkroom-ui:not(.talk-admin-shell) #hd .eottae-gnb-header__btn--text {
     display: none !important;
   }
 
-  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header__mobile:not(.is-open) {
+  body.talkroom-ui:not(.talk-admin-shell) #hd .eottae-gnb-header__mobile.site-header__mobile-nav:not(.is-open) {
     display: none !important;
+    visibility: hidden !important;
     height: 0 !important;
+    max-height: 0 !important;
     padding: 0 !important;
     margin: 0 !important;
     overflow: hidden !important;
     border: 0 !important;
+    pointer-events: none !important;
   }
 
-  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd .eottae-gnb-header__mobile.is-open {
-    max-height: min(52vh, 420px);
-    overflow-y: auto;
+  body.talkroom-ui:not(.talk-admin-shell) #hd .eottae-gnb-header__mobile.site-header__mobile-nav.is-open {
+    display: block !important;
+    visibility: visible !important;
+    height: auto !important;
+    max-height: min(52vh, 420px) !important;
+    padding: 12px 14px 14px !important;
+    overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
+    pointer-events: auto !important;
   }
 
-  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #container_title {
-    display: none !important;
+  body.talkroom-ui:not(.talk-admin-shell) #hd .eottae-gnb-header__mobile-nav {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px;
+  }
+
+  body.talkroom-ui:not(.talk-admin-shell) #hd .eottae-gnb-header__mobile-link {
+    display: block !important;
+    width: 100%;
   }
 }
 
-/* ── 모바일 단톡방 채팅 — 뷰포트에 맞게 고정 (메시지 영역만 스크롤) ── */
+/* ── 모바일 단톡방 상세 — 채팅 UI (카톡 톤 + 여백) ── */
 @media (max-width: 767px) {
   body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) .mobile-bottom-nav--global {
     display: none !important;
   }
 
-  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #wrapper {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    height: calc(100dvh - var(--eottae-header-h, 56px));
-    max-height: calc(100dvh - var(--eottae-header-h, 56px));
-    overflow: hidden;
-  }
-
-  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #container,
-  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) .eottae-page-main {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  body.talkroom-ui.talk-room-chat-active.talk-room-drawer-open:not(.talk-admin-shell) #wrapper {
-    height: auto;
-    max-height: none;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #wrapper,
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #container_wr,
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #container {
+    min-width: 0;
+    max-width: 100%;
   }
 
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat {
     display: flex;
-    flex: 1 1 auto;
     flex-direction: column;
-    min-height: 0;
+    gap: 8px;
     width: 100%;
     max-width: none;
-    margin: 0;
-    padding: 0;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    margin: 0 auto;
+    padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 0px));
     box-sizing: border-box;
-    overflow: hidden;
-  }
-
-  body.talkroom-ui.talk-room-chat-active.talk-room-drawer-open .talk-room-detail-page--chat {
-    flex: 0 0 auto;
-    min-height: calc(100dvh - var(--eottae-header-h, 56px));
-    overflow: visible;
+    min-height: calc(100dvh - var(--eottae-header-h, 56px) - 16px);
   }
 
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .mypage-subpage__back {
     flex: 0 0 auto;
     margin: 0;
-    padding: 8px 12px 4px;
-    background: var(--talkroom-surface);
-    border-bottom: 1px solid var(--talkroom-line);
+    padding: 0;
+    background: transparent;
+    border: 0;
+  }
+
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .mypage-subpage__back a {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--talkroom-muted);
   }
 
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-detail__flash {
     flex: 0 0 auto;
     margin: 0;
-    border-radius: 0;
   }
 
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-detail__drawer {
     flex: 0 0 auto;
     margin: 0;
-    border-radius: 0;
-    border-left: 0;
-    border-right: 0;
   }
 
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
-    min-height: 0;
-    height: var(--talkroom-chat-height, calc(100dvh - var(--eottae-header-h, 56px) - var(--talkroom-chat-top, 108px)));
-    max-height: var(--talkroom-chat-height, calc(100dvh - var(--eottae-header-h, 56px) - var(--talkroom-chat-top, 108px)));
-    margin: 0;
+    min-height: min(560px, calc(100dvh - var(--eottae-header-h, 56px) - 140px));
     width: 100%;
+    margin: 0;
   }
 
-  body.talkroom-ui.talk-room-chat-active.talk-room-drawer-open .talk-room-detail-page--chat .talk-room-chat {
-    flex: 1 1 auto;
-    height: var(--talkroom-chat-height, 60vh);
-    max-height: var(--talkroom-chat-height, 60vh);
-    min-height: 280px;
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__head {
+    display: none;
   }
 
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__inner {
     flex: 1 1 auto;
-    min-height: 0 !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
     height: 100%;
-    max-height: 100%;
-    border-radius: 0;
-    border-left: 0;
-    border-right: 0;
-    box-shadow: none;
+    border-radius: var(--talkroom-radius-lg, 16px);
+    overflow: hidden;
+    box-shadow: var(--talkroom-shadow);
   }
 
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__panel {
@@ -2622,31 +2629,56 @@ body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .public-group-chat
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__messages,
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .talk-room-chat__messages {
     flex: 1 1 auto;
-    min-height: 0 !important;
+    min-height: 200px;
     max-height: none;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     touch-action: pan-y;
+    padding: 12px 10px 8px;
+    background: var(--kakao-chat-bg, #bacee0);
+  }
+
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat.public-group-chat--kakao .public-group-chat__message {
+    margin-bottom: 10px;
+  }
+
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat.public-group-chat--kakao .public-group-chat__bubble {
+    max-width: min(82vw, 280px);
+    padding: 9px 12px;
+    border-radius: 18px;
+    background: var(--kakao-bubble-other, #fff);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06);
+  }
+
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat.public-group-chat--kakao .public-group-chat__message--mine .public-group-chat__bubble {
+    background: var(--kakao-bubble-mine, #fee500);
   }
 
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__composer {
     flex: 0 0 auto;
-    position: sticky;
-    bottom: 0;
-    z-index: 2;
     padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
     background: var(--kakao-composer-bg, #fff);
   }
 
-  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__composer-field {
-    align-items: flex-end;
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__composer--login,
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__composer--disabled {
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
   }
 
-  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__send {
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__composer-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__action {
     min-height: 40px;
-    min-width: 56px;
+    padding: 0 14px;
+    border-radius: 999px;
     font-size: 13px;
+    font-weight: 700;
   }
 }
 
