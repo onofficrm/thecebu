@@ -43,6 +43,8 @@ if ($is_ai_post) {
         <div class="community-view-page__meta">
             <?php if ($is_ai_post) { ?>
             <span class="community-view-page__author talk-ai-msg__author-line"><?php echo eottae_talkroom_ai_message_display_name($view); ?></span>
+            <?php } elseif (function_exists('eottae_member_growth_render_author_line') && !empty($view['mb_id'])) { ?>
+            <span class="community-view-page__author"><?php echo eottae_member_growth_render_author_line($view['mb_id'], $view['name'], array('inline' => true, 'badge_only' => true)); ?></span>
             <?php } else { ?>
             <span class="community-view-page__author"><?php echo $view['name']; ?></span>
             <?php } ?>
@@ -70,6 +72,12 @@ if ($is_ai_post) {
             <?php if ($update_href) { ?><li><a href="<?php echo $update_href; ?>" class="btn_b01 btn">수정</a></li><?php } ?>
             <?php if ($delete_href) { ?><li><a href="<?php echo $delete_href; ?>" class="btn_b01 btn" onclick="return confirm('삭제하시겠습니까?');">삭제</a></li><?php } ?>
             <?php if ($reply_href) { ?><li><a href="<?php echo $reply_href; ?>" class="btn_b01 btn">답변</a></li><?php } ?>
+            <?php
+            if (!$is_talkroom_board && function_exists('eottae_is_community_board') && eottae_is_community_board($bo_table)) {
+                include_once G5_PATH.'/components/eottae/community-report.php';
+                ?>
+            <li><?php eottae_community_render_post_report_button($view, $member, $is_admin); ?></li>
+            <?php } ?>
         </ul>
     </footer>
 </main>

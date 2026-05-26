@@ -341,6 +341,10 @@ if (!function_exists('eottae_calendar_handle_report')) {
                 return array('ok' => false, 'message' => '신고 상태 변경에 실패했습니다.');
             }
 
+            if (function_exists('eottae_member_growth_on_report_confirmed') && !empty($report['reporter_mb_id'])) {
+                eottae_member_growth_on_report_confirmed($report['reporter_mb_id'], $report_id, 'report_calendar', '일정 신고 처리');
+            }
+
             return array('ok' => true, 'message' => '일정을 숨김 처리했습니다.');
         }
 
@@ -351,6 +355,10 @@ if (!function_exists('eottae_calendar_handle_report')) {
             }
             if (!eottae_calendar_update_report_status($report_id, 'deleted', $handler_mb_id)) {
                 return array('ok' => false, 'message' => '신고 상태 변경에 실패했습니다.');
+            }
+
+            if (function_exists('eottae_member_growth_on_report_confirmed') && !empty($report['reporter_mb_id'])) {
+                eottae_member_growth_on_report_confirmed($report['reporter_mb_id'], $report_id, 'report_calendar', '일정 신고 처리');
             }
 
             return array('ok' => true, 'message' => '일정을 삭제(숨김) 처리했습니다.');

@@ -4454,6 +4454,107 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   box-shadow: var(--eottae-shadow-sm);
 }
 
+.mypage-dashboard .my-talk-hub-card {
+  margin-bottom: 16px;
+  padding: 18px 16px;
+  border-radius: var(--eottae-radius);
+  border: 1px solid #bae6fd;
+  background: linear-gradient(145deg, #f0f9ff 0%, #fff 55%);
+  box-shadow: var(--eottae-shadow-sm);
+}
+
+.mypage-dashboard .my-talk-hub-card--active {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: linear-gradient(145deg, #fff1f2 0%, #fff 55%);
+}
+
+.mypage-dashboard .my-talk-hub-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.mypage-dashboard .my-talk-hub-card__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--eottae-text);
+}
+
+.mypage-dashboard .my-talk-hub-card__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  background: #ef4444;
+}
+
+.mypage-dashboard .my-talk-hub-card__desc {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--eottae-muted);
+}
+
+.mypage-dashboard .my-talk-hub-card__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.mypage-dashboard .my-talk-hub-card__stat {
+  padding: 10px 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.mypage-dashboard .my-talk-hub-card__stat-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--eottae-muted);
+}
+
+.mypage-dashboard .my-talk-hub-card__stat-value {
+  display: block;
+  margin-top: 4px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--eottae-text);
+}
+
+.mypage-dashboard .my-talk-hub-card__stat-value.is-alert {
+  color: #dc2626;
+}
+
+.mypage-dashboard .my-talk-hub-card__link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+  color: #fff;
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.28);
+}
+
 .mypage-dashboard .my-talk-section--panel {
   margin-top: 20px;
   padding: 18px 16px;
@@ -6043,6 +6144,19 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 .eottae-guide-page--business .eottae-guide-page__badge {
   background: #ffedd5;
   color: #c2410c;
+}
+
+.eottae-guide-page--challenge .eottae-guide-page__badge {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+.eottae-guide-page--challenge .eottae-guide-page__cta {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+}
+
+.eottae-guide-comic--challenge .eottae-guide-comic__step {
+  background: #f97316;
 }
 
 .eottae-guide-page__title {

@@ -29,7 +29,13 @@ include_once G5_PATH.'/components/eottae/plaza-report.php';
             ?>
         <li id="c_<?php echo $comment_id; ?>" class="plaza-comment">
             <div class="plaza-comment__head">
-                <strong class="plaza-comment__author"><?php echo $list[$i]['name']; ?></strong>
+                <strong class="plaza-comment__author"><?php
+                if (function_exists('eottae_member_growth_render_author_line') && !empty($list[$i]['mb_id'])) {
+                    echo eottae_member_growth_render_author_line($list[$i]['mb_id'], $list[$i]['name'], array('inline' => true, 'badge_only' => true));
+                } else {
+                    echo $list[$i]['name'];
+                }
+                ?></strong>
                 <time class="plaza-comment__time" datetime="<?php echo date('c', strtotime($list[$i]['datetime'])); ?>"><?php echo get_text($list[$i]['datetime']); ?></time>
             </div>
             <div class="plaza-comment__body"><?php echo $comment; ?></div>

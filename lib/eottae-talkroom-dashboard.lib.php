@@ -22,20 +22,29 @@ if (!function_exists('eottae_talkroom_dashboard_enrich_room')) {
     /**
      * @param array<string, mixed> $room
      * @param array<string, int>   $unread
+     * @param array<string, array<int, int>>|null $today_activity
      * @return array<string, mixed>
      */
-    function eottae_talkroom_dashboard_enrich_room(array $room, $is_owner = false, array $unread = array())
+    function eottae_talkroom_dashboard_enrich_room(array $room, $is_owner = false, array $unread = array(), $today_activity = null)
     {
         $room_id = (int) ($room['room_id'] ?? 0);
         $new_posts = isset($unread['posts'][$room_id]) ? (int) $unread['posts'][$room_id] : 0;
         $new_comments = isset($unread['comments'][$room_id]) ? (int) $unread['comments'][$room_id] : 0;
+        $today_posts = 0;
+        $today_comments = 0;
+        if (is_array($today_activity)) {
+            $today_posts = (int) ($today_activity['posts'][$room_id] ?? 0);
+            $today_comments = (int) ($today_activity['comments'][$room_id] ?? 0);
+        }
 
         return array_merge($room, array(
             'is_owner'         => $is_owner ? 1 : 0,
             'new_posts'        => $new_posts,
             'new_comments'     => $new_comments,
+            'today_posts'      => $today_posts,
+            'today_comments'   => $today_comments,
             'has_unread'       => ($new_posts + $new_comments) > 0 ? 1 : 0,
-            'unread_summary'   => eottae_talkroom_dashboard_unread_summary($new_posts, $new_comments),
+            'unread_summary'   => eottae_talkroom_dashboard_unread_summary($new_posts, $new_comments, $room['updated_label'] ?? ''),
             'manage_href'      => $is_owner && function_exists('eottae_talkroom_owner_manage_url')
                 ? eottae_talkroom_owner_manage_url($room_id)
                 : '',
@@ -44,12 +53,17 @@ if (!function_exists('eottae_talkroom_dashboard_enrich_room')) {
 }
 
 if (!function_exists('eottae_talkroom_dashboard_unread_summary')) {
-    function eottae_talkroom_dashboard_unread_summary($new_posts, $new_comments)
+    function eottae_talkroom_dashboard_unread_summary($new_posts, $new_comments, $updated_label = '')
     {
         $new_posts = (int) $new_posts;
         $new_comments = (int) $new_comments;
+        $updated_label = trim(strip_tags((string) $updated_label));
 
         if ($new_posts < 1 && $new_comments < 1) {
+            if ($updated_label !== '') {
+                return '새 소식 없음 · 마지막 활동 '.$updated_label;
+            }
+
             return '새 소식 없음';
         }
 
@@ -59,6 +73,9 @@ if (!function_exists('eottae_talkroom_dashboard_unread_summary')) {
         }
         if ($new_comments > 0) {
             $parts[] = '새 댓글 '.number_format($new_comments);
+        }
+        if ($updated_label !== '') {
+            $parts[] = '마지막 활동 '.$updated_label;
         }
 
         return implode(' · ', $parts);
@@ -199,6 +216,10 @@ if (!function_exists('eottae_talkroom_dashboard_format_feed_row')) {
                 ? eottae_community_relative_time($post_at)
                 : ($post_at !== '' ? substr($post_at, 0, 16) : ''),
             'comment_count'  => (int) ($row['wr_comment'] ?? 0),
+            'hit_count'      => (int) ($row['wr_hit'] ?? 0),
+            'content_snippet'=> function_exists('eottae_talkroom_snippet')
+                ? eottae_talkroom_snippet($row['wr_content'] ?? '', 80)
+                : (function_exists('eottae_plaza_snippet') ? eottae_plaza_snippet($row['wr_content'] ?? '', 80) : ''),
             'is_new'         => $is_new ? 1 : 0,
             'thumbnail'      => eottae_talkroom_dashboard_feed_thumbnail_url($wr_id),
             'href'           => function_exists('eottae_talkroom_post_view_url')
@@ -311,6 +332,8 @@ if (!function_exists('eottae_talkroom_dashboard_list_feed')) {
             SELECT
                 w.wr_id,
                 w.wr_subject,
+                w.wr_content,
+                w.wr_hit,
                 w.wr_name,
                 w.wr_datetime,
                 w.wr_comment,
@@ -1391,15 +1414,19 @@ if (!function_exists('eottae_talkroom_dashboard_build_context')) {
         $stats['new_comments'] = (int) ($totals['new_comments'] ?? 0);
         $stats['notifications'] = $mb_id !== '' ? eottae_talkroom_notify_unread_count($mb_id) : 0;
 
+        $today_activity = !empty($room_ids)
+            ? eottae_talkroom_dashboard_batch_owner_today_activity($room_ids)
+            : array('posts' => array(), 'comments' => array());
+
         $news_rooms = array();
         foreach ($my['created'] as $room) {
-            $news_rooms[] = eottae_talkroom_dashboard_enrich_room($room, true, $unread);
+            $news_rooms[] = eottae_talkroom_dashboard_enrich_room($room, true, $unread, $today_activity);
         }
         foreach ($my['joined'] as $room) {
             if (($room['member_status'] ?? 'active') !== 'active') {
                 continue;
             }
-            $news_rooms[] = eottae_talkroom_dashboard_enrich_room($room, false, $unread);
+            $news_rooms[] = eottae_talkroom_dashboard_enrich_room($room, false, $unread, $today_activity);
         }
 
         $owner_summaries = $mb_id !== ''
@@ -1498,6 +1525,82 @@ if (!function_exists('eottae_talkroom_dashboard_build_context')) {
             'mypage_talk_url'    => function_exists('eottae_mypage_talk_url')
                 ? eottae_mypage_talk_url()
                 : G5_URL.'/mypage/talk.php',
+        );
+    }
+}
+
+if (!function_exists('eottae_talkroom_mypage_hub_summary')) {
+    /**
+     * 마이페이지 허브 카드용 요약 (가벼운 조회)
+     *
+     * @return array<string, mixed>
+     */
+    function eottae_talkroom_mypage_hub_summary($mb_id)
+    {
+        $empty = array(
+            'room_count'      => 0,
+            'new_posts'       => 0,
+            'new_comments'    => 0,
+            'notifications'   => 0,
+            'owner_tasks'     => 0,
+            'has_activity'    => 0,
+            'summary_line'    => '가입한 세부톡방의 새 글, 댓글, 공지, 모임을 한 번에 확인하세요.',
+        );
+
+        $mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $mb_id);
+        if ($mb_id === '') {
+            return $empty;
+        }
+
+        if (!function_exists('eottae_talkroom_list_my_rooms')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
+        }
+        if (!function_exists('eottae_talkroom_unread_totals_for_rooms')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom-reads.lib.php';
+        }
+        if (!function_exists('eottae_talkroom_notify_unread_count')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom-notify.lib.php';
+        }
+
+        $my = eottae_talkroom_list_my_rooms($mb_id);
+        $room_ids = eottae_talkroom_dashboard_feed_room_ids_from_my($my);
+        $totals = eottae_talkroom_unread_totals_for_rooms($mb_id, $room_ids);
+        $owner_summaries = eottae_talkroom_dashboard_build_owner_summaries($mb_id, $my);
+
+        $new_posts = (int) ($totals['new_posts'] ?? 0);
+        $new_comments = (int) ($totals['new_comments'] ?? 0);
+        $notifications = eottae_talkroom_notify_unread_count($mb_id);
+        $owner_tasks = eottae_talkroom_dashboard_owner_tasks_total($owner_summaries);
+        $activity = $new_posts + $new_comments + $notifications + $owner_tasks;
+
+        $summary_line = $empty['summary_line'];
+        if ($activity > 0) {
+            $parts = array();
+            if ($new_posts > 0) {
+                $parts[] = '새 글 '.number_format($new_posts);
+            }
+            if ($new_comments > 0) {
+                $parts[] = '새 댓글 '.number_format($new_comments);
+            }
+            if ($notifications > 0) {
+                $parts[] = '알림 '.number_format($notifications);
+            }
+            if ($owner_tasks > 0) {
+                $parts[] = '관리할 일 '.number_format($owner_tasks);
+            }
+            if ($parts) {
+                $summary_line = implode(' · ', $parts).' 확인이 필요합니다.';
+            }
+        }
+
+        return array(
+            'room_count'    => count($room_ids),
+            'new_posts'     => $new_posts,
+            'new_comments'  => $new_comments,
+            'notifications' => $notifications,
+            'owner_tasks'   => $owner_tasks,
+            'has_activity'  => $activity > 0 ? 1 : 0,
+            'summary_line'  => $summary_line,
         );
     }
 }

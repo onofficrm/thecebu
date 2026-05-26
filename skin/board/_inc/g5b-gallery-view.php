@@ -9,14 +9,27 @@ $g5b_gallery_hero = '';
 
 if (!empty($view['file']['count'])) {
     for ($i = 0; $i < count($view['file']); $i++) {
+        if (empty($view['file'][$i]['source'])) {
+            continue;
+        }
+
+        $img_html = '';
         if (!empty($view['file'][$i]['view'])) {
-            $g5b_gallery_images[] = $view['file'][$i];
+            $img_html = $view['file'][$i]['view'];
+        } elseif (function_exists('eottae_gallery_file_view_html')) {
+            $img_html = eottae_gallery_file_view_html($view['file'][$i], $bo_table);
+        }
+
+        if ($img_html !== '') {
+            $g5b_gallery_images[] = array_merge($view['file'][$i], array('view' => $img_html));
         }
     }
 }
 
 if (count($g5b_gallery_images)) {
-    $g5b_gallery_hero = get_file_thumbnail($g5b_gallery_images[0]);
+    $g5b_gallery_hero = !empty($g5b_gallery_images[0]['view'])
+        ? $g5b_gallery_images[0]['view']
+        : get_file_thumbnail($g5b_gallery_images[0]);
 } else {
     $hero_thumb = get_list_thumbnail($bo_table, $view['wr_id'], 1200, 800, false, false);
     if (!empty($hero_thumb['src'])) {
@@ -37,13 +50,13 @@ if (count($g5b_gallery_images)) {
     <h3 class="board-view__section-title sound_only">이미지 갤러리</h3>
     <ul class="board-view__gallery-grid">
     <?php for ($i = 0; $i < count($g5b_gallery_images); $i++) { ?>
-        <li class="board-view__gallery-item"><?php echo get_file_thumbnail($g5b_gallery_images[$i]); ?></li>
+        <li class="board-view__gallery-item"><?php echo $g5b_gallery_images[$i]['view']; ?></li>
     <?php } ?>
     </ul>
 </div>
 <?php } elseif (count($g5b_gallery_images) === 1 && !$g5b_gallery_hero) { ?>
 <div class="board-view__hero" id="bo_v_img">
-    <?php echo get_file_thumbnail($g5b_gallery_images[0]); ?>
+    <?php echo $g5b_gallery_images[0]['view']; ?>
 </div>
 <?php } ?>
 

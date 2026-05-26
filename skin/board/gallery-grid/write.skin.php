@@ -58,40 +58,6 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
     </div>
     <?php } ?>
 
-    <div class="board-write-form__row bo_w_info write_div board-write-form__author">
-        <?php if ($is_name) { ?>
-        <div class="board-write-form__field">
-            <label for="wr_name" class="board-write-form__label sound_only">이름<strong>필수</strong></label>
-            <input type="text" name="wr_name" value="<?php echo $name ?>" id="wr_name" required class="frm_input half_input required" placeholder="이름">
-        </div>
-        <?php } ?>
-        <?php if ($is_password) { ?>
-        <div class="board-write-form__field">
-            <label for="wr_password" class="board-write-form__label sound_only">비밀번호<strong>필수</strong></label>
-            <input type="password" name="wr_password" id="wr_password" <?php echo $password_required ?> class="frm_input half_input <?php echo $password_required ?>" placeholder="비밀번호">
-        </div>
-        <?php } ?>
-        <?php if ($is_email) { ?>
-        <div class="board-write-form__field">
-            <label for="wr_email" class="board-write-form__label sound_only">이메일</label>
-            <input type="text" name="wr_email" value="<?php echo $email ?>" id="wr_email" class="frm_input half_input email" placeholder="이메일">
-        </div>
-        <?php } ?>
-        <?php if ($is_homepage) { ?>
-        <div class="board-write-form__field">
-            <label for="wr_homepage" class="board-write-form__label sound_only">홈페이지</label>
-            <input type="text" name="wr_homepage" value="<?php echo $homepage ?>" id="wr_homepage" class="frm_input half_input" placeholder="홈페이지">
-        </div>
-        <?php } ?>
-    </div>
-
-    <?php if ($option) { ?>
-    <div class="board-write-form__row write_div board-write-form__options">
-        <span class="sound_only">옵션</span>
-        <ul class="bo_v_option"><?php echo $option ?></ul>
-    </div>
-    <?php } ?>
-
     <div class="board-write-form__row bo_w_tit write_div">
         <label for="wr_subject" class="board-write-form__label">제목<strong class="required">필수</strong></label>
         <div id="autosave_wrapper" class="board-write-form__subject">
@@ -109,6 +75,12 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
         </div>
     </div>
 
+    <?php
+    if ($is_file && $file_count > 0) {
+        include G5_PATH.'/components/eottae/gallery-write-photos.php';
+    }
+    ?>
+
     <div class="board-write-form__row write_div board-write-form__content">
         <label for="wr_content" class="board-write-form__label">내용<strong class="required">필수</strong></label>
         <div class="wr_content <?php echo $is_dhtml_editor ? $config['cf_editor'] : ''; ?>">
@@ -122,30 +94,20 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
         </div>
     </div>
 
-    <?php for ($i=1; $is_link && $i<=G5_LINK_COUNT; $i++) { ?>
-    <div class="board-write-form__row bo_w_link write_div">
-        <label for="wr_link<?php echo $i ?>" class="board-write-form__label"><i class="fa fa-link" aria-hidden="true"></i> 링크 <?php echo $i ?></label>
-        <input type="text" name="wr_link<?php echo $i ?>" value="<?php if ($w=='u') { echo $write['wr_link'.$i]; } ?>" id="wr_link<?php echo $i ?>" class="frm_input full_input" size="50" placeholder="https://">
-    </div>
-    <?php } ?>
-
-    <?php for ($i=0; $is_file && $i<$file_count; $i++) { ?>
-    <div class="board-write-form__row bo_w_flie write_div board-write-form__file">
-        <label for="bf_file_<?php echo $i+1 ?>" class="board-write-form__label lb_icon"><i class="fa fa-folder-open" aria-hidden="true"></i> 파일 <?php echo $i+1 ?></label>
-        <div class="file_wr write_div">
-            <input type="file" name="bf_file[]" id="bf_file_<?php echo $i+1 ?>" title="파일첨부 <?php echo $i+1 ?> : <?php echo $upload_max_filesize ?> 이하" class="frm_file">
+    <div class="board-write-form__row bo_w_info write_div board-write-form__author">
+        <?php if ($is_name) { ?>
+        <div class="board-write-form__field">
+            <label for="wr_name" class="board-write-form__label sound_only">이름<strong>필수</strong></label>
+            <input type="text" name="wr_name" value="<?php echo $name ?>" id="wr_name" required class="frm_input half_input required" placeholder="이름">
         </div>
-        <?php if ($is_file_content) { ?>
-        <input type="text" name="bf_content[]" value="<?php echo ($w == 'u') ? $file[$i]['bf_content'] : ''; ?>" class="full_input frm_input" size="50" placeholder="파일 설명">
         <?php } ?>
-        <?php if ($w == 'u' && $file[$i]['file']) { ?>
-        <span class="file_del">
-            <input type="checkbox" id="bf_file_del<?php echo $i ?>" name="bf_file_del[<?php echo $i; ?>]" value="1">
-            <label for="bf_file_del<?php echo $i ?>"><?php echo $file[$i]['source'].'('.$file[$i]['size'].')'; ?> 삭제</label>
-        </span>
+        <?php if ($is_password) { ?>
+        <div class="board-write-form__field">
+            <label for="wr_password" class="board-write-form__label sound_only">비밀번호<strong>필수</strong></label>
+            <input type="password" name="wr_password" id="wr_password" <?php echo $password_required ?> class="frm_input half_input <?php echo $password_required ?>" placeholder="비밀번호">
+        </div>
         <?php } ?>
     </div>
-    <?php } ?>
 
     <?php if ($is_use_captcha) { ?>
     <div class="board-write-form__row write_div board-write-form__captcha">

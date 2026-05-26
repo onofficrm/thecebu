@@ -306,7 +306,14 @@ if (!function_exists('eottae_install_get_board_defs')) {
             eottae_install_community_board_def('people', '사람찾기', 11, '실종|만남|동행|지인|기타'),
             eottae_install_community_board_def('job', '구인구직', 12, '구인|구직|알바|기타'),
             eottae_install_community_board_def('estate', '부동산', 13, '매매|전월세|양도|기타'),
-            eottae_install_community_board_def('gallery', '갤러리', 14, '풍경|맛집|일상|기타', 'gallery-grid'),
+            array_merge(
+                eottae_install_community_board_def('gallery', '갤러리', 14, '풍경|맛집|일상|기타', 'gallery-grid'),
+                array(
+                    'bo_upload_count' => 10,
+                    'bo_upload_size'  => 20971520,
+                    'bo_upload_level' => 1,
+                )
+            ),
             array_merge(
                 eottae_install_community_board_def('youtube', '유튜브', 15, 'Vlog|맛집|정보|기타', 'youtube-list'),
                 array('bo_1_subj' => '유튜브 URL')
@@ -446,6 +453,12 @@ if (!function_exists('eottae_install_update_existing_boards')) {
 
             if (function_exists('eottae_community_board_table') && $bo_table === eottae_community_board_table()) {
                 $sets[] = "bo_upload_count = '".(int) (isset($def['bo_upload_count']) ? $def['bo_upload_count'] : 7)."'";
+            }
+
+            if (function_exists('eottae_gallery_board_table') && $bo_table === eottae_gallery_board_table()) {
+                $sets[] = "bo_upload_count = '10'";
+                $sets[] = "bo_upload_size = '20971520'";
+                $sets[] = "bo_upload_level = '1'";
             }
 
             sql_query(" update {$g5['board_table']} set ".implode(', ', $sets)." where bo_table = '{$bo_table}' ");

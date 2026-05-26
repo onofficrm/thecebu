@@ -280,3 +280,9 @@ jQuery(function($) {
     });
 });
 </script>
+<?php
+if (!$is_talkroom_board && function_exists('eottae_is_community_board') && eottae_is_community_board($bo_table) && !empty($list)) {
+    include_once G5_PATH.'/components/eottae/community-report.php';
+    eottae_community_render_comment_report_assets($list, $view, $member, $is_admin);
+}
+?>

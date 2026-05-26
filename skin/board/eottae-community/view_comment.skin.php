@@ -40,6 +40,8 @@ var char_max = parseInt(<?php echo $comment_max ?>);
                 <h3 class="sound_only"><?php echo get_text($list[$i]['wr_name']); ?>님의 댓글</h3>
                 <?php if ($is_ai_comment) { ?>
                 <span class="talk-ai-msg__comment-head"><?php echo eottae_talkroom_ai_message_render_badge($list[$i], 'sm'); ?></span>
+                <?php } elseif (function_exists('eottae_member_growth_render_author_line') && !empty($list[$i]['mb_id'])) { ?>
+                <?php echo eottae_member_growth_render_author_line($list[$i]['mb_id'], $list[$i]['name'], array('inline' => true, 'badge_only' => true)); ?>
                 <?php } else { ?>
                 <?php echo $list[$i]['name'] ?>
                 <?php } ?>
@@ -280,3 +282,9 @@ jQuery(function($) {
     });
 });
 </script>
+<?php
+if (!$is_talkroom_board && function_exists('eottae_is_community_board') && eottae_is_community_board($bo_table) && !empty($list)) {
+    include_once G5_PATH.'/components/eottae/community-report.php';
+    eottae_community_render_comment_report_assets($list, $view, $member, $is_admin);
+}
+?>

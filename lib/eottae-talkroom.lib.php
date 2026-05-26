@@ -2901,6 +2901,10 @@ if (!function_exists('eottae_talkroom_join_room')) {
             return array('ok' => true, 'message' => '참여 신청이 접수되었습니다. 방장 승인 후 글쓰기가 가능합니다.', 'status' => 'pending');
         }
 
+        if (function_exists('eottae_member_growth_on_talkroom_join_active')) {
+            eottae_member_growth_on_talkroom_join_active($room_id, $mb_id);
+        }
+
         return array('ok' => true, 'message' => '톡방에 참여했습니다.', 'status' => 'active');
     }
 }
@@ -3223,6 +3227,10 @@ if (!function_exists('eottae_talkroom_approve_member')) {
 
         if (function_exists('eottae_talkroom_notify_join_approved')) {
             eottae_talkroom_notify_join_approved($room_id, $row['mb_id']);
+        }
+
+        if (function_exists('eottae_member_growth_on_talkroom_join_active')) {
+            eottae_member_growth_on_talkroom_join_active($room_id, $row['mb_id'], '세부톡 참여 승인');
         }
 
         return array('ok' => true, 'message' => '참여 신청을 승인했습니다.');
@@ -4858,6 +4866,10 @@ if (!function_exists('eottae_talkroom_handle_report')) {
                 return array('ok' => false, 'message' => '신고 상태 업데이트에 실패했습니다.');
             }
 
+            if (function_exists('eottae_member_growth_on_report_confirmed') && !empty($report['reporter_mb_id'])) {
+                eottae_member_growth_on_report_confirmed($report['reporter_mb_id'], $report_id, 'report_talkroom', '세부톡 신고 처리');
+            }
+
             return array('ok' => true, 'message' => '게시글/댓글을 삭제 처리했습니다.');
         }
 
@@ -4888,6 +4900,10 @@ if (!function_exists('eottae_talkroom_handle_report')) {
 
             if (!eottae_talkroom_update_report_status($report_id, 'resolved', $handler_mb_id)) {
                 return array('ok' => false, 'message' => '신고 상태 업데이트에 실패했습니다.');
+            }
+
+            if (function_exists('eottae_member_growth_on_report_confirmed') && !empty($report['reporter_mb_id'])) {
+                eottae_member_growth_on_report_confirmed($report['reporter_mb_id'], $report_id, 'report_talkroom', '세부톡 신고 처리');
             }
 
             return array('ok' => true, 'message' => '회원을 강퇴하고 신고를 처리했습니다.');

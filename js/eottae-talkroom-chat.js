@@ -114,7 +114,7 @@
 
     var author = message.is_ai
       ? message.ai_display_name || message.author || '어때봇 · AI 도우미'
-      : message.author || '익명';
+      : (message.author_display || message.author || '익명');
     var badge = message.is_ai
       ? '<span class="talk-ai-msg__badge talk-ai-msg__badge--sm" aria-label="AI 도우미">'
         + '<span class="talk-ai-msg__icon" aria-hidden="true">🤖</span>'

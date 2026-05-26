@@ -56,7 +56,11 @@ $view_page_class = $view_is_ai ? ' plaza-view-page--ai is-plaza-ai-message' : ''
             <?php if ($view_is_ai) { ?>
             <span class="plaza-view-page__author"><?php echo eottae_plaza_ai_message_display_name($view); ?></span>
             <?php } else { ?>
+            <?php if (function_exists('eottae_member_growth_render_author_line') && !empty($view['mb_id'])) { ?>
+            <span class="plaza-view-page__author"><?php echo eottae_member_growth_render_author_line($view['mb_id'], $view['name'], array('inline' => true, 'badge_only' => true)); ?></span>
+            <?php } else { ?>
             <span class="plaza-view-page__author"><?php echo $view['name']; ?></span>
+            <?php } ?>
             <?php } ?>
             <?php if ($time_label !== '') { ?>
             <span class="plaza-view-page__time"><?php echo get_text($time_label); ?></span>

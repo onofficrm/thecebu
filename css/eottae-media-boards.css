@@ -1045,3 +1045,186 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+/* ── Gallery write: photo upload ── */
+.board-wrap--gallery-grid.board-write {
+  max-width: 720px;
+  margin: 0 auto 2rem;
+  padding: 0 12px;
+}
+
+.board-wrap--gallery-grid .gallery-write-photos__label {
+  margin: 0 0 10px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--gal-text, #0f172a);
+}
+
+.board-wrap--gallery-grid .gallery-write-photos__hint {
+  font-weight: 500;
+  color: var(--gal-muted, #64748b);
+}
+
+.board-wrap--gallery-grid .gallery-write-photos__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.board-wrap--gallery-grid .gallery-write-photos__slot {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.board-wrap--gallery-grid .gallery-write-photos__picker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 108px;
+  border: 1.5px dashed rgba(14, 165, 233, 0.35);
+  border-radius: 14px;
+  background: #f8fafc;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.board-wrap--gallery-grid .gallery-write-photos__slot.is-filled .gallery-write-photos__picker {
+  border-style: solid;
+  border-color: rgba(14, 165, 233, 0.5);
+  padding: 0;
+}
+
+.board-wrap--gallery-grid .gallery-write-photos__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.board-wrap--gallery-grid .gallery-write-photos__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #0284c7;
+  pointer-events: none;
+}
+
+.board-wrap--gallery-grid .gallery-write-photos__placeholder i {
+  font-size: 1.25rem;
+}
+
+.board-wrap--gallery-grid .gallery-write-photos__preview {
+  width: 100%;
+  height: 108px;
+  object-fit: cover;
+  display: block;
+}
+
+.board-wrap--gallery-grid .gallery-write-photos__preview[hidden] {
+  display: none !important;
+}
+
+.board-wrap--gallery-grid .gallery-write-photos__current,
+.board-wrap--gallery-grid .gallery-write-photos__delete {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--gal-muted, #64748b);
+  word-break: break-all;
+}
+
+.board-wrap--gallery-grid .board-write-form__submit {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.board-wrap--gallery-grid .board-write-form__submit .btn {
+  min-width: 110px;
+}
+
+/* ── Gallery view: title / comments ── */
+.board-wrap--gallery-grid .board-view__head .board-title {
+  display: block;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.board-wrap--gallery-grid .board-view__head .board-title__text,
+.board-wrap--gallery-grid .board-view__head .bo_v_tit {
+  display: inline;
+  white-space: normal;
+}
+
+.board-wrap--gallery-grid .board-view__comment-form {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--gal-line, rgba(15, 23, 42, 0.08));
+  border-radius: 14px;
+  background: #fff;
+}
+
+.board-wrap--gallery-grid .board-view__comment-form .bo_vc_w_wr {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.board-wrap--gallery-grid .board-view__comment-form .btn_confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.board-wrap--gallery-grid .board-view__comment-form .secret_cm {
+  flex: 1 1 auto;
+}
+
+.board-wrap--gallery-grid .board-view__comment-form .btn_submit {
+  flex: 1 1 140px;
+  min-height: 44px;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  color: #fff;
+  font-weight: 700;
+}
+
+@media (max-width: 639px) {
+  .board-wrap--gallery-grid .gallery-write-photos__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .board-wrap--gallery-grid .board-write-form__submit {
+    flex-direction: column-reverse;
+  }
+
+  .board-wrap--gallery-grid .board-write-form__submit .btn {
+    width: 100%;
+  }
+
+  .board-wrap--gallery-grid .board-view__comment-form .btn_confirm {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .board-wrap--gallery-grid .board-view__comment-form .btn_submit {
+    width: 100%;
+  }
+}
+
+@media (min-width: 768px) {
+  .board-wrap--gallery-grid .gallery-write-photos__grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}

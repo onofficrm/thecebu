@@ -444,6 +444,31 @@
   color: #fff;
 }
 
+.my-talk-badge--today {
+  background: #0ea5e9;
+  color: #fff;
+}
+
+.my-talk-text-clamp {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.my-talk-feed__snippet {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--eottae-muted, #64748b);
+}
+
+.my-talk-feed__hits {
+  white-space: nowrap;
+}
+
 .my-talk-room-card--unread .my-talk-room-card__inner {
   border-color: rgba(239, 68, 68, 0.25);
   box-shadow: 0 4px 18px rgba(239, 68, 68, 0.08);

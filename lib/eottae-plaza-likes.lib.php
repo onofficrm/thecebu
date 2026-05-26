@@ -229,6 +229,9 @@ if (!function_exists('eottae_plaza_toggle_like')) {
                 return array('ok' => false, 'message' => '공감 처리에 실패했습니다.', 'liked' => 0, 'count' => eottae_plaza_like_count($wr_id));
             }
             $liked = 1;
+            if (function_exists('eottae_member_growth_on_plaza_like_received') && !empty($post['mb_id'])) {
+                eottae_member_growth_on_plaza_like_received($post['mb_id'], $wr_id);
+            }
         }
 
         return array(

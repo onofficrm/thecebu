@@ -375,6 +375,13 @@ if (!function_exists('eottae_talkroom_public_group_format_message')) {
                 ? get_text($post_row['ai_display_name'])
                 : get_text($post_row['author'] ?? '어때봇 · AI 도우미');
             $post_row['ai_display_name'] = $post_row['author'];
+        } elseif (!empty($post_row['mb_id']) && function_exists('eottae_member_growth_author_badge_text')) {
+            include_once G5_PATH.'/components/eottae/member-growth-display.php';
+            $author_badge = eottae_member_growth_author_badge_text($post_row['mb_id']);
+            if ($author_badge !== '') {
+                $post_row['author_badge'] = $author_badge;
+                $post_row['author_display'] = get_text($post_row['author']).' · '.$author_badge;
+            }
         }
 
         if (strpos((string) ($post_row['text'] ?? ''), "\n\n1.") !== false) {

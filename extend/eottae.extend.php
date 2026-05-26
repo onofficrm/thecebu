@@ -22,6 +22,11 @@ include_once G5_LIB_PATH.'/eottae-talkroom-notify.lib.php';
 include_once G5_LIB_PATH.'/eottae-calendar.lib.php';
 include_once G5_LIB_PATH.'/eottae-calendar-google.lib.php';
 include_once G5_LIB_PATH.'/eottae-calendar-report.lib.php';
+include_once G5_LIB_PATH.'/eottae-briefing.lib.php';
+include_once G5_LIB_PATH.'/eottae-challenge.lib.php';
+include_once G5_LIB_PATH.'/eottae-challenge-likes.lib.php';
+include_once G5_LIB_PATH.'/eottae-challenge-report.lib.php';
+include_once G5_LIB_PATH.'/eottae-member-growth.lib.php';
 
 if (function_exists('eottae_merge_runtime_secrets')) {
     eottae_merge_runtime_secrets();
@@ -41,6 +46,18 @@ if (function_exists('eottae_talkroom_ensure_schema')) {
 }
 if (function_exists('eottae_calendar_ensure_schema')) {
     eottae_calendar_ensure_schema();
+}
+if (function_exists('eottae_challenge_ensure_schema')) {
+    eottae_challenge_ensure_schema();
+}
+if (function_exists('eottae_member_growth_ensure_schema')) {
+    eottae_member_growth_ensure_schema();
+}
+if (is_file(G5_LIB_PATH.'/eottae-community-report.lib.php')) {
+    include_once G5_LIB_PATH.'/eottae-community-report.lib.php';
+    if (function_exists('eottae_community_reports_ensure_schema')) {
+        eottae_community_reports_ensure_schema();
+    }
 }
 if (function_exists('eottae_talkroom_ai_ensure_schema')) {
     eottae_talkroom_ai_ensure_schema();
@@ -90,9 +107,16 @@ if (!function_exists('eottae_on_register_after')) {
         }
 
         eottae_coupon_ensure_welcome($mb_id);
+
+        if (function_exists('eottae_member_growth_on_register')) {
+            eottae_member_growth_on_register($mb_id);
+        }
     }
 }
 add_event('register_form_update_after', 'eottae_on_register_after', 10, 2);
+
+add_event('write_update_after', 'eottae_member_growth_on_write', 28, 3);
+add_event('comment_update_after', 'eottae_member_growth_on_comment', 28, 5);
 
 if (function_exists('add_replace')) {
     add_replace('get_pretty_url', 'eottae_pretty_shop_board_url', 5, 5);
@@ -291,6 +315,29 @@ if (function_exists('eottae_community_board_ensure_settings')) {
     eottae_community_board_ensure_settings();
 }
 
+if (function_exists('eottae_gallery_board_ensure_settings')) {
+    eottae_gallery_board_ensure_settings();
+}
+
+if (!function_exists('eottae_on_gallery_write_before')) {
+    function eottae_on_gallery_write_before($board, $wr_id, $w, $qstr)
+    {
+        global $board;
+
+        if (empty($board['bo_table']) || !function_exists('eottae_is_gallery_board_table') || !eottae_is_gallery_board_table($board['bo_table'])) {
+            return;
+        }
+
+        if (function_exists('eottae_gallery_board_ensure_settings')) {
+            eottae_gallery_board_ensure_settings();
+        }
+
+        $board['bo_upload_size'] = max((int) ($board['bo_upload_size'] ?? 0), eottae_gallery_upload_size());
+        $board['bo_upload_count'] = max((int) ($board['bo_upload_count'] ?? 0), eottae_gallery_photo_limit());
+    }
+}
+add_event('write_update_before', 'eottae_on_gallery_write_before', 11, 4);
+
 if (!function_exists('eottae_on_promo_write_after')) {
     function eottae_on_promo_write_after($board, $wr_id, $w, $qstr, $redirect_url)
     {
@@ -349,6 +396,8 @@ if (eottae_should_load_assets()) {
         }
     }
     add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae.css">', 20);
+    add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-member-growth.css">', 21);
+    add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-member-growth-social.css">', 22);
     add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-kakao-chat.css">', 22);
     $eottae_ai_cfg = function_exists('eottae_ai_generate_bootstrap_config')
         ? eottae_ai_generate_bootstrap_config()
@@ -550,6 +599,42 @@ if (!function_exists('eottae_calendar_load_ui_assets')) {
 
 eottae_calendar_load_ui_assets();
 
+if (!function_exists('eottae_challenge_should_load_ui')) {
+    function eottae_challenge_should_load_ui()
+    {
+        $script = basename($_SERVER['SCRIPT_FILENAME'] ?? '');
+        $challenge_pages = array(
+            'eottae-challenge.php',
+            'eottae-challenge-view.php',
+            'eottae-challenge-write.php',
+            'eottae-challenge-entry.php',
+            'eottae-mypage-challenges.php',
+            'eottae-admin-challenges.php',
+            'index.php',
+        );
+        if (in_array($script, $challenge_pages, true)) {
+            return true;
+        }
+
+        $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
+
+        return (bool) preg_match('#/(?:challenge|mypage/challenges)(?:[/?]|$)|/page/eottae-challenge|/page/eottae-admin-challenges|/page/eottae-mypage-challenges#', $uri);
+    }
+}
+
+if (!function_exists('eottae_challenge_load_ui_assets')) {
+    function eottae_challenge_load_ui_assets()
+    {
+        if (!function_exists('eottae_challenge_should_load_ui') || !eottae_challenge_should_load_ui()) {
+            return;
+        }
+
+        add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-challenge.css">', 24);
+    }
+}
+
+eottae_challenge_load_ui_assets();
+
 if (!function_exists('eottae_talkroom_admin_shell_scripts')) {
     function eottae_talkroom_admin_shell_scripts()
     {
@@ -565,6 +650,8 @@ if (!function_exists('eottae_talkroom_admin_shell_scripts')) {
             'eottae-admin-plaza-ai.php',
             'eottae-admin-review-deletes.php',
             'eottae-admin-promo-coupons.php',
+            'eottae-admin-challenges.php',
+            'eottae-admin-member-growth.php',
             'eottae-admin-calendar-reports.php',
             'eottae-admin-public-ai.php',
             'eottae-admin-public-ai-candidates.php',
@@ -587,7 +674,7 @@ if (!function_exists('eottae_talkroom_is_admin_shell_page')) {
 
         $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
 
-        return (bool) preg_match('#/page/eottae-admin-(?:talk|plaza|promo|review)-#', $uri);
+        return (bool) preg_match('#/page/eottae-admin-(?:talk|plaza|promo|review|challenge|member-growth)#', $uri);
     }
 }
 
@@ -755,8 +842,12 @@ if (!function_exists('eottae_load_media_board_assets')) {
 
         eottae_ensure_media_board_skins();
 
+        if (function_exists('eottae_gallery_board_ensure_settings')) {
+            eottae_gallery_board_ensure_settings();
+        }
+
         add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/g5b-board.css">', 4);
-        add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-media-boards.css?v=2">', 30);
+        add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-media-boards.css?v=3">', 30);
     }
 }
 add_event('board_head_before', 'eottae_load_media_board_assets', 5);

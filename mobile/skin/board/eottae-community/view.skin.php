@@ -70,6 +70,12 @@ if ($is_ai_post) {
             <?php if ($update_href) { ?><li><a href="<?php echo $update_href; ?>" class="btn_b01 btn">수정</a></li><?php } ?>
             <?php if ($delete_href) { ?><li><a href="<?php echo $delete_href; ?>" class="btn_b01 btn" onclick="return confirm('삭제하시겠습니까?');">삭제</a></li><?php } ?>
             <?php if ($reply_href) { ?><li><a href="<?php echo $reply_href; ?>" class="btn_b01 btn">답변</a></li><?php } ?>
+            <?php
+            if (!$is_talkroom_board && function_exists('eottae_is_community_board') && eottae_is_community_board($bo_table)) {
+                include_once G5_PATH.'/components/eottae/community-report.php';
+                ?>
+            <li><?php eottae_community_render_post_report_button($view, $member, $is_admin); ?></li>
+            <?php } ?>
         </ul>
     </footer>
 </main>

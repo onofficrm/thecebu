@@ -64,9 +64,15 @@ if (!function_exists('eottae_talkroom_dashboard_feed_item_html')) {
                     <span class="my-talk-feed__category"><?php echo $item['category']; ?></span>
                     <?php } ?>
                     <strong class="my-talk-feed__subject my-talk-title-clamp"><?php echo $item['subject']; ?></strong>
+                    <?php if (!empty($item['content_snippet'])) { ?>
+                    <span class="my-talk-feed__snippet my-talk-text-clamp"><?php echo get_text($item['content_snippet']); ?></span>
+                    <?php } ?>
                     <span class="my-talk-feed__meta">
                         <?php if ((int) ($item['comment_count'] ?? 0) > 0) { ?>
                         <span class="my-talk-feed__comments my-talk-meta-pill">댓글 <?php echo number_format((int) $item['comment_count']); ?></span>
+                        <?php } ?>
+                        <?php if ((int) ($item['hit_count'] ?? 0) > 0) { ?>
+                        <span class="my-talk-feed__hits my-talk-meta-pill">조회 <?php echo number_format((int) $item['hit_count']); ?></span>
                         <?php } ?>
                         <?php if (!empty($item['time_label'])) { ?>
                         <span class="my-talk-feed__time"><?php echo get_text($item['time_label']); ?></span>
@@ -560,7 +566,7 @@ if (!function_exists('eottae_talkroom_render_mypage_dashboard')) {
 
         $nav_items = array(
             array('href' => '#my-talk-rooms-news', 'label' => '새소식'),
-            array('href' => '#my-talk-feed', 'label' => '피드'),
+            array('href' => '#my-talk-feed', 'label' => '통합 피드'),
             array('href' => '#my-talk-notifications', 'label' => '알림', 'badge' => $notify_unread),
             array('href' => '#my-talk-notices', 'label' => '공지'),
             array('href' => '#my-talk-meetups', 'label' => '모임'),
@@ -577,7 +583,7 @@ if (!function_exists('eottae_talkroom_render_mypage_dashboard')) {
         <div class="my-talk-dashboard" data-my-talk-dashboard>
             <header class="my-talk-hero">
                 <p class="my-talk-hero__greeting"><?php echo $greeting_title; ?></p>
-                <p class="my-talk-hero__sub">가입한 톡방의 새 글, 댓글, 공지, 모임을 모바일에 맞춰 빠르게 확인하세요.</p>
+                <p class="my-talk-hero__sub">가입한 세부톡방의 새 글, 댓글, 공지, 모임을 한 번에 확인하세요.</p>
             </header>
 
             <?php echo render_my_talk_briefing($briefing); ?>
@@ -645,9 +651,13 @@ if (!function_exists('eottae_talkroom_render_mypage_dashboard')) {
                     <?php foreach ($news_rooms as $room) {
                         $new_posts = (int) ($room['new_posts'] ?? 0);
                         $new_comments = (int) ($room['new_comments'] ?? 0);
+                        $today_posts = (int) ($room['today_posts'] ?? 0);
+                        $today_comments = (int) ($room['today_comments'] ?? 0);
                         $has_unread = !empty($room['has_unread']);
                         $post_badge_class = $new_posts > 0 ? 'my-talk-badge--alert' : 'my-talk-badge--muted';
                         $comment_badge_class = $new_comments > 0 ? 'my-talk-badge--alert' : 'my-talk-badge--muted';
+                        $today_post_badge_class = $today_posts > 0 ? 'my-talk-badge--today' : 'my-talk-badge--muted';
+                        $today_comment_badge_class = $today_comments > 0 ? 'my-talk-badge--today' : 'my-talk-badge--muted';
                         ?>
                     <li class="my-talk-room-card<?php echo $has_unread ? ' my-talk-room-card--unread' : ''; ?>" data-my-talk-room-id="<?php echo (int) ($room['room_id'] ?? 0); ?>">
                         <article class="my-talk-room-card__inner">
@@ -690,13 +700,25 @@ if (!function_exists('eottae_talkroom_render_mypage_dashboard')) {
                                 </div>
                                 <?php } ?>
                                 <div class="my-talk-room-card__meta-row">
-                                    <dt>새 글</dt>
+                                    <dt>오늘 새 글</dt>
+                                    <dd>
+                                        <span class="my-talk-badge <?php echo $today_post_badge_class; ?>"><?php echo number_format($today_posts); ?></span>
+                                    </dd>
+                                </div>
+                                <div class="my-talk-room-card__meta-row">
+                                    <dt>오늘 새 댓글</dt>
+                                    <dd>
+                                        <span class="my-talk-badge <?php echo $today_comment_badge_class; ?>"><?php echo number_format($today_comments); ?></span>
+                                    </dd>
+                                </div>
+                                <div class="my-talk-room-card__meta-row">
+                                    <dt>안 읽은 글</dt>
                                     <dd>
                                         <span class="my-talk-badge <?php echo $post_badge_class; ?>" data-my-talk-field="new_posts"><?php echo number_format($new_posts); ?></span>
                                     </dd>
                                 </div>
                                 <div class="my-talk-room-card__meta-row">
-                                    <dt>새 댓글</dt>
+                                    <dt>안 읽은 댓글</dt>
                                     <dd>
                                         <span class="my-talk-badge <?php echo $comment_badge_class; ?>" data-my-talk-field="new_comments"><?php echo number_format($new_comments); ?></span>
                                     </dd>
@@ -716,9 +738,9 @@ if (!function_exists('eottae_talkroom_render_mypage_dashboard')) {
                 <?php } ?>
             </section>
 
-            <!-- 내 톡방 피드 -->
+            <!-- 내 톡방 통합 피드 -->
             <section class="my-talk-section my-talk-section--panel" id="my-talk-feed" aria-labelledby="my-talk-feed-title">
-                <h2 class="my-talk-section__title" id="my-talk-feed-title">내 톡방 피드</h2>
+                <h2 class="my-talk-section__title" id="my-talk-feed-title">내 톡방 통합 피드</h2>
                 <p class="my-talk-section__desc">가입한 모든 톡방의 최신글을 한곳에서 볼 수 있습니다.</p>
 
                 <?php if (!empty($feed_room_options) || !empty($feed_type_options)) { ?>
@@ -814,9 +836,9 @@ if (!function_exists('eottae_talkroom_render_mypage_dashboard')) {
                 <?php } ?>
             </section>
 
-            <!-- 내 모임 / 참여 가능한 모임 -->
+            <!-- 내 모임 일정 -->
             <section class="my-talk-section my-talk-section--panel" id="my-talk-meetups" aria-labelledby="my-talk-meetups-title">
-                <h2 class="my-talk-section__title" id="my-talk-meetups-title">내 모임 · 참여 가능한 모임</h2>
+                <h2 class="my-talk-section__title" id="my-talk-meetups-title">내 모임 일정</h2>
                 <p class="my-talk-section__desc">예정된 모임과 최근 모임 공지를 확인하고 참여 의사를 남길 수 있습니다.</p>
                 <?php if (empty($meetup_items)) { ?>
                 <div class="my-talk-meetup my-talk-meetup--empty">

@@ -461,6 +461,10 @@ if (!function_exists('eottae_plaza_admin_handle_report')) {
                 WHERE report_id = '{$report_id}'
             ", false);
 
+            if (function_exists('eottae_member_growth_on_report_confirmed') && !empty($report['reporter_mb_id'])) {
+                eottae_member_growth_on_report_confirmed($report['reporter_mb_id'], $report_id, 'report_plaza', '광장 신고 처리');
+            }
+
             return array('ok' => true, 'message' => '신고 대상을 삭제 처리했습니다.');
         }
 

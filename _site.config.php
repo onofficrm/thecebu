@@ -91,6 +91,8 @@ $site_config = array(
     'map_unit'                  => 'km',
     'map_placeholder_title'     => 'Google Maps API 키가 설정되지 않았습니다.',
     'map_placeholder_desc'      => '_site.config.php에서 google_maps_api_key 값을 입력하면 지도가 표시됩니다.',
+    /* 오늘의 세부 브리핑 — 관리자 안내 문구 (메인 브리핑 상단 노출) */
+    'sebu_briefing_notice'      => '',
     /* Google OAuth 로그인 — 키는 _site.config.local.php (Git 제외) */
     'google_oauth_client_id'     => '',
     'google_oauth_client_secret' => '',

@@ -90,7 +90,16 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
     $cnt = 0;
     if (!empty($view['file']['count'])) {
         for ($i=0; $i<count($view['file']); $i++) {
-            if (!empty($view['file'][$i]['source']) && empty($view['file'][$i]['view'])) $cnt++;
+            if (empty($view['file'][$i]['source'])) {
+                continue;
+            }
+            if (!empty($view['file'][$i]['view'])) {
+                continue;
+            }
+            if (function_exists('eottae_gallery_file_is_image') && eottae_gallery_file_is_image($view['file'][$i]['source'])) {
+                continue;
+            }
+            $cnt++;
         }
     }
     ?>
@@ -99,7 +108,12 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
         <h3 class="board-view__section-title">첨부파일</h3>
         <ul>
         <?php for ($i=0; $i<count($view['file']); $i++) {
-            if (!empty($view['file'][$i]['source']) && empty($view['file'][$i]['view'])) {
+            if (empty($view['file'][$i]['source']) || !empty($view['file'][$i]['view'])) {
+                continue;
+            }
+            if (function_exists('eottae_gallery_file_is_image') && eottae_gallery_file_is_image($view['file'][$i]['source'])) {
+                continue;
+            }
         ?>
             <li>
                 <a href="<?php echo $view['file'][$i]['href']; ?>" class="view_file_download">

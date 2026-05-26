@@ -108,6 +108,19 @@ $plaza_list_context = array(
 
     <div class="plaza-feed">
         <?php
+        if (function_exists('eottae_member_growth_prefetch_members')) {
+            include_once G5_PATH.'/components/eottae/member-growth-display.php';
+            $growth_mb_ids = array();
+            for ($gi = 0; $gi < count($list); $gi++) {
+                $gid = preg_replace('/[^a-z0-9_@.-]/i', '', (string) ($list[$gi]['mb_id'] ?? ''));
+                if ($gid !== '') {
+                    $growth_mb_ids[] = $gid;
+                }
+            }
+            if ($growth_mb_ids) {
+                eottae_member_growth_prefetch_members(array_values(array_unique($growth_mb_ids)));
+            }
+        }
         for ($i = 0; $i < count($list); $i++) {
             $item = $list[$i];
             if (function_exists('eottae_plaza_is_post_visible') && !eottae_plaza_is_post_visible($item, $plaza_is_super)) {
@@ -146,7 +159,13 @@ $plaza_list_context = array(
                     <p class="plaza-card__excerpt"><?php echo $snippet; ?></p>
                     <?php } ?>
                     <p class="plaza-card__meta">
-                        <span class="plaza-card__author"><?php echo get_text($author); ?></span>
+                        <span class="plaza-card__author"><?php
+                        if (!$is_ai_post && function_exists('eottae_member_growth_render_author_line') && !empty($item['mb_id'])) {
+                            echo eottae_member_growth_render_author_line($item['mb_id'], $author, array('inline' => true, 'badge_only' => true));
+                        } else {
+                            echo get_text($author);
+                        }
+                        ?></span>
                         <?php if ($time_label !== '') { ?>
                         <span class="plaza-card__dot" aria-hidden="true">·</span>
                         <span class="plaza-card__time"><?php echo get_text($time_label); ?></span>

@@ -1061,6 +1061,10 @@ if (!function_exists('eottae_calendar_create_event')) {
 
         $event_id = (int) sql_insert_id();
 
+        if ($event_id > 0 && function_exists('eottae_member_growth_on_calendar_event_created')) {
+            eottae_member_growth_on_calendar_event_created($event_id, $mb_id);
+        }
+
         return array(
             'ok'       => true,
             'message'  => '일정이 등록되었습니다.',

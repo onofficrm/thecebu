@@ -919,6 +919,28 @@ if (!function_exists('eottae_builder_inject_home_talk_feed_script')) {
     }
 }
 
+if (!function_exists('eottae_builder_inject_home_briefing_script')) {
+    function eottae_builder_inject_home_briefing_script()
+    {
+        if (!function_exists('eottae_briefing_home_payload')) {
+            include_once G5_LIB_PATH.'/eottae-briefing.lib.php';
+        }
+
+        $payload = eottae_briefing_home_payload();
+        $payload_json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($payload_json === false) {
+            return '';
+        }
+
+        $css = defined('G5_CSS_URL') ? G5_CSS_URL.'/eottae-briefing.css?v=1' : '/css/eottae-briefing.css';
+        $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-briefing.js' : '/js/eottae-home-briefing.js';
+
+        return '<link rel="stylesheet" href="'.htmlspecialchars($css, ENT_QUOTES, 'UTF-8').'">'
+            .'<script>window.__EOTTae_HOME_BRIEFING__='.$payload_json.';</script>'
+            .'<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
+    }
+}
+
 if (!function_exists('eottae_builder_inject_home_main_section_script')) {
     function eottae_builder_inject_home_main_section_script()
     {
@@ -1159,6 +1181,16 @@ if (!function_exists('eottae_builder_inject_site_footer_script')) {
             'talk_url'                  => G5_URL.'/talk/ai.php',
             'coupon_guide_url'          => G5_URL.'/page/eottae-coupon-guide.php',
             'business_coupon_guide_url' => G5_URL.'/page/eottae-business-coupon-guide.php',
+            'challenge_guide_url'       => G5_URL.'/page/eottae-challenge-guide.php',
+            'member_growth_guide_url'   => function_exists('eottae_member_growth_guide_url')
+                ? eottae_member_growth_guide_url()
+                : G5_URL.'/page/eottae-member-growth-guide.php',
+            'ranking_url'               => function_exists('eottae_member_growth_ranking_url')
+                ? eottae_member_growth_ranking_url('week')
+                : G5_URL.'/ranking/',
+            'badge_book_url'            => function_exists('eottae_member_growth_badge_book_url')
+                ? eottae_member_growth_badge_book_url()
+                : G5_URL.'/badges/',
         );
 
         return '<style>#root>footer,[data-eottae-react-footer]{display:none!important}</style>'
@@ -1255,6 +1287,7 @@ if (!function_exists('eottae_builder_inject_html')) {
         $body_scripts = eottae_builder_inject_home_react_ready_script();
         $body_scripts .= eottae_builder_inject_featured_carousel_script();
         $body_scripts .= eottae_builder_inject_home_search_script();
+        $body_scripts .= eottae_builder_inject_home_briefing_script();
         $body_scripts .= eottae_builder_inject_home_main_section_script();
         $body_scripts .= eottae_builder_inject_home_public_chat_script();
         $body_scripts .= eottae_builder_inject_home_events_banner_script();
@@ -2884,6 +2917,154 @@ if (!function_exists('eottae_community_photo_limit')) {
     function eottae_community_photo_limit()
     {
         return 7;
+    }
+}
+
+if (!function_exists('eottae_gallery_board_table')) {
+    function eottae_gallery_board_table()
+    {
+        return defined('EOTTae_GALLERY_TABLE') ? EOTTae_GALLERY_TABLE : 'gallery';
+    }
+}
+
+if (!function_exists('eottae_is_gallery_board_table')) {
+    function eottae_is_gallery_board_table($bo_table)
+    {
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+
+        return $bo_table !== '' && $bo_table === eottae_gallery_board_table();
+    }
+}
+
+if (!function_exists('eottae_is_gallery_board')) {
+    function eottae_is_gallery_board($board)
+    {
+        return is_array($board) && !empty($board['bo_table']) && eottae_is_gallery_board_table($board['bo_table']);
+    }
+}
+
+if (!function_exists('eottae_gallery_photo_limit')) {
+    function eottae_gallery_photo_limit()
+    {
+        return 10;
+    }
+}
+
+if (!function_exists('eottae_gallery_upload_size')) {
+    function eottae_gallery_upload_size()
+    {
+        return 20 * 1024 * 1024;
+    }
+}
+
+if (!function_exists('eottae_gallery_board_ensure_settings')) {
+    function eottae_gallery_board_ensure_settings()
+    {
+        static $done = false;
+        if ($done) {
+            return;
+        }
+        $done = true;
+
+        global $g5, $board;
+
+        $bo_table = eottae_gallery_board_table();
+        if ($bo_table === '' || empty($g5['board_table'])) {
+            return;
+        }
+
+        $limit = eottae_gallery_photo_limit();
+        $upload_size = (int) eottae_gallery_upload_size();
+        $row = sql_fetch(" select bo_upload_count, bo_upload_size, bo_upload_level from {$g5['board_table']} where bo_table = '".sql_escape_string($bo_table)."' ");
+        if (!$row) {
+            return;
+        }
+
+        $sets = array();
+        if ((int) $row['bo_upload_count'] < $limit) {
+            $sets[] = "bo_upload_count = '{$limit}'";
+        }
+        if ((int) $row['bo_upload_size'] < $upload_size) {
+            $sets[] = "bo_upload_size = '{$upload_size}'";
+        }
+        if ((int) $row['bo_upload_level'] > 1) {
+            $sets[] = "bo_upload_level = '1'";
+        }
+
+        if ($sets) {
+            sql_query(" update {$g5['board_table']} set ".implode(', ', $sets)." where bo_table = '".sql_escape_string($bo_table)."' ");
+        }
+
+        if (is_array($board) && !empty($board['bo_table']) && $board['bo_table'] === $bo_table) {
+            if ((int) ($board['bo_upload_count'] ?? 0) < $limit) {
+                $board['bo_upload_count'] = $limit;
+            }
+            if ((int) ($board['bo_upload_size'] ?? 0) < $upload_size) {
+                $board['bo_upload_size'] = $upload_size;
+            }
+            if ((int) ($board['bo_upload_level'] ?? 2) > 1) {
+                $board['bo_upload_level'] = 1;
+            }
+        }
+    }
+}
+
+if (!function_exists('eottae_gallery_write_prepare')) {
+    function eottae_gallery_write_prepare()
+    {
+        global $board, $member, $file_count, $is_file;
+
+        if (!eottae_is_gallery_board($board)) {
+            return;
+        }
+
+        eottae_gallery_board_ensure_settings();
+
+        $limit = eottae_gallery_photo_limit();
+        $file_count = max((int) $file_count, $limit, (int) ($board['bo_upload_count'] ?? 0));
+        $board['bo_upload_count'] = max((int) ($board['bo_upload_count'] ?? 0), $limit);
+        $board['bo_upload_size'] = max((int) ($board['bo_upload_size'] ?? 0), eottae_gallery_upload_size());
+
+        if (!empty($member['mb_level']) && (int) $member['mb_level'] >= (int) ($board['bo_upload_level'] ?? 1)) {
+            $is_file = true;
+        }
+    }
+}
+
+if (!function_exists('eottae_gallery_file_is_image')) {
+    function eottae_gallery_file_is_image($filename)
+    {
+        $filename = strtolower((string) $filename);
+
+        return (bool) preg_match('/\.(jpe?g|png|gif|webp|bmp|heic|heif|avif)$/i', $filename);
+    }
+}
+
+if (!function_exists('eottae_gallery_file_view_html')) {
+    function eottae_gallery_file_view_html($file_row, $bo_table = '')
+    {
+        if (!is_array($file_row) || empty($file_row['file'])) {
+            return '';
+        }
+
+        if (!empty($file_row['view'])) {
+            return $file_row['view'];
+        }
+
+        if (!eottae_gallery_file_is_image($file_row['source'] ?? $file_row['file'])) {
+            return '';
+        }
+
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+        if ($bo_table === '') {
+            return '';
+        }
+
+        $alt = !empty($file_row['bf_content']) ? get_text($file_row['bf_content']) : get_text($file_row['source'] ?? '');
+        $src = G5_DATA_URL.'/file/'.$bo_table.'/'.urlencode($file_row['file']);
+        $href = !empty($file_row['href']) ? $file_row['href'] : G5_BBS_URL.'/view_image.php?bo_table='.$bo_table.'&amp;fn='.urlencode($file_row['file']);
+
+        return '<a href="'.$href.'" target="_blank" class="view_image"><img src="'.$src.'" alt="'.htmlspecialchars($alt, ENT_QUOTES).'" class="board-view__hero-img" loading="lazy"></a>';
     }
 }
 
@@ -4951,6 +5132,8 @@ if (!function_exists('eottae_gnb_nav_links')) {
             array('key' => 'massage', 'label' => '마사지', 'href' => eottae_board_list_url(defined('EOTTae_MASSAGE_TABLE') ? EOTTae_MASSAGE_TABLE : 'massage')),
             array('key' => 'tour', 'label' => '투어', 'href' => eottae_board_list_url(defined('EOTTae_TOUR_TABLE') ? EOTTae_TOUR_TABLE : 'tour')),
             array('key' => 'community', 'label' => '커뮤니티', 'href' => eottae_community_list_url()),
+            array('key' => 'ranking', 'label' => '활동랭킹', 'href' => function_exists('eottae_member_growth_ranking_url') ? eottae_member_growth_ranking_url('week') : G5_URL.'/ranking/'),
+            array('key' => 'badges', 'label' => '뱃지 도감', 'href' => function_exists('eottae_member_growth_badge_book_url') ? eottae_member_growth_badge_book_url() : G5_URL.'/badges/'),
             array('key' => 'people', 'label' => '사람찾기', 'href' => eottae_board_list_url(defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people')),
             array('key' => 'job', 'label' => '구인구직', 'href' => eottae_board_list_url(defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job')),
             array('key' => 'estate', 'label' => '부동산', 'href' => eottae_board_list_url(defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate')),
@@ -5018,6 +5201,10 @@ if (!function_exists('eottae_gnb_link_is_active')) {
                 return strpos($uri, '/talk') !== false || strpos($uri, '/page/eottae-talk') !== false;
             case 'calendar':
                 return strpos($uri, '/calendar') !== false || strpos($uri, '/page/eottae-calendar') !== false;
+            case 'ranking':
+                return strpos($uri, '/ranking') !== false || strpos($uri, '/member/ranking') !== false;
+            case 'badges':
+                return strpos($uri, '/badges') !== false;
             case 'mypage':
                 return strpos($uri, '/page/eottae-') !== false;
             default:

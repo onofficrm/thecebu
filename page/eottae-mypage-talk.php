@@ -31,13 +31,13 @@ $ctx = eottae_talkroom_dashboard_build_context($member['mb_id'], $feed_options);
 
 add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-my-talk.css">', 22);
 
-g5_page_start('내 세부톡방');
+g5_page_start('내 세부톡');
 ?>
 
 <main class="mypage-subpage my-talk-page">
     <?php eottae_render_mypage_back(); ?>
-    <h1 class="mypage-subpage__title">내 세부톡방</h1>
-    <p class="my-talk-page__intro">참여 중인 톡방 활동을 한 화면에서 관리하세요.</p>
+    <h1 class="mypage-subpage__title">내 세부톡</h1>
+    <p class="my-talk-page__intro">가입한 세부톡방의 새 글, 댓글, 공지, 모임을 한 번에 확인하세요.</p>
 
     <?php
     if ($is_admin === 'super' && function_exists('eottae_public_ai_render_mypage_admin_section')) {

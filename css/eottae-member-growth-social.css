@@ -1,0 +1,352 @@
+@charset "utf-8";
+
+/* 우수회원 · 랭킹 · 뱃지 도감 · 프로필 */
+
+.sebu-featured-member {
+  padding: 28px 16px;
+  background: linear-gradient(165deg, #f0f9ff 0%, #fff 55%);
+}
+
+.sebu-featured-member__inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.sebu-featured-member__title {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.sebu-featured-member__desc {
+  margin: 0 0 16px;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.sebu-featured-member__card {
+  padding: 18px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  margin-bottom: 16px;
+}
+
+.sebu-featured-member__label {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #2563eb;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sebu-featured-member__who {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.sebu-featured-member__name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+  text-decoration: none;
+}
+
+.sebu-featured-member__intro {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #334155;
+}
+
+.sebu-featured-member__summary {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.sebu-featured-member__recent-title {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.sebu-featured-member__recent-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sebu-featured-member__recent-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #f1f5f9;
+  text-decoration: none;
+  color: inherit;
+}
+
+.sebu-featured-member__recent-nick {
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+.sebu-featured-member__recent-badge {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.sebu-featured-member__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.sebu-featured-member__link {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.sebu-author-line__link {
+  color: inherit;
+  text-decoration: none;
+  font-weight: inherit;
+}
+
+.sebu-author-line__link:hover {
+  text-decoration: underline;
+}
+
+.sebu-featured-member--mypage {
+  padding: 16px;
+  border-radius: 14px;
+  background: #f8fafc;
+  margin-bottom: 16px;
+}
+
+.sebu-featured-member__challenge {
+  margin-bottom: 16px;
+}
+
+.sebu-member-profile__bio {
+  margin: 12px auto 0;
+  max-width: 420px;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: #475569;
+}
+
+.sebu-rank-history {
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* 랭킹 */
+.sebu-rank-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+.sebu-rank-page__title {
+  margin: 0 0 8px;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.sebu-rank-page__desc {
+  margin: 0 0 20px;
+  font-size: 0.88rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.sebu-rank-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.sebu-rank-tabs__btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #475569;
+  text-decoration: none;
+}
+
+.sebu-rank-tabs__btn.is-active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+.sebu-rank-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sebu-rank-list__item {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  gap: 10px 12px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.sebu-rank-list__rank {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.sebu-rank-list__item:nth-child(1) .sebu-rank-list__rank { color: #eab308; }
+.sebu-rank-list__item:nth-child(2) .sebu-rank-list__rank { color: #94a3b8; }
+.sebu-rank-list__item:nth-child(3) .sebu-rank-list__rank { color: #d97706; }
+
+.sebu-rank-list__nick {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #0f172a;
+  text-decoration: none;
+}
+
+.sebu-rank-list__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.sebu-rank-list__stats {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.sebu-rank-list__score {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #2563eb;
+  white-space: nowrap;
+}
+
+/* 뱃지 도감 */
+.sebu-badge-book-page {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 20px 16px 48px;
+}
+
+.sebu-badge-book-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sebu-badge-book-card {
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.sebu-badge-book-card.is-owned {
+  border-color: #bfdbfe;
+  background: #f8fafc;
+}
+
+.sebu-badge-book-card.is-locked {
+  opacity: 0.72;
+}
+
+.sebu-badge-book-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.sebu-badge-book-card__condition {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.sebu-badge-book-card__desc {
+  margin: 6px 0 0;
+  font-size: 0.84rem;
+  color: #475569;
+  line-height: 1.45;
+}
+
+/* 공개 프로필 */
+.sebu-member-profile {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+}
+
+.sebu-member-profile__hero {
+  text-align: center;
+  padding: 24px 16px;
+  border-radius: 16px;
+  background: #f8fafc;
+  margin-bottom: 20px;
+}
+
+.sebu-member-profile__name {
+  margin: 12px 0 8px;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.sebu-member-profile__stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 20px;
+  margin: 16px 0 0;
+  font-size: 0.84rem;
+  color: #64748b;
+}
+
+.sebu-member-profile__stats strong {
+  display: block;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+@media (min-width: 640px) {
+  .sebu-badge-book-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

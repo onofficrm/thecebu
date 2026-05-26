@@ -79,6 +79,19 @@ if ($is_talkroom_board) {
 
     <div class="community-list">
         <?php
+        if (function_exists('eottae_member_growth_prefetch_members')) {
+            include_once G5_PATH.'/components/eottae/member-growth-display.php';
+            $growth_mb_ids = array();
+            for ($gi = 0; $gi < count($list); $gi++) {
+                $gid = preg_replace('/[^a-z0-9_@.-]/i', '', (string) ($list[$gi]['mb_id'] ?? ''));
+                if ($gid !== '') {
+                    $growth_mb_ids[] = $gid;
+                }
+            }
+            if ($growth_mb_ids) {
+                eottae_member_growth_prefetch_members(array_values(array_unique($growth_mb_ids)));
+            }
+        }
         for ($i = 0; $i < count($list); $i++) {
             $item = $list[$i];
             $ca_name = isset($item['ca_name']) ? get_text($item['ca_name']) : '';
@@ -126,6 +139,8 @@ if ($is_talkroom_board) {
                     <div class="community-post__meta">
                         <?php if ($is_ai_post) { ?>
                         <span class="community-post__author talk-ai-msg__author-line"><?php echo eottae_talkroom_ai_message_display_name($item); ?></span>
+                        <?php } elseif (function_exists('eottae_member_growth_render_author_line') && !empty($item['mb_id'])) { ?>
+                        <span class="community-post__author"><?php echo eottae_member_growth_render_author_line($item['mb_id'], $author, array('inline' => true, 'badge_only' => true)); ?></span>
                         <?php } else { ?>
                         <span class="community-post__author"><?php echo $author; ?></span>
                         <?php } ?>
