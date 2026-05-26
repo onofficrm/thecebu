@@ -78,7 +78,7 @@ g5_page_start('AI 도우미 설정');
         <?php } ?>
     </p>
     <h1 class="mypage-subpage__title">AI 도우미 설정</h1>
-    <p class="talk-manage-page__intro"><?php echo eottae_talkroom_display_emoji($detail['emoji'], $detail['category_code'] ?? ''); ?> <?php echo get_text($detail['room_name']); ?> · 오늘 AI 발언 <?php echo number_format($room_today_count); ?> / <?php echo number_format($room_effective_limit); ?>회<?php if ($room_max_cap > $room_effective_limit) { ?> <span class="talk-ai-settings__limit-note">(최대 <?php echo number_format($room_max_cap); ?>회 · 오늘 대화 <?php echo number_format($room_member_activity); ?>건)</span><?php } elseif ($room_member_activity > 0) { ?> <span class="talk-ai-settings__limit-note">(오늘 대화 <?php echo number_format($room_member_activity); ?>건)</span><?php } ?></p>
+    <p class="talk-manage-page__intro"><?php echo eottae_talkroom_display_emoji($detail['emoji'], $detail['category_code'] ?? ''); ?> <?php echo get_text($detail['room_name']); ?> · 오늘 AI 발언 <?php echo number_format($room_today_count); ?> / <?php echo number_format($room_effective_limit); ?>회<?php if (!empty($ai_limit_status['momentum_label'])) { ?> · <?php echo get_text($ai_limit_status['momentum_label']); ?><?php } ?><?php if ($room_member_activity > 0) { ?> · 회원 대화 <?php echo number_format($room_member_activity); ?>건<?php } ?></p>
 
     <section class="promo-admin-panel talk-manage-panel">
         <?php

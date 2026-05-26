@@ -54,6 +54,7 @@ if (!function_exists('eottae_talkroom_ai_table_exists')) {
 
 include_once G5_LIB_PATH.'/eottae-talkroom-ai-guard.lib.php';
 include_once G5_LIB_PATH.'/eottae-talkroom-ai-safety.lib.php';
+include_once G5_LIB_PATH.'/eottae-talkroom-ai-context.lib.php';
 
 if (!function_exists('eottae_talkroom_ai_trigger_types')) {
     /**
@@ -1234,6 +1235,13 @@ if (!function_exists('eottae_talkroom_ai_insert_post')) {
             return array('ok' => false, 'message' => '제목과 내용이 필요합니다.');
         }
 
+        if (function_exists('eottae_talkroom_ai_validate_generated_message')) {
+            $valid = eottae_talkroom_ai_validate_generated_message($subject, $content, $options);
+            if (empty($valid['ok'])) {
+                return array('ok' => false, 'message' => '맥락에 맞지 않거나 부적절한 AI 메시지입니다.');
+            }
+        }
+
         $subject_sql = sql_escape_string($subject);
         $content_sql = sql_escape_string($content);
         $ca_name_sql = sql_escape_string($ca_name);
@@ -1407,6 +1415,13 @@ if (!function_exists('eottae_talkroom_ai_insert_comment')) {
         $content = trim(strip_tags((string) $content));
         if ($content === '') {
             return array('ok' => false, 'message' => '댓글 내용이 비어 있습니다.');
+        }
+
+        if (function_exists('eottae_talkroom_ai_validate_generated_message')) {
+            $valid = eottae_talkroom_ai_validate_generated_message('', $content, $options);
+            if (empty($valid['ok'])) {
+                return array('ok' => false, 'message' => '맥락에 맞지 않거나 부적절한 AI 댓글입니다.');
+            }
         }
 
         $trigger_type = trim((string) ($options['trigger_type'] ?? 'welcome'));

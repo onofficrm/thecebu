@@ -203,6 +203,10 @@ if (!function_exists('eottae_calendar_event_url')) {
 if (!function_exists('eottae_calendar_ensure_schema')) {
     function eottae_calendar_ensure_schema()
     {
+        global $g5;
+
+        eottae_calendar_bootstrap_tables();
+
         $table = eottae_calendar_table_name();
         $results = array();
 
@@ -669,7 +673,10 @@ if (!function_exists('eottae_calendar_list_events')) {
         }
 
         $table = eottae_calendar_table_name();
-        $category = isset($options['category']) ? eottae_calendar_normalize_category($options['category']) : '';
+        $category = '';
+        if (!empty($options['category']) && (string) $options['category'] !== 'all') {
+            $category = eottae_calendar_normalize_category($options['category']);
+        }
         $range_start = isset($options['range_start']) ? trim((string) $options['range_start']) : '';
         $range_end = isset($options['range_end']) ? trim((string) $options['range_end']) : '';
         $limit = isset($options['limit']) ? max(1, min(500, (int) $options['limit'])) : 200;
@@ -677,7 +684,7 @@ if (!function_exists('eottae_calendar_list_events')) {
         $order = isset($options['order']) ? trim((string) $options['order']) : 'start';
 
         $where = array(eottae_calendar_visible_sql());
-        if ($category !== '' && $category !== 'all') {
+        if ($category !== '') {
             $where[] = " category = '".sql_real_escape_string($category)."' ";
         }
         if ($range_start !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $range_start)) {

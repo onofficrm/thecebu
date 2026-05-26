@@ -613,6 +613,16 @@ if (!function_exists('eottae_talkroom_ai_evaluate_reaction')) {
             return array('ok' => false, 'reason' => 'not_eligible_type');
         }
 
+        if (!$force) {
+            $context = eottae_talkroom_ai_evaluate_trigger_context($room_id, 'reaction', $now, array(
+                'post'           => $post,
+                'classification' => $classification,
+            ));
+            if (empty($context['ok'])) {
+                return array('ok' => false, 'reason' => $context['reason']);
+            }
+        }
+
         return array(
             'ok'             => true,
             'reason'         => 'eligible',

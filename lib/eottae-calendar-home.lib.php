@@ -119,9 +119,16 @@ if (!function_exists('eottae_home_popular_payload')) {
 if (!function_exists('eottae_home_main_section_payload')) {
     function eottae_home_main_section_payload()
     {
+        if (!function_exists('eottae_api_community_table')) {
+            include_once G5_LIB_PATH.'/eottae-api.lib.php';
+        }
+
+        $community_table = eottae_api_community_table();
+
         return array(
-            'calendar' => eottae_calendar_home_summary_payload(5),
-            'popular'  => eottae_home_popular_payload(5),
+            'calendar'      => eottae_calendar_home_summary_payload(5),
+            'popular'       => eottae_home_popular_payload(5),
+            'community_url' => G5_BBS_URL.'/board.php?bo_table='.$community_table,
         );
     }
 }

@@ -225,6 +225,16 @@ if (!function_exists('eottae_talkroom_ai_evaluate_daily_question')) {
             return array('ok' => false, 'reason' => 'already_posted_today');
         }
 
+        if (!$force || !$is_test) {
+            $context = eottae_talkroom_ai_evaluate_trigger_context($room_id, 'daily_question', $now, array(
+                'force'   => $force,
+                'is_test' => $is_test,
+            ));
+            if (empty($context['ok'])) {
+                return array('ok' => false, 'reason' => $context['reason']);
+            }
+        }
+
         return array('ok' => true, 'reason' => 'eligible');
     }
 }

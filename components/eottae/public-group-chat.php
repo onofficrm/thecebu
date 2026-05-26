@@ -27,6 +27,9 @@ if (!function_exists('eottae_public_group_chat_html')) {
             data-send-url="<?php echo G5_URL; ?>/proc/eottae-talkroom-public-chat.php"
             data-member-token="<?php echo get_text($payload['member_token']); ?>"
             data-can-send="<?php echo !empty($payload['can_send']) ? '1' : '0'; ?>"
+            data-is-member="<?php echo !empty($payload['is_member']) ? '1' : '0'; ?>"
+            data-login-url="<?php echo get_text($payload['login_href']); ?>"
+            data-register-url="<?php echo get_text($payload['register_href']); ?>"
             data-needs-join="<?php echo !empty($payload['needs_join']) ? '1' : '0'; ?>"
         >
             <div class="public-group-chat__inner">
@@ -83,8 +86,11 @@ if (!function_exists('eottae_public_group_chat_html')) {
                     </div>
                     <?php } elseif (empty($payload['is_member'])) { ?>
                     <div class="public-group-chat__composer public-group-chat__composer--login">
-                        <p class="public-group-chat__hint">로그인 후 실시간 대화에 참여할 수 있습니다.</p>
-                        <a href="<?php echo $payload['login_href']; ?>" class="public-group-chat__action">로그인하고 참여하기</a>
+                        <p class="public-group-chat__hint">회원가입 또는 로그인 후 실시간 대화에 참여할 수 있습니다.</p>
+                        <div class="public-group-chat__composer-actions">
+                            <a href="<?php echo $payload['login_href']; ?>" class="public-group-chat__action">로그인</a>
+                            <a href="<?php echo $payload['register_href']; ?>" class="public-group-chat__action public-group-chat__action--register">회원가입</a>
+                        </div>
                     </div>
                     <?php } else { ?>
                     <form class="public-group-chat__composer" id="eottae-public-chat-form" action="#" method="post">

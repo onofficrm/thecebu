@@ -468,7 +468,8 @@ if (!function_exists('eottae_talkroom_public_group_chat_payload')) {
             'is_member'    => !empty($is_member) ? 1 : 0,
             'can_send'     => $can_send ? 1 : 0,
             'needs_join'   => ($can_send && (!$member_row || ($member_row['status'] ?? '') !== 'active')) ? 1 : 0,
-            'login_href'   => function_exists('eottae_login_url') ? eottae_login_url(G5_URL) : G5_BBS_URL.'/login.php',
+            'login_href'    => function_exists('eottae_login_url') ? eottae_login_url(G5_URL) : G5_BBS_URL.'/login.php',
+            'register_href' => function_exists('eottae_register_url') ? eottae_register_url() : G5_BBS_URL.'/register.php',
             'member_token' => !empty($is_member) && function_exists('eottae_talkroom_member_token')
                 ? eottae_talkroom_member_token()
                 : '',

@@ -23,9 +23,78 @@
       try {
         return JSON.parse(trimmed);
       } catch (e) {
+        if (/로그인|회원가입|auth_required/i.test(trimmed)) {
+          return {
+            success: false,
+            auth_required: true,
+            message: '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.',
+          };
+        }
         throw new Error('서버 응답 오류입니다.');
       }
     });
+  }
+
+  function authUrls(section) {
+    return {
+      login: section.getAttribute('data-login-url') || '/bbs/login.php',
+      register: section.getAttribute('data-register-url') || '/bbs/register.php',
+    };
+  }
+
+  function clearAuthNotice(section) {
+    if (!section) {
+      return;
+    }
+    var notice = section.querySelector('.public-group-chat__auth-notice');
+    if (notice && notice.parentNode) {
+      notice.parentNode.removeChild(notice);
+    }
+  }
+
+  function showAuthNotice(section, message) {
+    if (!section) {
+      return;
+    }
+
+    var urls = authUrls(section);
+    var panel = section.querySelector('.public-group-chat__panel');
+    if (!panel) {
+      window.alert(message || '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.');
+      return;
+    }
+
+    clearAuthNotice(section);
+
+    var notice = document.createElement('div');
+    notice.className = 'public-group-chat__auth-notice';
+    notice.setAttribute('role', 'alert');
+    notice.innerHTML = ''
+      + '<p class="public-group-chat__auth-notice-text">' + esc(message || '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.') + '</p>'
+      + '<div class="public-group-chat__auth-notice-actions">'
+      + '<a href="' + esc(urls.login) + '" class="public-group-chat__action">로그인</a>'
+      + '<a href="' + esc(urls.register) + '" class="public-group-chat__action public-group-chat__action--register">회원가입</a>'
+      + '</div>';
+
+    panel.appendChild(notice);
+  }
+
+  function requiresAuth(section) {
+    if (!section) {
+      return true;
+    }
+    return section.getAttribute('data-is-member') !== '1' || section.getAttribute('data-can-send') !== '1';
+  }
+
+  function handleAuthRequired(section, message, data) {
+    var urls = authUrls(section);
+    if (data && data.login_url) {
+      section.setAttribute('data-login-url', data.login_url);
+    }
+    if (data && data.register_url) {
+      section.setAttribute('data-register-url', data.register_url);
+    }
+    showAuthNotice(section, message || '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.');
   }
 
   function findHeroGrid() {
@@ -266,9 +335,16 @@
       return;
     }
 
+    if (requiresAuth(section)) {
+      handleAuthRequired(section, '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.');
+      return;
+    }
+
     if (sendBtn) {
       sendBtn.disabled = true;
     }
+
+    clearAuthNotice(section);
 
     var body = new FormData();
     body.append('action', 'send');
@@ -283,6 +359,10 @@
     })
       .then(parseJsonResponse)
       .then(function (data) {
+        if (data && data.auth_required) {
+          handleAuthRequired(section, data.message, data);
+          return;
+        }
         if (!data || !data.success) {
           throw new Error((data && data.message) || '전송에 실패했습니다.');
         }
@@ -304,7 +384,12 @@
         }
       })
       .catch(function (err) {
-        window.alert(err && err.message ? err.message : '전송에 실패했습니다.');
+        var errMessage = err && err.message ? err.message : '전송에 실패했습니다.';
+        if (/로그인|회원가입/.test(errMessage)) {
+          handleAuthRequired(section, errMessage);
+          return;
+        }
+        window.alert(errMessage);
       })
       .then(function () {
         if (sendBtn) {

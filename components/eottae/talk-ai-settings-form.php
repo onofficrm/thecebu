@@ -44,7 +44,7 @@ function eottae_talkroom_ai_render_settings_form(array $settings, array $options
     <?php } ?>
 
     <p class="talk-ai-settings__intro">
-        AI 도우미는 톡방 분위기를 살리기 위해 자동으로 질문, 모임 제안, 요약 메시지를 작성할 수 있습니다. 너무 자주 말하지 않도록 하루 발언 수를 제한해 주세요.
+        AI 도우미는 톡방 분위기를 해치지 않도록, 대화 맥락에 맞을 때만 질문·모임 제안·요약·리액션을 작성합니다. 하루 최대 발언 수는 안전장치이며, 실제 참여는 방 상황에 따라 더 적을 수 있습니다.
     </p>
 
     <?php if ($readonly) { ?>
@@ -111,7 +111,7 @@ function eottae_talkroom_ai_render_settings_form(array $settings, array $options
             <div class="talk-apply-form__field">
                 <label for="talk_ai_max_messages">하루 최대 AI 발언 수</label>
                 <input type="number" id="talk_ai_max_messages" name="max_messages_per_day" class="talk-apply-form__input" min="<?php echo (int) eottae_talkroom_ai_min_messages_per_day(); ?>" max="<?php echo (int) eottae_talkroom_ai_max_messages_per_day_cap(); ?>" step="1" value="<?php echo (int) $settings['max_messages_per_day']; ?>"<?php echo $readonly ? ' disabled' : ''; ?>>
-                <p class="talk-ai-settings__hint">최소 <?php echo (int) eottae_talkroom_ai_min_messages_per_day(); ?>회는 유지됩니다. 오늘 회원 대화(글·댓글)가 많을수록 설정한 최대값까지 AI 발언 한도가 자동으로 늘어납니다.</p>
+                <p class="talk-ai-settings__hint">최소 <?php echo (int) eottae_talkroom_ai_min_messages_per_day(); ?>회, 최대 <?php echo (int) eottae_talkroom_ai_max_messages_per_day_cap(); ?>회까지 설정할 수 있습니다. AI는 대화 맥락에 맞을 때만 참여하며, 회원 대화가 활발하면 자동으로 말수를 줄입니다.</p>
             </div>
             <div class="talk-apply-form__field">
                 <label for="talk_ai_silence">조용한 방 판단 기준 (분)</label>

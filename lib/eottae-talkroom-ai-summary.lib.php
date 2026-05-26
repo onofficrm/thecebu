@@ -450,6 +450,14 @@ if (!function_exists('eottae_talkroom_ai_evaluate_room_summary')) {
             if ((int) $activity['total'] < eottae_talkroom_ai_summary_min_activity_count()) {
                 return array('ok' => false, 'reason' => 'insufficient_activity');
             }
+
+            $context = eottae_talkroom_ai_evaluate_trigger_context($room_id, 'summary', $now, array(
+                'force'   => $force,
+                'is_test' => $is_test,
+            ));
+            if (empty($context['ok'])) {
+                return array('ok' => false, 'reason' => $context['reason']);
+            }
         }
 
         return array('ok' => true, 'reason' => 'eligible');

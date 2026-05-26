@@ -269,6 +269,14 @@ if (!function_exists('eottae_talkroom_ai_evaluate_meetup_suggest')) {
             if (eottae_talkroom_ai_room_has_recent_meetup_activity($room_id, $cooldown)) {
                 return array('ok' => false, 'reason' => 'recent_meetup_post');
             }
+
+            $context = eottae_talkroom_ai_evaluate_trigger_context($room_id, 'meetup_suggest', $now, array(
+                'force'   => $force,
+                'is_test' => $is_test,
+            ));
+            if (empty($context['ok'])) {
+                return array('ok' => false, 'reason' => $context['reason']);
+            }
         }
 
         return array('ok' => true, 'reason' => 'eligible');

@@ -243,6 +243,16 @@ if (!function_exists('eottae_talkroom_ai_evaluate_quiet_room')) {
             }
         }
 
+        if (!$bypass) {
+            $context = eottae_talkroom_ai_evaluate_trigger_context($room_id, 'quiet_room', $now, array(
+                'force'   => $force,
+                'is_test' => $is_test,
+            ));
+            if (empty($context['ok'])) {
+                return array('ok' => false, 'reason' => $context['reason']);
+            }
+        }
+
         return array('ok' => true, 'reason' => 'eligible');
     }
 }

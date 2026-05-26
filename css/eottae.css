@@ -9091,6 +9091,34 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   border: 1px solid #bae6fd;
 }
 
+.public-group-chat__action--register {
+  color: #fff;
+  background: #0284c7;
+  border-color: #0284c7;
+}
+
+.public-group-chat__auth-notice {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid #fecdd3;
+  background: #fff1f2;
+}
+
+.public-group-chat__auth-notice-text {
+  margin: 0 0 10px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #be123c;
+  line-height: 1.5;
+}
+
+.public-group-chat__auth-notice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .public-group-chat__footer {
   margin-top: 12px;
   text-align: center;

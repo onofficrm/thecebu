@@ -241,7 +241,9 @@ if (!function_exists('eottae_talkroom_ai_evaluate_welcome')) {
         }
 
         $settings = eottae_talkroom_ai_get_settings($room_id);
-        $shared = eottae_talkroom_ai_evaluate_shared_limits($room_id, $now, array());
+        $shared = eottae_talkroom_ai_evaluate_shared_limits($room_id, $now, array(
+            'skip_consecutive' => true,
+        ));
         if (empty($shared['ok'])) {
             return array('ok' => false, 'reason' => $shared['reason']);
         }
@@ -264,6 +266,11 @@ if (!function_exists('eottae_talkroom_ai_evaluate_welcome')) {
             if ($elapsed >= 0 && $elapsed < $gap) {
                 return array('ok' => false, 'reason' => 'room_rate_limited');
             }
+        }
+
+        $context = eottae_talkroom_ai_evaluate_trigger_context($room_id, 'welcome', $now, array());
+        if (empty($context['ok'])) {
+            return array('ok' => false, 'reason' => $context['reason']);
         }
 
         return array('ok' => true, 'reason' => 'eligible');

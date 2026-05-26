@@ -11,6 +11,16 @@ include_once G5_LIB_PATH.'/eottae-talkroom-public-chat.lib.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
+function eottae_talkroom_public_chat_auth_urls()
+{
+    $return = function_exists('eottae_current_url') ? eottae_current_url() : G5_URL;
+
+    return array(
+        'login_url'    => function_exists('eottae_login_url') ? eottae_login_url($return) : G5_BBS_URL.'/login.php?url='.urlencode($return),
+        'register_url' => function_exists('eottae_register_url') ? eottae_register_url() : G5_BBS_URL.'/register.php',
+    );
+}
+
 function eottae_talkroom_public_chat_json($success, $message, $extra = array())
 {
     $payload = array_merge(array(
@@ -61,7 +71,12 @@ if ($method !== 'POST') {
 }
 
 if (empty($is_member) || empty($member['mb_id'])) {
-    eottae_talkroom_public_chat_json(false, '로그인 후 이용해 주세요.');
+    $auth = eottae_talkroom_public_chat_auth_urls();
+    eottae_talkroom_public_chat_json(false, '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.', array(
+        'auth_required' => true,
+        'login_url'     => $auth['login_url'],
+        'register_url'  => $auth['register_url'],
+    ));
 }
 
 $token = isset($_POST['eottae_talkroom_member_token']) ? trim((string) $_POST['eottae_talkroom_member_token']) : '';

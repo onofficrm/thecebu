@@ -144,41 +144,17 @@ if (!function_exists('eottae_talkroom_ai_room_member_activity_total')) {
 
 if (!function_exists('eottae_talkroom_ai_effective_daily_limit')) {
     /**
-     * 대화량에 따라 2~설정 최대값 사이에서 오늘 허용 AI 발언 수 계산
+     * 사용자가 설정한 하루 최대 AI 발언 상한 (실제 발언 여부는 맥락 판단)
      */
     function eottae_talkroom_ai_effective_daily_limit($room_id, $settings = null, $target_date = null)
     {
         $room_id = (int) $room_id;
-        $target_date = $target_date ?: G5_TIME_YMD;
 
         if (!is_array($settings)) {
             $settings = eottae_talkroom_ai_get_settings($room_id);
         }
 
-        $min_cap = eottae_talkroom_ai_min_messages_per_day();
-        $max_cap = eottae_talkroom_ai_normalize_max_messages_per_day($settings['max_messages_per_day'] ?? $min_cap);
-        if ($max_cap <= $min_cap) {
-            return $min_cap;
-        }
-
-        $activity = eottae_talkroom_ai_room_member_activity_total($room_id, $target_date);
-        $range = $max_cap - $min_cap;
-
-        if ($activity <= 0) {
-            $boost = 0;
-        } elseif ($activity <= 3) {
-            $boost = 0;
-        } elseif ($activity <= 8) {
-            $boost = (int) max(1, ceil($range * 0.25));
-        } elseif ($activity <= 15) {
-            $boost = (int) max(1, ceil($range * 0.5));
-        } elseif ($activity <= 30) {
-            $boost = (int) max(1, ceil($range * 0.75));
-        } else {
-            $boost = $range;
-        }
-
-        return min($max_cap, $min_cap + min($boost, $range));
+        return eottae_talkroom_ai_normalize_max_messages_per_day($settings['max_messages_per_day'] ?? eottae_talkroom_ai_min_messages_per_day());
     }
 }
 
@@ -199,6 +175,9 @@ if (!function_exists('eottae_talkroom_ai_daily_limit_status')) {
         $max_cap = eottae_talkroom_ai_normalize_max_messages_per_day($settings['max_messages_per_day'] ?? $min_cap);
         $member_activity = eottae_talkroom_ai_room_member_activity_total($room_id, $target_date);
         $effective_limit = eottae_talkroom_ai_effective_daily_limit($room_id, $settings, $target_date);
+        $snapshot = function_exists('eottae_talkroom_ai_build_room_context_snapshot')
+            ? eottae_talkroom_ai_build_room_context_snapshot($room_id, G5_TIME_YMDHIS)
+            : array();
 
         return array(
             'today_count'     => eottae_talkroom_ai_get_today_message_count($room_id, $target_date),
@@ -206,6 +185,10 @@ if (!function_exists('eottae_talkroom_ai_daily_limit_status')) {
             'max_cap'         => $max_cap,
             'min_cap'         => $min_cap,
             'member_activity' => $member_activity,
+            'momentum'        => (string) ($snapshot['momentum'] ?? ''),
+            'momentum_label'  => function_exists('eottae_talkroom_ai_context_momentum_label_ko')
+                ? eottae_talkroom_ai_context_momentum_label_ko((string) ($snapshot['momentum'] ?? ''))
+                : '',
         );
     }
 }

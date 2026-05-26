@@ -20,12 +20,25 @@
     return String(value || '').replace(/\s+/g, '').trim();
   }
 
+  function communityUrl() {
+    var data = cfg();
+    if (data && data.community_url) {
+      return data.community_url;
+    }
+    return '/bbs/board.php?bo_table=community';
+  }
+
   function findPopularSection() {
-    var headings = document.querySelectorAll('h2, h3');
+    var root = document.getElementById('root') || document;
+    var headings = root.querySelectorAll('h2, h3');
     var i;
     for (i = 0; i < headings.length; i += 1) {
       var text = normalizeText(headings[i].textContent);
-      if (text.indexOf('실시간인기글') !== -1 || text.indexOf('전체실시간') !== -1) {
+      if (
+        text.indexOf('실시간인기글') !== -1
+        || text.indexOf('전체실시간') !== -1
+        || text.indexOf('커뮤니티인기글') !== -1
+      ) {
         var section = headings[i].closest('section');
         if (section) {
           return section;
@@ -86,11 +99,15 @@
         + '</div>';
     }
 
+    var dateLabel = esc(day.date || '');
+    if (day.weekday) {
+      dateLabel += ' (' + esc(day.weekday) + ')';
+    }
+
     return ''
       + '<article class="sebu-cal-summary-day">'
       + '<header class="sebu-cal-summary-day__head">'
-      + '<h3 class="sebu-cal-summary-day__label">' + esc(day.label || '') + '</h3>'
-      + '<p class="sebu-cal-summary-day__date">' + esc(day.date || '') + (day.weekday ? ' (' + esc(day.weekday) + ')' : '') + '</p>'
+      + '<h3 class="sebu-cal-summary-day__label">' + esc(day.label || '') + ' ' + dateLabel + '</h3>'
       + '<span class="sebu-cal-summary-day__count">' + esc(String(day.count || 0)) + '건</span>'
       + '</header>'
       + (day.events && day.events.length
@@ -158,23 +175,33 @@
       return '';
     }
 
+    var comments = Number(post.comments || 0);
+    var views = Number(post.views || 0);
+
     return ''
-      + '<li class="sebu-popular-item">'
-      + '<a href="' + esc(post.url || '#') + '" class="sebu-popular-item__link">'
-      + (post.board ? '<span class="sebu-popular-item__board">' + esc(post.board) + '</span>' : '')
-      + '<strong class="sebu-popular-item__title">' + esc(post.title) + '</strong>'
-      + '<span class="sebu-popular-item__meta">'
-      + '조회 ' + esc(String(post.views || 0))
-      + ' · 댓글 ' + esc(String(post.comments || 0))
-      + (post.time ? ' · ' + esc(post.time) : '')
+      + '<li class="sebu-community-item">'
+      + '<a href="' + esc(post.url || '#') + '" class="sebu-community-item__link">'
+      + '<div class="sebu-community-item__main">'
+      + '<span class="sebu-community-item__title-wrap">'
+      + (post.board ? '<span class="sebu-community-item__board">' + esc(post.board) + '</span>' : '')
+      + '<span class="sebu-community-item__title">' + esc(post.title) + '</span>'
       + '</span>'
+      + (post.is_new ? '<span class="sebu-community-item__badge sebu-community-item__badge--new">N</span>' : '')
+      + (post.is_hot ? '<span class="sebu-community-item__badge sebu-community-item__badge--hot">HOT</span>' : '')
+      + '</div>'
+      + '<div class="sebu-community-item__meta">'
+      + '<span class="sebu-community-item__comments">' + (comments > 0 ? '[' + esc(String(comments)) + ']' : '') + '</span>'
+      + '<span class="sebu-community-item__views">조회 ' + esc(String(views)) + '</span>'
+      + '<span class="sebu-community-item__meta-sep" aria-hidden="true">|</span>'
+      + '<span class="sebu-community-item__time">' + esc(post.time || '') + '</span>'
+      + '</div>'
       + '</a>'
       + '</li>';
   }
 
   function renderPopularList(posts) {
     if (!posts || !posts.length) {
-      return '<p class="sebu-popular-panel__empty">표시할 글이 없습니다.</p>';
+      return '<p class="sebu-community-col__empty">표시할 글이 없습니다.</p>';
     }
 
     var html = '';
@@ -183,70 +210,63 @@
       html += renderPopularPost(posts[i]);
     }
 
-    return '<ul class="sebu-popular-panel__list">' + html + '</ul>';
+    return '<ul class="sebu-community-col__list">' + html + '</ul>';
+  }
+
+  function renderPopularColumn(column) {
+    return ''
+      + '<article class="sebu-community-col">'
+      + '<header class="sebu-community-col__head">'
+      + '<h3 class="sebu-community-col__title">'
+      + '<span class="sebu-community-col__accent ' + esc(column.accentClass || '') + '" aria-hidden="true"></span>'
+      + esc(column.label || '')
+      + '</h3>'
+      + '<a href="' + esc(column.moreUrl || communityUrl()) + '" class="sebu-community-col__more">더보기 +</a>'
+      + '</header>'
+      + renderPopularList(column.posts || [])
+      + '</article>';
   }
 
   function renderPopularBlock(popular) {
-    var tabs = [
-      { key: 'latest', label: '실시간 인기글', posts: popular.latest || [] },
-      { key: 'hit', label: '조회수 급상승', posts: popular.hit || [] },
-      { key: 'comment', label: '댓글 많은 글', posts: popular.comment || [] },
+    var columns = [
+      {
+        key: 'latest',
+        label: '실시간 인기글',
+        accentClass: 'sebu-community-col__accent--orange',
+        posts: popular.latest || [],
+      },
+      {
+        key: 'hit',
+        label: '조회수 급상승',
+        accentClass: 'sebu-community-col__accent--rose',
+        posts: popular.hit || [],
+      },
+      {
+        key: 'comment',
+        label: '댓글 많은 글',
+        accentClass: 'sebu-community-col__accent--pink',
+        posts: popular.comment || [],
+      },
     ];
 
-    var tabsHtml = '';
-    var panelsHtml = '';
+    var colsHtml = '';
     var i;
+    var moreUrl = communityUrl();
 
-    for (i = 0; i < tabs.length; i += 1) {
-      var tab = tabs[i];
-      var active = i === 0 ? ' is-active' : '';
-      tabsHtml += '<button type="button" class="sebu-popular__tab' + active + '" data-sebu-popular-tab="' + esc(tab.key) + '">' + esc(tab.label) + '</button>';
-      panelsHtml += ''
-        + '<div class="sebu-popular-panel' + active + '" data-sebu-popular-panel="' + esc(tab.key) + '">'
-        + '<h3 class="sebu-popular-panel__title">' + esc(tab.label) + '</h3>'
-        + renderPopularList(tab.posts)
-        + '</div>';
-    }
-
-    var desktopCols = '';
-    for (i = 0; i < tabs.length; i += 1) {
-      desktopCols += ''
-        + '<article class="sebu-popular-col">'
-        + '<h3 class="sebu-popular-col__title">' + esc(tabs[i].label) + '</h3>'
-        + renderPopularList(tabs[i].posts)
-        + '</article>';
+    for (i = 0; i < columns.length; i += 1) {
+      colsHtml += renderPopularColumn({
+        label: columns[i].label,
+        accentClass: columns[i].accentClass,
+        posts: columns[i].posts,
+        moreUrl: moreUrl,
+      });
     }
 
     return ''
-      + '<section class="sebu-popular" data-eottae-home-popular="1" aria-label="커뮤니티 인기글">'
-      + '<header class="sebu-popular__head">'
-      + '<h2 class="sebu-popular__title">커뮤니티 인기글</h2>'
-      + '</header>'
-      + '<div class="sebu-popular__tabs" role="tablist">' + tabsHtml + '</div>'
-      + '<div class="sebu-popular__mobile-panels">' + panelsHtml + '</div>'
-      + '<div class="sebu-popular__desktop-grid">' + desktopCols + '</div>'
+      + '<section class="sebu-community-popular" data-eottae-home-popular="1" aria-label="커뮤니티 인기글">'
+      + '<h2 class="sebu-community-popular__title">커뮤니티 인기글</h2>'
+      + '<div class="sebu-community-popular__grid">' + colsHtml + '</div>'
       + '</section>';
-  }
-
-  function bindPopularTabs(root) {
-    var tabs = root.querySelectorAll('[data-sebu-popular-tab]');
-    var panels = root.querySelectorAll('[data-sebu-popular-panel]');
-    var i;
-
-    function activate(key) {
-      for (i = 0; i < tabs.length; i += 1) {
-        tabs[i].classList.toggle('is-active', tabs[i].getAttribute('data-sebu-popular-tab') === key);
-      }
-      for (i = 0; i < panels.length; i += 1) {
-        panels[i].classList.toggle('is-active', panels[i].getAttribute('data-sebu-popular-panel') === key);
-      }
-    }
-
-    for (i = 0; i < tabs.length; i += 1) {
-      tabs[i].addEventListener('click', function () {
-        activate(this.getAttribute('data-sebu-popular-tab'));
-      });
-    }
   }
 
   function mount() {
@@ -256,8 +276,12 @@
     }
 
     var section = findPopularSection();
-    if (!section || section.querySelector('[data-eottae-home-main-mounted]')) {
-      return !!section;
+    if (!section) {
+      return false;
+    }
+
+    if (section.querySelector('[data-eottae-home-main-mounted]')) {
+      return true;
     }
 
     var mountRoot = document.createElement('div');
@@ -269,11 +293,6 @@
       section.removeChild(section.firstChild);
     }
     section.appendChild(mountRoot);
-
-    var popular = mountRoot.querySelector('[data-eottae-home-popular]');
-    if (popular) {
-      bindPopularTabs(popular);
-    }
 
     return true;
   }
@@ -288,6 +307,22 @@
     } else {
       global.setTimeout(run, 1500);
     }
+
+    if (typeof MutationObserver === 'undefined') {
+      return;
+    }
+
+    var root = document.getElementById('root');
+    if (!root) {
+      return;
+    }
+
+    new MutationObserver(function () {
+      mount();
+    }).observe(root, {
+      childList: true,
+      subtree: true,
+    });
   }
 
   if (document.readyState === 'loading') {
