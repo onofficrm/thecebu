@@ -6,7 +6,12 @@ $list = eottae_talkroom_list_public(array(
     'page'  => isset($_GET['page']) ? (int) $_GET['page'] : 1,
     'limit' => 50,
 ));
-$rooms = $list['rows'];
+$rooms = eottae_talkroom_apply_card_viewer_context(
+    $list['rows'],
+    !empty($member['mb_id']) ? (string) $member['mb_id'] : '',
+    ($is_admin === 'super')
+);
+$talk_owner_token = !empty($is_member) ? eottae_talkroom_owner_token() : '';
 
 g5_page_start('세부톡방');
 ?>
@@ -53,6 +58,61 @@ g5_page_start('세부톡방');
         <?php } ?>
     </section>
 </main>
+
+<?php if ($talk_owner_token !== '') { ?>
+<script>
+(function () {
+  var ownerToken = <?php echo json_encode($talk_owner_token, JSON_UNESCAPED_UNICODE); ?>;
+
+  function postDelete(roomId) {
+    var fd = new FormData();
+    fd.append('action', 'delete');
+    fd.append('room_id', String(roomId));
+    fd.append('eottae_talkroom_owner_token', ownerToken);
+    return fetch('/proc/eottae-talkroom-owner.php', {
+      method: 'POST',
+      body: fd,
+      credentials: 'same-origin',
+    }).then(function (res) { return res.json(); });
+  }
+
+  document.querySelectorAll('[data-talk-room-delete]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var roomName = btn.getAttribute('data-room-name') || '이 톡방';
+      var roomId = btn.getAttribute('data-talk-room-delete');
+      if (!roomId) {
+        return;
+      }
+      if (!window.confirm(roomName + ' 톡방을 완전히 삭제하시겠습니까?\n\n멤버·신고·로그 데이터가 함께 삭제되며 되돌릴 수 없습니다.')) {
+        return;
+      }
+      btn.disabled = true;
+      postDelete(roomId)
+        .then(function (data) {
+          if (data && data.success) {
+            var card = btn.closest('.talk-room-card');
+            if (card && card.parentNode) {
+              card.parentNode.removeChild(card);
+              if (!document.querySelector('.talk-room-card')) {
+                window.location.reload();
+              }
+              return;
+            }
+            window.location.reload();
+            return;
+          }
+          window.alert((data && data.message) ? data.message : '삭제에 실패했습니다.');
+          btn.disabled = false;
+        })
+        .catch(function () {
+          window.alert('네트워크 오류가 발생했습니다.');
+          btn.disabled = false;
+        });
+    });
+  });
+}());
+</script>
+<?php } ?>
 
 <?php
 g5_page_end();

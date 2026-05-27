@@ -53,7 +53,15 @@ if (!function_exists('eottae_talkroom_card_html')) {
                     </div>
                 </div>
             </div>
-            <a href="<?php echo $room['enter_href']; ?>" class="talk-room-card__enter">입장하기</a>
+            <div class="talk-room-card__actions">
+                <a href="<?php echo $room['enter_href']; ?>" class="talk-room-card__enter">입장하기</a>
+                <?php if (!empty($room['can_delete'])) { ?>
+                <button type="button"
+                    class="talk-room-card__delete"
+                    data-talk-room-delete="<?php echo (int) $room['room_id']; ?>"
+                    data-room-name="<?php echo htmlspecialchars($room['room_name'], ENT_QUOTES, 'UTF-8'); ?>">삭제</button>
+                <?php } ?>
+            </div>
         </article>
         <?php
 

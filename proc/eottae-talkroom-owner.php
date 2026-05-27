@@ -41,6 +41,16 @@ if ($room_id < 1) {
     eottae_talkroom_owner_json(false, '톡방 정보가 올바르지 않습니다.');
 }
 
+if ($action === 'delete') {
+    $result = eottae_talkroom_delete_room($room_id, $member['mb_id'], $is_super);
+    if (!empty($result['ok'])) {
+        eottae_talkroom_owner_token(true);
+    }
+    eottae_talkroom_owner_json(!empty($result['ok']), $result['message'], array(
+        'redirect_url' => eottae_talkroom_list_url(),
+    ));
+}
+
 $access = eottae_talkroom_assert_manage_access($room_id, $member['mb_id'], $is_super);
 if (empty($access['ok'])) {
     eottae_talkroom_owner_json(false, $access['message']);

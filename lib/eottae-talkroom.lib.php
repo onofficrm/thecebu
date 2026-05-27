@@ -1295,8 +1295,33 @@ if (!function_exists('eottae_talkroom_format_card')) {
                 : ($updated_at !== '' ? substr($updated_at, 0, 16) : ''),
             'visibility'       => trim((string) ($row['visibility'] ?? 'public')),
             'visibility_label' => eottae_talkroom_visibility_label($row['visibility'] ?? 'public'),
+            'owner_mb_id'      => trim((string) ($row['owner_mb_id'] ?? '')),
             'enter_href'       => eottae_talkroom_enter_url($room_id),
+            'can_delete'       => false,
         );
+    }
+}
+
+if (!function_exists('eottae_talkroom_apply_card_viewer_context')) {
+    /**
+     * 목록 카드 — 삭제 버튼 노출 여부 (최고관리자 전체 / 방장 본인 방만)
+     *
+     * @param array<int, array<string, mixed>> $rooms
+     * @return array<int, array<string, mixed>>
+     */
+    function eottae_talkroom_apply_card_viewer_context(array $rooms, $mb_id = '', $is_super_admin = false)
+    {
+        if (empty($rooms)) {
+            return $rooms;
+        }
+
+        foreach ($rooms as $index => $room) {
+            $room_id = (int) ($room['room_id'] ?? 0);
+            $rooms[$index]['can_delete'] = $room_id > 0
+                && eottae_talkroom_can_delete_room($room_id, $mb_id, $is_super_admin);
+        }
+
+        return $rooms;
     }
 }
 
@@ -1978,15 +2003,41 @@ if (!function_exists('eottae_talkroom_admin_list_rooms')) {
     }
 }
 
-if (!function_exists('eottae_talkroom_admin_delete_room')) {
+if (!function_exists('eottae_talkroom_can_delete_room')) {
+    function eottae_talkroom_can_delete_room($room_id, $mb_id = '', $is_super_admin = false)
+    {
+        if ($is_super_admin) {
+            return true;
+        }
+
+        $room_id = (int) $room_id;
+        if ($room_id < 1) {
+            return false;
+        }
+
+        $mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $mb_id);
+        if ($mb_id === '') {
+            return false;
+        }
+
+        $room = eottae_talkroom_get_room($room_id);
+        if (!$room) {
+            return false;
+        }
+
+        return eottae_talkroom_is_room_owner($room, $mb_id);
+    }
+}
+
+if (!function_exists('eottae_talkroom_perform_delete_room')) {
     /**
-     * 톡방 영구 삭제 (최고관리자 전용) — 멤버·신고·로그 등 연관 데이터 함께 삭제
+     * 톡방 영구 삭제 — 멤버·신고·로그 등 연관 데이터 함께 삭제
      *
      * @param int    $room_id
-     * @param string $admin_mb_id
+     * @param string $actor_mb_id
      * @return array{ok:bool,message:string}
      */
-    function eottae_talkroom_admin_delete_room($room_id, $admin_mb_id)
+    function eottae_talkroom_perform_delete_room($room_id, $actor_mb_id)
     {
         $room_id = (int) $room_id;
         if ($room_id < 1) {
@@ -1998,7 +2049,7 @@ if (!function_exists('eottae_talkroom_admin_delete_room')) {
             return array('ok' => false, 'message' => '톡방을 찾을 수 없습니다.');
         }
 
-        $admin_mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $admin_mb_id);
+        $actor_mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $actor_mb_id);
         $tables = eottae_talkroom_table_names();
         $room_id_sql = (int) $room_id;
 
@@ -2014,10 +2065,35 @@ if (!function_exists('eottae_talkroom_admin_delete_room')) {
         }
 
         if (function_exists('eottae_talkroom_write_log')) {
-            eottae_talkroom_write_log(0, $admin_mb_id, 'delete', 'room', $room_id_sql, '톡방 삭제: '.$room['room_name']);
+            eottae_talkroom_write_log(0, $actor_mb_id, 'delete', 'room', $room_id_sql, '톡방 삭제: '.$room['room_name']);
         }
 
         return array('ok' => true, 'message' => '톡방을 삭제했습니다.');
+    }
+}
+
+if (!function_exists('eottae_talkroom_delete_room')) {
+    function eottae_talkroom_delete_room($room_id, $mb_id = '', $is_super_admin = false)
+    {
+        if (!eottae_talkroom_can_delete_room($room_id, $mb_id, $is_super_admin)) {
+            return array('ok' => false, 'message' => '톡방 삭제 권한이 없습니다.');
+        }
+
+        return eottae_talkroom_perform_delete_room($room_id, $mb_id);
+    }
+}
+
+if (!function_exists('eottae_talkroom_admin_delete_room')) {
+    /**
+     * 톡방 영구 삭제 (최고관리자 전용) — 멤버·신고·로그 등 연관 데이터 함께 삭제
+     *
+     * @param int    $room_id
+     * @param string $admin_mb_id
+     * @return array{ok:bool,message:string}
+     */
+    function eottae_talkroom_admin_delete_room($room_id, $admin_mb_id)
+    {
+        return eottae_talkroom_delete_room($room_id, $admin_mb_id, true);
     }
 }
 
