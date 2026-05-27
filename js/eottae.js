@@ -834,6 +834,21 @@
       if (type) statusEl.classList.add('is-' + type);
     }
 
+    function shopEditorInstance() {
+      return typeof oEditors !== 'undefined' && oEditors.getById && oEditors.getById.shop_wr_content
+        ? oEditors.getById.shop_wr_content
+        : null;
+    }
+
+    function activateShopEditorWysiwyg() {
+      var ed = shopEditorInstance();
+      if (!ed) return;
+      try {
+        ed.exec('CHANGE_EDITING_MODE', ['WYSIWYG', true]);
+        ed.exec('LOAD_CONTENTS_FIELD', [false]);
+      } catch (e) { /* ignore */ }
+    }
+
     function ensureEditor() {
       if (!useEditor || editorReady || !textarea) return;
       if (typeof nhn === 'undefined' || !nhn.husky || !nhn.husky.EZCreator || typeof g5_editor_url === 'undefined') {
@@ -849,9 +864,12 @@
           bUseVerticalResizer: true,
           bUseModeChanger: true,
           bSkipXssFilter: true,
+          sDefaultEditingMode: 'WYSIWYG',
           fOnBeforeUnload: function () {}
         },
-        fOnAppLoad: function () {},
+        fOnAppLoad: function () {
+          activateShopEditorWysiwyg();
+        },
         fCreator: 'createSEditor2'
       });
 
@@ -859,10 +877,11 @@
     }
 
     function syncEditorToField() {
-      if (!useEditor || !editorReady || typeof oEditors === 'undefined' || !oEditors.getById || !oEditors.getById.shop_wr_content) {
+      var ed = shopEditorInstance();
+      if (!useEditor || !editorReady || !ed) {
         return;
       }
-      oEditors.getById.shop_wr_content.exec('UPDATE_CONTENTS_FIELD', []);
+      ed.exec('UPDATE_CONTENTS_FIELD', []);
     }
 
     function setOpenButtonsVisible(visible) {
@@ -873,12 +892,18 @@
 
     function showEdit() {
       if (!edit || !view) return;
-      ensureEditor();
       view.hidden = true;
       edit.hidden = false;
       root.classList.add('is-editing');
       setStatus('', '');
       setOpenButtonsVisible(false);
+
+      window.requestAnimationFrame(function () {
+        ensureEditor();
+        if (editorReady) {
+          activateShopEditorWysiwyg();
+        }
+      });
     }
 
     function showView() {
