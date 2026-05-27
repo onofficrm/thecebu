@@ -120,7 +120,7 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
                     <strong><?php echo $view['file'][$i]['source'] ?></strong> (<?php echo $view['file'][$i]['size'] ?>)
                 </a>
             </li>
-        <?php } } ?>
+        <?php } ?>
         </ul>
     </section>
     <?php } ?>

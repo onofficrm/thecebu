@@ -63,6 +63,14 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
         <input type="checkbox" id="chkall" onclick="if (this.checked) all_checked(true); else all_checked(false);" class="selec_chk">
         <label for="chkall"><span></span><b>현재 페이지 전체선택</b></label>
     </div>
+    <div class="board-gal-bulk-bar" id="gall_bulk_bar" hidden>
+        <p class="board-gal-bulk-bar__count"><strong id="gall_chk_count">0</strong>개 선택됨</p>
+        <div class="board-gal-bulk-bar__actions">
+            <button type="submit" name="btn_submit" value="선택삭제" class="board-gal-bulk-bar__btn board-gal-bulk-bar__btn--danger" onclick="document.pressed=this.value"><i class="fa fa-trash-o" aria-hidden="true"></i> 선택삭제</button>
+            <button type="submit" name="btn_submit" value="선택복사" class="board-gal-bulk-bar__btn" onclick="document.pressed=this.value"><i class="fa fa-files-o" aria-hidden="true"></i> 선택복사</button>
+            <button type="submit" name="btn_submit" value="선택이동" class="board-gal-bulk-bar__btn" onclick="document.pressed=this.value"><i class="fa fa-arrows" aria-hidden="true"></i> 선택이동</button>
+        </div>
+    </div>
     <?php } ?>
 
     <div class="board-list board-list--gallery-grid">
@@ -166,6 +174,9 @@ function all_checked(sw) {
     for (var i=0; i<f.length; i++) {
         if (f.elements[i].name == "chk_wr_id[]") f.elements[i].checked = sw;
     }
+    if (typeof update_gallery_bulk_bar === "function") {
+        update_gallery_bulk_bar();
+    }
 }
 function fboardlist_submit(f) {
     var chk_count = 0;
@@ -187,11 +198,53 @@ function select_copy(sw) {
     window.open("", "move", "left=50, top=50, width=500, height=550, scrollbars=1);
     f.sw.value = sw; f.target = "move"; f.action = g5_bbs_url+"/move.php"; f.submit();
 }
+function update_gallery_bulk_bar() {
+    var f = document.fboardlist;
+    var count = 0;
+    var i;
+    if (!f) {
+        return;
+    }
+    for (i = 0; i < f.length; i += 1) {
+        if (f.elements[i].name === "chk_wr_id[]" && f.elements[i].checked) {
+            count += 1;
+        }
+    }
+    var bar = document.getElementById("gall_bulk_bar");
+    var label = document.getElementById("gall_chk_count");
+    if (label) {
+        label.textContent = String(count);
+    }
+    if (bar) {
+        bar.hidden = count < 1;
+    }
+    var chkall = document.getElementById("chkall");
+    if (chkall) {
+        var total = 0;
+        for (i = 0; i < f.length; i += 1) {
+            if (f.elements[i].name === "chk_wr_id[]") {
+                total += 1;
+            }
+        }
+        chkall.checked = total > 0 && count === total;
+        chkall.indeterminate = count > 0 && count < total;
+    }
+}
 jQuery(function($){
-    $(".btn_more_opt.is_list_btn").on("click", function(e) { e.stopPropagation(); $(".more_opt.is_list_btn").toggle(); });
-    $(document).on("click", function (e) {
-        if(!$(e.target).closest('.is_list_btn').length) $(".more_opt.is_list_btn").hide();
+    var $form = $("#fboardlist");
+    $(".btn_more_opt.is_list_btn").on("click", function(e) {
+        e.stopPropagation();
+        var $menu = $(this).closest("li").find(".more_opt.is_list_btn").first();
+        $(".more_opt.is_list_btn").not($menu).hide();
+        $menu.toggle();
     });
+    $(document).on("click", function (e) {
+        if (!$(e.target).closest('.is_list_btn').length) {
+            $(".more_opt.is_list_btn").hide();
+        }
+    });
+    $form.on("change", 'input[name="chk_wr_id[]"], #chkall', update_gallery_bulk_bar);
+    update_gallery_bulk_bar();
 });
 </script>
 <?php } ?>
