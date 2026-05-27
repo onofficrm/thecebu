@@ -431,10 +431,6 @@
     section.setAttribute('data-last-wr-id', String(lastId));
     messagesEl.scrollTop = messagesEl.scrollHeight;
 
-    if (typeof global.scheduleEottaeHeroColumnHeights === 'function') {
-      global.scheduleEottaeHeroColumnHeights(80);
-    }
-
     return lastId;
   }
 

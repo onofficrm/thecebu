@@ -116,6 +116,51 @@ if (!function_exists('eottae_home_popular_payload')) {
     }
 }
 
+if (!function_exists('eottae_home_public_talkrooms_payload')) {
+    /**
+     * 홈 커뮤니티 영역 — 공개 세부톡방 롤링 캐러셀 (최대 5건)
+     *
+     * @return array<string, mixed>
+     */
+    function eottae_home_public_talkrooms_payload($limit = 5)
+    {
+        if (!function_exists('eottae_talkroom_list_public_cards')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
+        }
+        if (!function_exists('eottae_talkroom_home_hero_hot_score')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
+        }
+
+        $limit = max(1, min(10, (int) $limit));
+        $pool = eottae_talkroom_list_public_cards(array(
+            'limit' => max(24, $limit),
+            'page'  => 1,
+        ));
+
+        if (!empty($pool)) {
+            usort($pool, function ($a, $b) {
+                $score_cmp = eottae_talkroom_home_hero_hot_score($b) <=> eottae_talkroom_home_hero_hot_score($a);
+                if ($score_cmp !== 0) {
+                    return $score_cmp;
+                }
+
+                return (int) ($b['post_count'] ?? 0) <=> (int) ($a['post_count'] ?? 0);
+            });
+        }
+
+        $rooms = array_slice($pool, 0, $limit);
+
+        return array(
+            'title'      => '공개 세부톡방',
+            'desc'       => '관심 주제별 공개 톡방에 참여하고 세부 생활 정보를 나눠 보세요.',
+            'rooms'      => $rooms,
+            'list_url'   => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk',
+            'create_url' => function_exists('eottae_talkroom_create_url') ? eottae_talkroom_create_url() : G5_URL.'/page/eottae-talk-create.php',
+            'total'      => count($rooms),
+        );
+    }
+}
+
 if (!function_exists('eottae_home_main_section_payload')) {
     function eottae_home_main_section_payload()
     {
@@ -128,6 +173,7 @@ if (!function_exists('eottae_home_main_section_payload')) {
         return array(
             'calendar'      => eottae_calendar_home_summary_payload(5),
             'popular'       => eottae_home_popular_payload(5),
+            'talk_rooms'    => eottae_home_public_talkrooms_payload(5),
             'community_url' => G5_BBS_URL.'/board.php?bo_table='.$community_table,
         );
     }

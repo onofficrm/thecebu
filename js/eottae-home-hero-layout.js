@@ -14,8 +14,10 @@
   var resizeTimer = null;
   var resizeObserver = null;
   var sidebarMutationObserver = null;
+  var rootMutationObserver = null;
   var syncing = false;
   var lastSidebarFingerprint = '';
+  var heroLayoutStable = false;
 
   function findHeroGrid() {
     if (typeof global.findEottaeHeroGrid === 'function') {
@@ -361,6 +363,7 @@
     }
 
     resizeObserver = new ResizeObserver(function () {
+      heroLayoutStable = false;
       scheduleSync(120);
     });
 
@@ -400,7 +403,7 @@
     sidebarMutationObserver = new MutationObserver(function () {
       var fp = sidebarFingerprint(sidebar);
       if (fp !== lastSidebarFingerprint) {
-        lastSidebarFingerprint = fp;
+        heroLayoutStable = false;
         scheduleSync(80);
         scheduleSync(350);
       }
@@ -425,6 +428,7 @@
     }
 
     if (global.innerWidth < 1024) {
+      heroLayoutStable = false;
       clearHeroColumnHeights(grid);
       if (resizeObserver) {
         resizeObserver.disconnect();
@@ -443,42 +447,120 @@
       return false;
     }
 
-    syncing = true;
-
-    if (resizeObserver) {
-      resizeObserver.disconnect();
-      resizeObserver = null;
+    var sidebar = findHeroSidebarColumn(grid);
+    if (canSkipStableSync(grid, sidebar)) {
+      return true;
     }
 
-    clearHeroColumnHeights(grid);
-    ensureSidebarMounted();
+    syncing = true;
 
-    var targetH = measureSidebarColumnHeight(grid);
-    if (targetH < MIN_COL_H) {
+    return withPreservedWindowScroll(function () {
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+        resizeObserver = null;
+      }
+
+      clearHeroColumnHeights(grid);
+      ensureSidebarMounted();
+
+      sidebar = findHeroSidebarColumn(grid);
+      if (!sidebar) {
+        syncing = false;
+        return false;
+      }
+
+      var targetH = measureSidebarColumnHeight(grid);
+      if (targetH < MIN_COL_H) {
+        syncing = false;
+        scheduleSync(400);
+        return false;
+      }
+
+      targetH = remeasureSidebarExpandedHeight(grid, targetH);
+      applyHeroColumnHeights(grid, targetH);
+      targetH = remeasureSidebarExpandedHeight(grid, targetH);
+      if (parseInt(grid.getAttribute('data-eottae-hero-height') || '0', 10) !== targetH) {
+        applyHeroColumnHeights(grid, targetH);
+      }
+
+      sidebar = findHeroSidebarColumn(grid);
+      markHeroLayoutStable(grid, sidebar);
+
       syncing = false;
-      scheduleSync(400);
+      observeSidebarTargets(grid);
+      observeSidebarMutations(grid);
+
+      if (typeof global.scheduleEottaeHomePublicChatScroll === 'function') {
+        global.scheduleEottaeHomePublicChatScroll();
+      }
+
+      return true;
+    });
+  }
+
+  function getWindowScrollY() {
+    return global.pageYOffset
+      || (global.document.documentElement && global.document.documentElement.scrollTop)
+      || (global.document.body && global.document.body.scrollTop)
+      || 0;
+  }
+
+  function restoreWindowScrollY(x, y) {
+    if (typeof y !== 'number' || y < 1) {
+      return;
+    }
+
+    var currentY = getWindowScrollY();
+    if (Math.abs(currentY - y) < 2) {
+      return;
+    }
+
+    if (typeof global.scrollTo === 'function') {
+      global.scrollTo(x, y);
+    }
+  }
+
+  function withPreservedWindowScroll(fn) {
+    var x = global.pageXOffset || 0;
+    var y = getWindowScrollY();
+    var result = fn();
+
+    global.requestAnimationFrame(function () {
+      restoreWindowScrollY(x, y);
+      global.requestAnimationFrame(function () {
+        restoreWindowScrollY(x, y);
+      });
+    });
+
+    return result;
+  }
+
+  function canSkipStableSync(grid, sidebar) {
+    if (!grid || !sidebar || !heroLayoutStable) {
       return false;
     }
 
-    targetH = remeasureSidebarExpandedHeight(grid, targetH);
-    applyHeroColumnHeights(grid, targetH);
-    targetH = remeasureSidebarExpandedHeight(grid, targetH);
-    if (parseInt(grid.getAttribute('data-eottae-hero-height') || '0', 10) !== targetH) {
-      applyHeroColumnHeights(grid, targetH);
+    if (!grid.classList.contains(SYNC_CLASS)) {
+      return false;
     }
 
-    var sidebar = findHeroSidebarColumn(grid);
+    var fp = sidebarFingerprint(sidebar);
+    if (!fp || fp !== lastSidebarFingerprint) {
+      return false;
+    }
+
+    var currentH = parseInt(grid.getAttribute('data-eottae-hero-height') || '0', 10);
+    return currentH >= MIN_COL_H;
+  }
+
+  function markHeroLayoutStable(grid, sidebar) {
+    heroLayoutStable = true;
     lastSidebarFingerprint = sidebarFingerprint(sidebar);
 
-    syncing = false;
-    observeSidebarTargets(grid);
-    observeSidebarMutations(grid);
-
-    if (typeof global.scheduleEottaeHomePublicChatScroll === 'function') {
-      global.scheduleEottaeHomePublicChatScroll();
+    if (rootMutationObserver) {
+      rootMutationObserver.disconnect();
+      rootMutationObserver = null;
     }
-
-    return true;
   }
 
   function scheduleSync(delayMs) {
@@ -520,6 +602,7 @@
     }
 
     global.addEventListener('resize', function () {
+      heroLayoutStable = false;
       scheduleSync(150);
     });
 
@@ -530,6 +613,7 @@
 
     global.addEventListener('pageshow', function (event) {
       if (event && event.persisted) {
+        heroLayoutStable = false;
         scheduleSync(50);
         scheduleSync(400);
       }
@@ -545,22 +629,28 @@
     }
 
     var observerScheduled = false;
-    var observer = new MutationObserver(function () {
-      if (observerScheduled) {
+    rootMutationObserver = new MutationObserver(function () {
+      if (heroLayoutStable || observerScheduled) {
         return;
       }
       observerScheduled = true;
       global.requestAnimationFrame(function () {
         observerScheduled = false;
+        if (heroLayoutStable) {
+          return;
+        }
         var grid = findHeroGrid();
         if (!grid || !grid.classList.contains('eottae-home-hero-grid--3col')) {
+          return;
+        }
+        if (grid.classList.contains(SYNC_CLASS)) {
           return;
         }
         scheduleSync(120);
       });
     });
 
-    observer.observe(root, {
+    rootMutationObserver.observe(root, {
       childList: true,
       subtree: true,
     });
