@@ -4,7 +4,7 @@ if (!defined('_GNUBOARD_')) {
 }
 
 /**
- * 커뮤니티 목록 1건 — 왼쪽 썸네일, 오른쪽 제목·설명 2행
+ * 커뮤니티 목록 1건 — 3열: 썸네일 | 제목·본문 2행 | 조회·추천·댓글
  *
  * @var array<string, mixed> $item
  * @var string $item_class
@@ -55,10 +55,12 @@ if (!defined('_GNUBOARD_')) {
                 <?php
             }
             ?>
-            <h2 class="community-post__title<?php echo $is_ai_post ? ' talk-ai-msg__title' : ''; ?>"><?php echo $item['subject']; ?></h2>
-            <?php if ($snippet !== '') { ?>
-            <p class="community-post__excerpt"><?php echo $snippet; ?></p>
-            <?php } ?>
+            <div class="community-post__text">
+                <h2 class="community-post__title<?php echo $is_ai_post ? ' talk-ai-msg__title' : ''; ?>"><?php echo $item['subject']; ?></h2>
+                <?php if ($snippet !== '') { ?>
+                <p class="community-post__excerpt"><?php echo $snippet; ?></p>
+                <?php } ?>
+            </div>
             <div class="community-post__foot">
                 <div class="community-post__meta">
                     <?php if ($is_ai_post) { ?>
@@ -70,11 +72,13 @@ if (!defined('_GNUBOARD_')) {
                     <?php } ?>
                     <span class="community-post__time"><?php echo $time_label; ?></span>
                 </div>
-                <div class="community-post__stats">
-                    <span class="community-post__stat" title="조회"><span aria-hidden="true">👁</span> <?php echo number_format($hit_num); ?></span>
-                    <span class="community-post__stat" title="추천"><span aria-hidden="true">👍</span> <?php echo number_format($good_num); ?></span>
-                    <span class="community-post__stat" title="댓글"><span aria-hidden="true">💬</span> <?php echo number_format($comment_num); ?></span>
-                </div>
+            </div>
+        </div>
+        <div class="community-post__aside" aria-label="게시글 통계">
+            <div class="community-post__stats">
+                <span class="community-post__stat" title="조회"><span class="community-post__stat-icon" aria-hidden="true">👁</span><span class="community-post__stat-num"><?php echo number_format($hit_num); ?></span></span>
+                <span class="community-post__stat" title="추천"><span class="community-post__stat-icon" aria-hidden="true">👍</span><span class="community-post__stat-num"><?php echo number_format($good_num); ?></span></span>
+                <span class="community-post__stat" title="댓글"><span class="community-post__stat-icon" aria-hidden="true">💬</span><span class="community-post__stat-num"><?php echo number_format($comment_num); ?></span></span>
             </div>
         </div>
     </a>
