@@ -1468,7 +1468,50 @@
     var statusEl = qs('[data-snippets-status]', root);
     var subjectInput = options.subjectInput || qs('#wr_subject');
     var contentInput = options.contentInput || qs('#wr_content');
+    var caSelect = document.getElementById('ca_name');
     var isDesktop = window.matchMedia('(min-width: 768px)').matches;
+
+    function getAllowedCategories() {
+      var raw = root.getAttribute('data-snippets-allowed-categories') || '';
+      return raw.split(',').map(function (part) {
+        return part.trim();
+      }).filter(Boolean);
+    }
+
+    function getWriteBoTable() {
+      var form = document.getElementById('fwrite');
+      if (!form) return '';
+      var input = form.querySelector('input[name="bo_table"]');
+      return input ? String(input.value || '').trim() : '';
+    }
+
+    function getWriteCategory() {
+      return caSelect ? String(caSelect.value || '').trim() : '';
+    }
+
+    function isWriteCategoryAllowed() {
+      var category = getWriteCategory();
+      if (!category) return false;
+      return getAllowedCategories().indexOf(category) !== -1;
+    }
+
+    function appendWriteContext(fd) {
+      var boTable = getWriteBoTable();
+      var category = getWriteCategory();
+      if (boTable) fd.append('bo_table', boTable);
+      if (category) fd.append('ca_name', category);
+    }
+
+    function syncWriteSnippetVisibility() {
+      var allowed = isWriteCategoryAllowed();
+      root.hidden = !allowed;
+      root.classList.toggle('business-snippets--hidden', !allowed);
+      if (!allowed) {
+        if (panel) panel.hidden = true;
+        if (toggle) toggle.setAttribute('aria-expanded', 'false');
+      }
+      return allowed;
+    }
 
     function setStatus(msg, isError) {
       if (!statusEl) return;
@@ -1561,6 +1604,7 @@
       fd.append('label', label || '');
       fd.append('wr_subject', subject || '');
       fd.append('wr_content', content || '');
+      appendWriteContext(fd);
       return fetch('/proc/eottae-business-snippets.php', { method: 'POST', body: fd, credentials: 'same-origin' })
         .then(function (res) { return parseJsonResponse(res); })
         .then(function (json) {
@@ -1596,6 +1640,7 @@
       setStatus('AI가 홍보 문구를 작성 중입니다...', false);
       var fd = new FormData();
       fd.append('topic', topic);
+      appendWriteContext(fd);
       return fetch(eottaeProcPath('eottae-business-snippet-ai.php'), { method: 'POST', body: fd, credentials: 'same-origin' })
         .then(function (res) { return parseJsonResponse(res); })
         .then(function (json) {
@@ -1611,13 +1656,17 @@
 
     if (toggle && panel) {
       toggle.addEventListener('click', function () {
+        if (!isWriteCategoryAllowed()) {
+          setStatus('분류에서 광고판을 선택하면 홍보 문구를 사용할 수 있습니다.', true);
+          return;
+        }
         var open = panel.hidden;
         panel.hidden = !open;
         toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
         if (open) loadList();
       });
 
-      if (isDesktop) {
+      if (isDesktop && syncWriteSnippetVisibility()) {
         panel.hidden = false;
         toggle.setAttribute('aria-expanded', 'true');
         root.classList.add('is-desktop-open');
@@ -1625,9 +1674,26 @@
       }
     }
 
+    if (caSelect) {
+      caSelect.addEventListener('change', function () {
+        var allowed = syncWriteSnippetVisibility();
+        if (allowed && isDesktop && panel && toggle) {
+          panel.hidden = false;
+          toggle.setAttribute('aria-expanded', 'true');
+          loadList();
+        }
+      });
+    }
+
+    syncWriteSnippetVisibility();
+
     var aiBtn = qs('[data-snippets-ai-generate]', root);
     if (aiBtn) {
       aiBtn.addEventListener('click', function () {
+        if (!isWriteCategoryAllowed()) {
+          setStatus('분류에서 광고판을 선택하면 AI 홍보 문구를 사용할 수 있습니다.', true);
+          return;
+        }
         runAiGenerate(aiBtn)
           .then(function (data) {
             if (window.confirm('생성된 문구를 글에 적용할까요?')) {
@@ -1647,6 +1713,10 @@
     var saveBtn = qs('[data-snippets-save-current]', root);
     if (saveBtn) {
       saveBtn.addEventListener('click', function () {
+        if (!isWriteCategoryAllowed()) {
+          setStatus('분류에서 광고판을 선택하면 홍보 문구를 저장할 수 있습니다.', true);
+          return;
+        }
         if (contentInput && typeof oEditors !== 'undefined' && oEditors.getById && oEditors.getById.wr_content) {
           oEditors.getById.wr_content.exec('UPDATE_CONTENTS_FIELD', []);
         }

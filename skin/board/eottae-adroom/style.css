@@ -90,6 +90,143 @@
     background: rgba(255, 255, 255, 0.15);
 }
 
+.adroom-write-guide {
+    margin: 0 0 24px;
+    padding: 22px 22px 20px;
+    border: 1px solid var(--adroom-border);
+    border-radius: 14px;
+    background: linear-gradient(180deg, #fffdf9 0%, #fff 100%);
+    box-shadow: 0 1px 0 rgba(26, 21, 16, 0.04);
+}
+
+.adroom-write-guide__head {
+    margin-bottom: 18px;
+}
+
+.adroom-write-guide__title {
+    margin: 0 0 8px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--adroom-text);
+}
+
+.adroom-write-guide__lead {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--adroom-muted);
+}
+
+.adroom-write-guide__steps {
+    margin: 0 0 16px;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 12px;
+}
+
+.adroom-write-guide__step {
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--adroom-border);
+    background: #fff;
+}
+
+.adroom-write-guide__step.is-ok {
+    border-color: #b8e0c8;
+    background: #f4fbf6;
+}
+
+.adroom-write-guide__step.is-pending {
+    border-color: #f0dcc0;
+    background: #fffaf3;
+}
+
+.adroom-write-guide__step-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    margin-bottom: 8px;
+}
+
+.adroom-write-guide__step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--adroom-accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.adroom-write-guide__step.is-ok .adroom-write-guide__step-num {
+    background: #2f9d62;
+}
+
+.adroom-write-guide__step-title {
+    margin: 0;
+    flex: 1 1 auto;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--adroom-text);
+}
+
+.adroom-write-guide__status {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    background: #f5f0ea;
+    color: var(--adroom-muted);
+}
+
+.adroom-write-guide__status.is-ok {
+    background: #dff5e8;
+    color: #1d6b3f;
+}
+
+.adroom-write-guide__step-desc,
+.adroom-write-guide__step-meta {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--adroom-muted);
+}
+
+.adroom-write-guide__step-meta {
+    margin-top: 8px;
+    font-size: 12px;
+}
+
+.adroom-write-guide__note {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--adroom-accent-soft);
+    border: 1px solid #f0dfc4;
+}
+
+.adroom-write-guide__note p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.65;
+    color: #5c4a32;
+}
+
+.adroom-write-guide__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
 .adroom-tabs {
     display: flex;
     flex-wrap: wrap;
@@ -674,6 +811,21 @@
 
     .adroom-hero__write {
         display: flex;
+        width: 100%;
+        justify-content: center;
+        min-height: 44px;
+        box-sizing: border-box;
+    }
+
+    .adroom-write-guide {
+        padding: 18px 16px 16px;
+    }
+
+    .adroom-write-guide__actions {
+        flex-direction: column;
+    }
+
+    .adroom-write-guide__actions .adroom-btn {
         width: 100%;
         justify-content: center;
         min-height: 44px;

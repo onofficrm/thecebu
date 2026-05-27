@@ -205,3 +205,79 @@ if (!function_exists('eottae_business_snippet_delete')) {
         return true;
     }
 }
+
+if (!function_exists('eottae_business_snippet_promo_category_names')) {
+    /**
+     * 홍보 문구를 쓸 수 있는 게시판 분류명 (bo_category_list)
+     *
+     * @return array<int, string>
+     */
+    function eottae_business_snippet_promo_category_names()
+    {
+        return array('광고판');
+    }
+}
+
+if (!function_exists('eottae_business_snippet_category_is_promo')) {
+    function eottae_business_snippet_category_is_promo($ca_name)
+    {
+        $ca_name = trim((string) $ca_name);
+        if ($ca_name === '') {
+            return false;
+        }
+
+        return in_array($ca_name, eottae_business_snippet_promo_category_names(), true);
+    }
+}
+
+if (!function_exists('eottae_business_snippet_board_has_promo_category')) {
+    function eottae_business_snippet_board_has_promo_category($board)
+    {
+        if (empty($board['bo_use_category']) || empty($board['bo_category_list'])) {
+            return false;
+        }
+
+        $categories = explode('|', (string) $board['bo_category_list']);
+        foreach ($categories as $cat) {
+            if (eottae_business_snippet_category_is_promo($cat)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+if (!function_exists('eottae_business_snippet_write_allowed')) {
+    /**
+     * 글쓰기 화면에서 홍보 문구 UI/API 사용 가능 여부
+     */
+    function eottae_business_snippet_write_allowed($bo_table, $ca_name)
+    {
+        global $member, $is_member;
+
+        if (empty($is_member) || empty($member['mb_id'])) {
+            return false;
+        }
+        if (!function_exists('eottae_is_business_member') || !eottae_is_business_member($member)) {
+            return false;
+        }
+
+        return eottae_business_snippet_category_is_promo($ca_name);
+    }
+}
+
+if (!function_exists('eottae_business_snippet_write_url')) {
+    function eottae_business_snippet_write_url($bo_table = '')
+    {
+        $bo_table = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
+        if ($bo_table === '') {
+            $bo_table = defined('EOTTae_COMMUNITY_TABLE') ? EOTTae_COMMUNITY_TABLE : 'community';
+        }
+
+        $promo = eottae_business_snippet_promo_category_names();
+        $sca = !empty($promo[0]) ? $promo[0] : '';
+
+        return G5_BBS_URL.'/write.php?bo_table='.$bo_table.($sca !== '' ? '&sca='.urlencode($sca) : '');
+    }
+}

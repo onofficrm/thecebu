@@ -14,8 +14,6 @@ if (!function_exists('eottae_golf_join_card_html')) {
         $thumb_url = get_text($post['thumb_url'] ?? '');
         $status_class = get_text($post['status_class'] ?? 'recruiting');
         $course_name = get_text($post['golf_course_name'] ?? '');
-        $course_href = $shop_url !== '' ? $shop_url : $detail_url;
-        $thumb_href = $shop_url !== '' ? $shop_url : $detail_url;
         $tags = array_merge(
             (array) ($post['member_condition_tags'] ?? array()),
             (array) ($post['mood_tags'] ?? array())
@@ -26,15 +24,33 @@ if (!function_exists('eottae_golf_join_card_html')) {
         ?>
         <li class="golf-join-card golf-join-card--<?php echo $status_class; ?>">
             <div class="golf-join-card__inner">
-                <?php if ($thumb_url !== '') { ?>
-                <a href="<?php echo $thumb_href; ?>" class="golf-join-card__thumb"<?php echo $shop_url !== '' ? ' aria-label="'.get_text($course_name).' 업체정보 보기"' : ''; ?>>
-                    <img src="<?php echo $thumb_url; ?>" alt="" loading="lazy" decoding="async">
-                </a>
-                <?php } else { ?>
-                <a href="<?php echo $thumb_href; ?>" class="golf-join-card__thumb golf-join-card__thumb--empty" aria-hidden="true">
-                    <span>⛳</span>
-                </a>
-                <?php } ?>
+                <div class="golf-join-card__venue">
+                    <?php if ($shop_url !== '') { ?>
+                    <a href="<?php echo $shop_url; ?>" class="golf-join-card__shop-link" aria-label="<?php echo get_text($course_name); ?> 업체정보 상세보기">
+                        <?php if ($thumb_url !== '') { ?>
+                        <span class="golf-join-card__thumb">
+                            <img src="<?php echo $thumb_url; ?>" alt="" loading="lazy" decoding="async">
+                        </span>
+                        <?php } else { ?>
+                        <span class="golf-join-card__thumb golf-join-card__thumb--empty" aria-hidden="true">
+                            <span>⛳</span>
+                        </span>
+                        <?php } ?>
+                        <span class="golf-join-card__shop-caption">
+                            <span class="golf-join-card__shop-caption-line">업체정보</span>
+                            <span class="golf-join-card__shop-caption-line">상세보기 →</span>
+                        </span>
+                    </a>
+                    <?php } elseif ($thumb_url !== '') { ?>
+                    <a href="<?php echo $detail_url; ?>" class="golf-join-card__thumb" aria-hidden="true" tabindex="-1">
+                        <img src="<?php echo $thumb_url; ?>" alt="" loading="lazy" decoding="async">
+                    </a>
+                    <?php } else { ?>
+                    <a href="<?php echo $detail_url; ?>" class="golf-join-card__thumb golf-join-card__thumb--empty" aria-hidden="true" tabindex="-1">
+                        <span>⛳</span>
+                    </a>
+                    <?php } ?>
+                </div>
 
                 <div class="golf-join-card__body">
                     <div class="golf-join-card__top">
@@ -49,11 +65,8 @@ if (!function_exists('eottae_golf_join_card_html')) {
                         <?php } ?>
                     </div>
 
-                    <a href="<?php echo $course_href; ?>" class="golf-join-card__course<?php echo $shop_url !== '' ? ' golf-join-card__course--shop' : ''; ?>">
+                    <a href="<?php echo $detail_url; ?>" class="golf-join-card__course">
                         <?php echo $course_name; ?>
-                        <?php if ($shop_url !== '') { ?>
-                        <span class="golf-join-card__course-hint">업체정보</span>
-                        <?php } ?>
                     </a>
 
                     <a href="<?php echo $detail_url; ?>" class="golf-join-card__detail">

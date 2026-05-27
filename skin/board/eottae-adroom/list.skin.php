@@ -12,6 +12,9 @@ $list_base = function_exists('eottae_adroom_list_url') ? eottae_adroom_list_url(
 $hero = eottae_adroom_board_hero($board, $sca);
 $today_count = function_exists('eottae_community_today_count') ? eottae_community_today_count($bo_table) : 0;
 $can_write_ad = function_exists('eottae_adroom_can_write') && eottae_adroom_can_write($member ?? null, $is_admin === 'super');
+$adroom_write_guide = function_exists('eottae_adroom_render_write_guide')
+    ? eottae_adroom_render_write_guide($member ?? array(), $board, !empty($is_member), $is_admin === 'super', $write_href, $can_write_ad)
+    : '';
 ?>
 
 <div class="adroom-page board-wrap board-wrap--eottae-adroom" id="bo_list" style="width:<?php echo $width; ?>">
@@ -35,6 +38,8 @@ $can_write_ad = function_exists('eottae_adroom_can_write') && eottae_adroom_can_
             <?php } ?>
         </div>
     </section>
+
+    <?php echo $adroom_write_guide; ?>
 
     <?php if ($is_category && !empty($adroom_tabs)) { ?>
     <nav class="adroom-tabs" aria-label="광고 분류">
@@ -103,9 +108,13 @@ $can_write_ad = function_exists('eottae_adroom_can_write') && eottae_adroom_can_
         <?php if (count($list) === 0) { ?>
         <div class="adroom-empty">
             <p class="adroom-empty__title">등록된 광고가 없습니다</p>
-            <p class="adroom-empty__desc">업체 회원이라면 첫 광고를 등록해 보세요.</p>
             <?php if ($write_href && $can_write_ad) { ?>
+            <p class="adroom-empty__desc">첫 광고를 등록해 보세요.</p>
             <a href="<?php echo $write_href; ?>" class="adroom-btn adroom-btn--primary">광고 등록하기</a>
+            <?php } elseif ($adroom_write_guide === '') { ?>
+            <p class="adroom-empty__desc">업체 회원이라면 첫 광고를 등록해 보세요.</p>
+            <?php } else { ?>
+            <p class="adroom-empty__desc">위 안내를 확인한 뒤 조건을 충족하면 광고를 등록할 수 있습니다.</p>
             <?php } ?>
         </div>
         <?php } ?>

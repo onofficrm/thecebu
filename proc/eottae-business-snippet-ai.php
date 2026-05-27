@@ -19,6 +19,18 @@ if (!function_exists('eottae_is_business_member') || !eottae_is_business_member(
     exit;
 }
 
+$write_bo_table = isset($_POST['bo_table']) ? preg_replace('/[^a-z0-9_]/i', '', (string) $_POST['bo_table']) : '';
+$write_ca_name = isset($_POST['ca_name']) ? trim((string) $_POST['ca_name']) : '';
+if ($write_bo_table !== '' || $write_ca_name !== '') {
+    if (!eottae_business_snippet_write_allowed($write_bo_table, $write_ca_name)) {
+        echo json_encode(array(
+            'success' => false,
+            'message' => '홍보 문구는 분류가 광고판인 글에서만 이용할 수 있습니다.',
+        ), JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+}
+
 if (!function_exists('g5site_cfg') && is_file(G5_PATH.'/_site.config.php')) {
     include_once G5_PATH.'/_site.config.php';
 }

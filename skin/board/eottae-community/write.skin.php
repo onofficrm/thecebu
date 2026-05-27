@@ -11,7 +11,7 @@ $snippet_prefill_id = 0;
 if ($w !== 'u' && !empty($is_member) && function_exists('eottae_is_business_member') && eottae_is_business_member($member)) {
     include_once G5_LIB_PATH.'/eottae-business-snippet.lib.php';
     $snippet_prefill_id = isset($_GET['snippet_id']) ? (int) $_GET['snippet_id'] : 0;
-    if ($snippet_prefill_id > 0) {
+    if ($snippet_prefill_id > 0 && eottae_business_snippet_write_allowed($bo_table, $write_category)) {
         $snippet_prefill = eottae_business_snippet_get($member['mb_id'], $snippet_prefill_id);
         if (!empty($snippet_prefill)) {
             $subject = $snippet_prefill['wr_subject'];

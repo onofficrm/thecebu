@@ -31,6 +31,18 @@ if ($action === 'list') {
 }
 
 if ($action === 'save') {
+    $write_bo_table = isset($_POST['bo_table']) ? preg_replace('/[^a-z0-9_]/i', '', (string) $_POST['bo_table']) : '';
+    $write_ca_name = isset($_POST['ca_name']) ? trim((string) $_POST['ca_name']) : '';
+    if ($write_bo_table !== '' || $write_ca_name !== '') {
+        if (!eottae_business_snippet_write_allowed($write_bo_table, $write_ca_name)) {
+            echo json_encode(array(
+                'success' => false,
+                'message' => '홍보 문구는 분류가 광고판인 글에서만 이용할 수 있습니다.',
+            ), JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+    }
+
     $snippet_id = isset($_POST['snippet_id']) ? (int) $_POST['snippet_id'] : 0;
     $label = isset($_POST['label']) ? (string) $_POST['label'] : '';
     $wr_subject = isset($_POST['wr_subject']) ? (string) $_POST['wr_subject'] : '';

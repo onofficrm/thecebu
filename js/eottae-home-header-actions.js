@@ -239,6 +239,24 @@
     return false;
   }
 
+  function adroomNavExists(scope) {
+    if (!scope) {
+      return false;
+    }
+
+    var links = scope.querySelectorAll('a[href]');
+    var i;
+    for (i = 0; i < links.length; i += 1) {
+      var href = links[i].getAttribute('href') || '';
+      var label = normalizeNavLabel(links[i].textContent);
+      if (label === '광고방' || href.indexOf('/ad-room') !== -1 || href.indexOf('bo_table=adroom') !== -1 || href.indexOf('bo_table%3Dadroom') !== -1) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   function findNavLinkByLabel(scope, labelText) {
     if (!scope) {
       return null;
@@ -263,6 +281,47 @@
     link.setAttribute(attrName, '1');
     link.textContent = data.column_label || '컬럼';
     return link;
+  }
+
+  function buildAdroomNavLink(data, className, attrName) {
+    var link = document.createElement('a');
+    link.href = data.adroom_url;
+    link.className = className || 'eottae-gnb-header__nav-link';
+    link.setAttribute(attrName, '1');
+    link.textContent = data.adroom_label || '광고방';
+    return link;
+  }
+
+  function findAdroomInsertAfter(scope) {
+    var column = scope.querySelector('[data-eottae-home-column-nav="1"], [data-eottae-home-column-menu="1"]');
+    if (column) {
+      return column;
+    }
+    return findNavLinkByLabel(scope, '컬럼') || findNavLinkByLabel(scope, '커뮤니티');
+  }
+
+  function mountAdroomNav(data) {
+    if (!data.adroom_url) {
+      return;
+    }
+
+    var header = document.querySelector('header');
+    if (!header || adroomNavExists(header)) {
+      return;
+    }
+
+    var anchor = findAdroomInsertAfter(header);
+    if (!anchor || !anchor.parentNode) {
+      return;
+    }
+
+    var className = anchor.className || 'eottae-gnb-header__nav-link';
+    if (className.indexOf('eottae-gnb-header__nav-link') === -1) {
+      className = 'eottae-gnb-header__nav-link';
+    }
+
+    var adroomLink = buildAdroomNavLink(data, className, 'data-eottae-home-adroom-nav');
+    anchor.parentNode.insertBefore(adroomLink, anchor.nextSibling);
   }
 
   function mountColumnNav(data) {
@@ -312,6 +371,36 @@
 
     if (community && community.parentNode === menu) {
       menu.insertBefore(link, community.nextSibling);
+      return;
+    }
+
+    menu.appendChild(link);
+  }
+
+  function mountAdroomInMobileMenu(data) {
+    if (!data.adroom_url) {
+      return;
+    }
+
+    var menu = findMobileMenuNav();
+    if (!menu || menu.querySelector('[data-eottae-home-adroom-menu="1"]')) {
+      return;
+    }
+
+    if (adroomNavExists(menu)) {
+      return;
+    }
+
+    var anchor = findAdroomInsertAfter(menu);
+    var link = buildAdroomNavLink(
+      data,
+      'eottae-gnb-header__mobile-link',
+      'data-eottae-home-adroom-menu'
+    );
+    link.setAttribute('data-eottae-home-adroom-menu', '1');
+
+    if (anchor && anchor.parentNode === menu) {
+      menu.insertBefore(link, anchor.nextSibling);
       return;
     }
 
@@ -399,6 +488,8 @@
     mountCalendarInMobileMenu(data);
     mountColumnNav(data);
     mountColumnInMobileMenu(data);
+    mountAdroomNav(data);
+    mountAdroomInMobileMenu(data);
     hideRentcarMenuLinks();
     hideMassageMenuLinks();
     replaceTourNavWithGolfJoin(data);

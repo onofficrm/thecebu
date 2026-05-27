@@ -105,3 +105,33 @@ if (!function_exists('eottae_column_render_social_form_fields')) {
         return (string) ob_get_clean();
     }
 }
+
+if (!function_exists('eottae_column_render_social_form_fields_compact')) {
+    function eottae_column_render_social_form_fields_compact(array $values = array())
+    {
+        $labels = eottae_column_social_platform_labels();
+        $placeholders = array(
+            'youtube_url'    => 'https://www.youtube.com/@...',
+            'facebook_url'   => 'https://www.facebook.com/...',
+            'instagram_url'  => 'https://www.instagram.com/...',
+            'tiktok_url'     => 'https://www.tiktok.com/@...',
+            'naver_blog_url' => 'https://blog.naver.com/...',
+        );
+        ob_start();
+        ?>
+        <div class="sebu-column-form__sns-grid">
+            <?php foreach (eottae_column_social_field_keys() as $key) {
+                $label = $labels[$key] ?? $key;
+                ?>
+            <label class="sebu-column-form__field sebu-column-form__field--sns">
+                <span class="sebu-column-form__label"><?php echo get_text($label); ?></span>
+                <input type="url" name="<?php echo $key; ?>" class="sebu-column-form__input" value="<?php echo get_text($values[$key] ?? ''); ?>" placeholder="<?php echo get_text($placeholders[$key] ?? 'https://'); ?>" autocomplete="url">
+            </label>
+                <?php
+            } ?>
+        </div>
+        <?php
+
+        return (string) ob_get_clean();
+    }
+}

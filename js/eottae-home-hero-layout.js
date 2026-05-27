@@ -1,5 +1,5 @@
 /**
- * 홈(빌더) — 히어로 3열 높이: 3열(로그인+이벤트) 콘텐츠 높이 기준으로 1·2열 맞춤
+ * 홈(빌더) — 히어로 3열 높이: 검색·채팅·사이드바 중 가장 높은 열 기준으로 맞춤
  */
 (function (global) {
   'use strict';
@@ -7,6 +7,8 @@
   var SYNC_CLASS = 'eottae-home-hero-grid--height-sync';
   var MIN_COL_H = 280;
   var resizeTimer = null;
+  var resizeObserver = null;
+  var syncing = false;
 
   function findHeroGrid() {
     if (typeof global.findEottaeHeroGrid === 'function') {
@@ -88,7 +90,26 @@
     grid.removeAttribute('data-eottae-hero-height');
   }
 
-  function applyHeroColumnHeights(grid, sidebar, targetH) {
+  function measureMaxColumnHeight(grid) {
+    var cols = heroColumns(grid);
+    var maxH = 0;
+    var i;
+    var h;
+
+    for (i = 0; i < cols.length; i += 1) {
+      if (!cols[i]) {
+        continue;
+      }
+      h = Math.ceil(cols[i].getBoundingClientRect().height);
+      if (h > maxH) {
+        maxH = h;
+      }
+    }
+
+    return maxH;
+  }
+
+  function applyHeroColumnHeights(grid, targetH) {
     var cols = heroColumns(grid);
     var i;
     for (i = 0; i < cols.length; i += 1) {
@@ -98,9 +119,7 @@
       cols[i].style.height = targetH + 'px';
       cols[i].style.maxHeight = targetH + 'px';
       cols[i].style.minHeight = targetH + 'px';
-      if (cols[i] !== sidebar) {
-        cols[i].style.overflow = 'hidden';
-      }
+      cols[i].style.overflow = 'hidden';
     }
 
     grid.style.setProperty('--eottae-hero-col-h', targetH + 'px');
@@ -108,7 +127,38 @@
     grid.setAttribute('data-eottae-hero-height', String(targetH));
   }
 
+  function observeHeroColumns(grid) {
+    if (typeof ResizeObserver === 'undefined' || !grid) {
+      return;
+    }
+
+    if (resizeObserver) {
+      resizeObserver.disconnect();
+      resizeObserver = null;
+    }
+
+    var cols = heroColumns(grid);
+    if (!cols.length) {
+      return;
+    }
+
+    resizeObserver = new ResizeObserver(function () {
+      scheduleSync(120);
+    });
+
+    var i;
+    for (i = 0; i < cols.length; i += 1) {
+      if (cols[i]) {
+        resizeObserver.observe(cols[i]);
+      }
+    }
+  }
+
   function syncHeroColumnHeights() {
+    if (syncing) {
+      return false;
+    }
+
     var grid = findHeroGrid();
     if (!grid || !grid.classList.contains('eottae-home-hero-grid--3col')) {
       return false;
@@ -116,33 +166,41 @@
 
     if (global.innerWidth < 1024) {
       clearHeroColumnHeights(grid);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+        resizeObserver = null;
+      }
       return true;
     }
 
-    var sidebar = findHeroSidebarColumn(grid);
-    if (!sidebar) {
+    var cols = heroColumns(grid);
+    if (!cols[0] || !cols[1] || !cols[2]) {
       return false;
     }
 
-    var targetH = Math.ceil(sidebar.getBoundingClientRect().height);
-    if (targetH < MIN_COL_H) {
-      return false;
+    syncing = true;
+
+    if (resizeObserver) {
+      resizeObserver.disconnect();
+      resizeObserver = null;
     }
 
     var prevH = parseInt(grid.getAttribute('data-eottae-hero-height') || '0', 10) || 0;
-    if (prevH > 0 && Math.abs(targetH - prevH) < 3 && grid.classList.contains(SYNC_CLASS)) {
-      return true;
+    clearHeroColumnHeights(grid);
+
+    var targetH = measureMaxColumnHeight(grid);
+    if (targetH < MIN_COL_H) {
+      syncing = false;
+      return false;
     }
 
-    if (!grid.classList.contains(SYNC_CLASS)) {
-      clearHeroColumnHeights(grid);
-      targetH = Math.ceil(sidebar.getBoundingClientRect().height);
-      if (targetH < MIN_COL_H) {
-        return false;
-      }
+    if (prevH > 0 && Math.abs(targetH - prevH) < 3) {
+      targetH = prevH;
     }
 
-    applyHeroColumnHeights(grid, sidebar, targetH);
+    applyHeroColumnHeights(grid, targetH);
+    syncing = false;
+    observeHeroColumns(grid);
     return true;
   }
 
@@ -159,6 +217,8 @@
   function init() {
     var run = function () {
       scheduleSync(80);
+      scheduleSync(400);
+      scheduleSync(1200);
     };
 
     if (typeof global.eottaeHomeAfterReactReady === 'function') {
@@ -181,7 +241,6 @@
     }
 
     var observerScheduled = false;
-    var layoutObserver = null;
     var observer = new MutationObserver(function () {
       if (observerScheduled) {
         return;
@@ -193,18 +252,10 @@
         if (!grid || !grid.classList.contains('eottae-home-hero-grid--3col')) {
           return;
         }
-        if (grid.getAttribute('data-eottae-hero-height')) {
-          if (layoutObserver) {
-            layoutObserver.disconnect();
-            layoutObserver = null;
-          }
-          return;
-        }
         scheduleSync(100);
       });
     });
 
-    layoutObserver = observer;
     observer.observe(root, {
       childList: true,
       subtree: true,

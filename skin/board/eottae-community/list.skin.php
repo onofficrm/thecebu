@@ -127,27 +127,29 @@ if ($is_talkroom_board) {
                 </div>
                 <?php } ?>
                 <div class="community-post__body">
-                    <div class="community-post__tags">
-                        <?php if ($is_ai_post) { ?>
-                        <?php echo eottae_talkroom_ai_message_render_badge($item, 'sm'); ?>
-                        <?php } ?>
-                        <?php if ($is_notice) { ?>
-                        <span class="community-badge community-badge--notice"><span aria-hidden="true">📣</span> 공지</span>
-                        <?php } else { ?>
-                            <?php if ($ca_name !== '') { ?>
-                        <span class="community-badge <?php echo eottae_community_badge_class($ca_name); ?>"><?php echo $ca_name; ?></span>
+                    <div class="community-post__head">
+                        <div class="community-post__title-row">
+                            <?php if ($is_ai_post) { ?>
+                            <?php echo eottae_talkroom_ai_message_render_badge($item, 'sm'); ?>
                             <?php } ?>
-                            <?php if ($region !== '') { ?>
-                        <span class="community-badge community-badge--region"><?php echo $region; ?></span>
+                            <?php if ($is_notice) { ?>
+                            <span class="community-badge community-badge--notice"><span aria-hidden="true">📣</span> 공지</span>
+                            <?php } else { ?>
+                                <?php if ($ca_name !== '') { ?>
+                            <span class="community-badge <?php echo eottae_community_badge_class($ca_name); ?>"><?php echo $ca_name; ?></span>
+                                <?php } ?>
+                                <?php if ($region !== '') { ?>
+                            <span class="community-badge community-badge--region"><?php echo $region; ?></span>
+                                <?php } ?>
+                                <?php if ($is_new) { ?><span class="community-badge community-badge--new">NEW</span><?php } ?>
+                                <?php if ($is_hot) { ?><span class="community-badge community-badge--hot">HOT</span><?php } ?>
                             <?php } ?>
-                            <?php if ($is_new) { ?><span class="community-badge community-badge--new">NEW</span><?php } ?>
-                            <?php if ($is_hot) { ?><span class="community-badge community-badge--hot">HOT</span><?php } ?>
+                            <h2 class="community-post__title<?php echo $is_ai_post ? ' talk-ai-msg__title' : ''; ?>"><?php echo $item['subject']; ?></h2>
+                        </div>
+                        <?php if ($snippet !== '') { ?>
+                        <p class="community-post__excerpt"><?php echo $snippet; ?></p>
                         <?php } ?>
                     </div>
-                    <h2 class="community-post__title<?php echo $is_ai_post ? ' talk-ai-msg__title' : ''; ?>"><?php echo $item['subject']; ?></h2>
-                    <?php if ($snippet !== '') { ?>
-                    <p class="community-post__excerpt"><?php echo $snippet; ?></p>
-                    <?php } ?>
                     <div class="community-post__foot">
                         <div class="community-post__meta">
                             <?php if ($is_ai_post) { ?>

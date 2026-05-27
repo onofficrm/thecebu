@@ -1131,6 +1131,8 @@ if (!function_exists('eottae_builder_inject_home_header_actions_script')) {
             'golf_join_label'=> '골프조인',
             'column_url'     => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/',
             'column_label'   => function_exists('eottae_column_menu_label') ? eottae_column_menu_label() : '컬럼',
+            'adroom_url'     => function_exists('eottae_adroom_list_url') ? eottae_adroom_list_url() : G5_URL.'/ad-room/',
+            'adroom_label'   => '광고방',
         );
         $payload_json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if ($payload_json === false) {

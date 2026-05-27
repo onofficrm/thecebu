@@ -124,6 +124,44 @@
     }
   }
 
+  var applyRoot = document.querySelector('[data-sebu-column-apply]');
+  if (applyRoot) {
+    var avatarInput = applyRoot.querySelector('[data-column-apply-avatar-input]');
+    var avatarImg = applyRoot.querySelector('[data-column-apply-avatar-img]');
+    var avatarInitial = applyRoot.querySelector('[data-column-apply-avatar-initial]');
+    var penNameInput = applyRoot.querySelector('[data-column-apply-pen-name]');
+
+    function updateInitialFromPenName() {
+      if (!avatarInitial || !penNameInput || (avatarImg && avatarImg.classList.contains('is-visible'))) {
+        return;
+      }
+      var name = (penNameInput.value || '').trim();
+      avatarInitial.textContent = name ? name.charAt(0) : '?';
+    }
+
+    if (penNameInput) {
+      penNameInput.addEventListener('input', updateInitialFromPenName);
+    }
+
+    if (avatarInput && avatarImg) {
+      avatarInput.addEventListener('change', function () {
+        var file = avatarInput.files && avatarInput.files[0];
+        if (!file || !file.type.match(/^image\//)) {
+          avatarImg.removeAttribute('src');
+          avatarImg.classList.remove('is-visible');
+          updateInitialFromPenName();
+          return;
+        }
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+          avatarImg.src = ev.target && ev.target.result ? ev.target.result : '';
+          avatarImg.classList.add('is-visible');
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  }
+
   var writeRoot = document.querySelector('[data-sebu-column-write]');
   if (writeRoot) {
     var writeDeleteBtn = writeRoot.querySelector('[data-sebu-column-delete]');

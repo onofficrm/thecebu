@@ -11,7 +11,9 @@ if (!function_exists('eottae_is_business_member') || !eottae_is_business_member(
 
 include_once G5_LIB_PATH.'/eottae-business-snippet.lib.php';
 
-$community_write_url = G5_BBS_URL.'/write.php?bo_table='.(defined('EOTTae_COMMUNITY_TABLE') ? EOTTae_COMMUNITY_TABLE : 'community');
+$community_write_url = function_exists('eottae_business_snippet_write_url')
+    ? eottae_business_snippet_write_url(defined('EOTTae_COMMUNITY_TABLE') ? EOTTae_COMMUNITY_TABLE : 'community')
+    : G5_BBS_URL.'/write.php?bo_table='.(defined('EOTTae_COMMUNITY_TABLE') ? EOTTae_COMMUNITY_TABLE : 'community');
 $snippet_max = eottae_business_snippet_max_count();
 
 g5_page_start('홍보 문구 관리');
@@ -21,7 +23,7 @@ g5_page_start('홍보 문구 관리');
     <header class="business-snippets-page__header">
         <a href="<?php echo G5_URL; ?>/page/eottae-mypage.php" class="business-snippets-page__back">← 마이페이지</a>
         <h1 class="business-snippets-page__title">자주 쓰는 홍보 문구</h1>
-        <p class="business-snippets-page__desc">PC에서 문구를 만들고 관리한 뒤, 커뮤니티 글쓰기에서 바로 불러올 수 있습니다. AI 생성도 PC·모바일 모두에서 이용할 수 있습니다.</p>
+        <p class="business-snippets-page__desc">PC에서 문구를 만들고 관리한 뒤, 커뮤니티에서 <strong>분류 → 광고판</strong>을 선택한 글쓰기 화면에서 불러올 수 있습니다. AI 생성도 PC·모바일 모두에서 이용할 수 있습니다.</p>
     </header>
 
     <section class="business-snippets-manager" data-business-snippets-manager aria-label="홍보 문구 관리">

@@ -3099,6 +3099,8 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 
 .community-post__link {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: flex-start;
   gap: 14px;
   padding: 16px 18px;
@@ -3108,7 +3110,7 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 }
 
 .community-post--has-thumb .community-post__link {
-  gap: 16px;
+  gap: 14px;
 }
 
 .community-post__link:hover {
@@ -3121,6 +3123,24 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 
 .community-post__body {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.community-post__head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.community-post__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -3201,23 +3221,21 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 }
 
 .community-post__title {
-  margin: 0 0 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
   font-size: 16px;
   font-weight: 800;
   line-height: 1.45;
   color: #0f172a;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.community-post--has-thumb .community-post__title {
-  -webkit-line-clamp: 1;
-}
-
 .community-post__excerpt {
-  margin: 0 0 10px;
+  margin: 0;
   color: #64748b;
   font-size: 13px;
   line-height: 1.55;
@@ -3228,8 +3246,7 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 }
 
 .community-post--has-thumb .community-post__excerpt {
-  -webkit-line-clamp: 1;
-  margin-bottom: 8px;
+  -webkit-line-clamp: 2;
 }
 
 .community-post__foot {
@@ -3271,9 +3288,9 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 }
 
 .community-post__thumb {
-  width: 96px;
-  height: 96px;
-  flex-shrink: 0;
+  flex: 0 0 88px;
+  width: 88px;
+  height: 88px;
   border-radius: 14px;
   overflow: hidden;
   background: #f1f5f9;
@@ -3909,25 +3926,31 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 
   .community-post__link {
     flex-direction: row;
+    flex-wrap: nowrap;
     align-items: flex-start;
     padding: 14px 14px;
     gap: 12px;
   }
 
   .community-post__thumb {
+    flex: 0 0 80px;
     width: 80px;
     height: 80px;
     border-radius: 12px;
+  }
+
+  .community-post__title {
+    font-size: 15px;
+  }
+
+  .community-post__excerpt {
+    -webkit-line-clamp: 2;
   }
 
   .community-post__foot {
     flex-direction: column;
     align-items: flex-start;
     gap: 6px;
-  }
-
-  .community-post__title {
-    font-size: 15px;
   }
 
   .community-tabs {
@@ -9057,7 +9080,7 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
     display: grid !important;
     grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.95fr) minmax(0, 0.85fr);
     gap: 1rem;
-    align-items: start;
+    align-items: stretch;
   }
 
   .eottae-home-hero-grid--3col > .lg\:col-span-8,
@@ -9089,8 +9112,9 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
   .eottae-home-hero-grid--3col > .home-hero-sidebar-column {
     display: flex !important;
     flex-direction: column;
-    align-self: start;
+    align-self: stretch;
     gap: 1rem;
+    min-height: 100%;
   }
 
   .eottae-home-hero-grid--3col > .lg\:col-span-4 > section.community-login-box,
@@ -9100,19 +9124,31 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
 
   .eottae-home-hero-grid--3col .home-hero-sidebar-events,
   .home-hero-sidebar-column .home-hero-sidebar-events {
-    flex: 0 0 auto;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
   }
 
   .home-hero-sidebar-events .home-events-stack {
-    flex: 0 0 auto;
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
-  /* 3열 높이 기준 — JS syncEottaeHeroColumnHeights */
-  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > .lg\:col-span-8 > section {
+  /* 3열 높이 맞춤 — JS syncEottaeHeroColumnHeights (가장 높은 열 기준) */
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > .lg\:col-span-8 > section:first-of-type {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
     height: 100% !important;
     min-height: 0 !important;
     max-height: 100%;
     box-sizing: border-box;
+  }
+
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > .lg\:col-span-8 > section:first-of-type > div {
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
   .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > .home-hero-chat-column {
@@ -9123,6 +9159,13 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
 
   .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync .public-group-chat--hero .public-group-chat__inner {
     min-height: 0 !important;
+  }
+
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > .lg\:col-span-4,
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > .home-hero-sidebar-column {
+    height: var(--eottae-hero-col-h, auto);
+    max-height: var(--eottae-hero-col-h, none);
+    min-height: var(--eottae-hero-col-h, 0);
   }
 }
 
