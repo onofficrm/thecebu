@@ -13,6 +13,7 @@ include_once G5_LIB_PATH.'/eottae-board-seo.lib.php';
 include_once G5_LIB_PATH.'/eottae-board-editor.lib.php';
 include_once G5_LIB_PATH.'/eottae-business-snippet.lib.php';
 include_once G5_LIB_PATH.'/eottae-shop-owner.lib.php';
+include_once G5_LIB_PATH.'/eottae-shop-spot.lib.php';
 
 include_once G5_LIB_PATH.'/eottae-business-coupon.lib.php';
 include_once G5_LIB_PATH.'/eottae-promo-coupon.lib.php';

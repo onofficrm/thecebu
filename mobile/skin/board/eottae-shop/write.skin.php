@@ -305,6 +305,14 @@ $eottae_ai_enabled = !empty($eottae_ai_cfg['enabled']) && !empty($eottae_ai_cfg[
         <?php if ($is_use_captcha) { echo $captcha_html; } ?>
     </div>
 
+    <?php
+    if ($w === 'u' && !empty($wr_id)) {
+        include_once G5_PATH.'/components/eottae/shop-spot-apply.php';
+        eottae_render_shop_spot_apply($write, $bo_table);
+    } elseif ($w === '') { ?>
+    <p class="shop-spot-apply__hint shop-register-page__spot-hint">업체 등록이 완료되면 <strong>수정 화면</strong>에서 포인트로 목록 최상단 「최우수업체」 노출을 신청할 수 있습니다.</p>
+    <?php } ?>
+
     <div class="shop-register-page__nav">
         <button type="button" class="btn btn--ghost" data-wizard="prev">이전</button>
         <button type="button" class="btn btn--primary" data-wizard="next">다음</button>

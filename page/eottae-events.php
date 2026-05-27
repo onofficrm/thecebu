@@ -28,6 +28,7 @@ g5_page_start('이벤트·프로모션');
         <?php if ($is_admin === 'super') { ?>
         <div class="event-promo-page__admin-links">
             <a href="<?php echo G5_URL; ?>/page/eottae-admin-promo-coupons.php" class="event-promo-page__admin-link">프로모션 쿠폰 관리</a>
+            <a href="<?php echo G5_URL; ?>/page/eottae-admin-shop-spots.php" class="event-promo-page__admin-link">최우수 업체 노출</a>
             <?php
             include_once G5_LIB_PATH.'/eottae-review-delete.lib.php';
             $review_delete_pending = eottae_review_delete_pending_count();

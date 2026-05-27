@@ -363,6 +363,7 @@ if (!function_exists('eottae_shop_from_write')) {
             'sns'           => $sns_raw,
             'content'       => isset($wr['wr_content']) ? $wr['wr_content'] : '',
             'wr_id'         => isset($wr['wr_id']) ? (int) $wr['wr_id'] : 0,
+            'bo_table'      => $bo_table !== '' ? preg_replace('/[^a-z0-9_]/', '', (string) $bo_table) : '',
         );
     }
 }
@@ -380,7 +381,7 @@ if (!function_exists('eottae_shop_sns_links')) {
     function eottae_shop_sns_links($raw)
     {
         $raw = trim(stripslashes((string) $raw));
-        if ($raw === '' || stripos($raw, 'ad') !== false) {
+        if ($raw === '') {
             return array();
         }
 
@@ -1776,7 +1777,7 @@ if (!function_exists('eottae_shop_list_card_badges')) {
      * @param array<string, mixed> $row
      * @param array<string, mixed> $summary
      * @param int $save_count
-     * @return array{is_ad:bool,is_recommended:bool,is_popular:bool}
+     * @return array{is_featured:bool,is_recommended:bool,is_popular:bool}
      */
     function eottae_shop_list_card_badges(array $row, array $summary, $save_count = 0)
     {
@@ -1785,12 +1786,22 @@ if (!function_exists('eottae_shop_list_card_badges')) {
         $hit = isset($row['wr_hit']) ? (int) $row['wr_hit'] : 0;
         $save_count = max(0, (int) $save_count);
 
-        $is_ad = isset($row['wr_link2']) && stripos((string) $row['wr_link2'], 'ad') !== false;
-        $is_recommended = $average >= 4.8 && $count >= 10;
-        $is_popular = !$is_ad && ($hit >= 30 || $save_count >= 3);
+        $list_bo_table = '';
+        if (!empty($row['bo_table'])) {
+            $list_bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $row['bo_table']);
+        }
+        $wr_id = isset($row['wr_id']) ? (int) $row['wr_id'] : 0;
+        $is_featured = $list_bo_table !== '' && $wr_id > 0
+            && function_exists('eottae_shop_spot_is_featured')
+            && eottae_shop_spot_is_featured($list_bo_table, $wr_id);
+        if (!$is_featured && !empty($row['_eottae_spot_featured'])) {
+            $is_featured = true;
+        }
+        $is_recommended = !$is_featured && $average >= 4.8 && $count >= 10;
+        $is_popular = !$is_featured && ($hit >= 30 || $save_count >= 3);
 
         return array(
-            'is_ad'          => $is_ad,
+            'is_featured'    => $is_featured,
             'is_recommended' => $is_recommended,
             'is_popular'     => $is_popular,
         );
@@ -4375,8 +4386,15 @@ if (!function_exists('eottae_shop_fetch_raw_rows')) {
         }
 
         $where_sql = implode(' and ', eottae_shop_list_where_parts($bo_table, $args));
-        $count = sql_fetch(" select count(*) as cnt from `{$write_table}` where {$where_sql} ");
+        $spot_exclude_sql = function_exists('eottae_shop_spot_exclude_wr_ids_sql')
+            ? eottae_shop_spot_exclude_wr_ids_sql($bo_table)
+            : '';
+        $count = sql_fetch(" select count(*) as cnt from `{$write_table}` where {$where_sql}{$spot_exclude_sql} ");
         $total = isset($count['cnt']) ? (int) $count['cnt'] : 0;
+        $spot_count = function_exists('eottae_shop_spot_list_spot_count')
+            ? eottae_shop_spot_list_spot_count($bo_table)
+            : 0;
+        $total += $spot_count;
         if ($total < 1) {
             return array('total' => 0, 'rows' => array());
         }
@@ -4389,7 +4407,7 @@ if (!function_exists('eottae_shop_fetch_raw_rows')) {
         $user_lng = isset($args['eottae_lng']) ? trim((string) $args['eottae_lng']) : '';
 
         if ($sst === 'near' && $user_lat !== '' && $user_lng !== '' && is_numeric($user_lat) && is_numeric($user_lng)) {
-            $result = sql_query(" select * from `{$write_table}` where {$where_sql} order by wr_id desc limit {$max_rows} ", false);
+            $result = sql_query(" select * from `{$write_table}` where {$where_sql}{$spot_exclude_sql} order by wr_id desc limit {$max_rows} ", false);
             $rows = array();
             if ($result) {
                 while ($row = sql_fetch_array($result)) {
@@ -4408,9 +4426,9 @@ if (!function_exists('eottae_shop_fetch_raw_rows')) {
         $limit = isset($args['limit']) ? max(1, (int) $args['limit']) : $max_rows;
 
         if ($offset > 0 || $limit < $max_rows) {
-            $sql = " select * from `{$write_table}` where {$where_sql} {$order_sql} limit {$offset}, {$limit} ";
+            $sql = " select * from `{$write_table}` where {$where_sql}{$spot_exclude_sql} {$order_sql} limit {$offset}, {$limit} ";
         } else {
-            $sql = " select * from `{$write_table}` where {$where_sql} {$order_sql} limit {$max_rows} ";
+            $sql = " select * from `{$write_table}` where {$where_sql}{$spot_exclude_sql} {$order_sql} limit {$max_rows} ";
         }
 
         $result = sql_query($sql, false);
@@ -4439,6 +4457,14 @@ if (!function_exists('eottae_shop_list_chunk')) {
     {
         $offset = isset($args['offset']) ? max(0, (int) $args['offset']) : 0;
         $limit = isset($args['limit']) ? max(1, (int) $args['limit']) : eottae_shop_infinite_batch_limit($offset);
+        $spot_count = function_exists('eottae_shop_spot_list_spot_count')
+            ? eottae_shop_spot_list_spot_count($bo_table)
+            : 0;
+        $reg_offset = max(0, $offset - $spot_count);
+        $reg_limit = $limit;
+        if ($offset === 0 && $spot_count > 0) {
+            $reg_limit = max(0, $limit - $spot_count);
+        }
 
         $sst = isset($args['sst']) ? trim((string) $args['sst']) : '';
         $fetch_args = $args;
@@ -4450,15 +4476,33 @@ if (!function_exists('eottae_shop_list_chunk')) {
         ) {
             $fetch_args['max_rows'] = 2000;
             $bundle = eottae_shop_fetch_raw_rows($bo_table, $fetch_args);
-            $slice = array_slice($bundle['rows'], $offset, $limit);
+            $slice = array_slice($bundle['rows'], $reg_offset, $reg_limit > 0 ? $reg_limit : 0);
+            $slice = function_exists('eottae_shop_spot_merge_list_rows')
+                ? eottae_shop_spot_merge_list_rows($bo_table, $slice, $offset)
+                : $slice;
+            if ($reg_limit > 0 && count($slice) > $limit) {
+                $slice = array_slice($slice, 0, $limit);
+            }
         } else {
-            $fetch_args['offset'] = $offset;
-            $fetch_args['limit'] = $limit;
+            $fetch_args['offset'] = $reg_offset;
+            $fetch_args['limit'] = $reg_limit > 0 ? $reg_limit : 1;
             $bundle = eottae_shop_fetch_raw_rows($bo_table, $fetch_args);
             $slice = $bundle['rows'];
+            if ($reg_limit > 0) {
+                $slice = function_exists('eottae_shop_spot_merge_list_rows')
+                    ? eottae_shop_spot_merge_list_rows($bo_table, $slice, $offset)
+                    : $slice;
+            } elseif ($offset === 0) {
+                $slice = function_exists('eottae_shop_spot_merge_list_rows')
+                    ? eottae_shop_spot_merge_list_rows($bo_table, array(), $offset)
+                    : $slice;
+            }
         }
 
         $total = (int) ($bundle['total'] ?? 0);
+        if (count($slice) > $limit) {
+            $slice = array_slice($slice, 0, $limit);
+        }
         $subject_len = G5_IS_MOBILE ? (int) $board['bo_mobile_subject_len'] : (int) $board['bo_subject_len'];
         $list = array();
         foreach ($slice as $row) {
@@ -5188,9 +5232,18 @@ if (!function_exists('eottae_shop_detail_flags')) {
             $summary = eottae_get_shop_review_summary(isset($shop['wr_id']) ? (int) $shop['wr_id'] : 0);
         }
 
+        $list_bo_table = '';
+        if (!empty($shop['bo_table'])) {
+            $list_bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $shop['bo_table']);
+        }
+        $wr_id = isset($shop['wr_id']) ? (int) $shop['wr_id'] : 0;
+        $is_featured = $list_bo_table !== '' && $wr_id > 0
+            && function_exists('eottae_shop_spot_is_featured')
+            && eottae_shop_spot_is_featured($list_bo_table, $wr_id);
+
         return array(
-            'recommended' => $summary['average'] >= 4.5 && $summary['count'] > 0,
-            'ad'          => !empty($shop['sns']) && stripos((string) $shop['sns'], 'ad') !== false,
+            'recommended' => !$is_featured && $summary['average'] >= 4.5 && $summary['count'] > 0,
+            'featured'    => $is_featured,
         );
     }
 }

@@ -2093,6 +2093,7 @@
     initReviewDelete();
     initReviewEdit();
     initShopSave();
+    initShopSpotApply();
     initShopDetailGallery();
     initShopDetailContentEditor();
     initPhotoPreview();
@@ -2414,6 +2415,53 @@
             alert('네트워크 오류가 발생했습니다.');
           });
       }
+    });
+  }
+
+  function initShopSpotApply() {
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-shop-spot-apply-btn]');
+      if (!btn) return;
+      var section = btn.closest('[data-shop-spot-apply]');
+      if (!section) return;
+      e.preventDefault();
+
+      var procUrl = section.getAttribute('data-proc-url') || '';
+      var boTable = section.getAttribute('data-bo-table') || '';
+      var shopBoTable = section.getAttribute('data-shop-bo-table') || boTable;
+      var wrId = section.getAttribute('data-wr-id') || '';
+      var slot = btn.getAttribute('data-shop-spot-apply-btn') || '';
+      var statusEl = section.querySelector('[data-shop-spot-status]');
+
+      if (!procUrl || !boTable || !wrId || !slot) return;
+      if (!window.confirm(slot + '번 자리 최우수 노출을 신청하시겠습니까? 포인트가 차감됩니다.')) return;
+
+      btn.disabled = true;
+      if (statusEl) statusEl.textContent = '신청 처리 중…';
+
+      var fd = new FormData();
+      fd.append('action', 'apply');
+      fd.append('bo_table', boTable);
+      fd.append('shop_bo_table', shopBoTable);
+      fd.append('wr_id', wrId);
+      fd.append('spot_slot', slot);
+
+      fetch(procUrl, { method: 'POST', body: fd, credentials: 'same-origin' })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (statusEl) statusEl.textContent = data.message || '';
+          if (data.ok) {
+            setTimeout(function () { location.reload(); }, 700);
+            return;
+          }
+          btn.disabled = false;
+          alert(data.message || '신청에 실패했습니다.');
+        })
+        .catch(function () {
+          btn.disabled = false;
+          if (statusEl) statusEl.textContent = '';
+          alert('네트워크 오류가 발생했습니다.');
+        });
     });
   }
 

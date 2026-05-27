@@ -158,8 +158,8 @@ if (!function_exists('eottae_shop_list_card_html')) {
                 <?php } else { ?>
                 <div class="shop-list-card__thumb shop-list-card__thumb--empty" aria-hidden="true"></div>
                 <?php } ?>
-                <?php if ($badges['is_ad']) { ?>
-                <span class="shop-list-card__badge shop-list-card__badge--ad">광고</span>
+                <?php if (!empty($badges['is_featured'])) { ?>
+                <span class="shop-list-card__badge shop-list-card__badge--featured">최우수업체</span>
                 <?php } else { ?>
                     <?php if ($badges['is_recommended']) { ?>
                 <span class="shop-list-card__badge shop-list-card__badge--pick">추천</span>

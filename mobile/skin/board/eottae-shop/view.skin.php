@@ -28,8 +28,6 @@ $shop_map = array(
     'lng'     => $shop['lng'],
     'thumbnail' => function_exists('eottae_shop_map_thumb_get') ? eottae_shop_map_thumb_get($bo_table, (int) $view['wr_id']) : array(),
 );
-$is_ad = isset($view['wr_link2']) && stripos((string) $view['wr_link2'], 'ad') !== false;
-
 include_once G5_SKIN_PATH.'/board/_inc/eottae-shop-view-setup.php';
 
 if (function_exists('eottae_shop_apply_manage_links')) {
@@ -53,8 +51,8 @@ if (function_exists('eottae_shop_apply_manage_links')) {
             <div class="shop-detail-page__gallery">
                 <div class="shop-detail-page__hero<?php echo $hero_fallback ? ' shop-detail-page__hero--fallback' : ''; ?>">
                     <img src="<?php echo $gallery[0]['src']; ?>" alt="<?php echo $shop['name']; ?>" id="shopDetailHeroImg"<?php echo $hero_fallback ? ' data-hero-fallback="1"' : ''; ?>>
-                    <?php if ($is_ad) { ?>
-                    <span class="shop-detail-page__flag shop-detail-page__flag--ad">광고</span>
+                    <?php if (!empty($flags['featured'])) { ?>
+                    <span class="shop-detail-page__flag shop-detail-page__flag--featured">최우수업체</span>
                     <?php } elseif ($flags['recommended']) { ?>
                     <span class="shop-detail-page__flag shop-detail-page__flag--pick">추천</span>
                     <?php } ?>
