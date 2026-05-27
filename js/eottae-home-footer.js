@@ -65,6 +65,7 @@
       + '<li><a href="' + esc(data.business_coupon_guide_url || '/page/eottae-business-coupon-guide.php') + '">쿠폰발행방법(사업자용)</a></li>'
       + '<li><a href="' + esc(data.challenge_guide_url || '/page/eottae-challenge-guide.php') + '">챌린지 참여 안내</a></li>'
       + '<li><a href="' + esc(data.member_growth_guide_url || '/page/eottae-member-growth-guide.php') + '">활동 등급·뱃지 안내</a></li>'
+      + '<li><a href="' + esc(data.briefing_url || '/briefing/') + '">오늘의 세부 브리핑</a></li>'
       + '<li><a href="' + esc(data.ranking_url || '/ranking/') + '">활동 랭킹</a></li>'
       + '<li><a href="' + esc(data.badge_book_url || '/badges/') + '">뱃지 도감</a></li>'
       + '</ul>';

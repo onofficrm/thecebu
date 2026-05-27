@@ -272,6 +272,17 @@ if (!function_exists('eottae_install_plaza_board_def')) {
     }
 }
 
+if (!function_exists('eottae_install_column_board_def')) {
+    function eottae_install_column_board_def()
+    {
+        if (!function_exists('eottae_column_board_def')) {
+            include_once G5_LIB_PATH.'/eottae-column.lib.php';
+        }
+
+        return eottae_column_board_def();
+    }
+}
+
 if (!function_exists('eottae_install_community_board_def')) {
     function eottae_install_community_board_def($bo_table, $bo_subject, $bo_order, $category_list, $skin = 'eottae-community')
     {
@@ -302,6 +313,20 @@ if (!function_exists('eottae_install_get_board_defs')) {
             eottae_install_shop_board_def('rentcar', '렌트카', 4, '세단|SUV|밴|오토바이|기타'),
             eottae_install_shop_board_def('tour', '투어·액티비티', 5, '호핑|다이빙|시티투어|기타'),
             eottae_install_plaza_board_def(),
+            function_exists('eottae_install_column_board_def') ? eottae_install_column_board_def() : array(
+                'bo_table'         => 'column',
+                'bo_subject'       => '생활정보 컬럼',
+                'bo_skin'          => 'eottae-column',
+                'bo_mobile_skin'   => 'eottae-column',
+                'gr_id'            => 'community',
+                'bo_read_level'    => 1,
+                'bo_write_level'   => 10,
+                'bo_comment_level' => 2,
+                'bo_use_category'  => 1,
+                'bo_category_list' => '생활정보|병원/건강|교육/가족|집/렌트|비자/행정|교통/차량|맛집/장보기|사업/창업|지역정보|정착이야기|교민 인터뷰',
+                'bo_upload_count'  => 10,
+                'bo_order'         => 16,
+            ),
             eottae_install_community_board_def('community', '커뮤니티', 10, '자유|정보|질문|후기'),
             eottae_install_community_board_def('people', '사람찾기', 11, '실종|만남|동행|지인|기타'),
             eottae_install_community_board_def('job', '구인구직', 12, '구인|구직|알바|기타'),

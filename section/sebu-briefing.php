@@ -11,4 +11,4 @@ if (function_exists('eottae_briefing_load_assets')) {
     eottae_briefing_load_assets();
 }
 
-render_today_sebu_briefing(collect_today_sebu_briefing_data());
+render_today_sebu_briefing_teaser(collect_today_sebu_briefing_data());

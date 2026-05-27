@@ -4,11 +4,12 @@ if (!defined('_GNUBOARD_')) {
 }
 
 $sebu_briefing_scope = 'my';
-$sebu_briefing_title = '내 세부어때 브리핑';
-$sebu_briefing_subtitle = '내가 참여 중인 톡방과 커뮤니티 활동을 요약했습니다.';
+$sebu_briefing_title = '오늘 확인하면 좋은 정보';
+$sebu_briefing_subtitle = '내 톡방·댓글·승인 대기 등 개인 맞춤 활동을 요약했습니다.';
 $sebu_briefing_lines = isset($lines) && is_array($lines) ? $lines : array();
 $sebu_briefing_cards = isset($cards) && is_array($cards) ? $cards : array();
 $sebu_briefing_talk_url = isset($data['mypage_talk_url']) ? $data['mypage_talk_url'] : (function_exists('eottae_mypage_talk_url') ? eottae_mypage_talk_url() : G5_URL.'/mypage/talk.php');
+$sebu_briefing_full_url = function_exists('eottae_briefing_url') ? eottae_briefing_url() : G5_URL.'/briefing/';
 $sebu_briefing_is_empty = !empty($data['is_empty']);
 ?>
 
@@ -20,7 +21,10 @@ $sebu_briefing_is_empty = !empty($data['is_empty']);
                 <h2 class="sebu-briefing__title" id="sebu-briefing-my-title"><?php echo get_text($sebu_briefing_title); ?></h2>
                 <p class="sebu-briefing__subtitle"><?php echo get_text($sebu_briefing_subtitle); ?></p>
             </div>
-            <a href="<?php echo htmlspecialchars($sebu_briefing_talk_url, ENT_QUOTES); ?>" class="sebu-briefing__more">톡방 대시보드</a>
+            <div class="sebu-briefing__head-actions">
+                <a href="<?php echo htmlspecialchars($sebu_briefing_full_url, ENT_QUOTES); ?>" class="sebu-briefing__more">전체 브리핑</a>
+                <a href="<?php echo htmlspecialchars($sebu_briefing_talk_url, ENT_QUOTES); ?>" class="sebu-briefing__more sebu-briefing__more--ghost">톡방 대시보드</a>
+            </div>
         </header>
 
         <?php if ($sebu_briefing_cards) { ?>

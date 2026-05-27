@@ -26,6 +26,10 @@ include_once G5_LIB_PATH.'/eottae-briefing.lib.php';
 include_once G5_LIB_PATH.'/eottae-challenge.lib.php';
 include_once G5_LIB_PATH.'/eottae-challenge-likes.lib.php';
 include_once G5_LIB_PATH.'/eottae-challenge-report.lib.php';
+include_once G5_LIB_PATH.'/eottae-column.lib.php';
+include_once G5_LIB_PATH.'/eottae-column-likes.lib.php';
+include_once G5_LIB_PATH.'/eottae-column-bookmarks.lib.php';
+include_once G5_LIB_PATH.'/eottae-column-report.lib.php';
 include_once G5_LIB_PATH.'/eottae-member-growth.lib.php';
 
 if (function_exists('eottae_merge_runtime_secrets')) {
@@ -49,6 +53,9 @@ if (function_exists('eottae_calendar_ensure_schema')) {
 }
 if (function_exists('eottae_challenge_ensure_schema')) {
     eottae_challenge_ensure_schema();
+}
+if (function_exists('eottae_column_ensure_schema')) {
+    eottae_column_ensure_schema();
 }
 if (function_exists('eottae_member_growth_ensure_schema')) {
     eottae_member_growth_ensure_schema();
@@ -1149,6 +1156,80 @@ if (!function_exists('eottae_plaza_on_write_update_before')) {
     }
 }
 add_event('write_update_before', 'eottae_plaza_on_write_update_before', 18, 4);
+
+if (!function_exists('eottae_column_is_column_board')) {
+    function eottae_column_is_column_board($bo_table)
+    {
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+
+        return $bo_table !== '' && $bo_table === (defined('EOTTae_COLUMN_TABLE') ? EOTTae_COLUMN_TABLE : 'column');
+    }
+}
+
+if (!function_exists('eottae_column_on_board_head')) {
+    function eottae_column_on_board_head($board, $write, $wr_id)
+    {
+        if (empty($board['bo_table']) || !eottae_column_is_column_board($board['bo_table'])) {
+            return;
+        }
+
+        include_once G5_LIB_PATH.'/eottae-column.lib.php';
+        eottae_column_ensure_schema();
+        add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-column.css">', 24);
+
+        global $bo_table;
+        if (isset($_GET['wr_id']) && (int) $_GET['wr_id'] > 0) {
+            goto_url(eottae_column_view_url((int) $_GET['wr_id']));
+        }
+        if ($bo_table === eottae_column_board_table() && empty($_GET['wr_id'])) {
+            $script = isset($_SERVER['SCRIPT_NAME']) ? basename($_SERVER['SCRIPT_NAME']) : '';
+            if ($script === 'board.php') {
+                goto_url(eottae_column_list_url());
+            }
+        }
+    }
+}
+add_event('board_head_before', 'eottae_column_on_board_head', 6, 3);
+
+if (!function_exists('eottae_column_on_write_update_before')) {
+    function eottae_column_on_write_update_before($board, $wr_id, $w, $qstr)
+    {
+        if (empty($board['bo_table']) || !eottae_column_is_column_board($board['bo_table'])) {
+            return;
+        }
+
+        include_once G5_LIB_PATH.'/eottae-column.lib.php';
+        global $is_member, $member, $is_admin;
+
+        if ($is_admin !== 'super') {
+            if (empty($is_member) || !eottae_column_can_write($member['mb_id'] ?? '', false)) {
+                alert('승인된 칼럼니스트만 컬럼을 작성할 수 있습니다.', eottae_column_list_url());
+            }
+            goto_url(eottae_column_write_url($w === 'u' ? (int) $wr_id : 0));
+        }
+    }
+}
+add_event('write_update_before', 'eottae_column_on_write_update_before', 17, 4);
+
+if (!function_exists('eottae_column_on_bbs_write')) {
+    function eottae_column_on_bbs_write($board, $write, $wr_id)
+    {
+        if (empty($board['bo_table']) || !eottae_column_is_column_board($board['bo_table'])) {
+            return;
+        }
+
+        include_once G5_LIB_PATH.'/eottae-column.lib.php';
+        global $is_member, $member, $is_admin, $w;
+
+        if ($is_admin !== 'super') {
+            if (empty($is_member) || !eottae_column_can_write($member['mb_id'] ?? '', false)) {
+                alert('승인된 칼럼니스트만 컬럼을 작성할 수 있습니다.', eottae_column_list_url());
+            }
+            goto_url(eottae_column_write_url($w === 'u' ? (int) $wr_id : 0));
+        }
+    }
+}
+add_event('bbs_write', 'eottae_column_on_bbs_write', 10, 3);
 
 if (!function_exists('eottae_apply_google_oauth_config')) {
     function eottae_apply_google_oauth_config()

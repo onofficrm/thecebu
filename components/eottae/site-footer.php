@@ -27,6 +27,9 @@ if (!function_exists('eottae_site_footer_html')) {
         $eottae_footer_badge_book = function_exists('eottae_member_growth_badge_book_url')
             ? eottae_member_growth_badge_book_url()
             : G5_URL.'/badges/';
+        $eottae_footer_briefing = function_exists('eottae_briefing_url')
+            ? eottae_briefing_url()
+            : G5_URL.'/briefing/';
         $eottae_footer_year = date('Y');
 
         ob_start();
@@ -63,6 +66,7 @@ if (!function_exists('eottae_site_footer_html')) {
                         <li><a href="<?php echo $eottae_footer_business_coupon_guide; ?>">쿠폰발행방법(사업자용)</a></li>
                         <li><a href="<?php echo $eottae_footer_challenge_guide; ?>">챌린지 참여 안내</a></li>
                         <li><a href="<?php echo $eottae_footer_member_growth_guide; ?>">활동 등급·뱃지 안내</a></li>
+                        <li><a href="<?php echo $eottae_footer_briefing; ?>">오늘의 세부 브리핑</a></li>
                         <li><a href="<?php echo $eottae_footer_ranking; ?>">활동 랭킹</a></li>
                         <li><a href="<?php echo $eottae_footer_badge_book; ?>">뱃지 도감</a></li>
                     </ul>

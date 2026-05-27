@@ -932,7 +932,7 @@ if (!function_exists('eottae_builder_inject_home_briefing_script')) {
             return '';
         }
 
-        $css = defined('G5_CSS_URL') ? G5_CSS_URL.'/eottae-briefing.css?v=1' : '/css/eottae-briefing.css';
+        $css = defined('G5_CSS_URL') ? G5_CSS_URL.'/eottae-briefing.css?v=2' : '/css/eottae-briefing.css';
         $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-briefing.js' : '/js/eottae-home-briefing.js';
 
         return '<link rel="stylesheet" href="'.htmlspecialchars($css, ENT_QUOTES, 'UTF-8').'">'
@@ -1185,6 +1185,9 @@ if (!function_exists('eottae_builder_inject_site_footer_script')) {
             'member_growth_guide_url'   => function_exists('eottae_member_growth_guide_url')
                 ? eottae_member_growth_guide_url()
                 : G5_URL.'/page/eottae-member-growth-guide.php',
+            'briefing_url'                => function_exists('eottae_briefing_url')
+                ? eottae_briefing_url()
+                : G5_URL.'/briefing/',
             'ranking_url'               => function_exists('eottae_member_growth_ranking_url')
                 ? eottae_member_growth_ranking_url('week')
                 : G5_URL.'/ranking/',
@@ -5132,6 +5135,7 @@ if (!function_exists('eottae_gnb_nav_links')) {
             array('key' => 'massage', 'label' => '마사지', 'href' => eottae_board_list_url(defined('EOTTae_MASSAGE_TABLE') ? EOTTae_MASSAGE_TABLE : 'massage')),
             array('key' => 'tour', 'label' => '투어', 'href' => eottae_board_list_url(defined('EOTTae_TOUR_TABLE') ? EOTTae_TOUR_TABLE : 'tour')),
             array('key' => 'community', 'label' => '커뮤니티', 'href' => eottae_community_list_url()),
+            array('key' => 'column', 'label' => '생활정보 컬럼', 'href' => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/'),
             array('key' => 'ranking', 'label' => '활동랭킹', 'href' => function_exists('eottae_member_growth_ranking_url') ? eottae_member_growth_ranking_url('week') : G5_URL.'/ranking/'),
             array('key' => 'badges', 'label' => '뱃지 도감', 'href' => function_exists('eottae_member_growth_badge_book_url') ? eottae_member_growth_badge_book_url() : G5_URL.'/badges/'),
             array('key' => 'people', 'label' => '사람찾기', 'href' => eottae_board_list_url(defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people')),

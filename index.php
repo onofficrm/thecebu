@@ -54,9 +54,10 @@ include_once(G5_PATH.'/head.php');
  */
 $g5_main_sections = array(
     'hero',
-    'sebu-briefing',
     'challenge-today',
+    'column-latest',
     'member-growth-spotlight',
+    'sebu-briefing',
     'service',
     'advantage',
     'portfolio',

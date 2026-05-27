@@ -43,6 +43,9 @@ $featured_members = function_exists('eottae_member_growth_list_featured')
     : array();
 
 add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-my-talk.css">', 22);
+if (function_exists('eottae_briefing_load_assets')) {
+    eottae_briefing_load_assets();
+}
 
 g5_page_start('마이페이지');
 ?>
@@ -130,6 +133,10 @@ g5_page_start('마이페이지');
                 echo ' ('.number_format((int) $challenge_summary['entry_count']).')';
             }
         ?></a>
+        <a href="<?php echo function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/'; ?>" class="mypage-quick-menu__item">생활정보 컬럼</a>
+        <?php if (function_exists('eottae_column_is_columnist') && eottae_column_is_columnist($member['mb_id'])) { ?>
+        <a href="<?php echo function_exists('eottae_column_mypage_url') ? eottae_column_mypage_url() : G5_URL.'/mypage/column.php'; ?>" class="mypage-quick-menu__item">내 컬럼</a>
+        <?php } ?>
         <?php if ($is_admin === 'super') {
             $talk_kicked_count = function_exists('eottae_talkroom_admin_kicked_count') ? eottae_talkroom_admin_kicked_count() : 0;
             $talk_report_pending = function_exists('eottae_talkroom_admin_pending_report_count') ? eottae_talkroom_admin_pending_report_count() : 0;
@@ -154,6 +161,15 @@ g5_page_start('마이페이지');
         }
         eottae_talkroom_render_mypage_super_admin_talk_tools(8);
     } ?>
+
+    <?php
+    if (is_file(G5_PATH.'/components/eottae/column-mypage.php')) {
+        include_once G5_PATH.'/components/eottae/column-mypage.php';
+        include_once G5_LIB_PATH.'/eottae-column.lib.php';
+        add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-column.css">', 24);
+        echo eottae_column_mypage_section_html($member);
+    }
+    ?>
 
     <?php if ($is_biz) { ?>
     <section class="business-dashboard">

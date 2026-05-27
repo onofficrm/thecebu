@@ -816,20 +816,77 @@ if (!function_exists('render_my_sebu_briefing')) {
     }
 }
 
+if (!function_exists('eottae_briefing_url')) {
+    function eottae_briefing_url()
+    {
+        return G5_URL.'/briefing/';
+    }
+}
+
+if (!function_exists('eottae_briefing_teaser_stats')) {
+    /**
+     * @param array<string, mixed> $data
+     * @return array<int, array<string, mixed>>
+     */
+    function eottae_briefing_teaser_stats(array $data)
+    {
+        $counts = isset($data['counts']) && is_array($data['counts']) ? $data['counts'] : array();
+        $urls = isset($data['urls']) && is_array($data['urls']) ? $data['urls'] : eottae_briefing_urls();
+
+        return array(
+            array('label' => '오늘 일정', 'value' => (int) ($counts['calendar_today'] ?? 0), 'url' => $urls['calendar'] ?? '#'),
+            array('label' => '세부톡 글', 'value' => (int) ($counts['talk_posts'] ?? 0), 'url' => $urls['talk'] ?? '#'),
+            array('label' => '세부광장', 'value' => (int) ($counts['plaza_posts'] ?? 0), 'url' => $urls['plaza'] ?? '#'),
+        );
+    }
+}
+
+if (!function_exists('eottae_briefing_teaser_line')) {
+    function eottae_briefing_teaser_line(array $data)
+    {
+        $lines = generate_today_sebu_briefing_text($data);
+        if (!empty($lines[0])) {
+            return get_text($lines[0]);
+        }
+
+        return '오늘 세부 커뮤니티 소식을 확인해보세요.';
+    }
+}
+
+if (!function_exists('render_today_sebu_briefing_teaser')) {
+    /**
+     * @param array<string, mixed>|null $data
+     */
+    function render_today_sebu_briefing_teaser($data = null)
+    {
+        if (!is_array($data)) {
+            $data = collect_today_sebu_briefing_data();
+        }
+
+        $teaser_title = '오늘의 세부 체크';
+        $teaser_summary = eottae_briefing_summary_line_today($data);
+        $teaser_line = eottae_briefing_teaser_line($data);
+        $teaser_stats = eottae_briefing_teaser_stats($data);
+        $teaser_url = eottae_briefing_url();
+        $teaser_cta = '브리핑 보기';
+
+        include G5_PATH.'/components/eottae/sebu-briefing-teaser.php';
+    }
+}
+
 if (!function_exists('eottae_briefing_home_payload')) {
     function eottae_briefing_home_payload()
     {
         $data = collect_today_sebu_briefing_data();
 
         return array(
-            'title'       => '오늘의 세부 브리핑',
-            'subtitle'    => '세부 교민들이 오늘 확인하면 좋은 일정과 커뮤니티 소식을 모았습니다.',
-            'summary'     => eottae_briefing_summary_line_today($data),
-            'lines'       => generate_today_sebu_briefing_text($data),
-            'cards'       => eottae_briefing_stat_cards_today($data),
-            'popular'     => array_slice($data['popular']['top'] ?? array(), 0, 3),
-            'admin_notice'=> $data['admin_notice'] ?? '',
-            'urls'        => $data['urls'] ?? eottae_briefing_urls(),
+            'mode'       => 'teaser',
+            'title'      => '오늘의 세부 체크',
+            'summary'    => eottae_briefing_summary_line_today($data),
+            'line'       => eottae_briefing_teaser_line($data),
+            'stats'      => eottae_briefing_teaser_stats($data),
+            'briefing_url' => eottae_briefing_url(),
+            'cta'        => '브리핑 보기',
             'generated_at'=> $data['generated_at'] ?? '',
         );
     }
@@ -842,6 +899,6 @@ if (!function_exists('eottae_briefing_load_assets')) {
             return;
         }
 
-        add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-briefing.css?v=1">', 28);
+        add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-briefing.css?v=2">', 28);
     }
 }
