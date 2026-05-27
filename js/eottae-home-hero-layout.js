@@ -1,5 +1,5 @@
 /**
- * 홈(빌더) — 히어로 3열 높이: 3열(로그인+이벤트 사이드바) 기준으로 1·2·3열 맞춤
+ * 홈(빌더) — 히어로 3열 높이: 3열(로그인+이벤트 사이드바) 콘텐츠 높이 기준으로 1·2·3열 맞춤
  */
 (function (global) {
   'use strict';
@@ -58,7 +58,7 @@
     if (!grid) {
       return null;
     }
-    return grid.querySelector('.home-hero-chat-column');
+    return grid.querySelector('.home-hero-chat-column, #eottae-home-public-chat');
   }
 
   function heroColumns(grid) {
@@ -84,16 +84,108 @@
       cols[i].style.maxHeight = '';
       cols[i].style.minHeight = '';
       cols[i].style.overflow = '';
+      cols[i].style.visibility = '';
+      cols[i].style.position = '';
+      cols[i].style.left = '';
+      cols[i].style.width = '';
+      cols[i].style.pointerEvents = '';
     }
 
     grid.classList.remove(SYNC_CLASS);
     grid.classList.remove(MEASURE_CLASS);
     grid.style.removeProperty('--eottae-hero-col-h');
+    grid.style.removeProperty('grid-template-rows');
     grid.removeAttribute('data-eottae-hero-height');
     grid.removeAttribute('data-eottae-hero-height-source');
   }
 
-  /** 3열(사이드바) 자연 높이 — 채팅 열이 그리드를 늘리지 않도록 measuring 클래스 사용 */
+  /** 1·2열이 그리드 행 높이에 영향 주지 않게 잠시 격리 */
+  function isolateColumnsForMeasure(grid) {
+    var main = findHeroMainColumn(grid);
+    var chat = findHeroChatColumn(grid);
+    var list = [main, chat];
+    var i;
+    var el;
+
+    for (i = 0; i < list.length; i += 1) {
+      el = list[i];
+      if (!el) {
+        continue;
+      }
+      el.style.visibility = 'hidden';
+      el.style.position = 'absolute';
+      el.style.left = '-9999px';
+      el.style.width = '1px';
+      el.style.height = 'auto';
+      el.style.maxHeight = 'none';
+      el.style.minHeight = '0';
+      el.style.overflow = 'hidden';
+      el.style.pointerEvents = 'none';
+    }
+  }
+
+  function restoreIsolatedColumns(grid) {
+    var cols = heroColumns(grid);
+    var i;
+    for (i = 0; i < cols.length; i += 1) {
+      if (!cols[i]) {
+        continue;
+      }
+      cols[i].style.visibility = '';
+      cols[i].style.position = '';
+      cols[i].style.left = '';
+      cols[i].style.width = '';
+      cols[i].style.pointerEvents = '';
+    }
+  }
+
+  /** 3열 자연 높이 = 자식 블록 높이 합 + gap (stretch/min-height 100% 영향 제거) */
+  function measureSidebarNaturalHeight(sidebar) {
+    if (!sidebar) {
+      return 0;
+    }
+
+    var style = global.getComputedStyle(sidebar);
+    var gap = parseFloat(style.rowGap || style.gap || '0') || 16;
+    var padTop = parseFloat(style.paddingTop || '0') || 0;
+    var padBottom = parseFloat(style.paddingBottom || '0') || 0;
+    var total = padTop + padBottom;
+    var children = sidebar.children;
+    var visibleCount = 0;
+    var i;
+    var child;
+    var h;
+
+    for (i = 0; i < children.length; i += 1) {
+      child = children[i];
+      if (!child || child.offsetParent === null && style.display !== 'contents') {
+        var cs = global.getComputedStyle(child);
+        if (cs.display === 'none' || cs.visibility === 'hidden') {
+          continue;
+        }
+      }
+      h = Math.ceil(child.getBoundingClientRect().height);
+      if (h < 1) {
+        h = Math.ceil(child.offsetHeight || 0);
+      }
+      if (h < 1) {
+        continue;
+      }
+      total += h;
+      visibleCount += 1;
+    }
+
+    if (visibleCount > 1) {
+      total += gap * (visibleCount - 1);
+    }
+
+    if (total < 1) {
+      total = Math.ceil(sidebar.getBoundingClientRect().height);
+    }
+
+    return total;
+  }
+
   function measureSidebarColumnHeight(grid) {
     var sidebar = findHeroSidebarColumn(grid);
     if (!sidebar) {
@@ -101,13 +193,13 @@
     }
 
     grid.classList.add(MEASURE_CLASS);
+    isolateColumnsForMeasure(grid);
 
-    var h = Math.ceil(sidebar.getBoundingClientRect().height);
-    if (h < 1) {
-      h = Math.ceil(sidebar.offsetHeight || 0);
-    }
+    var h = measureSidebarNaturalHeight(sidebar);
 
+    restoreIsolatedColumns(grid);
     grid.classList.remove(MEASURE_CLASS);
+
     return h;
   }
 
@@ -121,16 +213,19 @@
       cols[i].style.height = targetH + 'px';
       cols[i].style.maxHeight = targetH + 'px';
       cols[i].style.minHeight = targetH + 'px';
-      cols[i].style.overflow = 'hidden';
+      if (cols[i].classList.contains('home-hero-chat-column') || cols[i].id === 'eottae-home-public-chat') {
+        cols[i].style.overflow = 'hidden';
+      }
     }
 
     grid.style.setProperty('--eottae-hero-col-h', targetH + 'px');
+    grid.style.gridTemplateRows = targetH + 'px';
     grid.classList.add(SYNC_CLASS);
     grid.setAttribute('data-eottae-hero-height', String(targetH));
     grid.setAttribute('data-eottae-hero-height-source', 'sidebar');
   }
 
-  function observeHeroColumns(grid) {
+  function observeHeroSidebar(grid) {
     if (typeof ResizeObserver === 'undefined' || !grid) {
       return;
     }
@@ -146,7 +241,7 @@
     }
 
     resizeObserver = new ResizeObserver(function () {
-      scheduleSync(120);
+      scheduleSync(150);
     });
 
     resizeObserver.observe(sidebar);
@@ -183,22 +278,23 @@
       resizeObserver = null;
     }
 
-    var prevH = parseInt(grid.getAttribute('data-eottae-hero-height') || '0', 10) || 0;
     clearHeroColumnHeights(grid);
 
     var targetH = measureSidebarColumnHeight(grid);
     if (targetH < MIN_COL_H) {
       syncing = false;
+      scheduleSync(400);
       return false;
-    }
-
-    if (prevH > 0 && Math.abs(targetH - prevH) < 2) {
-      targetH = prevH;
     }
 
     applyHeroColumnHeights(grid, targetH);
     syncing = false;
-    observeHeroColumns(grid);
+    observeHeroSidebar(grid);
+
+    if (typeof global.scheduleEottaeHomePublicChatScroll === 'function') {
+      global.scheduleEottaeHomePublicChatScroll();
+    }
+
     return true;
   }
 
@@ -214,19 +310,25 @@
 
   function init() {
     var run = function () {
-      scheduleSync(80);
-      scheduleSync(400);
-      scheduleSync(1200);
+      scheduleSync(50);
+      scheduleSync(300);
+      scheduleSync(900);
+      scheduleSync(1800);
+      scheduleSync(3200);
     };
 
     if (typeof global.eottaeHomeAfterReactReady === 'function') {
       global.eottaeHomeAfterReactReady(run);
     } else {
-      global.setTimeout(run, 1500);
+      global.setTimeout(run, 1200);
     }
 
     global.addEventListener('resize', function () {
-      scheduleSync(120);
+      scheduleSync(150);
+    });
+
+    global.addEventListener('load', function () {
+      scheduleSync(200);
     });
 
     if (typeof MutationObserver === 'undefined') {
@@ -250,7 +352,7 @@
         if (!grid || !grid.classList.contains('eottae-home-hero-grid--3col')) {
           return;
         }
-        scheduleSync(100);
+        scheduleSync(120);
       });
     });
 

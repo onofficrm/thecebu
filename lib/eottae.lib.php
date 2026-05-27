@@ -1196,6 +1196,10 @@ if (!function_exists('eottae_builder_inject_home_public_chat_script')) {
     function eottae_builder_inject_home_public_chat_script()
     {
         $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-public-chat.js' : '/js/eottae-home-public-chat.js';
+        $path = defined('G5_PATH') ? G5_PATH.'/js/eottae-home-public-chat.js' : '';
+        if ($path !== '' && is_file($path)) {
+            $js .= '?ver='.(int) filemtime($path);
+        }
 
         return '<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
     }

@@ -218,7 +218,9 @@
     chat.dataset.heroMounted = '1';
 
     if (typeof global.scheduleEottaeHeroColumnHeights === 'function') {
-      global.scheduleEottaeHeroColumnHeights(100);
+      global.scheduleEottaeHeroColumnHeights(50);
+      global.scheduleEottaeHeroColumnHeights(400);
+      global.scheduleEottaeHeroColumnHeights(1500);
     } else if (typeof global.syncEottaeHeroColumnHeights === 'function') {
       global.syncEottaeHeroColumnHeights();
     }
@@ -353,6 +355,10 @@
     messagesEl.insertAdjacentHTML('beforeend', html);
     section.setAttribute('data-last-wr-id', String(lastId));
     messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    if (typeof global.scheduleEottaeHeroColumnHeights === 'function') {
+      global.scheduleEottaeHeroColumnHeights(80);
+    }
 
     return lastId;
   }

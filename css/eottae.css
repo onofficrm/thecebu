@@ -9080,7 +9080,7 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
     display: grid !important;
     grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.95fr) minmax(0, 0.85fr);
     gap: 1rem;
-    align-items: stretch;
+    align-items: start;
   }
 
   .eottae-home-hero-grid--3col > .lg\:col-span-8,
@@ -9149,10 +9149,16 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
   }
 
   /* 3열 높이 맞춤 — JS syncEottaeHeroColumnHeights (3열 사이드바 기준) */
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync {
+    align-items: start;
+  }
+
   .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > .lg\:col-span-8 {
-    height: var(--eottae-hero-col-h, auto);
-    max-height: var(--eottae-hero-col-h, none);
-    min-height: var(--eottae-hero-col-h, 0);
+    height: var(--eottae-hero-col-h, auto) !important;
+    max-height: var(--eottae-hero-col-h, none) !important;
+    min-height: var(--eottae-hero-col-h, 0) !important;
+    overflow: hidden !important;
+    box-sizing: border-box;
   }
 
   .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > .lg\:col-span-8 > section:first-of-type {
@@ -9170,29 +9176,55 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
     min-height: 0;
   }
 
-  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > .home-hero-chat-column {
-    height: var(--eottae-hero-col-h, auto);
-    max-height: var(--eottae-hero-col-h, none);
-    min-height: var(--eottae-hero-col-h, 0);
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > .home-hero-chat-column,
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > #eottae-home-public-chat.home-hero-chat-column {
+    height: var(--eottae-hero-col-h, auto) !important;
+    max-height: var(--eottae-hero-col-h, none) !important;
+    min-height: var(--eottae-hero-col-h, 0) !important;
+    overflow: hidden !important;
+    box-sizing: border-box;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync .public-group-chat--hero.public-group-chat--kakao,
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync .public-group-chat--hero.public-group-chat--kakao .public-group-chat__inner,
   .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync .public-group-chat--hero .public-group-chat__inner {
+    flex: 1 1 auto !important;
     min-height: 0 !important;
-    max-height: 100%;
+    max-height: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    box-sizing: border-box;
   }
 
-  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync .public-group-chat--hero.public-group-chat--kakao .public-group-chat__inner {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync .public-group-chat--hero.public-group-chat--kakao .public-group-chat__panel {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync .public-group-chat--hero.public-group-chat--kakao .public-group-chat__messages,
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync #eottae-public-chat-messages {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
   }
 
   .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > .lg\:col-span-4,
   .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > .home-hero-sidebar-column {
-    height: var(--eottae-hero-col-h, auto);
-    max-height: var(--eottae-hero-col-h, none);
-    min-height: var(--eottae-hero-col-h, 0);
+    height: var(--eottae-hero-col-h, auto) !important;
+    max-height: var(--eottae-hero-col-h, none) !important;
+    min-height: var(--eottae-hero-col-h, 0) !important;
+    overflow: visible;
+    box-sizing: border-box;
   }
 }
 
