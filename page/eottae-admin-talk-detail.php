@@ -106,6 +106,7 @@ g5_talk_admin_page_start('톡방 상세');
             <a href="<?php echo eottae_talkroom_enter_url((int) $room['room_id']); ?>" class="promo-admin-btn" target="_blank" rel="noopener noreferrer">톡방 열기</a>
             <a href="<?php echo eottae_talkroom_list_url(); ?>" class="promo-admin-btn" target="_blank" rel="noopener noreferrer">공개 목록 보기</a>
             <?php } ?>
+            <button type="button" class="promo-admin-btn promo-admin-btn--danger" data-talk-delete="<?php echo (int) $room['room_id']; ?>" data-room-name="<?php echo htmlspecialchars($room['room_name'], ENT_QUOTES, 'UTF-8'); ?>">톡방 삭제</button>
             <a href="<?php echo eottae_talkroom_admin_rooms_url(); ?>" class="promo-admin-btn">목록으로</a>
         </div>
     </section>

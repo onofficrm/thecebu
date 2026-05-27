@@ -1942,39 +1942,82 @@ if (!function_exists('eottae_talkroom_admin_list_rooms')) {
         $where = '';
         if ($status_filter === 'active') {
             $where = " WHERE LOWER(TRIM(r.status)) IN ('approved', 'active') ";
-        } elseif (in_array($status_filter, array('stopped', 'rejected', 'closed'), true)) {
+        } elseif (in_array($status_filter, array('stopped', 'rejected', 'closed', 'pending'), true)) {
             $where = " WHERE LOWER(TRIM(r.status)) = '".sql_escape_string(strtolower($status_filter))."' ";
         }
 
-        $member_table = G5_TABLE_PREFIX.'member';
-        $result = sql_query("
-            SELECT r.*, m.mb_nick AS owner_nick, m.mb_email AS owner_email, m.mb_name AS owner_name
-            FROM `{$tables['rooms']}` r
-            LEFT JOIN `{$member_table}` m ON m.mb_id = r.owner_mb_id
-            {$where}
-            ORDER BY
-                CASE LOWER(TRIM(r.status))
-                    WHEN 'active' THEN 0
-                    WHEN 'approved' THEN 1
-                    WHEN 'stopped' THEN 2
-                    WHEN 'closed' THEN 3
-                    WHEN 'rejected' THEN 4
-                    WHEN 'pending' THEN 5
-                    ELSE 6
-                END,
-                CASE WHEN r.updated_at > '0000-00-00 00:00:00' THEN r.updated_at ELSE r.created_at END DESC,
-                r.room_id DESC
-            LIMIT {$limit}
-        ", false);
+        $fetched = eottae_talkroom_admin_fetch_room_rows($where, $limit, true);
+        if ($fetched === false) {
+            $fetched = eottae_talkroom_admin_fetch_room_rows($where, $limit, false);
+        }
+        if (!is_array($fetched)) {
+            return array();
+        }
 
         $rows = array();
-        if ($result) {
-            while ($row = sql_fetch_array($result)) {
+        foreach ($fetched as $row) {
+            if (is_array($row)) {
                 $rows[] = eottae_talkroom_format_admin_room($row);
             }
         }
 
+        if ($status_filter === 'all') {
+            usort($rows, function ($a, $b) {
+                $order = array('active' => 0, 'approved' => 1, 'pending' => 2, 'stopped' => 3, 'closed' => 4, 'rejected' => 5);
+                $sa = isset($order[$a['status'] ?? '']) ? $order[$a['status']] : 9;
+                $sb = isset($order[$b['status'] ?? '']) ? $order[$b['status']] : 9;
+                if ($sa !== $sb) {
+                    return $sa - $sb;
+                }
+
+                return strcmp((string) ($b['updated_at'] ?? $b['created_at'] ?? ''), (string) ($a['updated_at'] ?? $a['created_at'] ?? ''));
+            });
+        }
+
         return $rows;
+    }
+}
+
+if (!function_exists('eottae_talkroom_admin_delete_room')) {
+    /**
+     * 톡방 영구 삭제 (최고관리자 전용) — 멤버·신고·로그 등 연관 데이터 함께 삭제
+     *
+     * @param int    $room_id
+     * @param string $admin_mb_id
+     * @return array{ok:bool,message:string}
+     */
+    function eottae_talkroom_admin_delete_room($room_id, $admin_mb_id)
+    {
+        $room_id = (int) $room_id;
+        if ($room_id < 1) {
+            return array('ok' => false, 'message' => '톡방 정보가 올바르지 않습니다.');
+        }
+
+        $room = eottae_talkroom_get_room($room_id);
+        if (!$room) {
+            return array('ok' => false, 'message' => '톡방을 찾을 수 없습니다.');
+        }
+
+        $admin_mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $admin_mb_id);
+        $tables = eottae_talkroom_table_names();
+        $room_id_sql = (int) $room_id;
+
+        foreach (array('reports', 'logs', 'reads', 'notifications', 'bookmarks', 'members') as $key) {
+            if (!empty($tables[$key]) && eottae_talkroom_table_exists($tables[$key])) {
+                sql_query(" DELETE FROM `{$tables[$key]}` WHERE room_id = '{$room_id_sql}' ", false);
+            }
+        }
+
+        $deleted = (bool) sql_query(" DELETE FROM `{$tables['rooms']}` WHERE room_id = '{$room_id_sql}' LIMIT 1 ", false);
+        if (!$deleted) {
+            return array('ok' => false, 'message' => '톡방 삭제에 실패했습니다.');
+        }
+
+        if (function_exists('eottae_talkroom_write_log')) {
+            eottae_talkroom_write_log(0, $admin_mb_id, 'delete', 'room', $room_id_sql, '톡방 삭제: '.$room['room_name']);
+        }
+
+        return array('ok' => true, 'message' => '톡방을 삭제했습니다.');
     }
 }
 

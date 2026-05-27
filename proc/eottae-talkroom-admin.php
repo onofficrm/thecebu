@@ -78,6 +78,17 @@ if ($action === 'stop') {
     eottae_talkroom_admin_json(!empty($result['ok']), $result['message']);
 }
 
+if ($action === 'delete') {
+    if (!function_exists('eottae_talkroom_admin_delete_room')) {
+        eottae_talkroom_admin_json(false, '삭제 기능을 사용할 수 없습니다.');
+    }
+    $result = eottae_talkroom_admin_delete_room($room_id, $member['mb_id']);
+    if (!empty($result['ok'])) {
+        eottae_talkroom_admin_token(true);
+    }
+    eottae_talkroom_admin_json(!empty($result['ok']), $result['message']);
+}
+
 if ($action === 'unkick_member') {
     $member_id = isset($_POST['member_id']) ? (int) $_POST['member_id'] : 0;
     $status_after = isset($_POST['status_after']) ? trim((string) $_POST['status_after']) : 'left';

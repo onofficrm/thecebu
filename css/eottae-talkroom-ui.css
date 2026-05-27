@@ -2209,12 +2209,14 @@ body.talk-admin-shell .talk-admin-applies__header .promo-admin-page__desc {
 }
 
 body.talk-admin-shell #talk-admin-applies-panel,
-body.talk-admin-shell .talk-admin-applies__panel {
+body.talk-admin-shell .talk-admin-applies__panel,
+body.talk-admin-shell .talk-admin-rooms__panel,
+body.talk-admin-shell .talk-admin-page > section.promo-admin-panel {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
   min-height: 180px;
-  margin-top: 0;
+  margin-top: 16px;
   padding: 0;
   overflow: visible;
   position: relative;

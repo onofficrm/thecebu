@@ -307,6 +307,32 @@ if (!function_exists('eottae_talkroom_render_admin_actions_script')) {
             });
           });
 
+          document.querySelectorAll('[data-talk-delete]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+              var roomName = btn.getAttribute('data-room-name') || '이 톡방';
+              if (!confirm(roomName + ' 톡방을 완전히 삭제하시겠습니까?\n\n멤버·신고·로그 데이터가 함께 삭제되며 되돌릴 수 없습니다.')) return;
+              btn.disabled = true;
+              postTalkAdminAction('delete', btn.getAttribute('data-talk-delete'))
+                .then(function (data) {
+                  if (data.success) {
+                    var listUrl = <?php echo json_encode(function_exists('eottae_talkroom_admin_rooms_url') ? eottae_talkroom_admin_rooms_url() : G5_URL.'/page/eottae-admin-talk-rooms.php', JSON_UNESCAPED_UNICODE); ?>;
+                    if (window.location.pathname.indexOf('eottae-admin-talk-detail') !== -1) {
+                      location.href = listUrl;
+                    } else {
+                      location.reload();
+                    }
+                    return;
+                  }
+                  alert(data.message || '삭제에 실패했습니다.');
+                  btn.disabled = false;
+                })
+                .catch(function () {
+                  alert('네트워크 오류가 발생했습니다.');
+                  btn.disabled = false;
+                });
+            });
+          });
+
           function postTalkAdminUnkick(roomId, memberId, statusAfter) {
             var fd = new FormData();
             fd.append('action', 'unkick_member');
