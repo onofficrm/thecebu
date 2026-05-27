@@ -6,6 +6,13 @@ include_once(G5_LIB_PATH.'/eottae-api.lib.php');
 $community_skin_css = G5_PATH.'/skin/board/eottae-community/style.css';
 $community_skin_ver = is_file($community_skin_css) ? (int) filemtime($community_skin_css) : 0;
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css?ver='.$community_skin_ver.'">', 30);
+$community_board_css = G5_PATH.'/css/eottae-community-board.css';
+if (is_file($community_board_css)) {
+    add_stylesheet(
+        '<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-community-board.css?ver='.(int) filemtime($community_board_css).'">',
+        99
+    );
+}
 
 $community_tabs = eottae_community_category_tabs($board);
 $today_count = eottae_community_today_count($bo_table);

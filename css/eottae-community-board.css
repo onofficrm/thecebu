@@ -1,22 +1,29 @@
 /**
  * eottae-community 목록 — 한 행 3열
- * [썸네일] | [제목+본문 2행] | [조회·추천·댓글]
+ * .community-post__cols 가 실제 가로 flex 컨테이너 (a 태그 display 이슈 회피)
  */
-.board-wrap--eottae-community .community-post__link,
-.board-wrap--eottae-community .community-post--has-thumb .community-post__link {
+#bo_list.board-wrap--eottae-community .community-post__link {
+  display: block;
+  padding: 16px 18px;
+  text-decoration: none;
+  color: inherit;
+}
+
+#bo_list.board-wrap--eottae-community .community-post__cols {
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;
   align-items: center !important;
   gap: 14px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.board-wrap--eottae-community .community-post__thumb {
+#bo_list.board-wrap--eottae-community .community-post__thumb {
   flex: 0 0 88px;
   width: 88px;
   height: 88px;
   margin: 0;
-  align-self: center;
   border-radius: 14px;
   overflow: hidden;
   background: #f1f5f9;
@@ -24,31 +31,30 @@
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
 }
 
-.board-wrap--eottae-community .community-post__thumb img {
+#bo_list.board-wrap--eottae-community .community-post__thumb img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.board-wrap--eottae-community .community-post__body {
+#bo_list.board-wrap--eottae-community .community-post__body {
   flex: 1 1 auto;
   min-width: 0;
-  align-self: center;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 4px;
 }
 
-.board-wrap--eottae-community .community-post__text {
+#bo_list.board-wrap--eottae-community .community-post__text {
   display: flex;
   flex-direction: column;
   gap: 3px;
   min-width: 0;
 }
 
-.board-wrap--eottae-community .community-post__title-line {
+#bo_list.board-wrap--eottae-community .community-post__title-line {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -57,7 +63,7 @@
   min-width: 0;
 }
 
-.board-wrap--eottae-community .community-post__badges {
+#bo_list.board-wrap--eottae-community .community-post__badges {
   display: inline-flex;
   flex: 0 0 auto;
   flex-wrap: nowrap;
@@ -65,7 +71,7 @@
   gap: 4px;
 }
 
-.board-wrap--eottae-community .community-post__title {
+#bo_list.board-wrap--eottae-community .community-post__title {
   flex: 1 1 auto !important;
   display: block !important;
   min-width: 0;
@@ -81,7 +87,7 @@
   -webkit-box-orient: unset;
 }
 
-.board-wrap--eottae-community .community-post__excerpt {
+#bo_list.board-wrap--eottae-community .community-post__excerpt {
   display: -webkit-box !important;
   margin: 0;
   -webkit-line-clamp: 2;
@@ -92,7 +98,7 @@
   color: #64748b;
 }
 
-.board-wrap--eottae-community .community-post__meta {
+#bo_list.board-wrap--eottae-community .community-post__meta {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -101,32 +107,29 @@
   color: #94a3b8;
 }
 
-.board-wrap--eottae-community .community-post__foot {
+#bo_list.board-wrap--eottae-community .community-post__foot {
   display: none !important;
 }
 
-.board-wrap--eottae-community .community-post__aside {
+#bo_list.board-wrap--eottae-community .community-post__aside {
   flex: 0 0 auto;
-  align-self: center;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
 }
 
-.board-wrap--eottae-community .community-post__stats {
+#bo_list.board-wrap--eottae-community .community-post__stats {
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;
   align-items: center !important;
-  justify-content: flex-end;
   gap: 14px !important;
   margin: 0;
   font-size: 12px;
   color: #94a3b8;
 }
 
-.board-wrap--eottae-community .community-post__stat {
+#bo_list.board-wrap--eottae-community .community-post__stat {
   display: inline-flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -137,39 +140,38 @@
   white-space: nowrap;
 }
 
-.board-wrap--eottae-community .community-post__stat-icon {
+#bo_list.board-wrap--eottae-community .community-post__stat-icon {
   font-size: 15px;
   line-height: 1;
 }
 
-.board-wrap--eottae-community .community-post__stat-num {
+#bo_list.board-wrap--eottae-community .community-post__stat-num {
   font-size: 11px;
   font-variant-numeric: tabular-nums;
   color: #64748b;
 }
 
 @media (max-width: 768px) {
-  .board-wrap--eottae-community .community-post__link {
-    gap: 10px;
-    padding: 14px !important;
+  #bo_list.board-wrap--eottae-community .community-post__link {
+    padding: 14px;
   }
 
-  .board-wrap--eottae-community .community-post__thumb {
+  #bo_list.board-wrap--eottae-community .community-post__cols {
+    gap: 10px;
+  }
+
+  #bo_list.board-wrap--eottae-community .community-post__thumb {
     flex: 0 0 72px;
     width: 72px;
     height: 72px;
     border-radius: 12px;
   }
 
-  .board-wrap--eottae-community .community-post__title {
+  #bo_list.board-wrap--eottae-community .community-post__title {
     font-size: 15px;
   }
 
-  .board-wrap--eottae-community .community-post__stats {
+  #bo_list.board-wrap--eottae-community .community-post__stats {
     gap: 10px !important;
-  }
-
-  .board-wrap--eottae-community .community-post__stat {
-    min-width: 24px;
   }
 }
