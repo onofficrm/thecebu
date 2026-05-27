@@ -34,8 +34,12 @@
     }, ms);
     var opts = options || {};
     opts.signal = controller.signal;
-    return fetch(url, opts).finally(function () {
+    return fetch(url, opts).then(function (res) {
       clearTimeout(timer);
+      return res;
+    }, function (err) {
+      clearTimeout(timer);
+      throw err;
     });
   }
 
@@ -518,6 +522,9 @@
       payload.append('intro', shopAiValue(root, '#wr_content'));
 
       buttons.forEach(function (b) {
+        if (!b.getAttribute('data-ai-original-label')) {
+          b.setAttribute('data-ai-original-label', getAiBtnDefaultLabel(b));
+        }
         setAiBtnLoading(b, true);
         setAiBtnLabel(b, 'AI 생성 중…');
       });
@@ -532,7 +539,7 @@
       function resetShopAiButtons() {
         buttons.forEach(function (b) {
           setAiBtnLoading(b, false);
-          setAiBtnLabel(b, getAiBtnDefaultLabel(b));
+          setAiBtnLabel(b, b.getAttribute('data-ai-original-label') || getAiBtnDefaultLabel(b));
         });
       }
 
@@ -564,19 +571,7 @@
           }
           return json.data || {};
         })
-        .catch(function (err) {
-          var message = err && err.name === 'AbortError'
-            ? 'AI 요청 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.'
-            : (err.message || 'AI 자동생성에 실패했습니다.');
-          shopSetAiStatus(root, message, true);
-          alert(message);
-          return null;
-        })
-        .finally(function () {
-          resetShopAiButtons();
-        })
         .then(function (data) {
-          if (!data) return;
           try {
             applyShopAiData(data);
           } catch (fillErr) {
@@ -584,6 +579,14 @@
             shopSetAiStatus(root, fillMessage, true);
             alert(fillMessage);
           }
+          resetShopAiButtons();
+        }, function (err) {
+          var message = err && err.name === 'AbortError'
+            ? 'AI 요청 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.'
+            : (err.message || 'AI 자동생성에 실패했습니다.');
+          shopSetAiStatus(root, message, true);
+          alert(message);
+          resetShopAiButtons();
         });
     }
 
