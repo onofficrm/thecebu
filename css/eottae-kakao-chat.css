@@ -358,10 +358,17 @@
 
 /* ── 히어로(메인) — eottae.css hero 레이아웃 덮어쓰기 ── */
 .public-group-chat--hero.public-group-chat--kakao {
-  height: 100%;
+  --hero-public-chat-height: clamp(320px, 42vh, 480px);
+  display: flex;
+  flex-direction: column;
+  height: var(--hero-public-chat-height);
+  max-height: var(--hero-public-chat-height);
+  min-height: 320px;
+  min-width: 0;
 }
 
 .public-group-chat--hero.public-group-chat--kakao .public-group-chat__inner {
+  flex: 1 1 auto;
   min-height: 0;
   padding: 0;
   background: var(--kakao-chat-bg);
@@ -377,6 +384,9 @@
 }
 
 .public-group-chat--hero.public-group-chat--kakao .public-group-chat__panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
   border: 0;
   border-radius: 0;
   background: var(--kakao-chat-bg);
@@ -384,13 +394,21 @@
 }
 
 .public-group-chat--hero.public-group-chat--kakao .public-group-chat__messages {
-  min-height: 140px;
+  flex: 1 1 auto;
+  min-height: 0;
   max-height: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 14px 12px 10px;
   background: var(--kakao-chat-bg);
 }
 
-.public-group-chat--hero.public-group-chat--kakao .public-group-chat__composer {
+.public-group-chat--hero.public-group-chat--kakao .public-group-chat__composer,
+.public-group-chat--hero.public-group-chat--kakao .public-group-chat__composer--login,
+.public-group-chat--hero.public-group-chat--kakao .public-group-chat__composer--disabled {
+  flex: 0 0 auto;
   padding: 8px 10px 10px;
   background: var(--kakao-composer-bg);
   border-top: 1px solid rgba(0, 0, 0, 0.08);

@@ -30,6 +30,24 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $action = isset($_POST['action']) ? trim((string) $_POST['action']) : '';
 $token = isset($_POST['eottae_column_token']) ? trim((string) $_POST['eottae_column_token']) : '';
 
+if ($action === 'delete') {
+    if (!eottae_column_verify_member_token($token)) {
+        alert('보안 토큰이 만료되었습니다. 페이지를 새로고침해 주세요.', eottae_column_list_url());
+    }
+    if (!$is_member) {
+        alert('로그인이 필요합니다.', eottae_column_list_url());
+    }
+
+    $wr_id = isset($_POST['wr_id']) ? (int) $_POST['wr_id'] : 0;
+    $result = eottae_column_delete_post($wr_id, $member['mb_id'] ?? '', $is_admin === 'super');
+    eottae_column_member_token(true);
+
+    if (!empty($result['ok'])) {
+        goto_url($result['list_url'] ?? eottae_column_list_url());
+    }
+    alert($result['message'] ?? '삭제에 실패했습니다.', eottae_column_view_url($wr_id));
+}
+
 if ($action === 'save') {
     if (!eottae_column_verify_member_token($token)) {
         alert('보안 토큰이 만료되었습니다. 페이지를 새로고침해 주세요.', eottae_column_write_url());

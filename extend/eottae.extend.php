@@ -26,6 +26,7 @@ include_once G5_LIB_PATH.'/eottae-briefing.lib.php';
 include_once G5_LIB_PATH.'/eottae-challenge.lib.php';
 include_once G5_LIB_PATH.'/eottae-challenge-likes.lib.php';
 include_once G5_LIB_PATH.'/eottae-challenge-report.lib.php';
+include_once G5_LIB_PATH.'/eottae-golf-join.lib.php';
 include_once G5_LIB_PATH.'/eottae-column.lib.php';
 include_once G5_LIB_PATH.'/eottae-column-likes.lib.php';
 include_once G5_LIB_PATH.'/eottae-column-bookmarks.lib.php';
@@ -53,6 +54,9 @@ if (function_exists('eottae_calendar_ensure_schema')) {
 }
 if (function_exists('eottae_challenge_ensure_schema')) {
     eottae_challenge_ensure_schema();
+}
+if (function_exists('eottae_golf_join_ensure_schema')) {
+    eottae_golf_join_ensure_schema();
 }
 if (function_exists('eottae_column_ensure_schema')) {
     eottae_column_ensure_schema();
@@ -673,6 +677,45 @@ if (!function_exists('eottae_challenge_load_ui_assets')) {
 
 eottae_challenge_load_ui_assets();
 
+if (!function_exists('eottae_golf_join_should_load_ui')) {
+    function eottae_golf_join_should_load_ui()
+    {
+        $script = basename($_SERVER['SCRIPT_FILENAME'] ?? '');
+        $pages = array(
+            'eottae-golf-join.php',
+            'eottae-golf-join-detail.php',
+            'eottae-golf-join-create.php',
+            'eottae-golf-join-manage.php',
+            'eottae-golf-join-chat.php',
+            'index.php',
+            'view.php',
+        );
+        if (in_array($script, $pages, true)) {
+            return true;
+        }
+
+        $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
+
+        return (bool) preg_match('#/golf-join(?:[/?]|/(?:create|[0-9]+|chat))|/page/eottae-golf-join#', $uri);
+    }
+}
+
+if (!function_exists('eottae_golf_join_load_ui_assets')) {
+    function eottae_golf_join_load_ui_assets()
+    {
+        if (!function_exists('eottae_golf_join_should_load_ui') || !eottae_golf_join_should_load_ui()) {
+            return;
+        }
+
+        add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-golf-join.css">', 24);
+        if (function_exists('eottae_talkroom_append_body_class')) {
+            eottae_talkroom_append_body_class('golf-join-ui');
+        }
+    }
+}
+
+eottae_golf_join_load_ui_assets();
+
 if (!function_exists('eottae_talkroom_admin_shell_scripts')) {
     function eottae_talkroom_admin_shell_scripts()
     {
@@ -694,6 +737,7 @@ if (!function_exists('eottae_talkroom_admin_shell_scripts')) {
             'eottae-admin-public-ai.php',
             'eottae-admin-public-ai-candidates.php',
             'eottae-admin-public-ai-logs.php',
+            'eottae-admin-golf-join.php',
         );
     }
 }
@@ -712,7 +756,7 @@ if (!function_exists('eottae_talkroom_is_admin_shell_page')) {
 
         $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
 
-        return (bool) preg_match('#/page/eottae-admin-(?:talk|plaza|promo|review|challenge|member-growth)#', $uri);
+        return (bool) preg_match('#/page/eottae-admin-(?:talk|plaza|promo|review|challenge|member-growth|golf)#', $uri);
     }
 }
 

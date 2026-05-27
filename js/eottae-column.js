@@ -104,5 +104,44 @@
         });
       });
     }
+
+    var deleteBtn = viewRoot.querySelector('[data-sebu-column-delete]');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', function () {
+        if (!window.confirm('이 컬럼을 삭제할까요? 삭제 후에는 복구할 수 없습니다.')) {
+          return;
+        }
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = procUrl;
+        form.innerHTML = ''
+          + '<input type="hidden" name="action" value="delete">'
+          + '<input type="hidden" name="wr_id" value="' + String(wrId) + '">'
+          + '<input type="hidden" name="eottae_column_token" value="' + (viewRoot.getAttribute('data-member-token') || '') + '">';
+        document.body.appendChild(form);
+        form.submit();
+      });
+    }
+  }
+
+  var writeRoot = document.querySelector('[data-sebu-column-write]');
+  if (writeRoot) {
+    var writeDeleteBtn = writeRoot.querySelector('[data-sebu-column-delete]');
+    if (writeDeleteBtn) {
+      writeDeleteBtn.addEventListener('click', function () {
+        if (!window.confirm('이 컬럼을 삭제할까요? 삭제 후에는 복구할 수 없습니다.')) {
+          return;
+        }
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = writeDeleteBtn.getAttribute('data-proc-url') || writeRoot.getAttribute('data-proc-url') || '/proc/eottae-column.php';
+        form.innerHTML = ''
+          + '<input type="hidden" name="action" value="delete">'
+          + '<input type="hidden" name="wr_id" value="' + (writeDeleteBtn.getAttribute('data-wr-id') || '0') + '">'
+          + '<input type="hidden" name="eottae_column_token" value="' + (writeDeleteBtn.getAttribute('data-token') || '') + '">';
+        document.body.appendChild(form);
+        form.submit();
+      });
+    }
   }
 })();

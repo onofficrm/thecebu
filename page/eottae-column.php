@@ -26,23 +26,27 @@ $authors = eottae_column_list_authors(array('limit' => 6));
 $monthly = eottae_column_get_monthly_columnist();
 $categories = eottae_column_category_options();
 
+add_stylesheet('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">', 20);
 add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-column.css">', 24);
 
 g5_page_start('세부 생활정보 컬럼');
 ?>
 
-<main class="sebu-column-page">
-    <header class="sebu-column-page__hero">
-        <h1 class="sebu-column-page__title">세부 생활정보 컬럼</h1>
-        <p class="sebu-column-page__intro">세부에 사는 사람들이 직접 전하는 생활정보.<br>병원, 학교, 렌트, 비자, 사업, 가족생활까지 교민에게 필요한 이야기를 모았습니다.</p>
-        <?php if ($is_member && eottae_column_can_write($member['mb_id'], $is_admin === 'super')) { ?>
-        <p class="sebu-column-page__write-link"><a href="<?php echo eottae_column_write_url(); ?>" class="sebu-column-btn sebu-column-btn--primary">컬럼 작성</a></p>
-        <?php } elseif ($is_member) { ?>
-        <p class="sebu-column-page__write-link"><a href="<?php echo eottae_column_apply_url(); ?>" class="sebu-column-btn sebu-column-btn--ghost">칼럼니스트 신청</a></p>
-        <?php } ?>
+<main class="sebu-column-page sebu-column-page--list sebu-column-editorial">
+    <header class="sebu-column-masthead">
+        <p class="sebu-column-masthead__eyebrow">Cebu Living · Column</p>
+        <h1 class="sebu-column-masthead__title">세부 생활정보 컬럼</h1>
+        <p class="sebu-column-masthead__deck">세부에 살아가는 사람들의 경험과 통찰.<br class="sebu-column-masthead__br">병원·학교·비자·가족생활까지, 검증된 생활정보를 깊이 있게 읽습니다.</p>
+        <div class="sebu-column-masthead__actions">
+            <?php if ($is_member && eottae_column_can_write($member['mb_id'], $is_admin === 'super')) { ?>
+            <a href="<?php echo eottae_column_write_url(); ?>" class="sebu-column-btn sebu-column-btn--editorial">컬럼 작성</a>
+            <?php } elseif ($is_member) { ?>
+            <a href="<?php echo eottae_column_apply_url(); ?>" class="sebu-column-btn sebu-column-btn--outline">칼럼니스트 신청</a>
+            <?php } ?>
+        </div>
     </header>
 
-    <nav class="sebu-column-filter" aria-label="컬럼 카테고리">
+    <nav class="sebu-column-filter sebu-column-filter--editorial" aria-label="컬럼 카테고리">
         <div class="sebu-column-filter__scroll">
             <a href="<?php echo eottae_column_list_url(); ?>" class="sebu-column-filter__chip<?php echo $category === '' ? ' is-active' : ''; ?>">전체</a>
             <?php foreach ($categories as $code => $label) { ?>
@@ -52,8 +56,11 @@ g5_page_start('세부 생활정보 컬럼');
     </nav>
 
     <?php if ($today_pick && $category === '') { ?>
-    <section class="sebu-column-section" aria-labelledby="sebu-column-today-title">
-        <h2 class="sebu-column-section__title" id="sebu-column-today-title">오늘의 추천 컬럼</h2>
+    <section class="sebu-column-section sebu-column-section--spotlight" aria-labelledby="sebu-column-today-title">
+        <div class="sebu-column-section__label-row">
+            <span class="sebu-column-section__label">Editor's Pick</span>
+            <h2 class="sebu-column-section__title" id="sebu-column-today-title">오늘의 추천 컬럼</h2>
+        </div>
         <?php echo eottae_column_card_html($today_pick, 'featured'); ?>
     </section>
     <?php } ?>
@@ -65,9 +72,12 @@ g5_page_start('세부 생활정보 컬럼');
     </section>
     <?php } ?>
 
-    <section class="sebu-column-section" aria-labelledby="sebu-column-latest-title">
+    <section class="sebu-column-section sebu-column-section--feed" aria-labelledby="sebu-column-latest-title">
         <div class="sebu-column-section__head">
-            <h2 class="sebu-column-section__title" id="sebu-column-latest-title">최신 컬럼</h2>
+            <div class="sebu-column-section__label-row">
+                <span class="sebu-column-section__label">Latest Stories</span>
+                <h2 class="sebu-column-section__title" id="sebu-column-latest-title">최신 컬럼</h2>
+            </div>
             <div class="sebu-column-section__sort">
                 <a href="<?php echo eottae_column_list_url(array_filter(array('category' => $category ?: null))); ?>" class="sebu-column-sort-btn<?php echo $sort === '' ? ' is-active' : ''; ?>">최신</a>
                 <a href="<?php echo eottae_column_list_url(array_filter(array('category' => $category ?: null, 'sort' => 'popular'))); ?>" class="sebu-column-sort-btn<?php echo $sort === 'popular' ? ' is-active' : ''; ?>">인기</a>

@@ -725,6 +725,123 @@ if (!function_exists('eottae_column_can_edit')) {
     }
 }
 
+if (!function_exists('eottae_column_can_delete')) {
+    function eottae_column_can_delete($mb_id, $wr_id, $is_super = false)
+    {
+        return eottae_column_can_edit($mb_id, $wr_id, $is_super);
+    }
+}
+
+if (!function_exists('eottae_column_delete_post')) {
+    /**
+     * @return array{ok: bool, message: string, list_url?: string}
+     */
+    function eottae_column_delete_post($wr_id, $mb_id, $is_super = false)
+    {
+        global $g5;
+
+        $wr_id = (int) $wr_id;
+        $mb_id = trim((string) $mb_id);
+        if ($wr_id < 1) {
+            return array('ok' => false, 'message' => '잘못된 요청입니다.');
+        }
+        if (!eottae_column_can_delete($mb_id, $wr_id, $is_super)) {
+            return array('ok' => false, 'message' => '삭제 권한이 없습니다.');
+        }
+
+        $post = eottae_column_get_write_row($wr_id);
+        if (!$post) {
+            return array('ok' => false, 'message' => '글을 찾을 수 없습니다.');
+        }
+
+        $write_table = eottae_column_write_table();
+        $bo_table = eottae_column_board_table();
+        $bo_table_sql = sql_escape_string($bo_table);
+
+        $comment_row = sql_fetch("
+            SELECT COUNT(*) AS cnt
+            FROM `{$write_table}`
+            WHERE wr_parent = '{$wr_id}'
+              AND wr_is_comment = 1
+        ", false);
+        $comment_cnt = (int) ($comment_row['cnt'] ?? 0);
+
+        eottae_column_bootstrap_tables();
+        $meta = eottae_column_get_meta($wr_id);
+        if ($meta && !empty($meta['thumbnail'])) {
+            $thumb_path = (string) $meta['thumbnail'];
+            if ($thumb_path !== '' && strpos($thumb_path, '..') === false) {
+                $file = G5_DATA_PATH.'/'.ltrim($thumb_path, '/');
+                if (is_file($file)) {
+                    @unlink($file);
+                }
+            }
+        }
+
+        $meta_table = $g5['sebu_columns_meta_table'];
+        if (eottae_column_table_exists($meta_table)) {
+            sql_query(" DELETE FROM `{$meta_table}` WHERE wr_id = '{$wr_id}' ", false);
+        }
+
+        if (function_exists('eottae_column_likes_table')) {
+            include_once G5_LIB_PATH.'/eottae-column-likes.lib.php';
+            $likes_table = eottae_column_likes_table();
+            if (eottae_column_table_exists($likes_table)) {
+                sql_query(" DELETE FROM `{$likes_table}` WHERE wr_id = '{$wr_id}' ", false);
+            }
+        }
+
+        if (function_exists('eottae_column_bookmarks_table')) {
+            include_once G5_LIB_PATH.'/eottae-column-bookmarks.lib.php';
+            $bookmarks_table = eottae_column_bookmarks_table();
+            if (eottae_column_table_exists($bookmarks_table)) {
+                sql_query(" DELETE FROM `{$bookmarks_table}` WHERE wr_id = '{$wr_id}' ", false);
+            }
+        }
+
+        if (function_exists('eottae_column_reports_table')) {
+            include_once G5_LIB_PATH.'/eottae-column-report.lib.php';
+            $reports_table = eottae_column_reports_table();
+            if (eottae_column_table_exists($reports_table)) {
+                sql_query(" DELETE FROM `{$reports_table}` WHERE wr_id = '{$wr_id}' ", false);
+            }
+        }
+
+        sql_query(" DELETE FROM `{$write_table}` WHERE wr_parent = '{$wr_id}' ", false);
+        sql_query("
+            DELETE FROM {$g5['board_new_table']}
+            WHERE bo_table = '{$bo_table_sql}'
+              AND wr_parent = '{$wr_id}'
+        ", false);
+        sql_query("
+            DELETE FROM {$g5['scrap_table']}
+            WHERE bo_table = '{$bo_table_sql}'
+              AND wr_id = '{$wr_id}'
+        ", false);
+        sql_query("
+            UPDATE {$g5['board_table']} SET
+                bo_count_write = IF(bo_count_write > 0, bo_count_write - 1, 0),
+                bo_count_comment = IF(bo_count_comment > {$comment_cnt}, bo_count_comment - {$comment_cnt}, 0)
+            WHERE bo_table = '{$bo_table_sql}'
+        ", false);
+
+        $author_mb_id = trim((string) ($post['mb_id'] ?? ''));
+        if ($author_mb_id !== '') {
+            eottae_column_sync_author_badges($author_mb_id);
+        }
+
+        if (function_exists('delete_cache_latest')) {
+            delete_cache_latest($bo_table);
+        }
+
+        return array(
+            'ok'       => true,
+            'message'  => '컬럼이 삭제되었습니다.',
+            'list_url' => eottae_column_list_url(),
+        );
+    }
+}
+
 if (!function_exists('eottae_column_get_write_row')) {
     function eottae_column_get_write_row($wr_id)
     {

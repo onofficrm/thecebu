@@ -1,0 +1,1384 @@
+@charset "utf-8";
+
+/**
+ * 세부어때 골프조인 — 모바일 우선 카드 UI
+ * 스코프: body.golf-join-ui
+ */
+
+body.golf-join-ui {
+  --golf-bg: #f4f7fa;
+  --golf-surface: #ffffff;
+  --golf-line: #e2e8f0;
+  --golf-muted: #64748b;
+  --golf-text: #0f172a;
+  --golf-primary: var(--eottae-primary, #0ea5e9);
+  --golf-primary-dark: #0284c7;
+  --golf-green: #16a34a;
+  --golf-green-bg: #ecfdf3;
+  --golf-warn: #d97706;
+  --golf-warn-bg: #fffbeb;
+  --golf-radius: 16px;
+  --golf-radius-sm: 12px;
+  --golf-shadow: 0 4px 18px rgba(15, 23, 42, 0.06);
+  --golf-bar-h: 72px;
+  background: var(--golf-bg);
+}
+
+body.golf-join-ui #wrapper,
+body.golf-join-ui #container,
+body.golf-join-ui .eottae-page-main {
+  background: transparent;
+}
+
+body.golf-join-ui .golf-join-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 0 calc(var(--golf-bar-h) + 24px + env(safe-area-inset-bottom, 0px));
+  min-height: 60vh;
+}
+
+/* ── Top bar ── */
+body.golf-join-ui .golf-join-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--golf-line);
+}
+
+body.golf-join-ui .golf-join-topbar__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: -0.03em;
+  color: var(--golf-text);
+}
+
+body.golf-join-ui .golf-join-topbar__back,
+body.golf-join-ui .golf-join-topbar__search,
+body.golf-join-ui .golf-join-topbar__share {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--golf-muted);
+  font-size: 1.2rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+body.golf-join-ui .golf-join-topbar__back:hover,
+body.golf-join-ui .golf-join-topbar__search:hover,
+body.golf-join-ui .golf-join-topbar__share:hover {
+  background: rgba(14, 165, 233, 0.08);
+  color: var(--golf-primary);
+}
+
+/* ── Search panel ── */
+body.golf-join-ui .golf-join-search-panel {
+  padding: 0 14px 10px;
+  background: #fff;
+  border-bottom: 1px solid var(--golf-line);
+}
+
+body.golf-join-ui .golf-join-search-panel__form {
+  display: flex;
+  gap: 8px;
+}
+
+body.golf-join-ui .golf-join-search-panel__input {
+  flex: 1;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--golf-line);
+  border-radius: var(--golf-radius-sm);
+  font-size: 15px;
+}
+
+body.golf-join-ui .golf-join-search-panel__submit {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--golf-radius-sm);
+  background: var(--golf-primary);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ── Filters ── */
+body.golf-join-ui .golf-join-filters {
+  padding: 12px 14px;
+  background: var(--golf-surface);
+  border-bottom: 1px solid var(--golf-line);
+}
+
+body.golf-join-ui .golf-join-filter-row {
+  margin-bottom: 12px;
+}
+
+body.golf-join-ui .golf-join-filter-row:last-child {
+  margin-bottom: 0;
+}
+
+body.golf-join-ui .golf-join-filter-row__label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--golf-muted);
+}
+
+body.golf-join-ui .golf-join-filter-row--scroll .golf-join-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+}
+
+body.golf-join-ui .golf-join-chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--golf-line);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+body.golf-join-ui .golf-join-chip input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.golf-join-ui .golf-join-chip.is-active {
+  border-color: var(--golf-primary);
+  background: #e0f2fe;
+  color: var(--golf-primary-dark);
+}
+
+body.golf-join-ui .golf-join-chip__date {
+  width: 0;
+  height: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+}
+
+body.golf-join-ui .golf-join-chip--date.is-active .golf-join-chip__date,
+body.golf-join-ui .golf-join-chip--date:focus-within .golf-join-chip__date {
+  width: auto;
+  height: auto;
+  opacity: 1;
+  margin-left: 4px;
+  padding: 4px 6px;
+  border: 1px solid var(--golf-line);
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+body.golf-join-ui .golf-join-filter-row--tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+body.golf-join-ui .golf-join-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--golf-text);
+}
+
+body.golf-join-ui .golf-join-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+body.golf-join-ui .golf-join-sort__label {
+  font-size: 12px;
+  color: var(--golf-muted);
+  font-weight: 700;
+}
+
+body.golf-join-ui .golf-join-sort__select {
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--golf-line);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  background: #fff;
+}
+
+/* ── List ── */
+body.golf-join-ui .golf-join-list-wrap {
+  padding: 14px;
+}
+
+body.golf-join-ui .golf-join-demo-note {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: var(--golf-radius-sm);
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+body.golf-join-ui .golf-join-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+body.golf-join-ui .golf-join-card {
+  list-style: none;
+}
+
+body.golf-join-ui .golf-join-card__link {
+  display: block;
+  padding: 16px;
+  border-radius: var(--golf-radius);
+  background: var(--golf-surface);
+  border: 1px solid var(--golf-line);
+  box-shadow: var(--golf-shadow);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+body.golf-join-ui .golf-join-card__link:active {
+  transform: scale(0.99);
+}
+
+body.golf-join-ui .golf-join-card__top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+body.golf-join-ui .golf-join-card__status {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+body.golf-join-ui .golf-join-card__status--recruiting {
+  background: var(--golf-green-bg);
+  color: var(--golf-green);
+}
+
+body.golf-join-ui .golf-join-card__status--full {
+  background: #e0f2fe;
+  color: var(--golf-primary-dark);
+}
+
+body.golf-join-ui .golf-join-card__status--closed,
+body.golf-join-ui .golf-join-card__status--cancelled {
+  background: #f1f5f9;
+  color: var(--golf-muted);
+}
+
+body.golf-join-ui .golf-join-card__badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--golf-warn);
+  background: var(--golf-warn-bg);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+body.golf-join-ui .golf-join-card__course {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+  color: var(--golf-text);
+}
+
+body.golf-join-ui .golf-join-card__meta {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--golf-muted);
+  line-height: 1.5;
+}
+
+body.golf-join-ui .golf-join-card__dot {
+  margin: 0 4px;
+}
+
+body.golf-join-ui .golf-join-card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+body.golf-join-ui .golf-join-card__price {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--golf-primary-dark);
+}
+
+body.golf-join-ui .golf-join-card__count {
+  font-size: 14px;
+  color: var(--golf-muted);
+  font-weight: 700;
+}
+
+body.golf-join-ui .golf-join-card__count strong {
+  color: var(--golf-text);
+  font-size: 1.1rem;
+}
+
+body.golf-join-ui .golf-join-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+body.golf-join-ui .golf-join-card__tags li {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid var(--golf-line);
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+}
+
+body.golf-join-ui .golf-join-card__host {
+  margin: 0;
+  font-size: 12px;
+  color: var(--golf-muted);
+}
+
+body.golf-join-ui .golf-join-card__host-label {
+  margin-right: 6px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+body.golf-join-ui .golf-join-empty {
+  padding: 48px 20px;
+  text-align: center;
+  border-radius: var(--golf-radius);
+  background: var(--golf-surface);
+  border: 1px dashed var(--golf-line);
+}
+
+body.golf-join-ui .golf-join-empty__title {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--golf-text);
+}
+
+body.golf-join-ui .golf-join-empty__desc {
+  margin: 0;
+  font-size: 14px;
+  color: var(--golf-muted);
+}
+
+/* ── FAB ── */
+body.golf-join-ui .golf-join-fab-wrap {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--eottae-bottom-nav-h, 64px) + env(safe-area-inset-bottom, 0px) + 12px);
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  padding: 0 16px;
+  pointer-events: none;
+}
+
+body.golf-join-ui .golf-join-fab {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 28px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--golf-primary) 0%, var(--golf-primary-dark) 100%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(14, 165, 233, 0.35);
+}
+
+/* ── Detail ── */
+body.golf-join-ui .golf-join-page--detail {
+  padding-bottom: calc(var(--golf-bar-h) + var(--eottae-bottom-nav-h, 64px) + 24px + env(safe-area-inset-bottom, 0px));
+}
+
+body.golf-join-ui .golf-join-banner {
+  margin: 12px 14px 0;
+  padding: 12px 14px;
+  border-radius: var(--golf-radius-sm);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+body.golf-join-ui .golf-join-banner--info {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+body.golf-join-ui .golf-join-banner--success {
+  background: var(--golf-green-bg);
+  color: #15803d;
+}
+
+body.golf-join-ui .golf-join-banner--muted {
+  background: #f1f5f9;
+  color: var(--golf-muted);
+}
+
+body.golf-join-ui .golf-join-detail-hero,
+body.golf-join-ui .golf-join-detail-section {
+  margin: 12px 14px 0;
+  padding: 18px 16px;
+  border-radius: var(--golf-radius);
+  background: var(--golf-surface);
+  border: 1px solid var(--golf-line);
+  box-shadow: var(--golf-shadow);
+}
+
+body.golf-join-ui .golf-join-detail-hero__status {
+  display: inline-flex;
+  margin: 0 0 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+body.golf-join-ui .golf-join-detail-hero__status--recruiting {
+  background: var(--golf-green-bg);
+  color: var(--golf-green);
+}
+
+body.golf-join-ui .golf-join-detail-hero__status--full {
+  background: #e0f2fe;
+  color: var(--golf-primary-dark);
+}
+
+body.golf-join-ui .golf-join-detail-hero__course {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.35;
+}
+
+body.golf-join-ui .golf-join-detail-hero__title {
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: var(--golf-muted);
+  line-height: 1.5;
+}
+
+body.golf-join-ui .golf-join-detail-facts {
+  margin: 0;
+}
+
+body.golf-join-ui .golf-join-detail-facts__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid #f1f5f9;
+}
+
+body.golf-join-ui .golf-join-detail-facts__row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+body.golf-join-ui .golf-join-detail-facts dt {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--golf-muted);
+}
+
+body.golf-join-ui .golf-join-detail-facts dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--golf-text);
+  text-align: right;
+}
+
+body.golf-join-ui .golf-join-detail-facts__sub {
+  font-weight: 600;
+  color: var(--golf-muted);
+  font-size: 12px;
+}
+
+body.golf-join-ui .golf-join-detail-facts__count strong {
+  font-size: 1.1rem;
+  color: var(--golf-primary-dark);
+}
+
+body.golf-join-ui .golf-join-detail-section__title {
+  margin: 0 0 14px;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+body.golf-join-ui .golf-join-detail-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+body.golf-join-ui .golf-join-detail-section__head .golf-join-detail-section__title {
+  margin: 0;
+}
+
+body.golf-join-ui .golf-join-detail-section__meta {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--golf-primary-dark);
+}
+
+body.golf-join-ui .golf-join-pref-group {
+  margin-bottom: 14px;
+}
+
+body.golf-join-ui .golf-join-pref-group:last-child {
+  margin-bottom: 0;
+}
+
+body.golf-join-ui .golf-join-pref-group__label {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--golf-muted);
+}
+
+body.golf-join-ui .golf-join-pref-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+body.golf-join-ui .golf-join-pref-list li {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--golf-line);
+  background: #f8fafc;
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+body.golf-join-ui .golf-join-pref-list li.is-on {
+  border-color: var(--golf-primary);
+  background: #e0f2fe;
+  color: var(--golf-primary-dark);
+}
+
+body.golf-join-ui .golf-join-detail-intro {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--golf-text);
+}
+
+body.golf-join-ui .golf-join-detail-intro--empty {
+  color: var(--golf-muted);
+}
+
+body.golf-join-ui .golf-join-mood-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+body.golf-join-ui .golf-join-mood-tags li {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #f0fdf4;
+  color: #166534;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+body.golf-join-ui .golf-join-member-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+body.golf-join-ui .golf-join-member-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 72px;
+  padding: 10px 8px;
+  border-radius: var(--golf-radius-sm);
+  background: #f8fafc;
+  border: 1px solid var(--golf-line);
+}
+
+body.golf-join-ui .golf-join-member-chip--host {
+  border-color: #86efac;
+  background: var(--golf-green-bg);
+}
+
+body.golf-join-ui .golf-join-member-chip__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #bae6fd, #7dd3fc);
+  color: #0c4a6e;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+body.golf-join-ui .golf-join-member-chip--host .golf-join-member-chip__avatar {
+  background: linear-gradient(135deg, #86efac, #4ade80);
+  color: #14532d;
+}
+
+body.golf-join-ui .golf-join-member-chip__name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--golf-text);
+  text-align: center;
+  max-width: 72px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.golf-join-ui .golf-join-member-chip__role {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--golf-green);
+}
+
+body.golf-join-ui .golf-join-detail-spacer {
+  height: 12px;
+}
+
+body.golf-join-ui .golf-join-detail-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--eottae-bottom-nav-h, 64px) + env(safe-area-inset-bottom, 0px));
+  z-index: 50;
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px 12px;
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid var(--golf-line);
+  backdrop-filter: blur(10px);
+}
+
+body.golf-join-ui .golf-join-detail-bar__btn {
+  flex: 1;
+  min-height: 52px;
+  border: 1px solid var(--golf-line);
+  border-radius: 14px;
+  background: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--golf-muted);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+body.golf-join-ui .golf-join-detail-bar__btn--primary {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--golf-primary) 0%, var(--golf-primary-dark) 100%);
+  color: #fff;
+}
+
+body.golf-join-ui .golf-join-detail-bar__btn--done {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+  color: #64748b;
+  cursor: default;
+}
+
+body.golf-join-ui .golf-join-detail-bar__btn--ghost {
+  border-color: var(--golf-line);
+  background: #fff;
+  color: var(--golf-muted);
+}
+
+body.golf-join-ui .golf-join-detail-section--host {
+  border-color: #bae6fd;
+  background: linear-gradient(180deg, #fff 0%, #f0f9ff 100%);
+}
+
+body.golf-join-ui .golf-join-applicant-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body.golf-join-ui .golf-join-applicant {
+  padding: 14px;
+  border-radius: var(--golf-radius-sm);
+  border: 1px solid var(--golf-line);
+  background: #fff;
+}
+
+body.golf-join-ui .golf-join-applicant__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+body.golf-join-ui .golf-join-applicant__name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--golf-text);
+}
+
+body.golf-join-ui .golf-join-applicant__date {
+  font-size: 12px;
+  color: var(--golf-muted);
+}
+
+body.golf-join-ui .golf-join-applicant__meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+body.golf-join-ui .golf-join-applicant__meta > div {
+  text-align: center;
+  padding: 8px 4px;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+body.golf-join-ui .golf-join-applicant__meta dt {
+  margin: 0 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--golf-muted);
+}
+
+body.golf-join-ui .golf-join-applicant__meta dd {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--golf-text);
+}
+
+body.golf-join-ui .golf-join-applicant__message {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f8fafc;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--golf-text);
+}
+
+body.golf-join-ui .golf-join-applicant__message--empty {
+  color: var(--golf-muted);
+}
+
+body.golf-join-ui .golf-join-applicant__actions {
+  display: flex;
+  gap: 8px;
+}
+
+body.golf-join-ui .golf-join-applicant__btn {
+  flex: 1;
+  min-height: 44px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+body.golf-join-ui .golf-join-applicant__btn--approve {
+  border: 0;
+  background: var(--golf-primary);
+  color: #fff;
+}
+
+body.golf-join-ui .golf-join-applicant__btn--reject {
+  border: 1px solid var(--golf-line);
+  background: #fff;
+  color: var(--golf-muted);
+}
+
+body.golf-join-ui .golf-join-sheet__panel--compact {
+  text-align: center;
+}
+
+body.golf-join-ui .golf-join-sheet__desc {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--golf-muted);
+  text-align: center;
+}
+
+body.golf-join-ui .golf-join-sheet__submit {
+  display: flex;
+  width: 100%;
+  margin-bottom: 10px;
+  text-decoration: none;
+  justify-content: center;
+  align-items: center;
+}
+
+body.golf-join-ui .golf-join-sheet__cancel {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--golf-muted);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+body.golf-join-ui .golf-join-sheet__panel .golf-join-create-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 12px;
+}
+
+/* ── Create form ── */
+body.golf-join-ui .golf-join-page--create {
+  padding-bottom: calc(var(--golf-bar-h) + var(--eottae-bottom-nav-h, 64px) + 20px + env(safe-area-inset-bottom, 0px));
+}
+
+body.golf-join-ui .golf-join-page--chat {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 56px);
+  max-height: calc(100dvh - 56px);
+  padding-bottom: 0;
+}
+
+body.golf-join-ui .golf-join-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 14px 16px;
+}
+
+body.golf-join-ui .golf-join-chat-empty {
+  margin: 24px 0;
+  text-align: center;
+  color: var(--golf-muted);
+  font-size: 14px;
+}
+
+body.golf-join-ui .golf-join-chat-bubble-wrap {
+  margin-bottom: 12px;
+  max-width: 85%;
+}
+
+body.golf-join-ui .golf-join-chat-bubble-wrap.is-mine {
+  margin-left: auto;
+  text-align: right;
+}
+
+body.golf-join-ui .golf-join-chat-bubble__meta {
+  margin: 0 0 4px;
+  font-size: 11px;
+  color: var(--golf-muted);
+}
+
+body.golf-join-ui .golf-join-chat-bubble {
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 16px 16px 16px 4px;
+  background: #fff;
+  border: 1px solid var(--golf-line);
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: left;
+  word-break: break-word;
+}
+
+body.golf-join-ui .golf-join-chat-bubble-wrap.is-mine .golf-join-chat-bubble {
+  background: #e0f2fe;
+  border-color: #bae6fd;
+  border-radius: 16px 16px 4px 16px;
+}
+
+body.golf-join-ui .golf-join-chat-compose {
+  position: sticky;
+  bottom: calc(var(--eottae-bottom-nav-h, 64px) + env(safe-area-inset-bottom, 0px));
+  padding: 10px 14px 10px;
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid var(--golf-line);
+  backdrop-filter: blur(8px);
+}
+
+body.golf-join-ui .golf-join-chat-compose__form {
+  display: flex;
+  gap: 8px;
+}
+
+body.golf-join-ui .golf-join-chat-compose__input {
+  flex: 1;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--golf-line);
+  border-radius: 22px;
+  font-size: 15px;
+}
+
+body.golf-join-ui .golf-join-chat-compose__send {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--golf-primary);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+body.golf-join-ui .golf-join-list-wrap {
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
+body.golf-join-ui .golf-join-create-mode-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 10px 14px 0;
+  padding: 10px 12px;
+  border-radius: var(--golf-radius-sm);
+  background: #eff6ff;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1d4ed8;
+}
+
+body.golf-join-ui .golf-join-create-mode-hint__change {
+  border: 0;
+  background: transparent;
+  color: var(--golf-primary-dark);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+body.golf-join-ui .golf-join-create-section {
+  margin: 12px 14px 0;
+  padding: 16px;
+  border-radius: var(--golf-radius);
+  background: var(--golf-surface);
+  border: 1px solid var(--golf-line);
+  box-shadow: var(--golf-shadow);
+}
+
+body.golf-join-ui .golf-join-create-section__title {
+  margin: 0 0 14px;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+body.golf-join-ui .golf-join-create-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+body.golf-join-ui .golf-join-create-section__head .golf-join-create-section__title {
+  margin: 0;
+}
+
+body.golf-join-ui .golf-join-create-required {
+  color: #ef4444;
+}
+
+body.golf-join-ui .golf-join-create-field {
+  margin-bottom: 16px;
+}
+
+body.golf-join-ui .golf-join-create-field:last-child {
+  margin-bottom: 0;
+}
+
+body.golf-join-ui .golf-join-create-field__label {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--golf-text);
+}
+
+body.golf-join-ui .golf-join-create-field__sub {
+  font-weight: 600;
+  color: var(--golf-muted);
+}
+
+body.golf-join-ui .golf-join-create-field__hint {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--golf-muted);
+  line-height: 1.5;
+}
+
+body.golf-join-ui .golf-join-create-field__hint a {
+  color: var(--golf-primary);
+  font-weight: 700;
+}
+
+body.golf-join-ui .golf-join-create-text,
+body.golf-join-ui .golf-join-create-textarea,
+body.golf-join-ui .golf-join-create-date {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid var(--golf-line);
+  border-radius: var(--golf-radius-sm);
+  font-size: 15px;
+  background: #fff;
+  color: var(--golf-text);
+}
+
+body.golf-join-ui .golf-join-create-textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.6;
+}
+
+body.golf-join-ui .golf-join-option-grid {
+  display: grid;
+  gap: 8px;
+}
+
+body.golf-join-ui .golf-join-option-grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.golf-join-ui .golf-join-option-grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body.golf-join-ui .golf-join-option-grid--scroll {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+}
+
+body.golf-join-ui .golf-join-option-grid--scroll .golf-join-option-btn {
+  flex: 0 0 auto;
+}
+
+body.golf-join-ui .golf-join-option-btn {
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--golf-line);
+  border-radius: var(--golf-radius-sm);
+  background: #f8fafc;
+  font-size: 14px;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+body.golf-join-ui .golf-join-option-btn.is-active {
+  border-color: var(--golf-primary);
+  background: #e0f2fe;
+  color: var(--golf-primary-dark);
+  box-shadow: inset 0 0 0 1px rgba(14, 165, 233, 0.15);
+}
+
+body.golf-join-ui .golf-join-option-btn--tag.is-active {
+  background: #ecfdf3;
+  border-color: #86efac;
+  color: #166534;
+}
+
+body.golf-join-ui .golf-join-course-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+body.golf-join-ui .golf-join-course-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--golf-line);
+  border-radius: var(--golf-radius-sm);
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+body.golf-join-ui .golf-join-course-item.is-active {
+  border-color: var(--golf-primary);
+  background: #f0f9ff;
+}
+
+body.golf-join-ui .golf-join-course-item__name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--golf-text);
+}
+
+body.golf-join-ui .golf-join-course-item__meta {
+  font-size: 12px;
+  color: var(--golf-muted);
+}
+
+body.golf-join-ui .golf-join-create-profile {
+  margin: 0;
+}
+
+body.golf-join-ui .golf-join-create-profile > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid #f1f5f9;
+}
+
+body.golf-join-ui .golf-join-create-profile > div:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+body.golf-join-ui .golf-join-create-profile dt {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--golf-muted);
+}
+
+body.golf-join-ui .golf-join-create-profile dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--golf-text);
+}
+
+body.golf-join-ui .golf-join-create-profile-edit {
+  border: 0;
+  background: transparent;
+  color: var(--golf-primary);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+body.golf-join-ui .golf-join-create-profile-edit-panel {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--golf-line);
+}
+
+body.golf-join-ui .golf-join-create-spacer {
+  height: 16px;
+}
+
+body.golf-join-ui .golf-join-create-bar {
+  position: fixed;
+}
+
+/* ── Bottom sheet ── */
+body.golf-join-ui.golf-join-sheet-open {
+  overflow: hidden;
+}
+
+body.golf-join-ui .golf-join-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+body.golf-join-ui .golf-join-sheet[hidden] {
+  display: none;
+}
+
+body.golf-join-ui .golf-join-sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+body.golf-join-ui .golf-join-sheet__panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 640px;
+  max-height: 85vh;
+  padding: 8px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+  border-radius: 20px 20px 0 0;
+  background: #fff;
+  box-shadow: 0 -8px 32px rgba(15, 23, 42, 0.12);
+  animation: golf-join-sheet-up 0.28s ease;
+}
+
+@keyframes golf-join-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+body.golf-join-ui .golf-join-sheet__handle {
+  width: 40px;
+  height: 4px;
+  margin: 0 auto 12px;
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+body.golf-join-ui .golf-join-sheet__title {
+  margin: 0 0 16px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-align: center;
+  line-height: 1.45;
+}
+
+body.golf-join-ui .golf-join-mode-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+body.golf-join-ui .golf-join-mode-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--golf-line);
+  border-radius: var(--golf-radius);
+  background: #f8fafc;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+body.golf-join-ui .golf-join-mode-card:hover,
+body.golf-join-ui .golf-join-mode-card:focus {
+  border-color: var(--golf-primary);
+  background: #f0f9ff;
+}
+
+body.golf-join-ui .golf-join-mode-card__title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--golf-text);
+}
+
+body.golf-join-ui .golf-join-mode-card__desc {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--golf-muted);
+}
+
+@media (min-width: 768px) {
+  body.golf-join-ui .golf-join-fab-wrap {
+    max-width: 640px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  body.golf-join-ui .golf-join-detail-bar,
+  body.golf-join-ui .golf-join-create-bar {
+    max-width: 640px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}

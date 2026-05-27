@@ -45,22 +45,71 @@ if ($author) {
 
 $comments = eottae_column_list_comments($wr_id);
 $token = eottae_column_member_token();
+$is_super = ($is_admin === 'super');
+$can_edit = $is_member && eottae_column_can_edit($member['mb_id'] ?? '', $wr_id, $is_super);
+$can_delete = $is_member && eottae_column_can_delete($member['mb_id'] ?? '', $wr_id, $is_super);
+$thumb_url = trim((string) ($post['thumbnail_url'] ?? ''));
+$has_thumb = $thumb_url !== '' && stripos($thumb_url, 'no_img') === false;
+$tag_list = array();
+if (!empty($post['tags'])) {
+    foreach (preg_split('/\s*,\s*/', (string) $post['tags']) as $tag) {
+        $tag = trim($tag);
+        if ($tag !== '') {
+            $tag_list[] = $tag;
+        }
+    }
+}
 $report_token = eottae_column_report_token();
 $report_reasons = eottae_column_report_reasons();
 $bo_table = eottae_column_board_table();
 $comment_action = G5_BBS_URL.'/write_comment_update.php';
 
+add_stylesheet('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">', 20);
 add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-column.css">', 24);
 add_javascript('<script src="'.G5_JS_URL.'/eottae-column.js" defer></script>', 24);
 
 g5_page_start(get_text($post['wr_subject'] ?? '컬럼'));
 ?>
 
-<main class="sebu-article-page" data-sebu-column-view data-wr-id="<?php echo (int) $wr_id; ?>" data-proc-url="<?php echo get_text(eottae_column_proc_url()); ?>">
-    <p class="sebu-article-page__back"><a href="<?php echo eottae_column_list_url(); ?>">← 생활정보 컬럼</a></p>
+<main class="sebu-article-page sebu-column-editorial" data-sebu-column-view data-wr-id="<?php echo (int) $wr_id; ?>" data-proc-url="<?php echo get_text(eottae_column_proc_url()); ?>" data-member-token="<?php echo get_text($token); ?>">
+    <nav class="sebu-article-page__breadcrumb" aria-label="경로">
+        <a href="<?php echo eottae_column_list_url(); ?>">Column</a>
+        <?php if (!empty($post['category_label'])) { ?>
+        <span class="sebu-article-page__breadcrumb-sep" aria-hidden="true">·</span>
+        <a href="<?php echo eottae_column_category_url($post['category'] ?? ''); ?>"><?php echo get_text($post['category_label']); ?></a>
+        <?php } ?>
+    </nav>
 
-    <article class="sebu-article">
-        <header class="sebu-article__header">
+    <?php if ($can_edit || $can_delete) { ?>
+    <div class="sebu-article__owner-bar">
+        <?php if ($can_edit) { ?>
+        <a href="<?php echo eottae_column_write_url($wr_id); ?>" class="sebu-column-btn sebu-column-btn--outline sebu-column-btn--sm">수정</a>
+        <?php } ?>
+        <?php if ($can_delete) { ?>
+        <button type="button" class="sebu-column-btn sebu-column-btn--danger sebu-column-btn--sm" data-sebu-column-delete>삭제</button>
+        <?php } ?>
+    </div>
+    <?php } ?>
+
+    <article class="sebu-article sebu-article--editorial">
+        <?php if ($has_thumb) { ?>
+        <div class="sebu-article__cover">
+            <img src="<?php echo get_text($thumb_url); ?>" alt="" class="sebu-article__cover-img">
+            <div class="sebu-article__cover-shade" aria-hidden="true"></div>
+            <header class="sebu-article__cover-header">
+                <?php if (!empty($post['category_label'])) { ?>
+                <span class="sebu-column-badge sebu-column-badge--category sebu-column-badge--on-dark"><?php echo get_text($post['category_label']); ?></span>
+                <?php } ?>
+                <h1 class="sebu-article__title"><?php echo get_text($post['wr_subject'] ?? ''); ?></h1>
+                <?php if (!empty($post['subtitle'])) { ?>
+                <p class="sebu-article__subtitle"><?php echo get_text($post['subtitle']); ?></p>
+                <?php } elseif (!empty($post['summary'])) { ?>
+                <p class="sebu-article__subtitle"><?php echo get_text($post['summary']); ?></p>
+                <?php } ?>
+            </header>
+        </div>
+        <?php } else { ?>
+        <header class="sebu-article__header sebu-article__header--solo">
             <?php if (!empty($post['category_label'])) { ?>
             <span class="sebu-column-badge sebu-column-badge--category"><?php echo get_text($post['category_label']); ?></span>
             <?php } ?>
@@ -70,53 +119,61 @@ g5_page_start(get_text($post['wr_subject'] ?? '컬럼'));
             <?php } elseif (!empty($post['summary'])) { ?>
             <p class="sebu-article__subtitle"><?php echo get_text($post['summary']); ?></p>
             <?php } ?>
+        </header>
+        <?php } ?>
 
-            <div class="sebu-article__author-bar">
+        <div class="sebu-article__byline">
+            <div class="sebu-article__byline-author">
                 <?php if ($author) { ?>
                 <?php echo eottae_column_render_author_profile_block_html($author, 'sm'); ?>
                 <?php } else { ?>
                 <span class="sebu-article__author-name"><?php echo get_text($post['author_name'] ?? ''); ?></span>
                 <?php } ?>
             </div>
-
-            <p class="sebu-article__meta">
-                <?php echo get_text($post['date_label'] ?? ''); ?>
-                <?php if (!empty($post['modified_label']) && $post['modified_label'] !== $post['date_label']) { ?>
-                · 수정 <?php echo get_text($post['modified_label']); ?>
-                <?php } ?>
-                · 조회 <?php echo number_format((int) ($post['wr_hit'] ?? 0)); ?>
-                · 댓글 <?php echo number_format((int) ($post['wr_comment'] ?? 0)); ?>
-                · 공감 <?php echo number_format((int) ($post['like_count'] ?? 0)); ?>
-                · <?php echo get_text($post['read_time_label'] ?? ''); ?>
-            </p>
-
-            <div class="sebu-article__share">
-                <button type="button" class="sebu-column-btn sebu-column-btn--ghost" data-sebu-column-share data-share-url="<?php echo get_text($post['view_url'] ?? ''); ?>" data-share-title="<?php echo get_text($post['wr_subject'] ?? ''); ?>">공유</button>
+            <div class="sebu-article__byline-meta">
+                <time datetime="<?php echo get_text($post['date_label'] ?? ''); ?>"><?php echo get_text($post['date_label'] ?? ''); ?></time>
+                <span class="sebu-article__byline-dot" aria-hidden="true">·</span>
+                <span><?php echo get_text($post['read_time_label'] ?? ''); ?></span>
             </div>
-        </header>
-
-        <?php if (!empty($post['thumbnail_url'])) { ?>
-        <figure class="sebu-article__hero">
-            <img src="<?php echo get_text($post['thumbnail_url']); ?>" alt="" class="sebu-article__hero-img">
-        </figure>
-        <?php } ?>
-
-        <div class="sebu-article__content sebu-article__content--rich">
-            <?php echo conv_content($post['wr_content'] ?? '', 1); ?>
+            <dl class="sebu-article__stats">
+                <div><dt>조회</dt><dd><?php echo number_format((int) ($post['wr_hit'] ?? 0)); ?></dd></div>
+                <div><dt>댓글</dt><dd><?php echo number_format((int) ($post['wr_comment'] ?? 0)); ?></dd></div>
+                <div><dt>공감</dt><dd><?php echo number_format((int) ($post['like_count'] ?? 0)); ?></dd></div>
+            </dl>
         </div>
 
-        <footer class="sebu-article__actions">
-            <?php if ($is_member) { ?>
-            <button type="button" class="sebu-column-like-btn<?php echo !empty($post['liked']) ? ' is-liked' : ''; ?>" data-sebu-column-like data-token="<?php echo get_text($token); ?>">
-                공감 <span data-sebu-column-like-count><?php echo number_format((int) ($post['like_count'] ?? 0)); ?></span>
-            </button>
-            <button type="button" class="sebu-column-bookmark-btn<?php echo !empty($post['bookmarked']) ? ' is-saved' : ''; ?>" data-sebu-column-bookmark data-token="<?php echo get_text($token); ?>">
-                <?php echo !empty($post['bookmarked']) ? '저장됨' : '저장하기'; ?>
-            </button>
-            <button type="button" class="sebu-column-btn sebu-column-btn--ghost" data-sebu-column-report-open>신고</button>
-            <?php } else { ?>
-            <span class="sebu-column-like-btn is-disabled">공감 <?php echo number_format((int) ($post['like_count'] ?? 0)); ?></span>
+        <?php if (!empty($tag_list)) { ?>
+        <ul class="sebu-article__tags">
+            <?php foreach ($tag_list as $tag) { ?>
+            <li><span class="sebu-article__tag">#<?php echo get_text($tag); ?></span></li>
             <?php } ?>
+        </ul>
+        <?php } ?>
+
+        <div class="sebu-article__body">
+            <div class="sebu-article__content sebu-article__content--rich">
+                <?php echo conv_content($post['wr_content'] ?? '', 1); ?>
+            </div>
+        </div>
+
+        <footer class="sebu-article__engage">
+            <p class="sebu-article__engage-label">이 글이 도움이 되셨나요?</p>
+            <div class="sebu-article__actions">
+                <?php if ($is_member) { ?>
+                <button type="button" class="sebu-column-like-btn<?php echo !empty($post['liked']) ? ' is-liked' : ''; ?>" data-sebu-column-like data-token="<?php echo get_text($token); ?>">
+                    <span class="sebu-article__action-icon" aria-hidden="true">♥</span>
+                    공감 <span data-sebu-column-like-count><?php echo number_format((int) ($post['like_count'] ?? 0)); ?></span>
+                </button>
+                <button type="button" class="sebu-column-bookmark-btn<?php echo !empty($post['bookmarked']) ? ' is-saved' : ''; ?>" data-sebu-column-bookmark data-token="<?php echo get_text($token); ?>">
+                    <span class="sebu-article__action-icon" aria-hidden="true">☆</span>
+                    <?php echo !empty($post['bookmarked']) ? '저장됨' : '저장하기'; ?>
+                </button>
+                <button type="button" class="sebu-column-btn sebu-column-btn--outline" data-sebu-column-share data-share-url="<?php echo get_text($post['view_url'] ?? ''); ?>" data-share-title="<?php echo get_text($post['wr_subject'] ?? ''); ?>">공유</button>
+                <button type="button" class="sebu-column-btn sebu-column-btn--ghost" data-sebu-column-report-open>신고</button>
+                <?php } else { ?>
+                <span class="sebu-column-like-btn is-disabled">공감 <?php echo number_format((int) ($post['like_count'] ?? 0)); ?></span>
+                <?php } ?>
+            </div>
         </footer>
     </article>
 

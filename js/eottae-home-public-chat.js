@@ -436,11 +436,20 @@
       });
   }
 
+  function scrollMessagesToBottom(section) {
+    var messagesEl = getMessagesEl(section);
+    if (messagesEl) {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+  }
+
   function bindSection(section) {
     if (!section || section.dataset.bound === '1') {
       return;
     }
     section.dataset.bound = '1';
+
+    scrollMessagesToBottom(section);
 
     var form = section.querySelector('#eottae-public-chat-form');
     if (form) {
@@ -476,6 +485,7 @@
       var section = getSection();
       if (section) {
         bindSection(section);
+        scrollMessagesToBottom(section);
       }
       return true;
     }
