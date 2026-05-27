@@ -547,6 +547,7 @@ if (!function_exists('eottae_column_ensure_schema')) {
                     `tags` varchar(255) NOT NULL DEFAULT '',
                     `area` varchar(60) NOT NULL DEFAULT '',
                     `related_url` varchar(255) NOT NULL DEFAULT '',
+                    `youtube_url` varchar(255) NOT NULL DEFAULT '',
                     `related_room_id` int(11) unsigned NOT NULL DEFAULT '0',
                     `related_event_id` int(11) unsigned NOT NULL DEFAULT '0',
                     `read_time` smallint(5) unsigned NOT NULL DEFAULT '0',
@@ -637,8 +638,85 @@ if (!function_exists('eottae_column_ensure_schema')) {
 
         eottae_column_ensure_board();
         eottae_column_migrate_profile_columns();
+        eottae_column_migrate_meta_columns();
 
         return array('ok' => true, 'results' => $results);
+    }
+}
+
+if (!function_exists('eottae_column_migrate_meta_columns')) {
+    function eottae_column_migrate_meta_columns()
+    {
+        eottae_column_bootstrap_tables();
+        global $g5;
+
+        $table = $g5['sebu_columns_meta_table'] ?? '';
+        if ($table === '' || !eottae_column_table_exists($table)) {
+            return;
+        }
+
+        if (!eottae_column_table_has_column($table, 'youtube_url')) {
+            sql_query(" ALTER TABLE `{$table}` ADD COLUMN `youtube_url` varchar(255) NOT NULL DEFAULT '' AFTER `related_url` ", false);
+        }
+    }
+}
+
+if (!function_exists('eottae_column_normalize_youtube_url')) {
+    function eottae_column_normalize_youtube_url($url)
+    {
+        $url = trim((string) $url);
+        if ($url === '') {
+            return '';
+        }
+
+        if (!function_exists('g5b_youtube_id_from_url')) {
+            $inc = G5_SKIN_PATH.'/board/_inc/g5b-youtube.php';
+            if (is_file($inc)) {
+                include_once $inc;
+            }
+        }
+
+        if (!function_exists('g5b_youtube_id_from_url')) {
+            return $url;
+        }
+
+        $video_id = g5b_youtube_id_from_url($url);
+        if ($video_id === '' && function_exists('g5b_youtube_sanitize_id')) {
+            $video_id = g5b_youtube_sanitize_id($url);
+        }
+        if ($video_id === '') {
+            return '';
+        }
+
+        return 'https://www.youtube.com/watch?v='.$video_id;
+    }
+}
+
+if (!function_exists('eottae_column_youtube_id_from_meta')) {
+    function eottae_column_youtube_id_from_meta(array $meta)
+    {
+        $url = trim((string) ($meta['youtube_url'] ?? ''));
+        if ($url === '') {
+            return '';
+        }
+
+        if (!function_exists('g5b_youtube_id_from_url')) {
+            $inc = G5_SKIN_PATH.'/board/_inc/g5b-youtube.php';
+            if (is_file($inc)) {
+                include_once $inc;
+            }
+        }
+
+        if (!function_exists('g5b_youtube_id_from_url')) {
+            return '';
+        }
+
+        $video_id = g5b_youtube_id_from_url($url);
+        if ($video_id === '' && function_exists('g5b_youtube_sanitize_id')) {
+            $video_id = g5b_youtube_sanitize_id($url);
+        }
+
+        return $video_id;
     }
 }
 
@@ -1162,6 +1240,8 @@ if (!function_exists('eottae_column_enrich_post')) {
             'is_featured'       => !empty($meta['is_featured']),
             'is_recommended'    => !empty($meta['is_recommended']),
             'is_representative' => !empty($meta['is_representative']),
+            'youtube_url'       => (string) ($meta['youtube_url'] ?? ''),
+            'youtube_id'        => eottae_column_youtube_id_from_meta($meta),
             'like_count'        => $like_count,
             'view_url'          => eottae_column_view_url($wr_id),
             'author'            => $author,
@@ -1326,10 +1406,13 @@ if (!function_exists('eottae_column_save_post')) {
 
         $subject = trim(strip_tags((string) ($input['wr_subject'] ?? $input['title'] ?? '')));
         $content = trim((string) ($input['wr_content'] ?? $input['content'] ?? ''));
+        if (!empty($_FILES['content_images']) && is_array($_FILES['content_images'])) {
+            $content = eottae_column_append_body_images_to_content($content, $_FILES['content_images'], $wr_id);
+        }
         if ($subject === '') {
             return array('ok' => false, 'message' => '제목을 입력해 주세요.');
         }
-        if ($content === '') {
+        if (eottae_column_content_is_empty($content)) {
             return array('ok' => false, 'message' => '본문을 입력해 주세요.');
         }
 
@@ -1345,8 +1428,9 @@ if (!function_exists('eottae_column_save_post')) {
         $tags = trim(strip_tags((string) ($input['tags'] ?? '')));
         $area = preg_replace('/[^a-z0-9_]/', '', (string) ($input['area'] ?? ''));
         $related_url = trim((string) ($input['related_url'] ?? ''));
-        $related_room_id = (int) ($input['related_room_id'] ?? 0);
-        $related_event_id = (int) ($input['related_event_id'] ?? 0);
+        $youtube_url = eottae_column_normalize_youtube_url($input['youtube_url'] ?? '');
+        $related_room_id = 0;
+        $related_event_id = 0;
         $read_time = eottae_column_calc_read_time($content);
         $is_featured = $is_super && !empty($input['is_featured']) ? 1 : 0;
         $is_recommended = $is_super && !empty($input['is_recommended']) ? 1 : 0;
@@ -1357,8 +1441,8 @@ if (!function_exists('eottae_column_save_post')) {
             if (!$existing) {
                 return array('ok' => false, 'message' => '글을 찾을 수 없습니다.');
             }
-            if (!$is_super) {
-                $meta_existing = eottae_column_get_meta($wr_id);
+            $meta_existing = eottae_column_get_meta($wr_id);
+            if (!$is_super && $meta_existing) {
                 $is_featured = (int) ($meta_existing['is_featured'] ?? 0);
                 $is_recommended = (int) ($meta_existing['is_recommended'] ?? 0);
                 $is_representative = (int) ($meta_existing['is_representative'] ?? 0);
@@ -1456,6 +1540,7 @@ if (!function_exists('eottae_column_save_post')) {
                 tags = '".sql_escape_string($tags)."',
                 area = '".sql_escape_string($area)."',
                 related_url = '".sql_escape_string($related_url)."',
+                youtube_url = '".sql_escape_string($youtube_url)."',
                 related_room_id = '{$related_room_id}',
                 related_event_id = '{$related_event_id}',
                 read_time = '{$read_time}',
@@ -1476,6 +1561,7 @@ if (!function_exists('eottae_column_save_post')) {
                 tags = '".sql_escape_string($tags)."',
                 area = '".sql_escape_string($area)."',
                 related_url = '".sql_escape_string($related_url)."',
+                youtube_url = '".sql_escape_string($youtube_url)."',
                 related_room_id = '{$related_room_id}',
                 related_event_id = '{$related_event_id}',
                 read_time = '{$read_time}',
@@ -1505,6 +1591,180 @@ if (!function_exists('eottae_column_save_post')) {
             'message'=> $status === 'draft' ? '임시저장되었습니다.' : '컬럼이 발행되었습니다.',
             'view_url' => eottae_column_view_url($wr_id),
         );
+    }
+}
+
+if (!function_exists('eottae_column_editor_enabled')) {
+    function eottae_column_editor_enabled()
+    {
+        global $config;
+
+        if (empty($config['cf_editor'])) {
+            return false;
+        }
+
+        $is_dhtml_editor_use = !G5_IS_MOBILE || (defined('G5_IS_MOBILE_DHTML_USE') && G5_IS_MOBILE_DHTML_USE);
+        if (!$is_dhtml_editor_use) {
+            return false;
+        }
+
+        $editor_path = G5_EDITOR_PATH.'/'.$config['cf_editor'].'/editor.lib.php';
+
+        return is_file($editor_path);
+    }
+}
+
+if (!function_exists('eottae_column_enqueue_editor_assets')) {
+    function eottae_column_enqueue_editor_assets()
+    {
+        global $config;
+
+        static $enqueued = false;
+        if ($enqueued || !eottae_column_editor_enabled()) {
+            return;
+        }
+
+        $editor_path = G5_EDITOR_PATH.'/'.$config['cf_editor'].'/editor.lib.php';
+        include_once $editor_path;
+
+        $editor_url = G5_EDITOR_URL.'/'.$config['cf_editor'];
+        add_javascript('<script src="'.$editor_url.'/js/service/HuskyEZCreator.js"></script>', 0);
+        add_javascript(
+            '<script>var g5_editor_url = "'.htmlspecialchars($editor_url, ENT_QUOTES, 'UTF-8').'", oEditors = [], ed_nonce = "'.ft_nonce_create('smarteditor').'";</script>',
+            1
+        );
+
+        $enqueued = true;
+    }
+}
+
+if (!function_exists('eottae_column_editor_html')) {
+    function eottae_column_editor_html($content = '')
+    {
+        if (!eottae_column_editor_enabled()) {
+            return '';
+        }
+
+        global $config;
+
+        include_once G5_EDITOR_PATH.'/'.$config['cf_editor'].'/editor.lib.php';
+
+        if (function_exists('html_purifier') && function_exists('get_text')) {
+            $content = get_text(html_purifier((string) $content), 0);
+        }
+
+        return editor_html('wr_content', (string) $content, true);
+    }
+}
+
+if (!function_exists('eottae_column_editor_form_js')) {
+    /**
+     * @return array{js:string, chk:string}
+     */
+    function eottae_column_editor_form_js()
+    {
+        if (!eottae_column_editor_enabled()) {
+            return array('js' => '', 'chk' => '');
+        }
+
+        global $config;
+
+        include_once G5_EDITOR_PATH.'/'.$config['cf_editor'].'/editor.lib.php';
+
+        return array(
+            'js'  => get_editor_js('wr_content', true),
+            'chk' => chk_editor_js('wr_content', true),
+        );
+    }
+}
+
+if (!function_exists('eottae_column_content_is_empty')) {
+    function eottae_column_content_is_empty($content)
+    {
+        $plain = trim(strip_tags((string) $content));
+        if ($plain !== '') {
+            return false;
+        }
+
+        $normalized = strtolower(trim((string) $content));
+        $normalized = preg_replace('/\s+/', '', $normalized);
+
+        return $normalized === ''
+            || in_array($normalized, array('&nbsp;', '<p>&nbsp;</p>', '<p><br></p>', '<div><br></div>', '<p></p>', '<br>'), true);
+    }
+}
+
+if (!function_exists('eottae_column_upload_body_image')) {
+    function eottae_column_upload_body_image(array $file, $wr_id = 0)
+    {
+        if (empty($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
+            return array('ok' => false, 'message' => '업로드 파일이 없습니다.');
+        }
+
+        $ext = strtolower(pathinfo((string) ($file['name'] ?? ''), PATHINFO_EXTENSION));
+        if (!in_array($ext, array('jpg', 'jpeg', 'png', 'gif', 'webp'), true)) {
+            return array('ok' => false, 'message' => '이미지 파일만 업로드할 수 있습니다.');
+        }
+
+        $dir = G5_DATA_PATH.'/column/body';
+        if (!is_dir($dir)) {
+            @mkdir($dir, G5_DIR_PERMISSION, true);
+        }
+
+        $filename = 'body_'.(int) $wr_id.'_'.date('YmdHis').'_'.substr(md5(uniqid('', true)), 0, 8).'.'.$ext;
+        $dest = $dir.'/'.$filename;
+        if (!move_uploaded_file($file['tmp_name'], $dest)) {
+            return array('ok' => false, 'message' => '이미지 저장에 실패했습니다.');
+        }
+
+        @chmod($dest, G5_FILE_PERMISSION);
+
+        return array(
+            'ok'   => true,
+            'path' => 'column/body/'.$filename,
+            'url'  => G5_DATA_URL.'/column/body/'.$filename,
+        );
+    }
+}
+
+if (!function_exists('eottae_column_append_body_images_to_content')) {
+    function eottae_column_append_body_images_to_content($content, array $files, $wr_id = 0)
+    {
+        if (empty($files['name']) || !is_array($files['name'])) {
+            return (string) $content;
+        }
+
+        $html = '';
+        $max_files = 8;
+        $count = min(count($files['name']), $max_files);
+
+        for ($i = 0; $i < $count; $i++) {
+            if (empty($files['tmp_name'][$i]) || !is_uploaded_file($files['tmp_name'][$i])) {
+                continue;
+            }
+
+            $file = array(
+                'name'     => $files['name'][$i] ?? '',
+                'type'     => $files['type'][$i] ?? '',
+                'tmp_name' => $files['tmp_name'][$i],
+                'error'    => $files['error'][$i] ?? UPLOAD_ERR_NO_FILE,
+                'size'     => $files['size'][$i] ?? 0,
+            );
+
+            $upload = eottae_column_upload_body_image($file, $wr_id);
+            if (empty($upload['ok']) || empty($upload['url'])) {
+                continue;
+            }
+
+            $url = htmlspecialchars((string) $upload['url'], ENT_QUOTES, 'UTF-8');
+            $html .= '<p class="sebu-column-body-image"><img src="'.$url.'" alt="" loading="lazy"></p>'."\n";
+        }
+
+        if ($html === '') {
+            return (string) $content;
+        }
+
+        return rtrim((string) $content)."\n".$html;
     }
 }
 

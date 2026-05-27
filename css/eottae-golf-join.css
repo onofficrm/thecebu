@@ -170,30 +170,58 @@ body.golf-join-ui .golf-join-chip input {
   pointer-events: none;
 }
 
-body.golf-join-ui .golf-join-chip.is-active {
+body.golf-join-ui .golf-join-chip.is-active,
+body.golf-join-ui .golf-join-chip:has(input[type="radio"]:checked) {
   border-color: var(--golf-primary);
   background: #e0f2fe;
   color: var(--golf-primary-dark);
 }
 
-body.golf-join-ui .golf-join-chip__date {
-  width: 0;
-  height: 0;
-  padding: 0;
-  border: 0;
-  opacity: 0;
+body.golf-join-ui .golf-join-date-field {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--golf-line);
+  border-radius: 12px;
+  background: #f8fafc;
 }
 
-body.golf-join-ui .golf-join-chip--date.is-active .golf-join-chip__date,
-body.golf-join-ui .golf-join-chip--date:focus-within .golf-join-chip__date {
-  width: auto;
-  height: auto;
-  opacity: 1;
-  margin-left: 4px;
-  padding: 4px 6px;
-  border: 1px solid var(--golf-line);
-  border-radius: 8px;
+body.golf-join-ui .golf-join-date-field.is-open {
+  display: flex;
+}
+
+body.golf-join-ui .golf-join-date-field[hidden] {
+  display: none !important;
+}
+
+body.golf-join-ui .golf-join-date-field__label {
+  flex: 0 0 auto;
   font-size: 12px;
+  font-weight: 700;
+  color: var(--golf-muted);
+  white-space: nowrap;
+}
+
+body.golf-join-ui .golf-join-date-field__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--golf-line);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--golf-text);
+  box-sizing: border-box;
+}
+
+body.golf-join-ui .golf-join-date-field__input:focus {
+  outline: none;
+  border-color: var(--golf-primary);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
 }
 
 body.golf-join-ui .golf-join-filter-row--tools {

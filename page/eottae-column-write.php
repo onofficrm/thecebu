@@ -38,6 +38,17 @@ $statuses = eottae_column_status_options();
 $token = eottae_column_member_token();
 $proc_url = eottae_column_proc_url();
 
+$column_use_editor = eottae_column_editor_enabled();
+$column_editor_js = array('js' => '', 'chk' => '');
+$content_raw = $post ? (string) ($post['wr_content'] ?? '') : '';
+$column_editor_html = '';
+
+if ($column_use_editor) {
+    eottae_column_enqueue_editor_assets();
+    $column_editor_html = eottae_column_editor_html($content_raw);
+    $column_editor_js = eottae_column_editor_form_js();
+}
+
 add_stylesheet('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">', 20);
 add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-column.css">', 24);
 add_javascript('<script src="'.G5_JS_URL.'/eottae-column.js" defer></script>', 24);
@@ -45,7 +56,7 @@ add_javascript('<script src="'.G5_JS_URL.'/eottae-column.js" defer></script>', 2
 g5_page_start($wr_id > 0 ? '컬럼 수정' : '컬럼 작성');
 ?>
 
-<main class="sebu-column-write-page sebu-column-editorial" data-sebu-column-write data-proc-url="<?php echo get_text($proc_url); ?>">
+<main class="sebu-column-write-page sebu-column-editorial" data-sebu-column-write data-proc-url="<?php echo get_text($proc_url); ?>"<?php echo $column_use_editor ? ' data-column-use-editor="1"' : ''; ?>>
     <header class="sebu-column-studio">
         <p class="sebu-column-studio__eyebrow">Column Studio</p>
         <h1 class="sebu-column-studio__title"><?php echo $wr_id > 0 ? '컬럼 수정' : '새 컬럼 작성'; ?></h1>
@@ -57,7 +68,7 @@ g5_page_start($wr_id > 0 ? '컬럼 수정' : '컬럼 작성');
         </ul>
     </header>
 
-    <form class="sebu-column-write-form sebu-column-write-form--editorial" method="post" action="<?php echo get_text($proc_url); ?>" enctype="multipart/form-data">
+    <form class="sebu-column-write-form sebu-column-write-form--editorial" method="post" action="<?php echo get_text($proc_url); ?>" enctype="multipart/form-data"<?php echo $column_use_editor ? ' onsubmit="return sebuColumnWriteSubmit(this);"' : ''; ?>>
         <input type="hidden" name="action" value="save">
         <input type="hidden" name="eottae_column_token" value="<?php echo get_text($token); ?>">
         <input type="hidden" name="wr_id" value="<?php echo (int) $wr_id; ?>">
@@ -98,10 +109,26 @@ g5_page_start($wr_id > 0 ? '컬럼 수정' : '컬럼 작성');
             <input type="file" name="thumbnail" class="sebu-column-form__file" accept="image/*">
         </label>
 
-        <label class="sebu-column-form__field">
+        <div class="sebu-column-form__field sebu-column-form__field--editor">
             <span class="sebu-column-form__label">본문 *</span>
-            <textarea name="content" class="sebu-column-form__textarea sebu-column-form__textarea--body" rows="16" required><?php echo $post ? get_text($post['wr_content'] ?? '') : ''; ?></textarea>
-        </label>
+            <?php if ($column_use_editor && $column_editor_html !== '') { ?>
+            <p class="sebu-column-form__hint">스마트에디터2 — 상단 <strong>Editor · HTML · TEXT</strong> 탭으로 작성 방식을 바꿀 수 있습니다. 툴바 <strong>사진</strong> 버튼으로 본문에 이미지를 여러 장 넣을 수 있습니다.</p>
+            <div class="sebu-column-editor-wrap">
+                <?php echo $column_editor_html; ?>
+            </div>
+            <label class="sebu-column-form__field sebu-column-form__field--body-images">
+                <span class="sebu-column-form__label sebu-column-form__label--sub">본문 이미지 추가 (선택, 최대 8장)</span>
+                <p class="sebu-column-form__hint">에디터 외에 파일을 선택하면 발행 시 본문 하단에 순서대로 삽입됩니다.</p>
+                <input type="file" name="content_images[]" class="sebu-column-form__file" accept="image/jpeg,image/png,image/gif,image/webp" multiple>
+            </label>
+            <?php } else { ?>
+            <textarea name="wr_content" id="wr_content" class="sebu-column-form__textarea sebu-column-form__textarea--body" rows="16" required><?php echo get_text($content_raw); ?></textarea>
+            <label class="sebu-column-form__field sebu-column-form__field--body-images">
+                <span class="sebu-column-form__label sebu-column-form__label--sub">본문 이미지 (선택)</span>
+                <input type="file" name="content_images[]" class="sebu-column-form__file" accept="image/jpeg,image/png,image/gif,image/webp" multiple>
+            </label>
+            <?php } ?>
+        </div>
 
         <label class="sebu-column-form__field">
             <span class="sebu-column-form__label">태그 (쉼표 구분)</span>
@@ -120,19 +147,14 @@ g5_page_start($wr_id > 0 ? '컬럼 수정' : '컬럼 작성');
 
         <label class="sebu-column-form__field">
             <span class="sebu-column-form__label">관련 링크</span>
-            <input type="url" name="related_url" class="sebu-column-form__input" value="<?php echo $post ? get_text($post['meta']['related_url'] ?? '') : ''; ?>">
+            <input type="url" name="related_url" class="sebu-column-form__input" placeholder="https://" value="<?php echo $post ? get_text($post['meta']['related_url'] ?? '') : ''; ?>">
         </label>
 
-        <div class="sebu-column-form__row">
-            <label class="sebu-column-form__field">
-                <span class="sebu-column-form__label">관련 세부톡방 ID</span>
-                <input type="number" name="related_room_id" class="sebu-column-form__input" min="0" value="<?php echo $post ? (int) ($post['meta']['related_room_id'] ?? 0) : 0; ?>">
-            </label>
-            <label class="sebu-column-form__field">
-                <span class="sebu-column-form__label">관련 캘린더 일정 ID</span>
-                <input type="number" name="related_event_id" class="sebu-column-form__input" min="0" value="<?php echo $post ? (int) ($post['meta']['related_event_id'] ?? 0) : 0; ?>">
-            </label>
-        </div>
+        <label class="sebu-column-form__field">
+            <span class="sebu-column-form__label">유튜브 링크</span>
+            <input type="url" name="youtube_url" class="sebu-column-form__input" placeholder="https://www.youtube.com/watch?v=..." value="<?php echo $post ? get_text($post['meta']['youtube_url'] ?? '') : ''; ?>">
+            <p class="sebu-column-form__hint">컬럼 본문 위에 영상이 표시됩니다. watch, youtu.be, shorts, embed URL을 사용할 수 있습니다.</p>
+        </label>
 
         <label class="sebu-column-form__field">
             <span class="sebu-column-form__label">발행 상태</span>
@@ -161,6 +183,20 @@ g5_page_start($wr_id > 0 ? '컬럼 수정' : '컬럼 작성');
         </div>
     </form>
 </main>
+
+<?php if ($column_use_editor) { ?>
+<script>
+function sebuColumnWriteSubmit(f) {
+    <?php echo $column_editor_js['js']; ?>
+    <?php echo $column_editor_js['chk']; ?>
+    var btn = f.querySelector('button[type="submit"]');
+    if (btn) {
+        btn.disabled = true;
+    }
+    return true;
+}
+</script>
+<?php } ?>
 
 <?php
 g5_page_end();

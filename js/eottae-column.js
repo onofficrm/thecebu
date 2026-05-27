@@ -124,8 +124,72 @@
     }
   }
 
+  function initColumnWriteEditor(root) {
+    if (!root || root.getAttribute('data-column-use-editor') !== '1') {
+      return;
+    }
+
+    var textarea = document.getElementById('wr_content');
+    if (!textarea || root.getAttribute('data-column-editor-ready') === '1') {
+      return;
+    }
+
+    function tryBoot() {
+      if (typeof window.jQuery === 'undefined' || typeof window.nhn === 'undefined'
+        || !window.nhn.husky || !window.nhn.husky.EZCreator
+        || typeof window.g5_editor_url === 'undefined') {
+        return false;
+      }
+
+      if (!textarea.classList.contains('smarteditor2')) {
+        textarea.classList.add('smarteditor2');
+      }
+
+      if (typeof window.oEditors === 'undefined') {
+        window.oEditors = [];
+      }
+
+      if (window.oEditors.getById && window.oEditors.getById.wr_content) {
+        root.setAttribute('data-column-editor-ready', '1');
+        return true;
+      }
+
+      window.nhn.husky.EZCreator.createInIFrame({
+        oAppRef: window.oEditors,
+        elPlaceHolder: 'wr_content',
+        sSkinURI: window.g5_editor_url + '/SmartEditor2Skin.html',
+        htParams: {
+          bUseToolbar: true,
+          bUseVerticalResizer: true,
+          bUseModeChanger: true,
+          bSkipXssFilter: true,
+          fOnBeforeUnload: function () {}
+        },
+        fOnAppLoad: function () {},
+        fCreator: 'createSEditor2'
+      });
+
+      root.setAttribute('data-column-editor-ready', '1');
+      return true;
+    }
+
+    if (tryBoot()) {
+      return;
+    }
+
+    var tries = 0;
+    var timer = window.setInterval(function () {
+      tries += 1;
+      if (tryBoot() || tries > 25) {
+        window.clearInterval(timer);
+      }
+    }, 200);
+  }
+
   var writeRoot = document.querySelector('[data-sebu-column-write]');
   if (writeRoot) {
+    initColumnWriteEditor(writeRoot);
+
     var writeDeleteBtn = writeRoot.querySelector('[data-sebu-column-delete]');
     if (writeDeleteBtn) {
       writeDeleteBtn.addEventListener('click', function () {

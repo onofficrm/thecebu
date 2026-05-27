@@ -35,7 +35,7 @@ add_javascript('<script src="'.G5_JS_URL.'/eottae-column-admin.js" defer></scrip
 g5_page_start('생활정보 컬럼 관리');
 ?>
 
-<main class="sebu-column-admin" data-proc-url="<?php echo get_text($proc_url); ?>" data-admin-token="<?php echo get_text($admin_token); ?>">
+<main class="sebu-column-admin sebu-column-editorial" data-proc-url="<?php echo get_text($proc_url); ?>" data-admin-token="<?php echo get_text($admin_token); ?>">
     <header class="sebu-column-admin__header">
         <h1 class="sebu-column-admin__title">생활정보 컬럼 관리</h1>
         <p class="sebu-column-admin__desc"><a href="<?php echo eottae_column_list_url(); ?>">컬럼 섹션 보기 →</a></p>

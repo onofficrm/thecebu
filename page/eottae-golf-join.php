@@ -92,11 +92,22 @@ g5_page_start('골프조인');
                         <?php echo get_text($label); ?>
                     </label>
                     <?php } ?>
-                    <label class="golf-join-chip golf-join-chip--date<?php echo ($filters['date_preset'] ?? '') === 'custom' ? ' is-active' : ''; ?>">
+                    <label class="golf-join-chip golf-join-chip--pick<?php echo ($filters['date_preset'] ?? '') === 'custom' ? ' is-active' : ''; ?>">
                         <input type="radio" name="date_preset" value="custom"<?php echo ($filters['date_preset'] ?? '') === 'custom' ? ' checked' : ''; ?>>
                         날짜선택
-                        <input type="date" name="date" class="golf-join-chip__date" value="<?php echo get_text($filters['date'] ?? ''); ?>" aria-label="라운드 날짜 선택">
                     </label>
+                </div>
+                <div class="golf-join-date-field<?php echo ($filters['date_preset'] ?? '') === 'custom' ? ' is-open' : ''; ?>" id="golf-join-date-field"<?php echo ($filters['date_preset'] ?? '') === 'custom' ? '' : ' hidden'; ?>>
+                    <label class="golf-join-date-field__label" for="golf-join-date-input">라운드 날짜</label>
+                    <input
+                        type="date"
+                        id="golf-join-date-input"
+                        name="date"
+                        class="golf-join-date-field__input"
+                        value="<?php echo get_text($filters['date'] ?? ''); ?>"
+                        min="<?php echo date('Y-m-d'); ?>"
+                        aria-label="라운드 날짜 선택"
+                    >
                 </div>
             </div>
 

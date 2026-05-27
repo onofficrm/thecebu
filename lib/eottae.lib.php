@@ -946,8 +946,18 @@ if (!function_exists('eottae_builder_inject_home_talk_feed_script')) {
 }
 
 if (!function_exists('eottae_builder_inject_home_briefing_script')) {
+    /**
+     * 홈(빌더) 하단 「오늘의 세부 체크」 티저
+     * - 일반회원 로그인 시 미노출 (사업자·비로그인은 유지, /briefing/ 페이지는 유지)
+     */
     function eottae_builder_inject_home_briefing_script()
     {
+        global $is_member, $is_admin;
+
+        if ($is_member && !$is_admin && function_exists('eottae_is_business_member') && !eottae_is_business_member()) {
+            return '<style>#eottae-sebu-briefing-home,.sebu-briefing-teaser--home-mount{display:none!important}</style>';
+        }
+
         if (!function_exists('eottae_briefing_home_payload')) {
             include_once G5_LIB_PATH.'/eottae-briefing.lib.php';
         }

@@ -4708,6 +4708,13 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
   color: #991b1b;
 }
 
+.mypage-menu-group__item--admin-highlight {
+  background: linear-gradient(145deg, #ecfeff 0%, #fff 60%);
+  border-color: #67e8f9;
+  color: #0f4c5c;
+  font-weight: 700;
+}
+
 .mypage-dashboard .my-talk-hub-card {
   margin-bottom: 16px;
   padding: 18px 16px;

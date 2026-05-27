@@ -16,9 +16,17 @@ if (!function_exists('eottae_column_render_admin_application_item_html')) {
             <div class="sebu-column-admin__application-head">
                 <div class="sebu-column-admin__application-profile">
                     <?php echo eottae_column_render_avatar_html($application, 'sm', 'sebu-column-admin__application-avatar'); ?>
-                    <div>
-                        <strong><?php echo get_text($application['pen_name'] ?? ''); ?></strong>
-                        <span><?php echo get_text($application['mb_id'] ?? ''); ?> · <?php echo get_text($application['status_label'] ?? ''); ?> · <?php echo get_text(substr((string) ($application['created_at'] ?? ''), 0, 10)); ?></span>
+                    <div class="sebu-column-admin__application-identity">
+                        <div class="sebu-column-admin__application-name-row">
+                            <strong class="sebu-column-admin__application-name"><?php echo get_text($application['pen_name'] ?? ''); ?></strong>
+                            <span class="sebu-column-admin__status sebu-column-admin__status--<?php echo get_text(preg_replace('/[^a-z]/', '', (string) ($application['status'] ?? 'pending'))); ?>">
+                                <?php echo get_text($application['status_label'] ?? ''); ?>
+                            </span>
+                        </div>
+                        <span class="sebu-column-admin__application-sub">
+                            <?php echo get_text($application['mb_id'] ?? ''); ?>
+                            · <?php echo get_text(substr((string) ($application['created_at'] ?? ''), 0, 10)); ?>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -91,7 +99,7 @@ if (!function_exists('eottae_column_render_mypage_super_admin_section')) {
             <h2 class="my-talk-section__title" id="sebu-column-mypage-admin-title">칼럼니스트 신청 (최고관리자)</h2>
             <p class="my-talk-section__desc">검토 중인 칼럼니스트 신청을 승인하거나 반려할 수 있습니다.</p>
             <div class="sebu-column-mypage-admin__links">
-                <a href="<?php echo get_text($admin_url); ?>" class="my-talk-btn my-talk-btn--primary my-talk-btn--sm">신청 전체 관리<?php if ($pending_count > 0) { ?> (<?php echo number_format($pending_count); ?>)<?php } ?></a>
+                <a href="<?php echo get_text($admin_url); ?>" class="my-talk-btn my-talk-btn--primary my-talk-btn--sm">칼럼니스트 신청 관리<?php if ($pending_count > 0) { ?> (<?php echo number_format($pending_count); ?>)<?php } ?></a>
                 <a href="<?php echo eottae_column_admin_url(array('tab' => 'authors')); ?>" class="my-talk-btn my-talk-btn--ghost my-talk-btn--sm">칼럼니스트 목록</a>
                 <a href="<?php echo eottae_column_list_url(); ?>" class="my-talk-btn my-talk-btn--ghost my-talk-btn--sm">컬럼 섹션</a>
             </div>

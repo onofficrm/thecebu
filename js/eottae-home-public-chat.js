@@ -470,19 +470,7 @@
       return;
     }
 
-    function apply() {
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-      var last = messagesEl.lastElementChild;
-      if (last && !last.classList.contains('public-group-chat__empty') && typeof last.scrollIntoView === 'function') {
-        last.scrollIntoView({ block: 'end', inline: 'nearest' });
-      }
-    }
-
-    apply();
-    global.requestAnimationFrame(function () {
-      apply();
-      global.requestAnimationFrame(apply);
-    });
+    messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
   function scheduleScrollMessagesToBottom(section) {
@@ -492,15 +480,9 @@
     }
 
     scrollMessagesToBottom(target);
-    global.setTimeout(function () {
+    global.requestAnimationFrame(function () {
       scrollMessagesToBottom(target);
-    }, 60);
-    global.setTimeout(function () {
-      scrollMessagesToBottom(target);
-    }, 200);
-    global.setTimeout(function () {
-      scrollMessagesToBottom(target);
-    }, 500);
+    });
   }
 
   function observeMessagesLayout(section) {
@@ -513,8 +495,12 @@
     }
 
     messagesEl.dataset.scrollLayoutObserved = '1';
+    var scrollTimer = null;
     var observer = new global.ResizeObserver(function () {
-      scrollMessagesToBottom(section);
+      global.clearTimeout(scrollTimer);
+      scrollTimer = global.setTimeout(function () {
+        scrollMessagesToBottom(section);
+      }, 80);
     });
     observer.observe(messagesEl);
     global.setTimeout(function () {

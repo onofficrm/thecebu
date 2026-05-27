@@ -34,6 +34,10 @@ if (!function_exists('eottae_golf_join_parse_filters')) {
         $region = isset($_GET['region']) ? preg_replace('/[^a-z_]/', '', (string) $_GET['region']) : '';
         $date_preset = isset($_GET['date_preset']) ? preg_replace('/[^a-z_]/', '', (string) $_GET['date_preset']) : '';
         $date = isset($_GET['date']) ? preg_replace('/[^0-9\-]/', '', (string) $_GET['date']) : '';
+        if ($date_preset === 'custom' && ($date === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date))) {
+            $date_preset = '';
+            $date = '';
+        }
         $time_zone = isset($_GET['time_zone']) ? preg_replace('/[^a-z]/', '', (string) $_GET['time_zone']) : '';
         $sort = isset($_GET['sort']) ? preg_replace('/[^a-z_]/', '', (string) $_GET['sort']) : 'round_date';
         $q = isset($_GET['q']) ? trim((string) $_GET['q']) : '';

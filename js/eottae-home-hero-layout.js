@@ -88,29 +88,7 @@
     grid.removeAttribute('data-eottae-hero-height');
   }
 
-  function syncHeroColumnHeights() {
-    var grid = findHeroGrid();
-    if (!grid || !grid.classList.contains('eottae-home-hero-grid--3col')) {
-      return false;
-    }
-
-    if (global.innerWidth < 1024) {
-      clearHeroColumnHeights(grid);
-      return true;
-    }
-
-    var sidebar = findHeroSidebarColumn(grid);
-    if (!sidebar) {
-      return false;
-    }
-
-    clearHeroColumnHeights(grid);
-
-    var targetH = Math.ceil(sidebar.getBoundingClientRect().height);
-    if (targetH < MIN_COL_H) {
-      return false;
-    }
-
+  function applyHeroColumnHeights(grid, sidebar, targetH) {
     var cols = heroColumns(grid);
     var i;
     for (i = 0; i < cols.length; i += 1) {
@@ -128,11 +106,43 @@
     grid.style.setProperty('--eottae-hero-col-h', targetH + 'px');
     grid.classList.add(SYNC_CLASS);
     grid.setAttribute('data-eottae-hero-height', String(targetH));
+  }
 
-    if (typeof global.scheduleEottaeHomePublicChatScroll === 'function') {
-      global.scheduleEottaeHomePublicChatScroll();
+  function syncHeroColumnHeights() {
+    var grid = findHeroGrid();
+    if (!grid || !grid.classList.contains('eottae-home-hero-grid--3col')) {
+      return false;
     }
 
+    if (global.innerWidth < 1024) {
+      clearHeroColumnHeights(grid);
+      return true;
+    }
+
+    var sidebar = findHeroSidebarColumn(grid);
+    if (!sidebar) {
+      return false;
+    }
+
+    var targetH = Math.ceil(sidebar.getBoundingClientRect().height);
+    if (targetH < MIN_COL_H) {
+      return false;
+    }
+
+    var prevH = parseInt(grid.getAttribute('data-eottae-hero-height') || '0', 10) || 0;
+    if (prevH > 0 && Math.abs(targetH - prevH) < 3 && grid.classList.contains(SYNC_CLASS)) {
+      return true;
+    }
+
+    if (!grid.classList.contains(SYNC_CLASS)) {
+      clearHeroColumnHeights(grid);
+      targetH = Math.ceil(sidebar.getBoundingClientRect().height);
+      if (targetH < MIN_COL_H) {
+        return false;
+      }
+    }
+
+    applyHeroColumnHeights(grid, sidebar, targetH);
     return true;
   }
 
@@ -171,6 +181,7 @@
     }
 
     var observerScheduled = false;
+    var layoutObserver = null;
     var observer = new MutationObserver(function () {
       if (observerScheduled) {
         return;
@@ -178,12 +189,22 @@
       observerScheduled = true;
       global.requestAnimationFrame(function () {
         observerScheduled = false;
-        if (findHeroGrid() && findHeroGrid().classList.contains('eottae-home-hero-grid--3col')) {
-          scheduleSync(100);
+        var grid = findHeroGrid();
+        if (!grid || !grid.classList.contains('eottae-home-hero-grid--3col')) {
+          return;
         }
+        if (grid.getAttribute('data-eottae-hero-height')) {
+          if (layoutObserver) {
+            layoutObserver.disconnect();
+            layoutObserver = null;
+          }
+          return;
+        }
+        scheduleSync(100);
       });
     });
 
+    layoutObserver = observer;
     observer.observe(root, {
       childList: true,
       subtree: true,

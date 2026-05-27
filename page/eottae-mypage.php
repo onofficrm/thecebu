@@ -155,6 +155,16 @@ if ($is_admin === 'super') {
             'href' => function_exists('eottae_public_ai_mypage_admin_url') ? eottae_public_ai_mypage_admin_url() : G5_URL.'/page/eottae-admin-public-ai.php',
             'tone' => 'admin',
         ),
+        array(
+            'label' => '칼럼니스트 신청'.($column_pending > 0 ? ' ('.number_format($column_pending).')' : ''),
+            'href' => eottae_column_admin_url(array('tab' => 'applications')),
+            'tone' => 'admin-highlight',
+        ),
+        array(
+            'label' => '컬럼 관리',
+            'href' => eottae_column_admin_url(),
+            'tone' => 'admin',
+        ),
     );
     $mypage_menu_groups[] = array('title' => '관리', 'items' => $admin_menu_items);
 }

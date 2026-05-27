@@ -63,6 +63,19 @@ $report_token = eottae_column_report_token();
 $report_reasons = eottae_column_report_reasons();
 $bo_table = eottae_column_board_table();
 $comment_action = G5_BBS_URL.'/write_comment_update.php';
+$column_youtube_id = (string) ($post['youtube_id'] ?? '');
+$column_youtube_embed = '';
+if ($column_youtube_id !== '') {
+    if (!function_exists('g5b_youtube_embed_html')) {
+        $yt_inc = G5_SKIN_PATH.'/board/_inc/g5b-youtube.php';
+        if (is_file($yt_inc)) {
+            include_once $yt_inc;
+        }
+    }
+    if (function_exists('g5b_youtube_embed_html')) {
+        $column_youtube_embed = g5b_youtube_embed_html($column_youtube_id, $post['wr_subject'] ?? '');
+    }
+}
 
 add_stylesheet('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">', 20);
 add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-column.css">', 24);
@@ -148,6 +161,12 @@ g5_page_start(get_text($post['wr_subject'] ?? '컬럼'));
             <li><span class="sebu-article__tag">#<?php echo get_text($tag); ?></span></li>
             <?php } ?>
         </ul>
+        <?php } ?>
+
+        <?php if ($column_youtube_embed !== '') { ?>
+        <div class="sebu-article__video">
+            <?php echo $column_youtube_embed; ?>
+        </div>
         <?php } ?>
 
         <div class="sebu-article__body">
