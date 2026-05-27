@@ -1,6 +1,6 @@
 <?php
 /**
- * 바로카 Barocar(shop wr_id=39) 샘플 리뷰 39건 — 평균 4.9 (35×5점 + 4×4점)
+ * 바로카 Barocar(shop wr_id=39) 샘플 리뷰 38건 — 평균 4.9 (34×5점 + 4×4점)
  * 한국어 약 70% · 영어 약 30%
  *
  * @return array<int, array{mb_id:string,nick:string,date:string,text:string,rating?:int}>
@@ -43,6 +43,5 @@ return array(
     array('mb_id' => 'brv35', 'nick' => 'LoanerSUV', 'date' => '2026-03-21 17:50:00', 'text' => '3-day short rental while my car was in for repair. Same-brand SUV so driving felt familiar. Swapped back the same day service finished—smooth process.'),
     array('mb_id' => 'brv36', 'nick' => 'MandaueFleet', 'date' => '2026-04-02 11:20:00', 'text' => 'Our small company rents 2 Starex vans monthly. Invoicing is clear, preventive maintenance on schedule, and breakdown response is fast. Great for business fleets.'),
     array('mb_id' => 'brv37', 'nick' => '오일+타이어', 'date' => '2026-04-10 08:55:00', 'text' => '엔진오일·타이어 로테이션·얼라인먼트 한 번에. 가격表 보고 선택할 수 있어서 좋아요. 한국차 순정 오일 쓰는지도 확인해줬습니다.'),
-    array('mb_id' => 'brv38', 'nick' => 'NewToCebu', 'date' => '2026-04-18 15:30:00', 'text' => 'Just moved to Cebu—got a monthly rental until our container arrived. Car was reliable, and they fixed a minor AC issue free during the lease. Thank you Barocar!'),
-    array('mb_id' => 'brv39', 'nick' => '바로카추천', 'date' => '2026-04-24 12:40:00', 'text' => '한국차 정비·교민 장기·단기 렌트·부품판매까지 한곳에서 해결. 세부에서 차 있으면 바로카는 필수입니다. 평점 5점 주고 싶지만 솔직히 4.9급 만족이에요—주변에 계속 추천 중!'),
+    array('mb_id' => 'brv38', 'nick' => '바로카추천', 'date' => '2026-04-24 12:40:00', 'text' => '한국차 정비·교민 장기·단기 렌트·부품판매까지 한곳에서 해결. 세부에서 차 있으면 바로카는 필수입니다. 주변 교민에게 계속 추천 중이에요.'),
 );

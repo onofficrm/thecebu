@@ -6,6 +6,7 @@
  * POST/GET /proc/eottae-sel-reviews-seed.php?shop_wr_id=11&preset=dawon
  * POST/GET /proc/eottae-sel-reviews-seed.php?shop_wr_id=36&preset=shiny
  * POST/GET /proc/eottae-sel-reviews-seed.php?shop_wr_id=39&preset=barocar
+ * POST/GET ...&preset=barocar&force=1 — brv* 시드 리뷰 삭제 후 재등록
  * 관리자 로그인 또는 key 파라미터로 샘플 리뷰 시드 (preset: sel | yonggungri | badachamchi | dawon | shiny | barocar)
  */
 include_once dirname(__DIR__).'/common.php';
@@ -66,7 +67,12 @@ if (!function_exists($seed_fn)) {
     exit;
 }
 
-$logs = call_user_func($seed_fn, $shop_wr_id);
+$force = !empty($_REQUEST['force']);
+if ($preset === 'barocar') {
+    $logs = eottae_seed_barocar_reviews($shop_wr_id, $force);
+} else {
+    $logs = call_user_func($seed_fn, $shop_wr_id);
+}
 $results = array();
 $failed = 0;
 

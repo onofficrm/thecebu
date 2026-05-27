@@ -1090,14 +1090,69 @@ if (!function_exists('eottae_seed_shiny_reviews')) {
     }
 }
 
+if (!function_exists('eottae_seed_delete_shop_reviews')) {
+    /**
+     * 업체 리뷰 일괄 삭제 (시드 재실행용)
+     *
+     * @param int    $shop_wr_id
+     * @param string $mb_id_prefix 예: brv
+     */
+    function eottae_seed_delete_shop_reviews($shop_wr_id, $mb_id_prefix = '')
+    {
+        global $g5;
+
+        if (!function_exists('eottae_seed_review_board_exists') || !eottae_seed_review_board_exists()) {
+            return eottae_seed_log('review', 'review board missing', false);
+        }
+
+        $shop_wr_id = (int) $shop_wr_id;
+        if ($shop_wr_id < 1) {
+            return eottae_seed_log('review', 'invalid shop_wr_id', false);
+        }
+
+        $bo_table = eottae_review_table();
+        $write_table = $g5['write_prefix'].$bo_table;
+        $where = " wr_is_comment = 0 and wr_1 = '{$shop_wr_id}' ";
+        if ($mb_id_prefix !== '') {
+            $prefix = sql_escape_string(preg_replace('/[^a-z0-9_]/i', '', (string) $mb_id_prefix));
+            if ($prefix !== '') {
+                $where .= " and mb_id like '{$prefix}%' ";
+            }
+        }
+
+        $result = sql_query(" select wr_id from {$write_table} where {$where} ");
+        $deleted = 0;
+        while ($row = sql_fetch_array($result)) {
+            $wr_id = (int) $row['wr_id'];
+            if ($wr_id < 1) {
+                continue;
+            }
+            sql_query(" delete from {$write_table} where wr_id = '{$wr_id}' or wr_parent = '{$wr_id}' ");
+            sql_query(" delete from {$g5['board_new_table']} where bo_table = '{$bo_table}' and wr_id = '{$wr_id}' ");
+            $deleted++;
+        }
+
+        if ($deleted > 0) {
+            sql_query(" update {$g5['board_table']} set bo_count_write = GREATEST(0, CAST(bo_count_write AS SIGNED) - {$deleted}) where bo_table = '{$bo_table}' ");
+            if (function_exists('eottae_sync_shop_review_stats')) {
+                include_once G5_LIB_PATH.'/eottae.lib.php';
+                eottae_sync_shop_review_stats($shop_wr_id);
+            }
+        }
+
+        return eottae_seed_log('review', 'shop '.$shop_wr_id.' deleted '.$deleted.' review(s)');
+    }
+}
+
 if (!function_exists('eottae_seed_barocar_reviews')) {
     /**
-     * 바로카 Barocar(shop wr_id=39) 샘플 리뷰 39건 — 평균 약 4.9 (35×5 + 4×4)
+     * 바로카 Barocar(shop wr_id=39) 샘플 리뷰 38건 — 평균 약 4.9 (34×5 + 4×4)
      *
-     * @param int $shop_wr_id
+     * @param int  $shop_wr_id
+     * @param bool $force      true면 brv* 시드 리뷰 삭제 후 재등록
      * @return array<int, array<string, mixed>>
      */
-    function eottae_seed_barocar_reviews($shop_wr_id = 39)
+    function eottae_seed_barocar_reviews($shop_wr_id = 39, $force = false)
     {
         global $g5;
 
@@ -1108,17 +1163,26 @@ if (!function_exists('eottae_seed_barocar_reviews')) {
             $shop_wr_id = !empty($shop_row['wr_id']) ? (int) $shop_row['wr_id'] : 0;
         }
 
+        $logs = array();
+        if ($force) {
+            $logs[] = eottae_seed_delete_shop_reviews($shop_wr_id, 'brv');
+        }
+
         $items_file = __DIR__.'/eottae-seed-barocar-reviews-items.php';
         if (!is_file($items_file)) {
-            return array(eottae_seed_log('review', 'barocar review items file missing', false));
+            $logs[] = eottae_seed_log('review', 'barocar review items file missing', false);
+
+            return $logs;
         }
 
         $items = include $items_file;
         if (!is_array($items)) {
-            return array(eottae_seed_log('review', 'barocar review items invalid', false));
+            $logs[] = eottae_seed_log('review', 'barocar review items invalid', false);
+
+            return $logs;
         }
 
-        return eottae_seed_shop_reviews_from_items($shop_wr_id, $items);
+        return array_merge($logs, eottae_seed_shop_reviews_from_items($shop_wr_id, $items));
     }
 }
 

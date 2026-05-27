@@ -1,8 +1,9 @@
 <?php
 /**
- * CLI — 바로카 Barocar(shop wr_id=39) 리뷰 39건 시드
+ * CLI — 바로카 Barocar(shop wr_id=39) 리뷰 38건 시드
  * php setup/tools/eottae-seed-barocar-reviews-cli.php
  * php setup/tools/eottae-seed-barocar-reviews-cli.php 39
+ * php setup/tools/eottae-seed-barocar-reviews-cli.php 39 --force
  */
 if (php_sapi_name() !== 'cli') {
     exit("CLI only\n");
@@ -21,9 +22,19 @@ include_once $g5_path.'/common.php';
 include_once G5_LIB_PATH.'/eottae.lib.php';
 include_once __DIR__.'/eottae-seed.lib.php';
 
-$shop_wr_id = isset($argv[1]) ? (int) $argv[1] : 39;
+$shop_wr_id = 39;
+$force = false;
+foreach (array_slice($argv, 1) as $arg) {
+    if ($arg === '--force') {
+        $force = true;
+        continue;
+    }
+    if (preg_match('/^\d+$/', $arg)) {
+        $shop_wr_id = (int) $arg;
+    }
+}
 if ($shop_wr_id < 1) {
-    fwrite(STDERR, "Usage: php setup/tools/eottae-seed-barocar-reviews-cli.php [shop_wr_id]\n");
+    fwrite(STDERR, "Usage: php setup/tools/eottae-seed-barocar-reviews-cli.php [shop_wr_id] [--force]\n");
     exit(1);
 }
 
@@ -32,7 +43,7 @@ if (!function_exists('eottae_seed_barocar_reviews')) {
     exit(1);
 }
 
-$logs = eottae_seed_barocar_reviews($shop_wr_id);
+$logs = eottae_seed_barocar_reviews($shop_wr_id, $force);
 $inserted = 0;
 $skipped = 0;
 $failed = 0;
