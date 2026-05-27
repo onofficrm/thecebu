@@ -23,6 +23,22 @@
     });
   }
 
+  function fetchWithTimeout(url, options, timeoutMs) {
+    var ms = timeoutMs || 50000;
+    if (!global.AbortController) {
+      return fetch(url, options);
+    }
+    var controller = new AbortController();
+    var timer = setTimeout(function () {
+      controller.abort();
+    }, ms);
+    var opts = options || {};
+    opts.signal = controller.signal;
+    return fetch(url, opts).finally(function () {
+      clearTimeout(timer);
+    });
+  }
+
   function eottaeProcPath(file) {
     var base = global.__EOTTae__ && global.__EOTTae__.procBase ? String(global.__EOTTae__.procBase) : '';
     if (base) {
@@ -425,8 +441,13 @@
     if (!el) return;
     var html = String(value);
     if (typeof oEditors !== 'undefined' && oEditors.getById && oEditors.getById[fieldId]) {
-      oEditors.getById[fieldId].exec('SET_CONTENTS', [html]);
-      oEditors.getById[fieldId].exec('UPDATE_CONTENTS_FIELD', []);
+      try {
+        oEditors.getById[fieldId].exec('SET_CONTENTS', [html]);
+        oEditors.getById[fieldId].exec('UPDATE_CONTENTS_FIELD', []);
+      } catch (e) {
+        el.value = html;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+      }
       return;
     }
     el.value = html;
@@ -508,36 +529,61 @@
         false
       );
 
-      fetch(eottaeProcPath('eottae-shop-ai-generate.php'), {
+      function resetShopAiButtons() {
+        buttons.forEach(function (b) {
+          setAiBtnLoading(b, false);
+          setAiBtnLabel(b, getAiBtnDefaultLabel(b));
+        });
+      }
+
+      function applyShopAiData(data) {
+        shopFillAiValue(root, '#eottae_seo_title', data.seo_title, true);
+        shopFillAiValue(root, '#eottae_seo_intro', data.seo_intro, true);
+        shopFillAiValue(root, '#eottae_seo_description', data.meta_description, true);
+        shopFillAiValue(root, '#eottae_seo_keyword', data.focus_keyword, true);
+        if (mode !== 'seo' && data.intro) {
+          shopFillAiValue(root, '#wr_content', data.intro, true);
+        }
+        shopSetAiStatus(root, 'AI 문구를 입력했습니다. 등록 전 내용이 맞는지 한 번 확인해 주세요.', false);
+      }
+
+      fetchWithTimeout(eottaeProcPath('eottae-shop-ai-generate.php'), {
         method: 'POST',
         credentials: 'same-origin',
         body: payload
-      })
-        .then(function (res) { return parseJsonResponse(res); })
+      }, 50000)
+        .then(function (res) {
+          if (!res.ok) {
+            throw new Error('서버 오류입니다. (HTTP ' + res.status + ')');
+          }
+          return parseJsonResponse(res);
+        })
         .then(function (json) {
           if (!json || !json.success) {
             throw new Error((json && json.message) || 'AI 자동생성에 실패했습니다.');
           }
-          var data = json.data || {};
-          if (mode !== 'seo' && data.intro) {
-            shopFillAiValue(root, '#wr_content', data.intro, true);
-          }
-          shopFillAiValue(root, '#eottae_seo_title', data.seo_title, true);
-          shopFillAiValue(root, '#eottae_seo_intro', data.seo_intro, true);
-          shopFillAiValue(root, '#eottae_seo_description', data.meta_description, true);
-          shopFillAiValue(root, '#eottae_seo_keyword', data.focus_keyword, true);
-          shopSetAiStatus(root, 'AI 문구를 입력했습니다. 등록 전 내용이 맞는지 한 번 확인해 주세요.', false);
+          return json.data || {};
         })
         .catch(function (err) {
-          var message = err.message || 'AI 자동생성에 실패했습니다.';
+          var message = err && err.name === 'AbortError'
+            ? 'AI 요청 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.'
+            : (err.message || 'AI 자동생성에 실패했습니다.');
           shopSetAiStatus(root, message, true);
           alert(message);
+          return null;
         })
         .finally(function () {
-          buttons.forEach(function (b) {
-            setAiBtnLoading(b, false);
-            setAiBtnLabel(b, getAiBtnDefaultLabel(b));
-          });
+          resetShopAiButtons();
+        })
+        .then(function (data) {
+          if (!data) return;
+          try {
+            applyShopAiData(data);
+          } catch (fillErr) {
+            var fillMessage = (fillErr && fillErr.message) || '생성된 문구를 화면에 넣지 못했습니다.';
+            shopSetAiStatus(root, fillMessage, true);
+            alert(fillMessage);
+          }
         });
     }
 

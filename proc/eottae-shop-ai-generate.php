@@ -94,6 +94,13 @@ if (!function_exists('curl_init')) {
     eottae_json_send(array('success' => false, 'message' => '서버 PHP cURL 확장이 필요합니다.'));
 }
 
+@set_time_limit(60);
+
+// 긴 OpenAI 호출 동안 세션 잠금을 유지하면 같은 브라우저의 다른 요청이 막혀 응답이 지연될 수 있음
+if (function_exists('session_status') && session_status() === PHP_SESSION_ACTIVE) {
+    session_write_close();
+}
+
 $ch = curl_init('https://api.openai.com/v1/chat/completions');
 curl_setopt_array($ch, array(
     CURLOPT_RETURNTRANSFER => true,
@@ -103,7 +110,8 @@ curl_setopt_array($ch, array(
         'Authorization: Bearer '.$api_key,
     ),
     CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
-    CURLOPT_TIMEOUT => 25,
+    CURLOPT_CONNECTTIMEOUT => 10,
+    CURLOPT_TIMEOUT => 45,
 ));
 
 $raw = curl_exec($ch);

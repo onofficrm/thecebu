@@ -140,8 +140,33 @@ add_event('write_update_after', 'eottae_member_growth_on_write', 28, 3);
 add_event('comment_update_after', 'eottae_member_growth_on_comment', 28, 5);
 
 if (function_exists('add_replace')) {
-    add_replace('get_pretty_url', 'eottae_pretty_shop_board_url', 5, 5);
+    add_replace('get_pretty_url', 'eottae_pretty_shop_board_url', 20, 5);
 }
+
+if (!function_exists('eottae_shop_write_update_move_url')) {
+    /**
+     * 업체 등록·수정 후 이동 URL — short_url_clean 이 /shop/{seo} (영카트) 로 바꾸는 것 방지
+     */
+    function eottae_shop_write_update_move_url($redirect_url, $board, $wr_id, $w, $qstr, $file_upload_msg)
+    {
+        if (empty($board['bo_table']) || !function_exists('eottae_is_shop_board') || !eottae_is_shop_board($board['bo_table'])) {
+            return $redirect_url;
+        }
+
+        $wr_id = (int) $wr_id;
+        if ($wr_id < 1 || !function_exists('eottae_shop_view_url')) {
+            return $redirect_url;
+        }
+
+        $qs = '';
+        if ($qstr !== '') {
+            $qs = ltrim(str_replace('&amp;', '&', (string) $qstr), '&');
+        }
+
+        return eottae_shop_view_url($wr_id, $board['bo_table'], $qs);
+    }
+}
+add_replace('write_update_move_url', 'eottae_shop_write_update_move_url', 10, 6);
 
 if (!function_exists('eottae_shop_board_write_rewrite_lines')) {
     /**

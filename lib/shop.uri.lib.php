@@ -41,6 +41,14 @@ function add_pretty_shop_url($url, $folder, $no='', $query_string='', $action=''
         return $url;
     }
 
+    // bo_table=shop 업체 게시판 — 영카트 상품 URL(/shop/item.php)과 동명 충돌 방지
+    if (function_exists('eottae_shop_board_pretty_url') && ($no !== '' || $action === 'write' || $query_string !== '')) {
+        $board_url = eottae_shop_board_pretty_url($folder, $no, $query_string, $action);
+        if ($board_url !== '') {
+            return $board_url;
+        }
+    }
+
     $segments = array();
     $url = $add_query = '';
     

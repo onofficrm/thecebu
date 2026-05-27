@@ -290,7 +290,7 @@ $eottae_ai_hint = $eottae_ai_enabled
     <div class="shop-register-page__panel" data-step="5">
         <h3>6. SEO · 검색 노출</h3>
         <p class="eottae-field__hint">업소 상세 페이지에 적용되는 검색·SNS 메타 정보입니다. 비워 두면 업체명·소개 본문에서 자동 생성됩니다.</p>
-        <button type="button" class="eottae-ai-btn shop-register-page__ai-btn<?php echo $eottae_ai_enabled ? '' : ' is-ai-unavailable'; ?>" data-shop-ai-generate="seo" data-default-label="AI로 SEO 문구 자동생성"?>><?php echo $eottae_ai_btn_icon; ?><span class="eottae-ai-btn__label">AI로 SEO 문구 자동생성</span></button>
+        <button type="button" class="eottae-ai-btn shop-register-page__ai-btn<?php echo $eottae_ai_enabled ? '' : ' is-ai-unavailable'; ?>" data-shop-ai-generate="seo" data-default-label="AI로 SEO 문구 자동생성"><?php echo $eottae_ai_btn_icon; ?><span class="eottae-ai-btn__label">AI로 SEO 문구 자동생성</span></button>
         <p class="eottae-field__hint" data-shop-ai-status aria-live="polite"><?php echo $eottae_ai_hint; ?></p>
         <div class="eottae-field">
             <label for="eottae_seo_title">SEO 타이틀</label>

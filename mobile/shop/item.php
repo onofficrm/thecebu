@@ -18,6 +18,9 @@ $it_seo_title = isset($it_seo_title) ? $it_seo_title : '';
 $it = get_shop_item_with_category($it_id, $it_seo_title);
 
 if (!is_array($it) || empty($it['it_id'])) {
+    if (function_exists('eottae_shop_board_redirect_from_item_request')) {
+        eottae_shop_board_redirect_from_item_request($it_id, $it_seo_title);
+    }
     $fallback = function_exists('eottae_shop_list_url') ? eottae_shop_list_url() : G5_SHOP_URL;
     alert('자료가 없습니다.', $fallback);
 }

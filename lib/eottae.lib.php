@@ -5005,24 +5005,80 @@ if (!function_exists('eottae_shop_view_url')) {
     }
 }
 
-if (!function_exists('eottae_pretty_shop_board_url')) {
+if (!function_exists('eottae_shop_board_resolve_wr_id')) {
     /**
-     * 업체·세그먼트 게시판 URL 교정
-     * - shop: 영카트 /shop/{id} 충돌 방지
-     * - food 등: /food/2 짧은주소가 wr_id=2 로 해석되어 페이지 이동 시 "없는 글" 방지
+     * 업체 게시판 글 wr_id — wr_id 숫자 또는 wr_seo_title 슬러그
+     *
+     * @param string $bo_table
+     * @param string $no
+     * @return int
      */
-    function eottae_pretty_shop_board_url($url, $folder, $no = '', $query_string = '', $action = '')
+    function eottae_shop_board_resolve_wr_id($bo_table, $no)
     {
-        if (!function_exists('eottae_is_shop_board') || !eottae_is_shop_board($folder)) {
-            return $url;
+        global $g5;
+
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+        if ($bo_table === '' || !function_exists('eottae_is_shop_board') || !eottae_is_shop_board($bo_table)) {
+            return 0;
         }
 
-        if ($no !== '' && preg_match('/^(list|type)\-/i', (string) $no)) {
-            return $url;
+        $no = trim(rawurldecode((string) $no));
+        if ($no === '' || preg_match('/^(list|type)\-/i', $no)) {
+            return 0;
+        }
+
+        $storage_bo = function_exists('eottae_shop_storage_bo_table')
+            ? eottae_shop_storage_bo_table($bo_table)
+            : $bo_table;
+        $write_table = $g5['write_prefix'].$storage_bo;
+
+        if (ctype_digit($no)) {
+            $wr_id = (int) $no;
+            $row = sql_fetch(" select wr_id from {$write_table} where wr_id = '{$wr_id}' and wr_is_comment = 0 limit 1 ");
+
+            return !empty($row['wr_id']) ? (int) $row['wr_id'] : 0;
+        }
+
+        $seo = sql_escape_string($no);
+        $row = sql_fetch(" select wr_id from {$write_table} where wr_seo_title = '{$seo}' and wr_is_comment = 0 limit 1 ");
+        if (!empty($row['wr_id'])) {
+            return (int) $row['wr_id'];
+        }
+
+        if (function_exists('generate_seo_title')) {
+            $normalized = generate_seo_title($no);
+            if ($normalized !== '' && $normalized !== $no) {
+                $normalized = sql_escape_string($normalized);
+                $row = sql_fetch(" select wr_id from {$write_table} where wr_seo_title = '{$normalized}' and wr_is_comment = 0 limit 1 ");
+                if (!empty($row['wr_id'])) {
+                    return (int) $row['wr_id'];
+                }
+            }
+        }
+
+        return 0;
+    }
+}
+
+if (!function_exists('eottae_shop_board_pretty_url')) {
+    /**
+     * 업체 게시판용 URL (영카트 /shop/item.php 와 분리)
+     *
+     * @return string 빈 문자열이면 영카트 처리 계속
+     */
+    function eottae_shop_board_pretty_url($bo_table, $no = '', $query_string = '', $action = '')
+    {
+        if (!function_exists('eottae_is_shop_board') || !eottae_is_shop_board($bo_table)) {
+            return '';
+        }
+
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+        if ($bo_table === '') {
+            return '';
         }
 
         if ($action === 'write') {
-            $write_url = G5_BBS_URL.'/write.php?bo_table='.$folder;
+            $write_url = G5_BBS_URL.'/write.php?bo_table='.$bo_table;
             if ($query_string !== '') {
                 $qs = ltrim((string) $query_string, '&');
                 if ($qs !== '') {
@@ -5034,30 +5090,80 @@ if (!function_exists('eottae_pretty_shop_board_url')) {
         }
 
         if ($no === '') {
-            $list_url = G5_BBS_URL.'/board.php?bo_table='.$folder;
             if ($query_string !== '') {
+                $list_url = G5_BBS_URL.'/board.php?bo_table='.$bo_table;
                 $qs = ltrim((string) $query_string, '&');
                 if ($qs !== '') {
                     $list_url .= '&'.$qs;
                 }
+
+                return $list_url;
             }
 
-            return $list_url;
+            return '';
         }
 
-        if ($no !== '' && ctype_digit((string) $no)) {
-            global $g5;
+        if (preg_match('/^(list|type)\-/i', (string) $no)) {
+            return '';
+        }
 
-            $wr_id = (int) $no;
-            $storage_bo = function_exists('eottae_shop_storage_bo_table')
-                ? eottae_shop_storage_bo_table($folder)
-                : $folder;
-            $write_table = $g5['write_prefix'].$storage_bo;
-            $row = sql_fetch(" select wr_id from {$write_table} where wr_id = '{$wr_id}' and wr_is_comment = 0 limit 1 ");
-            if (!empty($row['wr_id'])) {
-                return eottae_shop_view_url($wr_id, $folder, $query_string);
-            }
+        $wr_id = eottae_shop_board_resolve_wr_id($bo_table, $no);
+        if ($wr_id > 0) {
+            return eottae_shop_view_url($wr_id, $bo_table, $query_string);
+        }
 
+        return '';
+    }
+}
+
+if (!function_exists('eottae_shop_board_redirect_from_item_request')) {
+    /**
+     * /shop/{slug} → 영카트 item.php 로 잘못 들어온 업체 게시글을 board.php 로 이동
+     */
+    function eottae_shop_board_redirect_from_item_request($it_id = '', $it_seo_title = '')
+    {
+        if (!function_exists('eottae_shop_table') || !function_exists('eottae_shop_view_url')) {
+            return false;
+        }
+
+        $slug = trim((string) $it_seo_title);
+        if ($slug === '') {
+            $slug = trim((string) $it_id);
+        }
+        if ($slug === '' || $slug === 'write' || preg_match('/^(list|type)\-/i', $slug)) {
+            return false;
+        }
+
+        $bo_table = eottae_shop_table();
+        $wr_id = eottae_shop_board_resolve_wr_id($bo_table, $slug);
+        if ($wr_id < 1) {
+            return false;
+        }
+
+        goto_url(eottae_shop_view_url($wr_id, $bo_table));
+
+        return true;
+    }
+}
+
+if (!function_exists('eottae_pretty_shop_board_url')) {
+    /**
+     * 업체·세그먼트 게시판 URL 교정
+     * - shop: 영카트 /shop/{id} 충돌 방지
+     * - food 등: /food/2 짧은주소가 wr_id=2 로 해석되어 페이지 이동 시 "없는 글" 방지
+     */
+    function eottae_pretty_shop_board_url($url, $folder, $no = '', $query_string = '', $action = '')
+    {
+        $resolved = eottae_shop_board_pretty_url($folder, $no, $query_string, $action);
+        if ($resolved !== '') {
+            return $resolved;
+        }
+
+        if (!function_exists('eottae_is_shop_board') || !eottae_is_shop_board($folder)) {
+            return $url;
+        }
+
+        if ($no !== '' && preg_match('/^(list|type)\-/i', (string) $no)) {
             return $url;
         }
 
