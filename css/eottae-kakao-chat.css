@@ -438,22 +438,26 @@
   .eottae-home-hero-grid--3col > .home-hero-chat-column,
   .home-hero-chat-column.public-group-chat--hero.public-group-chat--kakao,
   #eottae-home-public-chat.home-hero-chat-column {
-    --eottae-home-hero-chat-mobile-h: clamp(320px, 50dvh, 520px);
+    --eottae-home-hero-chat-mobile-h: clamp(320px, 50svh, 520px);
     min-height: var(--eottae-home-hero-chat-mobile-h);
     height: var(--eottae-home-hero-chat-mobile-h);
     max-height: var(--eottae-home-hero-chat-mobile-h);
   }
 }
 
-/* 모바일(휴대폰) — 검색 영역 아래 남는 화면 높이에 맞춤 (PC 1024px+ 히어로 3열 규칙과 분리) */
+/* 모바일(휴대폰) — svh 기준 고정 높이 (dvh는 스크롤 시 주소창 변화로 레이아웃이 흔들림) */
 @media (max-width: 767px) {
+  body.eottae-page:has(.eottae-home-hero-grid--3col) {
+    overscroll-behavior-y: none;
+  }
+
   .eottae-home-hero-grid--3col > .home-hero-chat-column,
   .home-hero-chat-column.public-group-chat--hero.public-group-chat--kakao,
   #eottae-home-public-chat.home-hero-chat-column {
     --eottae-home-hero-chat-mobile-h: clamp(
       360px,
-      calc(100dvh - var(--eottae-header-h, 56px) - 200px),
-      calc(100dvh - var(--eottae-header-h, 56px) - 96px)
+      calc(100svh - var(--eottae-header-h, 56px) - 200px),
+      calc(100svh - var(--eottae-header-h, 56px) - 96px)
     );
     min-height: var(--eottae-home-hero-chat-mobile-h);
     height: var(--eottae-home-hero-chat-mobile-h);

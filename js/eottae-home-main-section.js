@@ -1,5 +1,5 @@
 /**
- * 홈(빌더) — 오늘·내일·모레 일정 요약 + 인기글/급상승/댓글많은글
+ * 홈(빌더) — 오늘·내일·모레 일정 요약 + 인기글/급상승/공개톡방
  */
 (function (global) {
   'use strict';
@@ -30,22 +30,48 @@
 
   function findPopularSection() {
     var root = document.getElementById('root') || document;
-    var headings = root.querySelectorAll('h2, h3');
+    var headings;
     var i;
+    var text;
+    var section;
+
+    headings = root.querySelectorAll('h2');
     for (i = 0; i < headings.length; i += 1) {
-      var text = normalizeText(headings[i].textContent);
+      text = normalizeText(headings[i].textContent);
+      if (text.indexOf('커뮤니티인기글') !== -1 || text.indexOf('커뮤니티최신글') !== -1) {
+        section = headings[i].closest('section') || headings[i].closest('div');
+        if (section) {
+          return section;
+        }
+      }
+    }
+
+    headings = root.querySelectorAll('h3');
+    for (i = 0; i < headings.length; i += 1) {
+      text = normalizeText(headings[i].textContent);
+      if (text.indexOf('댓글많은글') !== -1 || text.indexOf('댓글많은순') !== -1) {
+        section = headings[i].closest('section') || headings[i].closest('div');
+        if (section) {
+          return section;
+        }
+      }
+    }
+
+    headings = root.querySelectorAll('h2, h3');
+    for (i = 0; i < headings.length; i += 1) {
+      text = normalizeText(headings[i].textContent);
       if (
         text.indexOf('실시간인기글') !== -1
         || text.indexOf('전체실시간') !== -1
-        || text.indexOf('커뮤니티인기글') !== -1
       ) {
-        var section = headings[i].closest('section');
+        section = headings[i].closest('section');
         if (section) {
           return section;
         }
         return headings[i].closest('div');
       }
     }
+
     return null;
   }
 
@@ -247,7 +273,7 @@
     return '/talk';
   }
 
-  function renderTalkRoomSlide(room, index, total) {
+  function renderTalkRoomSlide(room, index) {
     if (!room || !room.enter_href) {
       return '';
     }
@@ -259,75 +285,70 @@
     if (room.post_count != null) {
       stats.push('글 ' + formatCount(room.post_count));
     }
-    if (room.updated_label) {
-      stats.push(room.updated_label);
-    }
 
-    var desc = room.room_description || '지금 바로 참여해 세부 생활 정보를 나눠 보세요.';
-    if (desc.length > 96) {
-      desc = desc.slice(0, 96) + '…';
+    var desc = room.room_description || '관심 주제별 공개 톡방에 참여해 보세요.';
+    if (desc.length > 52) {
+      desc = desc.slice(0, 52) + '…';
     }
 
     return ''
-      + '<article class="sebu-talkrooms-carousel__slide" data-slide-index="' + esc(String(index)) + '" aria-hidden="' + (index === 0 ? 'false' : 'true') + '">'
-      + '<a href="' + esc(room.enter_href) + '" class="sebu-talkrooms-carousel__card">'
-      + '<span class="sebu-talkrooms-carousel__emoji" aria-hidden="true">' + esc(room.emoji || '💬') + '</span>'
-      + '<div class="sebu-talkrooms-carousel__body">'
-      + '<div class="sebu-talkrooms-carousel__meta-row">'
-      + (room.category ? '<span class="sebu-talkrooms-carousel__category">' + esc(room.category) + '</span>' : '')
-      + (room.visibility_label ? '<span class="sebu-talkrooms-carousel__visibility">' + esc(room.visibility_label) + '</span>' : '')
-      + '</div>'
-      + '<h3 class="sebu-talkrooms-carousel__name">' + esc(room.room_name || '세부톡방') + '</h3>'
-      + '<p class="sebu-talkrooms-carousel__room-desc">' + esc(desc) + '</p>'
-      + (stats.length ? '<p class="sebu-talkrooms-carousel__stats">' + esc(stats.join(' · ')) + '</p>' : '')
-      + '<span class="sebu-talkrooms-carousel__cta">참여하기</span>'
-      + '</div>'
+      + '<article class="sebu-talkrooms-col__slide" data-slide-index="' + esc(String(index)) + '" aria-hidden="' + (index === 0 ? 'false' : 'true') + '">'
+      + '<a href="' + esc(room.enter_href) + '" class="sebu-talkrooms-col__link">'
+      + '<span class="sebu-talkrooms-col__emoji" aria-hidden="true">' + esc(room.emoji || '💬') + '</span>'
+      + '<span class="sebu-talkrooms-col__body">'
+      + '<span class="sebu-talkrooms-col__meta">'
+      + (room.category ? '<span class="sebu-talkrooms-col__category">' + esc(room.category) + '</span>' : '')
+      + (room.updated_label ? '<span class="sebu-talkrooms-col__time">' + esc(room.updated_label) + '</span>' : '')
+      + '</span>'
+      + '<strong class="sebu-talkrooms-col__name">' + esc(room.room_name || '세부톡방') + '</strong>'
+      + '<span class="sebu-talkrooms-col__desc">' + esc(desc) + '</span>'
+      + (stats.length ? '<span class="sebu-talkrooms-col__stats">' + esc(stats.join(' · ')) + '</span>' : '')
+      + '</span>'
+      + '<span class="sebu-talkrooms-col__enter">입장</span>'
       + '</a>'
-      + '<span class="sebu-talkrooms-carousel__counter">' + esc(String(index + 1)) + ' / ' + esc(String(total)) + '</span>'
       + '</article>';
   }
 
-  function renderTalkRoomsBlock(talkRooms) {
-    if (!talkRooms || !talkRooms.rooms || !talkRooms.rooms.length) {
-      return '';
-    }
-
-    var rooms = talkRooms.rooms.slice(0, 5);
+  function renderTalkRoomsColumn(talkRooms) {
+    var listUrl = (talkRooms && talkRooms.list_url) ? talkRooms.list_url : talkListUrl();
+    var rooms = talkRooms && talkRooms.rooms ? talkRooms.rooms.slice(0, 5) : [];
     var slidesHtml = '';
     var dotsHtml = '';
     var i;
 
     for (i = 0; i < rooms.length; i += 1) {
-      slidesHtml += renderTalkRoomSlide(rooms[i], i, rooms.length);
+      slidesHtml += renderTalkRoomSlide(rooms[i], i);
       dotsHtml += ''
-        + '<button type="button" class="sebu-talkrooms-carousel__dot' + (i === 0 ? ' is-active' : '') + '"'
+        + '<button type="button" class="sebu-talkrooms-col__dot' + (i === 0 ? ' is-active' : '') + '"'
         + ' data-slide-to="' + esc(String(i)) + '"'
         + ' aria-label="' + esc(String(i + 1)) + '번 톡방"'
         + (i === 0 ? ' aria-current="true"' : '')
         + '></button>';
     }
 
+    var bodyHtml = rooms.length
+      ? ''
+        + '<div class="sebu-talkrooms-col__viewport">'
+        + '<div class="sebu-talkrooms-col__track" data-slide-count="' + esc(String(rooms.length)) + '">' + slidesHtml + '</div>'
+        + '</div>'
+        + '<div class="sebu-talkrooms-col__controls">'
+        + '<button type="button" class="sebu-talkrooms-col__nav sebu-talkrooms-col__nav--prev" aria-label="이전 톡방">‹</button>'
+        + '<div class="sebu-talkrooms-col__dots" role="tablist" aria-label="톡방 슬라이드">' + dotsHtml + '</div>'
+        + '<button type="button" class="sebu-talkrooms-col__nav sebu-talkrooms-col__nav--next" aria-label="다음 톡방">›</button>'
+        + '</div>'
+      : '<p class="sebu-community-col__empty">표시할 공개 톡방이 없습니다.</p>';
+
     return ''
-      + '<section class="sebu-talkrooms-carousel" data-eottae-talkrooms-carousel="1" aria-label="공개 세부톡방">'
-      + '<header class="sebu-talkrooms-carousel__head">'
-      + '<div>'
-      + '<h2 class="sebu-talkrooms-carousel__title">'
-      + '<span class="sebu-talkrooms-carousel__accent" aria-hidden="true"></span>'
-      + esc(talkRooms.title || '공개 세부톡방')
-      + '</h2>'
-      + '<p class="sebu-talkrooms-carousel__lead">' + esc(talkRooms.desc || '') + '</p>'
-      + '</div>'
-      + '<a href="' + esc(talkRooms.list_url || talkListUrl()) + '" class="sebu-talkrooms-carousel__more">전체보기 +</a>'
+      + '<article class="sebu-community-col sebu-community-col--talkrooms" data-eottae-talkrooms-carousel="1" aria-label="공개 세부톡방">'
+      + '<header class="sebu-community-col__head">'
+      + '<h3 class="sebu-community-col__title">'
+      + '<span class="sebu-community-col__accent sebu-community-col__accent--sky" aria-hidden="true"></span>'
+      + '공개 세부톡방'
+      + '</h3>'
+      + '<a href="' + esc(listUrl) + '" class="sebu-community-col__more">전체보기 +</a>'
       + '</header>'
-      + '<div class="sebu-talkrooms-carousel__viewport">'
-      + '<div class="sebu-talkrooms-carousel__track" data-slide-count="' + esc(String(rooms.length)) + '">' + slidesHtml + '</div>'
-      + '</div>'
-      + '<div class="sebu-talkrooms-carousel__controls">'
-      + '<button type="button" class="sebu-talkrooms-carousel__nav sebu-talkrooms-carousel__nav--prev" aria-label="이전 톡방">‹</button>'
-      + '<div class="sebu-talkrooms-carousel__dots" role="tablist" aria-label="톡방 슬라이드">' + dotsHtml + '</div>'
-      + '<button type="button" class="sebu-talkrooms-carousel__nav sebu-talkrooms-carousel__nav--next" aria-label="다음 톡방">›</button>'
-      + '</div>'
-      + '</section>';
+      + bodyHtml
+      + '</article>';
   }
 
   function bindTalkRoomsCarousel(root) {
@@ -335,9 +356,9 @@
       return;
     }
 
-    var track = root.querySelector('.sebu-talkrooms-carousel__track');
-    var slides = track ? track.querySelectorAll('.sebu-talkrooms-carousel__slide') : [];
-    var dots = root.querySelectorAll('.sebu-talkrooms-carousel__dot');
+    var track = root.querySelector('.sebu-talkrooms-col__track');
+    var slides = track ? track.querySelectorAll('.sebu-talkrooms-col__slide') : [];
+    var dots = root.querySelectorAll('.sebu-talkrooms-col__dot');
     if (!track || !slides.length) {
       return;
     }
@@ -412,8 +433,8 @@
       });
     });
 
-    var prevBtn = root.querySelector('.sebu-talkrooms-carousel__nav--prev');
-    var nextBtn = root.querySelector('.sebu-talkrooms-carousel__nav--next');
+    var prevBtn = root.querySelector('.sebu-talkrooms-col__nav--prev');
+    var nextBtn = root.querySelector('.sebu-talkrooms-col__nav--next');
     if (prevBtn) {
       prevBtn.addEventListener('click', function () {
         nextSlide(-1);
@@ -462,25 +483,17 @@
     host.querySelectorAll('[data-eottae-talkrooms-carousel="1"]').forEach(bindTalkRoomsCarousel);
   }
 
-  function renderPopularBlock(popular) {
+  function renderPopularBlock(popular, talkRooms) {
     var columns = [
       {
-        key: 'latest',
         label: '실시간 인기글',
         accentClass: 'sebu-community-col__accent--orange',
         posts: popular.latest || [],
       },
       {
-        key: 'hit',
         label: '조회수 급상승',
         accentClass: 'sebu-community-col__accent--rose',
         posts: popular.hit || [],
-      },
-      {
-        key: 'comment',
-        label: '댓글 많은 글',
-        accentClass: 'sebu-community-col__accent--pink',
-        posts: popular.comment || [],
       },
     ];
 
@@ -496,6 +509,8 @@
         moreUrl: moreUrl,
       });
     }
+
+    colsHtml += renderTalkRoomsColumn(talkRooms || {});
 
     return ''
       + '<section class="sebu-community-popular" data-eottae-home-popular="1" aria-label="커뮤니티 인기글">'
@@ -531,8 +546,7 @@
     mountRoot.className = 'sebu-home-main-section';
     mountRoot.setAttribute('data-eottae-home-main-mounted', '1');
     mountRoot.innerHTML = renderCalendarBlock(data.calendar)
-      + renderPopularBlock(data.popular || {})
-      + renderTalkRoomsBlock(data.talk_rooms || {});
+      + renderPopularBlock(data.popular || {}, data.talk_rooms || {});
 
     while (section.firstChild) {
       section.removeChild(section.firstChild);

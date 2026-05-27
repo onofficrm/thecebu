@@ -18,6 +18,39 @@
   var syncing = false;
   var lastSidebarFingerprint = '';
   var heroLayoutStable = false;
+  var mobileLayoutReleased = false;
+  var userScrolling = false;
+  var scrollIdleTimer = null;
+
+  function isDesktopHeroLayout() {
+    return global.innerWidth >= 1024;
+  }
+
+  function markUserScrolling() {
+    userScrolling = true;
+    global.clearTimeout(scrollIdleTimer);
+    scrollIdleTimer = global.setTimeout(function () {
+      userScrolling = false;
+    }, 180);
+  }
+
+  function releaseDesktopHeroSyncOnMobile(grid) {
+    if (!grid) {
+      return;
+    }
+
+    if (
+      grid.classList.contains(SYNC_CLASS)
+      || grid.getAttribute('data-eottae-hero-height')
+      || grid.style.getPropertyValue('--eottae-hero-col-h')
+    ) {
+      clearHeroColumnHeights(grid);
+    }
+
+    mobileLayoutReleased = true;
+    heroLayoutStable = true;
+    lastSidebarFingerprint = '';
+  }
 
   function findHeroGrid() {
     if (typeof global.findEottaeHeroGrid === 'function') {
@@ -427,9 +460,7 @@
       return false;
     }
 
-    if (global.innerWidth < 1024) {
-      heroLayoutStable = false;
-      clearHeroColumnHeights(grid);
+    if (!isDesktopHeroLayout()) {
       if (resizeObserver) {
         resizeObserver.disconnect();
         resizeObserver = null;
@@ -438,8 +469,17 @@
         sidebarMutationObserver.disconnect();
         sidebarMutationObserver = null;
       }
-      lastSidebarFingerprint = '';
+      if (!mobileLayoutReleased) {
+        releaseDesktopHeroSyncOnMobile(grid);
+      }
       return true;
+    }
+
+    mobileLayoutReleased = false;
+
+    if (userScrolling) {
+      scheduleSync(220);
+      return false;
     }
 
     var cols = heroColumns(grid);
@@ -454,85 +494,46 @@
 
     syncing = true;
 
-    return withPreservedWindowScroll(function () {
-      if (resizeObserver) {
-        resizeObserver.disconnect();
-        resizeObserver = null;
-      }
+    if (resizeObserver) {
+      resizeObserver.disconnect();
+      resizeObserver = null;
+    }
 
-      clearHeroColumnHeights(grid);
-      ensureSidebarMounted();
+    clearHeroColumnHeights(grid);
+    ensureSidebarMounted();
 
-      sidebar = findHeroSidebarColumn(grid);
-      if (!sidebar) {
-        syncing = false;
-        return false;
-      }
-
-      var targetH = measureSidebarColumnHeight(grid);
-      if (targetH < MIN_COL_H) {
-        syncing = false;
-        scheduleSync(400);
-        return false;
-      }
-
-      targetH = remeasureSidebarExpandedHeight(grid, targetH);
-      applyHeroColumnHeights(grid, targetH);
-      targetH = remeasureSidebarExpandedHeight(grid, targetH);
-      if (parseInt(grid.getAttribute('data-eottae-hero-height') || '0', 10) !== targetH) {
-        applyHeroColumnHeights(grid, targetH);
-      }
-
-      sidebar = findHeroSidebarColumn(grid);
-      markHeroLayoutStable(grid, sidebar);
-
+    sidebar = findHeroSidebarColumn(grid);
+    if (!sidebar) {
       syncing = false;
-      observeSidebarTargets(grid);
-      observeSidebarMutations(grid);
-
-      if (typeof global.scheduleEottaeHomePublicChatScroll === 'function') {
-        global.scheduleEottaeHomePublicChatScroll();
-      }
-
-      return true;
-    });
-  }
-
-  function getWindowScrollY() {
-    return global.pageYOffset
-      || (global.document.documentElement && global.document.documentElement.scrollTop)
-      || (global.document.body && global.document.body.scrollTop)
-      || 0;
-  }
-
-  function restoreWindowScrollY(x, y) {
-    if (typeof y !== 'number' || y < 1) {
-      return;
+      return false;
     }
 
-    var currentY = getWindowScrollY();
-    if (Math.abs(currentY - y) < 2) {
-      return;
+    var targetH = measureSidebarColumnHeight(grid);
+    if (targetH < MIN_COL_H) {
+      syncing = false;
+      scheduleSync(400);
+      return false;
     }
 
-    if (typeof global.scrollTo === 'function') {
-      global.scrollTo(x, y);
+    targetH = remeasureSidebarExpandedHeight(grid, targetH);
+    applyHeroColumnHeights(grid, targetH);
+    targetH = remeasureSidebarExpandedHeight(grid, targetH);
+    if (parseInt(grid.getAttribute('data-eottae-hero-height') || '0', 10) !== targetH) {
+      applyHeroColumnHeights(grid, targetH);
     }
-  }
 
-  function withPreservedWindowScroll(fn) {
-    var x = global.pageXOffset || 0;
-    var y = getWindowScrollY();
-    var result = fn();
+    sidebar = findHeroSidebarColumn(grid);
+    markHeroLayoutStable(grid, sidebar);
 
-    global.requestAnimationFrame(function () {
-      restoreWindowScrollY(x, y);
-      global.requestAnimationFrame(function () {
-        restoreWindowScrollY(x, y);
-      });
-    });
+    syncing = false;
+    observeSidebarTargets(grid);
+    observeSidebarMutations(grid);
 
-    return result;
+    if (typeof global.scheduleEottaeHomePublicChatScroll === 'function') {
+      global.scheduleEottaeHomePublicChatScroll();
+    }
+
+    return true;
   }
 
   function canSkipStableSync(grid, sidebar) {
@@ -564,6 +565,10 @@
   }
 
   function scheduleSync(delayMs) {
+    if (!isDesktopHeroLayout()) {
+      return;
+    }
+
     var wait = typeof delayMs === 'number' ? delayMs : 0;
     global.clearTimeout(resizeTimer);
     resizeTimer = global.setTimeout(function () {
@@ -574,16 +579,21 @@
   }
 
   function runInitialSyncPasses() {
+    if (!isDesktopHeroLayout()) {
+      syncHeroColumnHeights();
+      return;
+    }
+
     scheduleSync(0);
     scheduleSync(80);
     scheduleSync(280);
     scheduleSync(700);
     scheduleSync(1400);
-    scheduleSync(2800);
-    scheduleSync(4500);
   }
 
   function init() {
+    global.addEventListener('scroll', markUserScrolling, { passive: true });
+
     var run = function () {
       runInitialSyncPasses();
     };
@@ -602,6 +612,13 @@
     }
 
     global.addEventListener('resize', function () {
+      if (!isDesktopHeroLayout()) {
+        mobileLayoutReleased = false;
+        syncHeroColumnHeights();
+        return;
+      }
+
+      mobileLayoutReleased = false;
       heroLayoutStable = false;
       scheduleSync(150);
     });

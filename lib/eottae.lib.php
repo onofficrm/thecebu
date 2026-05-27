@@ -994,6 +994,23 @@ if (!function_exists('eottae_builder_inject_home_main_section_script')) {
         $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-main-section.js' : '/js/eottae-home-main-section.js';
         $cal_js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-calendar.js' : '/js/eottae-calendar.js';
 
+        $css_path = G5_PATH.'/css/eottae-home-main-section.css';
+        if (is_file($css_path)) {
+            $css .= '?ver='.(int) filemtime($css_path);
+        }
+        $cal_css_path = G5_PATH.'/css/eottae-calendar.css';
+        if (is_file($cal_css_path)) {
+            $cal_css .= '?ver='.(int) filemtime($cal_css_path);
+        }
+        $js_path = G5_PATH.'/js/eottae-home-main-section.js';
+        if (is_file($js_path)) {
+            $js .= '?ver='.(int) filemtime($js_path);
+        }
+        $cal_js_path = G5_PATH.'/js/eottae-calendar.js';
+        if (is_file($cal_js_path)) {
+            $cal_js .= '?ver='.(int) filemtime($cal_js_path);
+        }
+
         ob_start();
         if (is_file(G5_PATH.'/components/eottae/calendar-event-modal.php')) {
             include_once G5_PATH.'/components/eottae/calendar-event-modal.php';
