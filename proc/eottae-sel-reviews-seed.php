@@ -19,8 +19,21 @@ header('Content-Type: application/json; charset=utf-8');
 
 $key = isset($_REQUEST['key']) ? trim((string) $_REQUEST['key']) : '';
 $expected = substr(hash('sha256', G5_MYSQL_USER.G5_TABLE_PREFIX.'eottae-sel-reviews-seed-v1'), 0, 32);
+$auth_ok = (bool) $is_admin;
 
-if (!$is_admin && ($key === '' || !hash_equals($expected, $key))) {
+if (!$auth_ok && $key !== '' && hash_equals($expected, $key)) {
+    $auth_ok = true;
+}
+
+if (!$auth_ok && $key !== '' && is_file(G5_LIB_PATH.'/eottae-talkroom.lib.php')) {
+    include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
+    if (function_exists('eottae_talkroom_maintenance_verify_key')
+        && eottae_talkroom_maintenance_verify_key($key)) {
+        $auth_ok = true;
+    }
+}
+
+if (!$auth_ok) {
     http_response_code(403);
     echo json_encode(array('ok' => false, 'message' => 'Forbidden'), JSON_UNESCAPED_UNICODE);
     exit;

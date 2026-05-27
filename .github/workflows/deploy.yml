@@ -95,3 +95,15 @@ jobs:
           MAINT_KEY="${TALKROOM_MAINTENANCE_KEY:-$OPENAI_API_KEY}"
           curl -sfS --max-time 60 \
             "https://thecebu.co.kr/proc/eottae-talkroom-maintenance.php?action=approve_pending_rooms&key=${MAINT_KEY}"
+
+      - name: Seed Lucky Pool Villa reviews (shop wr_id=62)
+        if: env.HAS_MAINTENANCE_KEY == '1'
+        env:
+          TALKROOM_MAINTENANCE_KEY: ${{ secrets.TALKROOM_MAINTENANCE_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          MAINT_KEY="${TALKROOM_MAINTENANCE_KEY:-$OPENAI_API_KEY}"
+          RESP=$(curl -sfS --max-time 120 \
+            "https://thecebu.co.kr/proc/eottae-sel-reviews-seed.php?shop_wr_id=62&preset=luckyvilla&force=1&key=${MAINT_KEY}")
+          echo "$RESP"
+          echo "$RESP" | grep -q '"ok":true' || echo "$RESP" | grep -q '"ok": true' || exit 1
