@@ -275,11 +275,35 @@ body.talkroom-ui .talk-room-card__stat--time {
 
 body.talkroom-ui .talk-room-card__enter {
   min-height: var(--talkroom-touch);
-  margin-top: 2px;
+  margin-top: 0;
   border-radius: var(--talkroom-radius-pill, 999px);
   font-size: 15px;
   background: linear-gradient(135deg, var(--talkroom-primary) 0%, #38bdf8 100%);
   box-shadow: 0 6px 16px rgba(14, 165, 233, 0.28);
+}
+
+body.talkroom-ui .talk-room-card__actions {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+body.talkroom-ui .talk-room-card__actions .talk-room-card__enter {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+body.talkroom-ui .talk-room-card__delete {
+  flex: 0 0 auto;
+  min-height: var(--talkroom-touch);
+  padding: 0 16px;
+  border: 1px solid #fecaca;
+  border-radius: var(--talkroom-radius-pill, 999px);
+  background: #fff;
+  color: #dc2626;
+  font-size: 15px;
+  font-weight: 800;
 }
 
 /* ── 신청 폼 ── */
