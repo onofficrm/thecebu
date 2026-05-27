@@ -3,6 +3,16 @@ include_once('./_common.php');
 include_once(G5_LIB_PATH.'/iteminfo.lib.php');
 
 $it_id = isset($_GET['it_id']) ? get_search_string(trim($_GET['it_id'])) : '';
+if ($it_id === 'write' && function_exists('eottae_is_shop_board')) {
+    $write_bo_table = isset($_GET['bo_table']) ? preg_replace('/[^a-z0-9_]/', '', (string) $_GET['bo_table']) : '';
+    if ($write_bo_table === '' || !eottae_is_shop_board($write_bo_table)) {
+        $write_bo_table = function_exists('eottae_shop_table') ? eottae_shop_table() : 'shop';
+    }
+    $write_qs = isset($_SERVER['QUERY_STRING']) ? preg_replace('/(^|&)it_id=write(&|$)/', '$1', (string) $_SERVER['QUERY_STRING']) : '';
+    $write_qs = trim($write_qs, '&');
+    $write_url = G5_BBS_URL.'/write.php?bo_table='.$write_bo_table.($write_qs !== '' ? '&'.$write_qs : '');
+    goto_url($write_url);
+}
 $it_seo_title = isset($it_seo_title) ? $it_seo_title : '';
 
 $it = get_shop_item_with_category($it_id, $it_seo_title);

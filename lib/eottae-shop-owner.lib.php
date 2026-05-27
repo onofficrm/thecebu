@@ -201,7 +201,7 @@ if (!function_exists('eottae_shop_manage_hrefs')) {
         $delete_token = (string) $delete_token;
 
         $update_href = G5_BBS_URL.'/write.php?w=u&amp;bo_table='.$bo_table.'&amp;wr_id='.$wr_id.'&amp;page='.$page.$qstr;
-        if (function_exists('short_url_clean')) {
+        if (function_exists('short_url_clean') && (!function_exists('eottae_is_shop_board') || !eottae_is_shop_board($bo_table))) {
             $update_href = short_url_clean($update_href);
         }
 

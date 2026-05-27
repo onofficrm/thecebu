@@ -139,6 +139,69 @@ if (function_exists('add_replace')) {
     add_replace('get_pretty_url', 'eottae_pretty_shop_board_url', 5, 5);
 }
 
+if (!function_exists('eottae_shop_board_write_rewrite_lines')) {
+    /**
+     * 업체 게시판 글쓰기 URL — 영카트 /shop/{it_id} 규칙보다 먼저 bbs/write.php 로 연결
+     *
+     * @return string
+     */
+    function eottae_shop_board_write_rewrite_lines()
+    {
+        if (!function_exists('eottae_shop_board_tables')) {
+            return '';
+        }
+
+        $lines = array();
+        foreach (eottae_shop_board_tables() as $bo_table) {
+            $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+            if ($bo_table === '') {
+                continue;
+            }
+            $lines[] = 'RewriteRule ^'.$bo_table.'/write$ '.G5_BBS_DIR.'/write.php?bo_table='.$bo_table.'&rewrite=1 [QSA,L]';
+        }
+
+        return implode("\n", $lines);
+    }
+}
+
+if (!function_exists('eottae_add_shop_board_write_rewrite_pre_rules')) {
+    function eottae_add_shop_board_write_rewrite_pre_rules($rules, $get_path_url, $base_path, $return_string = false)
+    {
+        $lines = eottae_shop_board_write_rewrite_lines();
+        if ($lines === '') {
+            return $rules;
+        }
+
+        return $lines."\n".$rules;
+    }
+}
+add_replace('add_mod_rewrite_pre_rules', 'eottae_add_shop_board_write_rewrite_pre_rules', 5, 3);
+
+if (!function_exists('eottae_add_shop_board_write_nginx_pre_rules')) {
+    function eottae_add_shop_board_write_nginx_pre_rules($rules, $get_path_url, $base_path, $return_string = false)
+    {
+        if (!function_exists('eottae_shop_board_tables')) {
+            return $rules;
+        }
+
+        $lines = array();
+        foreach (eottae_shop_board_tables() as $bo_table) {
+            $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+            if ($bo_table === '') {
+                continue;
+            }
+            $lines[] = 'rewrite ^'.$base_path.$bo_table.'/write$ '.$base_path.G5_BBS_DIR.'/write.php?bo_table='.$bo_table.'&rewrite=1 break;';
+        }
+
+        if (empty($lines)) {
+            return $rules;
+        }
+
+        return implode("\n", $lines)."\n".$rules;
+    }
+}
+add_replace('add_nginx_conf_pre_rules', 'eottae_add_shop_board_write_nginx_pre_rules', 5, 3);
+
 if (!function_exists('eottae_on_shop_write_before')) {
     function eottae_on_shop_write_before($board, $wr_id, $w, $qstr)
     {
