@@ -335,6 +335,10 @@ if (!function_exists('eottae_on_shop_board_head')) {
         }
 
         eottae_shop_seo_apply_page($board, $write);
+
+        if (function_exists('eottae_auto_seed_luckyvilla_reviews_if_needed')) {
+            eottae_auto_seed_luckyvilla_reviews_if_needed($wr_id, $write);
+        }
     }
 }
 add_event('board_head_before', 'eottae_on_shop_board_head', 10, 3);

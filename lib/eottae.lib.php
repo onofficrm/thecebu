@@ -2784,6 +2784,69 @@ if (!function_exists('eottae_hide_review')) {
     }
 }
 
+if (!function_exists('eottae_is_luckyvilla_shop')) {
+    /** 럭키풀빌라 샘플 리뷰 대상 업체 여부 */
+    function eottae_is_luckyvilla_shop($shop_wr_id, $write = null)
+    {
+        $shop_wr_id = (int) $shop_wr_id;
+        if ($shop_wr_id === 62) {
+            return true;
+        }
+
+        if (is_array($write) && !empty($write['wr_subject'])) {
+            $subject = get_text($write['wr_subject']);
+            if (stripos($subject, '럭키') !== false || stripos($subject, 'lucky') !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+if (!function_exists('eottae_auto_seed_luckyvilla_reviews_if_needed')) {
+    /**
+     * 운영 DB에 리뷰 시드가 안 된 경우 첫 상세 조회 시 샘플 리뷰 35건 등록 (1회성)
+     */
+    function eottae_auto_seed_luckyvilla_reviews_if_needed($shop_wr_id, $write = null)
+    {
+        static $ran = array();
+
+        $shop_wr_id = (int) $shop_wr_id;
+        if ($shop_wr_id < 1 || !function_exists('eottae_is_luckyvilla_shop') || !eottae_is_luckyvilla_shop($shop_wr_id, $write)) {
+            return;
+        }
+        if (isset($ran[$shop_wr_id])) {
+            return;
+        }
+        $ran[$shop_wr_id] = true;
+
+        $summary = eottae_get_shop_review_summary($shop_wr_id);
+        if ((int) $summary['count'] > 0) {
+            return;
+        }
+
+        $seed_lib = defined('G5_PATH') ? G5_PATH.'/setup/tools/eottae-seed.lib.php' : '';
+        if ($seed_lib === '' || !is_file($seed_lib)) {
+            return;
+        }
+
+        include_once $seed_lib;
+        if (!function_exists('eottae_seed_review_board_exists') || !eottae_seed_review_board_exists()) {
+            return;
+        }
+        if (!function_exists('eottae_seed_luckyvilla_reviews')) {
+            return;
+        }
+
+        eottae_seed_luckyvilla_reviews($shop_wr_id, false);
+
+        if (function_exists('run_event')) {
+            run_event('cache_delete', 'board');
+        }
+    }
+}
+
 if (!function_exists('eottae_sync_shop_review_stats')) {
     /**
      * 업체 게시글 wr_comment(리뷰수)·wr_good(평점×10) 동기화 — 목록 정렬용

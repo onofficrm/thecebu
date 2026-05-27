@@ -103,7 +103,12 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           MAINT_KEY="${TALKROOM_MAINTENANCE_KEY:-$OPENAI_API_KEY}"
-          RESP=$(curl -sfS --max-time 120 \
+          RESP=$(curl -sS --max-time 120 \
             "https://thecebu.co.kr/proc/eottae-sel-reviews-seed.php?shop_wr_id=62&preset=luckyvilla&force=1&key=${MAINT_KEY}")
           echo "$RESP"
           echo "$RESP" | grep -q '"ok":true' || echo "$RESP" | grep -q '"ok": true' || exit 1
+
+      - name: Note Lucky Villa review auto-seed (no maintenance key)
+        if: env.HAS_MAINTENANCE_KEY != '1'
+        run: |
+          echo "SKIP: TALKROOM_MAINTENANCE_KEY not set — deploy 후 럭키풀빌라 상세 페이지 1회 방문 시 리뷰가 자동 등록됩니다."
