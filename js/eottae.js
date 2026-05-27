@@ -25,21 +25,37 @@
 
   function fetchWithTimeout(url, options, timeoutMs) {
     var ms = timeoutMs || 50000;
-    if (!global.AbortController) {
-      return fetch(url, options);
-    }
-    var controller = new AbortController();
-    var timer = setTimeout(function () {
-      controller.abort();
-    }, ms);
     var opts = options || {};
-    opts.signal = controller.signal;
-    return fetch(url, opts).then(function (res) {
-      clearTimeout(timer);
-      return res;
-    }, function (err) {
-      clearTimeout(timer);
-      throw err;
+
+    return new Promise(function (resolve, reject) {
+      var done = false;
+      var controller = global.AbortController ? new AbortController() : null;
+      var timer = setTimeout(function () {
+        if (done) return;
+        done = true;
+        if (controller) {
+          controller.abort();
+        }
+        var timeoutError = new Error('AI 요청 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.');
+        timeoutError.name = 'AbortError';
+        reject(timeoutError);
+      }, ms);
+
+      if (controller) {
+        opts.signal = controller.signal;
+      }
+
+      fetch(url, opts).then(function (res) {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        resolve(res);
+      }, function (err) {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        reject(err);
+      });
     });
   }
 
@@ -548,10 +564,12 @@
         shopFillAiValue(root, '#eottae_seo_intro', data.seo_intro, true);
         shopFillAiValue(root, '#eottae_seo_description', data.meta_description, true);
         shopFillAiValue(root, '#eottae_seo_keyword', data.focus_keyword, true);
-        if (mode !== 'seo' && data.intro) {
-          shopFillAiValue(root, '#wr_content', data.intro, true);
-        }
         shopSetAiStatus(root, 'AI 문구를 입력했습니다. 등록 전 내용이 맞는지 한 번 확인해 주세요.', false);
+        if (mode !== 'seo' && data.intro) {
+          setTimeout(function () {
+            shopFillAiValue(root, '#wr_content', data.intro, true);
+          }, 0);
+        }
       }
 
       fetchWithTimeout(eottaeProcPath('eottae-shop-ai-generate.php'), {
@@ -572,6 +590,7 @@
           return json.data || {};
         })
         .then(function (data) {
+          resetShopAiButtons();
           try {
             applyShopAiData(data);
           } catch (fillErr) {
@@ -579,7 +598,6 @@
             shopSetAiStatus(root, fillMessage, true);
             alert(fillMessage);
           }
-          resetShopAiButtons();
         }, function (err) {
           var message = err && err.name === 'AbortError'
             ? 'AI 요청 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.'

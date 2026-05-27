@@ -546,17 +546,18 @@ if (eottae_should_load_assets()) {
     $eottae_ai_cfg = function_exists('eottae_ai_generate_bootstrap_config')
         ? eottae_ai_generate_bootstrap_config()
         : array('enabled' => false, 'api_key' => '');
+    $eottae_js_version = defined('G5_PATH') && is_file(G5_PATH.'/js/eottae.js')
+        ? (string) @filemtime(G5_PATH.'/js/eottae.js')
+        : (defined('G5_JS_VER') ? G5_JS_VER : '');
     add_javascript(
         '<script>window.__EOTTae__='.json_encode(array(
             'url' => G5_URL,
             'procBase' => G5_URL.'/proc',
             'aiEnabled' => !empty($eottae_ai_cfg['enabled']) && !empty($eottae_ai_cfg['api_key']),
+            'jsVersion' => $eottae_js_version,
         ), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT).';</script>',
         18
     );
-    $eottae_js_version = defined('G5_PATH') && is_file(G5_PATH.'/js/eottae.js')
-        ? (string) @filemtime(G5_PATH.'/js/eottae.js')
-        : (defined('G5_JS_VER') ? G5_JS_VER : '');
     add_javascript('<script src="'.G5_JS_URL.'/eottae.js'.($eottae_js_version !== '' ? '?v='.$eottae_js_version : '').'" defer></script>', 20);
     if (defined('G5_IS_MOBILE') && G5_IS_MOBILE) {
         add_javascript('<script src="'.G5_JS_URL.'/custom.js"></script>', 21);
