@@ -2924,16 +2924,125 @@ if (!function_exists('eottae_community_category_tabs')) {
     }
 }
 
-if (!function_exists('eottae_community_list_thumb')) {
-    function eottae_community_list_thumb($bo_table, $wr_id)
+if (!function_exists('eottae_community_normalize_image_url')) {
+    function eottae_community_normalize_image_url($url)
     {
+        $url = trim(htmlspecialchars_decode((string) $url, ENT_QUOTES));
+        if ($url === '' || stripos($url, 'data:') === 0) {
+            return '';
+        }
+
+        if (preg_match('#^https?://#i', $url)) {
+            return $url;
+        }
+
+        if (strpos($url, '//') === 0) {
+            return 'https:'.$url;
+        }
+
+        if ($url !== '' && $url[0] === '/' && defined('G5_URL')) {
+            return G5_URL.$url;
+        }
+
+        if (defined('G5_DATA_URL') && strpos($url, G5_DATA_DIR.'/') !== false) {
+            return G5_DATA_URL.'/'.ltrim(str_replace(G5_DATA_DIR.'/', '', $url), '/');
+        }
+
+        return $url;
+    }
+}
+
+if (!function_exists('eottae_community_content_image_url')) {
+    /**
+     * 본문 HTML·에디터 이미지에서 목록용 대표 URL (외부 CDN 포함)
+     */
+    function eottae_community_content_image_url($html)
+    {
+        $html = (string) $html;
+        if ($html === '') {
+            return '';
+        }
+
+        if (function_exists('get_editor_image')) {
+            $matches = get_editor_image($html, false);
+            if (!empty($matches[1]) && is_array($matches[1])) {
+                foreach ($matches[1] as $src) {
+                    $url = eottae_community_normalize_image_url($src);
+                    if ($url !== '') {
+                        return $url;
+                    }
+                }
+            }
+        }
+
+        if (preg_match_all('/<img[^>]+src=["\']([^"\']+)["\']/i', $html, $found) && !empty($found[1])) {
+            foreach ($found[1] as $src) {
+                $url = eottae_community_normalize_image_url($src);
+                if ($url !== '') {
+                    return $url;
+                }
+            }
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('eottae_community_list_thumb')) {
+    /**
+     * @param string $bo_table
+     * @param int    $wr_id
+     * @param string $content 목록에 wr_content가 있으면 전달 (외부 이미지 썸네일용)
+     */
+    function eottae_community_list_thumb($bo_table, $wr_id, $content = '')
+    {
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+        $wr_id = (int) $wr_id;
+        if ($bo_table === '' || $wr_id < 1) {
+            return '';
+        }
+
         if (!function_exists('get_list_thumbnail')) {
             include_once G5_LIB_PATH.'/thumbnail.lib.php';
         }
 
-        $thumb = get_list_thumbnail($bo_table, (int) $wr_id, 160, 160, false, true);
+        $thumb = get_list_thumbnail($bo_table, $wr_id, 200, 200, false, true);
+        if (!empty($thumb['src'])) {
+            return $thumb['src'];
+        }
 
-        return !empty($thumb['src']) ? $thumb['src'] : '';
+        $content_url = eottae_community_content_image_url($content);
+        if ($content_url !== '') {
+            return $content_url;
+        }
+
+        if ($content === '') {
+            $write = get_thumbnail_find_cache($bo_table, $wr_id, 'content');
+            if (is_array($write) && !empty($write['wr_content'])) {
+                $content_url = eottae_community_content_image_url($write['wr_content']);
+                if ($content_url !== '') {
+                    return $content_url;
+                }
+            }
+        }
+
+        global $g5;
+        $file_row = sql_fetch("
+            SELECT bf_file
+            FROM {$g5['board_file_table']}
+            WHERE bo_table = '".sql_escape_string($bo_table)."'
+              AND wr_id = '{$wr_id}'
+              AND bf_type IN ('1', '2', '3')
+            ORDER BY bf_no ASC
+            LIMIT 1
+        ", false);
+        if (!empty($file_row['bf_file'])) {
+            $path = G5_DATA_URL.'/file/'.$bo_table.'/'.$file_row['bf_file'];
+
+            return function_exists('eottae_map_public_url') ? eottae_map_public_url($path) : $path;
+        }
+
+        return '';
     }
 }
 
@@ -3265,6 +3374,16 @@ if (!function_exists('eottae_community_badge_class')) {
             '자유'    => 'community-badge--free',
             '구인구직'=> 'community-badge--job',
             '공지'    => 'community-badge--notice',
+            '실종'    => 'community-badge--alert',
+            '만남'    => 'community-badge--meet',
+            '동행'    => 'community-badge--meet',
+            '지인'    => 'community-badge--people',
+            '구인'    => 'community-badge--job',
+            '구직'    => 'community-badge--job',
+            '알바'    => 'community-badge--job',
+            '매매'    => 'community-badge--estate',
+            '전월세'  => 'community-badge--estate',
+            '양도'    => 'community-badge--estate',
         );
 
         return isset($map[$ca_name]) ? $map[$ca_name] : 'community-badge--default';

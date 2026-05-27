@@ -64,10 +64,10 @@ $file_count = eottae_community_write_photo_count($board, $file_count);
         <input type="text" name="wr_subject" id="wr_subject" value="<?php echo $subject; ?>" required maxlength="255" placeholder="제목을 입력하세요" class="community-write-page__input">
     </div>
 
-    <div class="community-write-page__field community-write-page__field--content">
-        <label for="wr_content">내용</label>
-        <textarea name="wr_content" id="wr_content" required class="community-write-page__textarea" placeholder="세부 생활 정보, 꿀팁, 질문 등을 자유롭게 작성해 주세요"><?php echo $content; ?></textarea>
-    </div>
+    <?php
+    $eottae_editor_placeholder = '세부 생활 정보, 꿀팁, 질문 등을 자유롭게 작성해 주세요';
+    include G5_PATH.'/components/eottae/board-write-editor.php';
+    ?>
 
     <?php if (function_exists('eottae_is_community_board') && eottae_is_community_board($bo_table)) {
         include G5_PATH.'/components/eottae/community-write-links.php';

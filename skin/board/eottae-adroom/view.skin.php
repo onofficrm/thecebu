@@ -5,7 +5,9 @@ if (!defined('_GNUBOARD_')) {
 
 include_once G5_LIB_PATH.'/eottae.lib.php';
 include_once G5_LIB_PATH.'/eottae-adroom.lib.php';
+include_once G5_PATH.'/components/eottae/adroom-coupon-picker.php';
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
+add_javascript('<script src="'.G5_JS_URL.'/eottae-adroom.js"></script>', 10);
 
 $list_url = eottae_adroom_list_url();
 $view_category = isset($view['ca_name']) ? get_text($view['ca_name']) : '';
@@ -64,6 +66,11 @@ if (!empty($shop['lat']) || !empty($shop['lng']) || !empty($shop['address'])) {
             <?php } ?>
         </aside>
         <?php } ?>
+
+        <?php
+        $member_mb_id = !empty($member['mb_id']) ? (string) $member['mb_id'] : '';
+        echo eottae_adroom_render_coupon_claim_block((int) $view['wr_id'], $member_mb_id);
+        ?>
 
         <section class="adroom-view__body" id="bo_v_con">
             <?php echo get_view_thumbnail($view['content']); ?>

@@ -1649,11 +1649,12 @@ if (!function_exists('eottae_column_editor_html')) {
 
         include_once G5_EDITOR_PATH.'/'.$config['cf_editor'].'/editor.lib.php';
 
-        if (function_exists('html_purifier') && function_exists('get_text')) {
-            $content = get_text(html_purifier((string) $content), 0);
+        $content = (string) $content;
+        if (function_exists('html_purifier')) {
+            $content = html_purifier($content);
         }
 
-        return editor_html('wr_content', (string) $content, true);
+        return editor_html('wr_content', $content, true);
     }
 }
 

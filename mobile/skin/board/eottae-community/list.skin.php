@@ -85,7 +85,11 @@ if ($is_talkroom_board) {
             $is_notice = !empty($item['is_notice']) || $ca_name === '공지';
             $region = isset($item['wr_1']) ? get_text($item['wr_1']) : '';
             $snippet = eottae_community_snippet(isset($item['wr_content']) ? $item['wr_content'] : '');
-            $thumb = eottae_community_list_thumb($bo_table, (int) $item['wr_id']);
+            $thumb = eottae_community_list_thumb(
+                $bo_table,
+                (int) $item['wr_id'],
+                isset($item['wr_content']) ? $item['wr_content'] : ''
+            );
             $comment_num = isset($item['wr_comment']) ? (int) $item['wr_comment'] : 0;
             $hit_num = isset($item['wr_hit']) ? (int) $item['wr_hit'] : 0;
             $good_num = isset($item['wr_good']) ? (int) $item['wr_good'] : 0;
@@ -95,12 +99,20 @@ if ($is_talkroom_board) {
             $is_hot = !$is_notice && eottae_community_is_hot($hit_num, $comment_num, $board);
             $is_ai_post = $is_talkroom_board && function_exists('eottae_talkroom_ai_message_is_ai') && eottae_talkroom_ai_message_is_ai($item);
             $item_class = 'community-post'.($is_notice ? ' community-post--notice' : '');
+            if ($thumb !== '') {
+                $item_class .= ' community-post--has-thumb';
+            }
             if ($is_ai_post) {
                 $item_class .= ' community-post--ai is-talk-ai-message';
             }
             ?>
         <article class="<?php echo $item_class; ?>">
             <a href="<?php echo $item['href']; ?>" class="community-post__link">
+                <?php if ($thumb !== '') { ?>
+                <div class="community-post__thumb">
+                    <img src="<?php echo htmlspecialchars($thumb, ENT_QUOTES, 'UTF-8'); ?>" alt="" width="80" height="80" loading="lazy" decoding="async">
+                </div>
+                <?php } ?>
                 <div class="community-post__body">
                     <div class="community-post__tags">
                         <?php if ($is_ai_post) { ?>
@@ -123,23 +135,22 @@ if ($is_talkroom_board) {
                     <?php if ($snippet !== '') { ?>
                     <p class="community-post__excerpt"><?php echo $snippet; ?></p>
                     <?php } ?>
-                    <div class="community-post__meta">
-                        <?php if ($is_ai_post) { ?>
-                        <span class="community-post__author talk-ai-msg__author-line"><?php echo eottae_talkroom_ai_message_display_name($item); ?></span>
-                        <?php } else { ?>
-                        <span class="community-post__author"><?php echo $author; ?></span>
-                        <?php } ?>
-                        <span class="community-post__time"><?php echo $time_label; ?></span>
-                    </div>
-                    <div class="community-post__stats">
-                        <span class="community-post__stat" title="조회"><span aria-hidden="true">👁</span> <?php echo number_format($hit_num); ?></span>
-                        <span class="community-post__stat" title="추천"><span aria-hidden="true">👍</span> <?php echo number_format($good_num); ?></span>
-                        <span class="community-post__stat" title="댓글"><span aria-hidden="true">💬</span> <?php echo number_format($comment_num); ?></span>
+                    <div class="community-post__foot">
+                        <div class="community-post__meta">
+                            <?php if ($is_ai_post) { ?>
+                            <span class="community-post__author talk-ai-msg__author-line"><?php echo eottae_talkroom_ai_message_display_name($item); ?></span>
+                            <?php } else { ?>
+                            <span class="community-post__author"><?php echo $author; ?></span>
+                            <?php } ?>
+                            <span class="community-post__time"><?php echo $time_label; ?></span>
+                        </div>
+                        <div class="community-post__stats">
+                            <span class="community-post__stat" title="조회"><span aria-hidden="true">👁</span> <?php echo number_format($hit_num); ?></span>
+                            <span class="community-post__stat" title="추천"><span aria-hidden="true">👍</span> <?php echo number_format($good_num); ?></span>
+                            <span class="community-post__stat" title="댓글"><span aria-hidden="true">💬</span> <?php echo number_format($comment_num); ?></span>
+                        </div>
                     </div>
                 </div>
-                <?php if ($thumb !== '') { ?>
-                <div class="community-post__thumb" style="background-image:url('<?php echo htmlspecialchars($thumb, ENT_QUOTES, 'UTF-8'); ?>')" aria-hidden="true"></div>
-                <?php } ?>
             </a>
         </article>
         <?php } ?>

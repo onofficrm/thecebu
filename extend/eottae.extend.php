@@ -9,6 +9,8 @@ include_once G5_LIB_PATH.'/eottae-ai-generate.lib.php';
 include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
 include_once G5_LIB_PATH.'/eottae-ad.lib.php';
 include_once G5_LIB_PATH.'/eottae-shop-seo.lib.php';
+include_once G5_LIB_PATH.'/eottae-board-seo.lib.php';
+include_once G5_LIB_PATH.'/eottae-board-editor.lib.php';
 include_once G5_LIB_PATH.'/eottae-business-snippet.lib.php';
 include_once G5_LIB_PATH.'/eottae-shop-owner.lib.php';
 
@@ -244,6 +246,37 @@ if (!function_exists('eottae_on_shop_board_head')) {
     }
 }
 add_event('board_head_before', 'eottae_on_shop_board_head', 10, 3);
+
+if (!function_exists('eottae_on_board_seo_head')) {
+    function eottae_on_board_seo_head($board, $write, $wr_id)
+    {
+        $wr_id = (int) $wr_id;
+        if ($wr_id < 1 || !is_array($write) || empty($write['wr_id'])) {
+            return;
+        }
+        if (!function_exists('eottae_board_seo_apply_page')) {
+            return;
+        }
+
+        eottae_board_seo_apply_page($board, $write);
+    }
+}
+add_event('board_head_before', 'eottae_on_board_seo_head', 9, 3);
+
+if (!function_exists('eottae_on_board_seo_write_after')) {
+    function eottae_on_board_seo_write_after($board, $wr_id, $w, $qstr, $redirect_url)
+    {
+        if (empty($board['bo_table']) || !function_exists('eottae_board_seo_is_target_board')
+            || !eottae_board_seo_is_target_board($board)) {
+            return;
+        }
+
+        if (function_exists('eottae_board_seo_sync_write')) {
+            eottae_board_seo_sync_write($board['bo_table'], (int) $wr_id);
+        }
+    }
+}
+add_event('write_update_after', 'eottae_on_board_seo_write_after', 18, 5);
 
 if (!function_exists('eottae_on_shop_delete')) {
     function eottae_on_shop_delete($write, $board)
@@ -1045,6 +1078,16 @@ if (!function_exists('eottae_talkroom_on_bbs_write')) {
         }
     }
 }
+if (!function_exists('eottae_on_bbs_write_force_dhtml_editor')) {
+    function eottae_on_bbs_write_force_dhtml_editor($board, $wr_id, $w)
+    {
+        if (function_exists('eottae_board_force_dhtml_editor')) {
+            eottae_board_force_dhtml_editor();
+        }
+    }
+}
+add_event('bbs_write', 'eottae_on_bbs_write_force_dhtml_editor', 5, 3);
+
 add_event('bbs_write', 'eottae_talkroom_on_bbs_write', 10, 3);
 
 if (!function_exists('eottae_talkroom_on_write_update_before')) {

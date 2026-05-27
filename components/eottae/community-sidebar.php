@@ -3,25 +3,63 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
+include_once G5_LIB_PATH.'/eottae-api.lib.php';
+
+if (!function_exists('eottae_community_sidebar_shop_thumb')) {
+    function eottae_community_sidebar_shop_thumb(array $shop)
+    {
+        $thumb = trim((string) ($shop['thumb'] ?? ''));
+        if ($thumb !== '') {
+            return $thumb;
+        }
+
+        $wr_id = (int) ($shop['wr_id'] ?? 0);
+        $bo_table = !empty($shop['bo_table'])
+            ? preg_replace('/[^a-z0-9_]/i', '', (string) $shop['bo_table'])
+            : (defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop');
+
+        if ($wr_id < 1) {
+            return '';
+        }
+
+        return eottae_api_shop_thumb($wr_id, $bo_table);
+    }
+}
+
 $popular = eottae_community_weekly_popular($bo_table, 5);
-$featured = function_exists('eottae_api_get_featured_shops') ? eottae_api_get_featured_shops(3) : array();
+$shop_sidebar_table = defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop';
+$featured = function_exists('eottae_api_get_featured_shops') ? eottae_api_get_featured_shops(6) : array();
+
 if (empty($featured) && function_exists('eottae_shop_from_write')) {
     global $g5;
-    $shop_table = $g5['write_prefix'].EOTTae_SHOP_TABLE;
-    $result = sql_query(" select * from {$shop_table} where wr_is_comment = 0 order by wr_id desc limit 3 ");
+    $shop_table = $g5['write_prefix'].$shop_sidebar_table;
+    $result = sql_query(" SELECT * FROM `{$shop_table}` WHERE wr_is_comment = 0 ORDER BY wr_id DESC LIMIT 6 ");
     while ($row = sql_fetch_array($result)) {
-        $shop = eottae_shop_from_write($row);
+        if (function_exists('eottae_api_format_shop_row')) {
+            $formatted = eottae_api_format_shop_row($row);
+            if ($formatted) {
+                $featured[] = $formatted;
+            }
+            continue;
+        }
+        $shop = eottae_shop_from_write($row, $shop_sidebar_table);
         $featured[] = array(
             'wr_id'        => (int) $shop['wr_id'],
+            'bo_table'     => $shop_sidebar_table,
             'name'         => $shop['name'],
             'category'     => $shop['category'],
             'region'       => $shop['region'],
             'review_count' => 0,
-            'thumb'        => function_exists('eottae_api_shop_thumb') ? eottae_api_shop_thumb((int) $shop['wr_id']) : '',
-            'url'          => G5_BBS_URL.'/board.php?bo_table='.EOTTae_SHOP_TABLE.'&wr_id='.$shop['wr_id'],
+            'thumb'        => eottae_api_shop_thumb((int) $shop['wr_id'], $shop_sidebar_table, $row),
+            'url'          => G5_BBS_URL.'/board.php?bo_table='.$shop_sidebar_table.'&wr_id='.$shop['wr_id'],
         );
     }
 }
+
+foreach ($featured as $idx => $shop) {
+    $featured[$idx]['thumb'] = eottae_community_sidebar_shop_thumb($shop);
+}
+$featured = array_slice($featured, 0, 3);
 ?>
 
 <aside class="community-sidebar" aria-label="커뮤니티 사이드바">
@@ -61,11 +99,15 @@ if (empty($featured) && function_exists('eottae_shop_from_write')) {
         <?php } else { ?>
         <ul class="community-sidebar__shops">
             <?php foreach ($featured as $shop) {
-                $thumb = !empty($shop['thumb']) ? $shop['thumb'] : '';
+                $thumb = eottae_community_sidebar_shop_thumb($shop);
                 ?>
             <li>
                 <a href="<?php echo $shop['url']; ?>" class="community-sidebar__shop">
-                    <span class="community-sidebar__shop-thumb"<?php if ($thumb) { ?> style="background-image:url('<?php echo htmlspecialchars($thumb, ENT_QUOTES, 'UTF-8'); ?>')"<?php } ?>></span>
+                    <span class="community-sidebar__shop-thumb<?php echo $thumb === '' ? ' community-sidebar__shop-thumb--empty' : ''; ?>">
+                        <?php if ($thumb !== '') { ?>
+                        <img src="<?php echo htmlspecialchars($thumb, ENT_QUOTES, 'UTF-8'); ?>" alt="" loading="lazy" decoding="async">
+                        <?php } ?>
+                    </span>
                     <span class="community-sidebar__shop-body">
                         <strong><?php echo get_text($shop['name']); ?></strong>
                         <small><?php echo get_text($shop['region']); ?> · <?php echo get_text($shop['category']); ?></small>

@@ -6,6 +6,7 @@ if (!defined('_GNUBOARD_')) {
 include_once G5_LIB_PATH.'/eottae.lib.php';
 include_once G5_LIB_PATH.'/eottae-adroom.lib.php';
 include_once G5_PATH.'/components/eottae/adroom-shop-picker.php';
+include_once G5_PATH.'/components/eottae/adroom-coupon-picker.php';
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
 add_javascript('<script src="'.G5_JS_URL.'/eottae-adroom.js"></script>', 10);
 
@@ -24,6 +25,16 @@ if (!empty($member['mb_id'])) {
 if ($selected_bo === '' && $selected_wr_id < 1 && count($member_shops) === 1) {
     $selected_bo = (string) ($member_shops[0]['bo_table'] ?? '');
     $selected_wr_id = (int) ($member_shops[0]['wr_id'] ?? 0);
+}
+
+$selected_cp_id = isset($write['wr_4']) ? (int) $write['wr_4'] : 0;
+if ($selected_cp_id < 1 && $wr_id > 0) {
+    $ad_meta = eottae_adroom_get_meta($wr_id);
+    $selected_cp_id = (int) ($ad_meta['cp_id'] ?? 0);
+}
+$member_coupons = array();
+if (!empty($member['mb_id'])) {
+    $member_coupons = eottae_adroom_member_coupon_options($member['mb_id']);
 }
 ?>
 
@@ -45,6 +56,8 @@ if ($selected_bo === '' && $selected_wr_id < 1 && count($member_shops) === 1) {
     <?php include G5_PATH.'/components/eottae/board-write-options.php'; ?>
 
     <?php echo eottae_adroom_render_shop_picker($member_shops, $selected_bo, $selected_wr_id); ?>
+
+    <?php echo eottae_adroom_render_coupon_picker($member_coupons, $selected_cp_id); ?>
 
     <?php if ($is_category && !empty($adroom_tabs)) { ?>
     <div class="adroom-write__field">
@@ -76,16 +89,14 @@ if ($selected_bo === '' && $selected_wr_id < 1 && count($member_shops) === 1) {
     if ($file_count > 0) {
         ?>
     <div class="adroom-write__field adroom-write__field--files">
-        <label>대표 이미지</label>
-        <p class="adroom-write__hint">첨부 이미지가 있으면 목록 썸네일로 사용됩니다. 없으면 연동 업체 사진이 표시됩니다.</p>
-        <?php for ($i = 0; $i < $file_count; $i++) { ?>
+        <label for="bf_file_0">대표 이미지 (1장)</label>
+        <p class="adroom-write__hint">목록 썸네일로 사용됩니다. 없으면 연동 업체 사진이 표시됩니다.</p>
         <div class="adroom-write__file">
-            <input type="file" name="bf_file[]" id="bf_file_<?php echo $i; ?>" title="파일첨부 <?php echo $i + 1; ?>" class="adroom-write__file-input">
-            <?php if ($w === 'u' && !empty($file[$i]['file'])) { ?>
-            <label class="adroom-write__file-del"><input type="checkbox" name="bf_file_del[<?php echo $i; ?>]" value="1"> <?php echo get_text($file[$i]['source']); ?> 삭제</label>
+            <input type="file" name="bf_file[]" id="bf_file_0" accept="image/*" title="대표 이미지" class="adroom-write__file-input">
+            <?php if ($w === 'u' && !empty($file[0]['file'])) { ?>
+            <label class="adroom-write__file-del"><input type="checkbox" name="bf_file_del[0]" value="1"> <?php echo get_text($file[0]['source']); ?> 삭제</label>
             <?php } ?>
         </div>
-        <?php } ?>
     </div>
     <?php } ?>
 

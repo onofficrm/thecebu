@@ -128,11 +128,15 @@ $eottae_ai_enabled = !empty($eottae_ai_cfg['enabled']) && !empty($eottae_ai_cfg[
             </select>
         </div>
         <?php include G5_PATH.'/components/eottae/shop-owner-assign.php'; ?>
-        <div class="eottae-field">
-            <label for="wr_content">업체 소개</label>
-            <textarea name="wr_content" id="wr_content" rows="6" placeholder="업체를 소개해 주세요"><?php echo $content; ?></textarea>
+        <div class="eottae-field eottae-field--editor">
+            <?php
+            $eottae_editor_label = '업체 소개';
+            $eottae_editor_placeholder = '업체를 소개해 주세요';
+            $eottae_editor_field_class = 'eottae-field__editor-wrap';
+            include G5_PATH.'/components/eottae/board-write-editor.php';
+            ?>
             <button type="button" class="eottae-ai-btn shop-register-page__ai-btn" data-shop-ai-generate="all"<?php echo $eottae_ai_enabled ? '' : ' disabled'; ?>><?php echo $eottae_ai_btn_icon; ?><span class="eottae-ai-btn__label">AI로 업체소개·SEO 자동생성</span></button>
-            <p class="eottae-field__hint" data-shop-ai-status aria-live="polite"><?php echo $eottae_ai_enabled ? '업체명, 카테고리, 주소를 입력한 뒤 누르면 소개와 SEO 문구를 자동으로 채웁니다.' : 'AI 자동생성은 서버에 OpenAI API 키가 설정된 후 이용할 수 있습니다.'; ?></p>
+            <p class="eottae-field__hint" data-shop-ai-status aria-live="polite"><?php echo $eottae_ai_enabled ? '업체명, 카테고리, 주소를 입력한 뒤 누르면 소개와 SEO 문구를 자동으로 채웩니다.' : 'AI 자동생성은 서버에 OpenAI API 키가 설정된 후 이용할 수 있습니다.'; ?></p>
         </div>
     </div>
 
@@ -339,10 +343,13 @@ function fwrite_submit(f) {
         f.wr_subject.focus();
         return false;
     }
+    <?php echo $editor_js; ?>
     if (!f.wr_content.value.trim()) {
         f.wr_content.value = f.wr_subject.value.trim();
+        if (typeof eottaeSetEditorContent === 'function') {
+            eottaeSetEditorContent('wr_content', f.wr_content.value);
+        }
     }
-    <?php echo $editor_js; ?>
     <?php echo $captcha_js; ?>
     document.getElementById('btn_submit').disabled = true;
     return true;

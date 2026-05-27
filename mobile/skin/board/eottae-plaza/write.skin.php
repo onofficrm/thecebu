@@ -62,10 +62,11 @@ $list_url = function_exists('eottae_plaza_list_url') ? eottae_plaza_list_url() :
         <input type="text" name="wr_subject" id="wr_subject" value="<?php echo $subject; ?>" maxlength="255" placeholder="제목 (선택)" class="plaza-write-page__input">
     </div>
 
-    <div class="plaza-write-page__field plaza-write-page__field--content">
-        <label for="wr_content">내용</label>
-        <textarea name="wr_content" id="wr_content" required class="plaza-write-page__textarea" placeholder="지금 세부에서 궁금한 것, 나누고 싶은 이야기, 함께할 모임을 남겨보세요."><?php echo $content; ?></textarea>
-    </div>
+    <?php
+    $eottae_editor_field_class = 'plaza-write-page__field plaza-write-page__field--content';
+    $eottae_editor_placeholder = '지금 세부에서 궁금한 것, 나누고 싶은 이야기, 함께할 모임을 남겨보세요.';
+    include G5_PATH.'/components/eottae/board-write-editor.php';
+    ?>
 
     <?php if ($file_count > 0) { ?>
     <div class="plaza-write-page__photos">

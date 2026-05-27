@@ -1,16 +1,32 @@
-@import url('../../css/eottae.css');
+@import url('../../../css/eottae.css');
 
 .adroom-page,
 .adroom-write,
-.adroom-view {
+.adroom-view,
+.board-wrap--eottae-adroom {
     --adroom-accent: #c47a12;
     --adroom-accent-soft: #fff6e8;
     --adroom-border: #e8e2d8;
     --adroom-text: #1f1f1f;
     --adroom-muted: #6b6560;
+    box-sizing: border-box;
+}
+
+.adroom-page,
+.adroom-write,
+.adroom-view {
     max-width: 920px;
     margin: 0 auto;
     padding: 0 16px 48px;
+    width: 100%;
+}
+
+.board-wrap--eottae-adroom#bo_list,
+.board-wrap--eottae-adroom#bo_w,
+.board-wrap--eottae-adroom#bo_v {
+    width: 100% !important;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .adroom-hero {
@@ -361,12 +377,64 @@
     background: var(--adroom-accent-soft);
 }
 
+.adroom-shop-picker__search-label {
+    display: block;
+    margin: 0 0 6px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.adroom-shop-picker__search {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--adroom-border);
+    border-radius: 10px;
+    font-size: 15px;
+}
+
+.adroom-shop-picker__result-hint {
+    margin: 0 0 12px;
+    font-size: 12px;
+    color: var(--adroom-muted);
+}
+
+.adroom-shop-picker__no-match {
+    margin: 12px 0 0;
+    padding: 16px;
+    text-align: center;
+    color: var(--adroom-muted);
+    border: 1px dashed var(--adroom-border);
+    border-radius: 10px;
+}
+
+.adroom-shop-picker__thumb-wrap {
+    flex: 0 0 56px;
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #eee;
+}
+
+.adroom-shop-picker__thumb-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 .adroom-shop-picker__thumb {
-    flex: 0 0 48px;
-    width: 48px;
-    height: 48px;
+    display: block;
+    width: 100%;
+    height: 100%;
     border-radius: 8px;
     background: #eee center/cover no-repeat;
+}
+
+.adroom-shop-picker__thumb--empty {
+    background-image: linear-gradient(135deg, #f0ebe3, #e0d5c8);
 }
 
 .adroom-shop-picker__name {
@@ -401,6 +469,112 @@
 .adroom-shop-picker__empty {
     text-align: center;
     padding: 16px;
+}
+
+.adroom-coupon-picker {
+    padding: 18px;
+    border: 1px solid var(--adroom-border);
+    border-radius: 14px;
+    background: #fff;
+    margin-bottom: 20px;
+}
+
+.adroom-coupon-picker__title {
+    margin: 0 0 6px;
+    font-size: 16px;
+}
+
+.adroom-coupon-picker__desc {
+    margin: 0 0 14px;
+    font-size: 13px;
+    color: var(--adroom-muted);
+    line-height: 1.5;
+}
+
+.adroom-coupon-picker__choices {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.adroom-coupon-picker__choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid var(--adroom-border);
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.adroom-coupon-picker__choice:has(input:checked) {
+    border-color: var(--adroom-accent);
+    background: var(--adroom-accent-soft);
+}
+
+.adroom-coupon-picker__choice-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.adroom-coupon-picker__benefit {
+    font-size: 12px;
+    color: var(--adroom-muted);
+}
+
+.adroom-coupon-picker__empty,
+.adroom-coupon-picker__manage {
+    margin: 12px 0 0;
+    font-size: 13px;
+}
+
+.adroom-view__coupon {
+    margin-bottom: 24px;
+    padding: 20px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #fff6e8 0%, #fff 100%);
+    border: 1px solid #f0dfc4;
+}
+
+.adroom-view__coupon-eyebrow {
+    margin: 0 0 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--adroom-accent);
+}
+
+.adroom-view__coupon-title {
+    margin: 0 0 8px;
+    font-size: 1.25rem;
+}
+
+.adroom-view__coupon-benefit {
+    margin: 0 0 8px;
+    font-weight: 700;
+    color: var(--adroom-accent);
+}
+
+.adroom-view__coupon-desc {
+    margin: 0 0 14px;
+    font-size: 14px;
+    color: var(--adroom-muted);
+    line-height: 1.5;
+}
+
+.adroom-view__coupon-btn {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+}
+
+.adroom-view__coupon-note {
+    margin: 10px 0 0;
+    font-size: 13px;
+    color: var(--adroom-muted);
 }
 
 .adroom-view__article {
@@ -475,8 +649,58 @@
 }
 
 @media (max-width: 640px) {
+    .adroom-page,
+    .adroom-write,
+    .adroom-view {
+        padding: 0 12px calc(32px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .adroom-hero {
+        margin: 0 0 20px;
+        padding: 22px 18px;
+        border-radius: 14px;
+    }
+
+    .adroom-hero__stats {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .adroom-hero__stats-divider {
+        display: none;
+    }
+
+    .adroom-hero__write {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+        min-height: 44px;
+        box-sizing: border-box;
+    }
+
+    .adroom-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        margin: 0 -4px 18px;
+        padding: 0 4px 6px;
+    }
+
+    .adroom-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .adroom-tabs__item {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
     .adroom-card__link {
         flex-direction: column;
+        padding: 12px;
     }
 
     .adroom-card__thumb {
@@ -485,7 +709,98 @@
         height: 160px;
     }
 
+    .adroom-card__title {
+        font-size: 16px;
+    }
+
+    .adroom-shop-picker {
+        padding: 14px;
+    }
+
     .adroom-shop-picker__grid {
         grid-template-columns: 1fr;
+    }
+
+    .adroom-shop-picker__item {
+        align-items: center;
+    }
+
+    .adroom-shop-picker__name,
+    .adroom-shop-picker__addr {
+        word-break: break-word;
+    }
+
+    .adroom-write__title,
+    .adroom-view__title {
+        font-size: 1.35rem;
+        line-height: 1.35;
+    }
+
+    .adroom-write__field--content,
+    .adroom-view__body {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .adroom-write__field--content img,
+    .adroom-view__body img,
+    .adroom-write__field--content table,
+    .adroom-view__body table,
+    .adroom-write__field--content iframe,
+    .adroom-view__body iframe {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .adroom-write__field--content .cke,
+    .adroom-write__field--content #smart_editor2,
+    .adroom-write__field--content .se2_inputarea,
+    .adroom-write__field--content iframe {
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .adroom-write__actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .adroom-write__actions .adroom-btn {
+        width: 100%;
+        min-height: 44px;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+
+    .adroom-view__article {
+        padding: 18px 16px;
+    }
+
+    .adroom-view__meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .adroom-view__shop-actions {
+        flex-direction: column;
+    }
+
+    .adroom-view__shop-actions .adroom-btn {
+        width: 100%;
+        min-height: 44px;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+
+    .adroom-paging {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .adroom-paging .pg_wrap {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        min-width: min-content;
     }
 }

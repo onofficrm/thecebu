@@ -425,6 +425,11 @@ if ($config['cf_editor'] && $is_dhtml_editor_use && $board['bo_use_dhtml_editor'
     if(is_file(G5_EDITOR_PATH.'/'.$config['cf_editor'].'/autosave.editor.js'))
         $editor_content_js = '<script src="'.G5_EDITOR_URL.'/'.$config['cf_editor'].'/autosave.editor.js"></script>'.PHP_EOL;
 }
+
+if ($is_dhtml_editor && function_exists('eottae_board_write_content_for_editor')) {
+    $content = eottae_board_write_content_for_editor($content, isset($write) && is_array($write) ? $write : array(), $w);
+}
+
 $editor_html = editor_html('wr_content', $content, $is_dhtml_editor);
 $editor_js = '';
 $editor_js .= get_editor_js('wr_content', $is_dhtml_editor);

@@ -59,15 +59,20 @@ if (!function_exists('eottae_adroom_ensure_schema')) {
                     `shop_address` varchar(255) NOT NULL DEFAULT '',
                     `shop_lat` varchar(32) NOT NULL DEFAULT '',
                     `shop_lng` varchar(32) NOT NULL DEFAULT '',
+                    `cp_id` int(11) unsigned NOT NULL DEFAULT '0',
                     `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
                     `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
                     PRIMARY KEY (`wr_id`),
-                    KEY `idx_shop` (`shop_bo_table`, `shop_wr_id`)
+                    KEY `idx_shop` (`shop_bo_table`, `shop_wr_id`),
+                    KEY `idx_cp` (`cp_id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
             ", false);
+        } elseif (!eottae_adroom_meta_has_column('cp_id')) {
+            sql_query(" ALTER TABLE `{$table}` ADD COLUMN `cp_id` int(11) unsigned NOT NULL DEFAULT '0' AFTER `shop_lng`, ADD KEY `idx_cp` (`cp_id`) ", false);
         }
 
         eottae_adroom_ensure_board();
+        eottae_adroom_sync_board_settings();
         $done = true;
 
         return true;
@@ -90,7 +95,7 @@ if (!function_exists('eottae_adroom_board_def')) {
             'bo_comment_level'    => 2,
             'bo_use_category'     => 1,
             'bo_category_list'    => '홍보|이벤트|할인|신규오픈|기타',
-            'bo_upload_count'     => 5,
+            'bo_upload_count'     => 1,
             'bo_upload_size'      => 10485760,
             'bo_use_dhtml_editor' => 1,
             'bo_order'            => 17,
@@ -123,6 +128,61 @@ if (!function_exists('eottae_adroom_ensure_board')) {
         }
 
         return eottae_install_create_board(eottae_adroom_board_def());
+    }
+}
+
+if (!function_exists('eottae_adroom_meta_has_column')) {
+    function eottae_adroom_meta_has_column($column)
+    {
+        $table = eottae_adroom_meta_table();
+        $column = preg_replace('/[^a-z0-9_]/i', '', (string) $column);
+        if ($column === '' || !eottae_adroom_table_exists($table)) {
+            return false;
+        }
+
+        $row = sql_fetch(" SHOW COLUMNS FROM `{$table}` LIKE '".sql_escape_string($column)."' ", false);
+
+        return is_array($row) && !empty($row['Field']);
+    }
+}
+
+if (!function_exists('eottae_adroom_sync_board_settings')) {
+    function eottae_adroom_sync_board_settings()
+    {
+        global $g5;
+
+        $bo_table = eottae_adroom_board_table();
+        sql_query("
+            UPDATE {$g5['board_table']} SET
+                bo_upload_count = 1,
+                bo_skin = 'eottae-adroom',
+                bo_mobile_skin = 'eottae-adroom'
+            WHERE bo_table = '".sql_escape_string($bo_table)."'
+            LIMIT 1
+        ", false);
+    }
+}
+
+if (!function_exists('eottae_adroom_shop_thumb_url')) {
+    function eottae_adroom_shop_thumb_url($shop_row, $bo_table = '')
+    {
+        if (!is_array($shop_row)) {
+            return '';
+        }
+
+        if (!function_exists('eottae_shop_card_thumb')) {
+            include_once G5_PATH.'/components/eottae/shop-card.php';
+        }
+
+        $url = function_exists('eottae_shop_card_thumb')
+            ? eottae_shop_card_thumb($shop_row, $bo_table)
+            : '';
+
+        if ($url !== '' && function_exists('eottae_map_public_url')) {
+            $url = eottae_map_public_url($url);
+        }
+
+        return $url;
     }
 }
 
@@ -217,13 +277,67 @@ if (!function_exists('eottae_adroom_member_shops')) {
                 'map_url'      => function_exists('eottae_maps_directions_url')
                     ? eottae_maps_directions_url($shop['lat'] ?? '', $shop['lng'] ?? '', $shop['address'] ?? '')
                     : '',
-                'thumb_url'    => function_exists('eottae_shop_card_thumb')
-                    ? eottae_shop_card_thumb($shop_row, $bo_table)
-                    : '',
+                'thumb_url'    => eottae_adroom_shop_thumb_url($shop_row, $bo_table),
+                'search_text'  => function_exists('mb_strtolower')
+                    ? mb_strtolower($name.' '.$board_label.' '.($shop['region'] ?? '').' '.($shop['address'] ?? '').' '.($shop['category'] ?? ''), 'UTF-8')
+                    : strtolower($name.' '.$board_label.' '.($shop['region'] ?? '').' '.($shop['address'] ?? '').' '.($shop['category'] ?? '')),
             );
         }
 
         return $shops;
+    }
+}
+
+if (!function_exists('eottae_adroom_member_coupon_options')) {
+    /**
+     * 광고에 연동 가능한 사업자 쿠폰 목록
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    function eottae_adroom_member_coupon_options($mb_id)
+    {
+        $mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $mb_id);
+        if ($mb_id === '' || !function_exists('eottae_business_coupon_campaigns')) {
+            return array();
+        }
+
+        include_once G5_LIB_PATH.'/eottae-business-coupon.lib.php';
+        eottae_business_coupon_ensure_schema();
+
+        $rows = eottae_business_coupon_campaigns($mb_id, 100);
+        $options = array();
+        foreach ($rows as $row) {
+            $cp_id = (int) ($row['cp_id'] ?? 0);
+            if ($cp_id < 1) {
+                continue;
+            }
+
+            if (!empty($row['cp_expires_at']) && $row['cp_expires_at'] !== '0000-00-00 00:00:00' && $row['cp_expires_at'] < G5_TIME_YMDHIS) {
+                continue;
+            }
+
+            $max = (int) ($row['cp_max_issue'] ?? 0);
+            $issued = (int) ($row['issued_count'] ?? 0);
+            if ($max > 0 && $issued >= $max) {
+                continue;
+            }
+
+            $benefit = function_exists('eottae_business_coupon_format_benefit')
+                ? eottae_business_coupon_format_benefit($row)
+                : (string) ($row['cp_title'] ?? '');
+
+            $options[] = array(
+                'cp_id'       => $cp_id,
+                'title'       => (string) ($row['cp_title'] ?? ''),
+                'desc'        => (string) ($row['cp_desc'] ?? ''),
+                'benefit'     => $benefit,
+                'issued_count'=> $issued,
+                'max_issue'   => $max,
+                'expires_at'  => (string) ($row['cp_expires_at'] ?? ''),
+            );
+        }
+
+        return $options;
     }
 }
 
@@ -271,11 +385,12 @@ if (!function_exists('eottae_adroom_get_meta')) {
 }
 
 if (!function_exists('eottae_adroom_save_meta')) {
-    function eottae_adroom_save_meta($wr_id, $shop_bo_table, $shop_wr_id)
+    function eottae_adroom_save_meta($wr_id, $shop_bo_table, $shop_wr_id, $cp_id = 0)
     {
         $wr_id = (int) $wr_id;
         $shop_bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $shop_bo_table);
         $shop_wr_id = (int) $shop_wr_id;
+        $cp_id = (int) $cp_id;
 
         if ($wr_id < 1) {
             return array('ok' => false, 'message' => '글 정보가 없습니다.');
@@ -290,6 +405,17 @@ if (!function_exists('eottae_adroom_save_meta')) {
             ? eottae_shop_from_write($shop_row, $shop_bo_table)
             : array();
 
+        global $member, $is_admin;
+        if ($cp_id > 0) {
+            include_once G5_LIB_PATH.'/eottae-business-coupon.lib.php';
+            $owner_mb_id = (string) ($member['mb_id'] ?? '');
+            $coupon = eottae_business_coupon_get($cp_id, ($is_admin === 'super') ? '' : $owner_mb_id);
+            if (empty($coupon['cp_id'])) {
+                return array('ok' => false, 'message' => '선택한 쿠폰을 찾을 수 없습니다.');
+            }
+            $cp_id = (int) $coupon['cp_id'];
+        }
+
         eottae_adroom_ensure_schema();
         $table = eottae_adroom_meta_table();
         $now = G5_TIME_YMDHIS;
@@ -303,6 +429,7 @@ if (!function_exists('eottae_adroom_save_meta')) {
             'shop_address'   => sql_escape_string((string) ($shop['address'] ?? '')),
             'shop_lat'       => sql_escape_string((string) ($shop['lat'] ?? '')),
             'shop_lng'       => sql_escape_string((string) ($shop['lng'] ?? '')),
+            'cp_id'          => $cp_id,
             'updated_at'     => $now,
         );
 
@@ -323,6 +450,7 @@ if (!function_exists('eottae_adroom_save_meta')) {
                     shop_address = '{$fields['shop_address']}',
                     shop_lat = '{$fields['shop_lat']}',
                     shop_lng = '{$fields['shop_lng']}',
+                    cp_id = '{$cp_id}',
                     created_at = '{$now}',
                     updated_at = '{$now}'
             ", false);
@@ -334,12 +462,114 @@ if (!function_exists('eottae_adroom_save_meta')) {
             UPDATE `{$write_table}` SET
                 wr_1 = '{$fields['shop_bo_table']}',
                 wr_2 = '{$fields['shop_wr_id']}',
-                wr_3 = '{$fields['shop_region']}'
+                wr_3 = '{$fields['shop_region']}',
+                wr_4 = '{$cp_id}'
             WHERE wr_id = '{$wr_id}'
             LIMIT 1
         ", false);
 
-        return array('ok' => true, 'message' => '', 'shop' => $shop);
+        return array('ok' => true, 'message' => '', 'shop' => $shop, 'cp_id' => $cp_id);
+    }
+}
+
+if (!function_exists('eottae_adroom_get_linked_coupon')) {
+    function eottae_adroom_get_linked_coupon($wr_id)
+    {
+        $wr_id = (int) $wr_id;
+        if ($wr_id < 1) {
+            return array();
+        }
+
+        $meta = eottae_adroom_get_meta($wr_id);
+        $cp_id = (int) ($meta['cp_id'] ?? 0);
+        if ($cp_id < 1) {
+            global $g5;
+            $write_table = $g5['write_prefix'].eottae_adroom_board_table();
+            $row = sql_fetch(" SELECT wr_4 FROM `{$write_table}` WHERE wr_id = '{$wr_id}' LIMIT 1 ", false);
+            $cp_id = (int) ($row['wr_4'] ?? 0);
+        }
+
+        if ($cp_id < 1 || !function_exists('eottae_business_coupon_get')) {
+            return array();
+        }
+
+        include_once G5_LIB_PATH.'/eottae-business-coupon.lib.php';
+        $coupon = eottae_business_coupon_get($cp_id);
+        if (empty($coupon['cp_id'])) {
+            return array();
+        }
+
+        if (!empty($coupon['cp_expires_at']) && $coupon['cp_expires_at'] !== '0000-00-00 00:00:00' && $coupon['cp_expires_at'] < G5_TIME_YMDHIS) {
+            return array();
+        }
+
+        $coupon['issued_count'] = eottae_business_coupon_issue_count($cp_id);
+        $coupon['benefit_line'] = eottae_business_coupon_format_benefit($coupon);
+
+        return $coupon;
+    }
+}
+
+if (!function_exists('eottae_adroom_member_coupon_issue')) {
+    function eottae_adroom_member_coupon_issue($wr_id, $mb_id)
+    {
+        $wr_id = (int) $wr_id;
+        $mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $mb_id);
+        if ($wr_id < 1 || $mb_id === '') {
+            return array('ok' => false, 'message' => '로그인 후 쿠폰을 받을 수 있습니다.');
+        }
+
+        $coupon = eottae_adroom_get_linked_coupon($wr_id);
+        if (empty($coupon['cp_id'])) {
+            return array('ok' => false, 'message' => '이 광고에 연결된 쿠폰이 없습니다.');
+        }
+
+        $owner_mb_id = (string) ($coupon['cp_owner_mb_id'] ?? '');
+        if ($owner_mb_id === '') {
+            return array('ok' => false, 'message' => '쿠폰 정보가 올바르지 않습니다.');
+        }
+
+        include_once G5_LIB_PATH.'/eottae-business-coupon.lib.php';
+        $result = eottae_business_coupon_issue_to_member($owner_mb_id, (int) $coupon['cp_id'], $mb_id);
+        if (empty($result['ok'])) {
+            return $result;
+        }
+
+        return array(
+            'ok'      => true,
+            'message' => '쿠폰이 발급되었습니다. 마이페이지 → 쿠폰함에서 확인하세요.',
+            'ci_id'   => (int) ($result['ci_id'] ?? 0),
+            'coupons_url' => G5_URL.'/page/eottae-coupons.php',
+        );
+    }
+}
+
+if (!function_exists('eottae_adroom_member_has_active_coupon')) {
+    function eottae_adroom_member_has_active_coupon($cp_id, $mb_id)
+    {
+        global $g5;
+
+        $cp_id = (int) $cp_id;
+        $mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $mb_id);
+        if ($cp_id < 1 || $mb_id === '') {
+            return false;
+        }
+
+        if (!function_exists('eottae_coupon_bootstrap_tables')) {
+            include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
+        }
+        eottae_coupon_bootstrap_tables();
+
+        $row = sql_fetch("
+            SELECT ci_id
+            FROM {$g5['eottae_coupon_issue_table']}
+            WHERE cp_id = '{$cp_id}'
+              AND mb_id = '".sql_escape_string($mb_id)."'
+              AND ci_status = 'active'
+            LIMIT 1
+        ", false);
+
+        return is_array($row) && !empty($row['ci_id']);
     }
 }
 
@@ -519,7 +749,8 @@ if (!function_exists('eottae_adroom_on_write_after')) {
             return;
         }
 
-        eottae_adroom_save_meta((int) $wr_id, $shop_bo, $shop_wr_id);
+        $cp_id = isset($_POST['eottae_adroom_cp_id']) ? (int) $_POST['eottae_adroom_cp_id'] : (int) ($_POST['wr_4'] ?? 0);
+        eottae_adroom_save_meta((int) $wr_id, $shop_bo, $shop_wr_id, $cp_id);
     }
 }
 

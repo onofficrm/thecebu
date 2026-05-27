@@ -524,20 +524,26 @@ if (!function_exists('eottae_golf_join_ensure_schema')) {
      *
      * 실제 테이블명: g5_sebu_golf_join_posts, g5_sebu_golf_join_members,
      *               g5_sebu_golf_courses, g5_sebu_golf_join_reports
-     * 회원 연결: user_id / reporter_user_id → g5_member.mb_id (FK)
+     * 회원 연결: user_id / reporter_user_id → g5_member.mb_id (인덱스만, FK 없음 — MyISAM 회원 테이블 호환)
      *
      * @return array<int, array<string, mixed>>
      */
     function eottae_golf_join_ensure_schema()
     {
-        static $done = false;
-        if ($done) {
+        static $schema_ready = false;
+        if ($schema_ready) {
             return array();
         }
-        $done = true;
 
         $tables = eottae_golf_join_table_names();
-        $member_table = eottae_golf_join_member_table();
+        if (eottae_golf_join_table_exists($tables['posts'])) {
+            $schema_ready = true;
+            if (function_exists('eottae_golf_join_upgrade_schema')) {
+                eottae_golf_join_upgrade_schema();
+            }
+            return array();
+        }
+
         $results = array();
 
         $courses_ddl = " CREATE TABLE IF NOT EXISTS `{$tables['courses']}` (
@@ -564,6 +570,9 @@ if (!function_exists('eottae_golf_join_ensure_schema')) {
             `region` varchar(30) NOT NULL DEFAULT '',
             `golf_course_id` int(11) unsigned DEFAULT NULL,
             `golf_course_name` varchar(120) NOT NULL DEFAULT '',
+            `shop_bo_table` varchar(30) NOT NULL DEFAULT '',
+            `shop_wr_id` int(11) unsigned NOT NULL DEFAULT '0',
+            `venue_type` varchar(20) NOT NULL DEFAULT 'golf',
             `round_date` date NOT NULL,
             `tee_time` time DEFAULT NULL,
             `is_tee_time_unknown` tinyint(1) NOT NULL DEFAULT '0',
@@ -589,12 +598,7 @@ if (!function_exists('eottae_golf_join_ensure_schema')) {
             KEY `idx_status_round` (`status`, `round_date`),
             KEY `idx_golf_course_id` (`golf_course_id`),
             KEY `idx_deleted_at` (`deleted_at`),
-            CONSTRAINT `fk_golf_join_posts_user`
-                FOREIGN KEY (`user_id`) REFERENCES `{$member_table}` (`mb_id`)
-                ON DELETE RESTRICT ON UPDATE CASCADE,
-            CONSTRAINT `fk_golf_join_posts_course`
-                FOREIGN KEY (`golf_course_id`) REFERENCES `{$tables['courses']}` (`id`)
-                ON DELETE SET NULL ON UPDATE CASCADE
+            KEY `idx_shop_wr` (`shop_bo_table`, `shop_wr_id`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ";
 
         $members_ddl = " CREATE TABLE IF NOT EXISTS `{$tables['members']}` (
@@ -614,13 +618,7 @@ if (!function_exists('eottae_golf_join_ensure_schema')) {
             UNIQUE KEY `uk_golf_join_post_user` (`post_id`, `user_id`),
             KEY `idx_post_id` (`post_id`),
             KEY `idx_user_id` (`user_id`),
-            KEY `idx_status` (`status`),
-            CONSTRAINT `fk_golf_join_members_post`
-                FOREIGN KEY (`post_id`) REFERENCES `{$tables['posts']}` (`id`)
-                ON DELETE CASCADE ON UPDATE CASCADE,
-            CONSTRAINT `fk_golf_join_members_user`
-                FOREIGN KEY (`user_id`) REFERENCES `{$member_table}` (`mb_id`)
-                ON DELETE RESTRICT ON UPDATE CASCADE
+            KEY `idx_status` (`status`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ";
 
         $reports_ddl = " CREATE TABLE IF NOT EXISTS `{$tables['reports']}` (
@@ -637,13 +635,7 @@ if (!function_exists('eottae_golf_join_ensure_schema')) {
             PRIMARY KEY (`id`),
             KEY `idx_post_id` (`post_id`),
             KEY `idx_reporter` (`reporter_user_id`),
-            KEY `idx_status` (`status`),
-            CONSTRAINT `fk_golf_join_reports_post`
-                FOREIGN KEY (`post_id`) REFERENCES `{$tables['posts']}` (`id`)
-                ON DELETE CASCADE ON UPDATE CASCADE,
-            CONSTRAINT `fk_golf_join_reports_reporter`
-                FOREIGN KEY (`reporter_user_id`) REFERENCES `{$member_table}` (`mb_id`)
-                ON DELETE RESTRICT ON UPDATE CASCADE
+            KEY `idx_status` (`status`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ";
 
         $chat_rooms_ddl = " CREATE TABLE IF NOT EXISTS `{$tables['chat_rooms']}` (
@@ -654,10 +646,7 @@ if (!function_exists('eottae_golf_join_ensure_schema')) {
             `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
             PRIMARY KEY (`id`),
             UNIQUE KEY `uk_golf_join_chat_post` (`post_id`),
-            KEY `idx_status` (`status`),
-            CONSTRAINT `fk_golf_join_chat_room_post`
-                FOREIGN KEY (`post_id`) REFERENCES `{$tables['posts']}` (`id`)
-                ON DELETE CASCADE ON UPDATE CASCADE
+            KEY `idx_status` (`status`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ";
 
         $chat_messages_ddl = " CREATE TABLE IF NOT EXISTS `{$tables['chat_messages']}` (
@@ -669,13 +658,7 @@ if (!function_exists('eottae_golf_join_ensure_schema')) {
             `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
             PRIMARY KEY (`id`),
             KEY `idx_chat_room_id` (`chat_room_id`, `id`),
-            KEY `idx_user_id` (`user_id`),
-            CONSTRAINT `fk_golf_join_chat_msg_room`
-                FOREIGN KEY (`chat_room_id`) REFERENCES `{$tables['chat_rooms']}` (`id`)
-                ON DELETE CASCADE ON UPDATE CASCADE,
-            CONSTRAINT `fk_golf_join_chat_msg_user`
-                FOREIGN KEY (`user_id`) REFERENCES `{$member_table}` (`mb_id`)
-                ON DELETE RESTRICT ON UPDATE CASCADE
+            KEY `idx_user_id` (`user_id`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ";
 
         $ddl = array(
@@ -706,6 +689,10 @@ if (!function_exists('eottae_golf_join_ensure_schema')) {
 
         if (function_exists('eottae_golf_join_upgrade_schema')) {
             eottae_golf_join_upgrade_schema();
+        }
+
+        if (eottae_golf_join_table_exists($tables['posts'])) {
+            $schema_ready = true;
         }
 
         return $results;
@@ -757,16 +744,27 @@ if (!function_exists('eottae_golf_join_upgrade_schema')) {
             }
         }
 
-        $fk = sql_fetch("
-            SELECT CONSTRAINT_NAME
-            FROM information_schema.TABLE_CONSTRAINTS
-            WHERE TABLE_SCHEMA = DATABASE()
-              AND TABLE_NAME = '".sql_escape_string($tables['posts'])."'
-              AND CONSTRAINT_NAME = 'fk_golf_join_posts_course'
-            LIMIT 1
-        ", false);
-        if (!empty($fk['CONSTRAINT_NAME'])) {
-            sql_query(" ALTER TABLE `{$tables['posts']}` DROP FOREIGN KEY `fk_golf_join_posts_course` ", false);
+        foreach ($tables as $table) {
+            if (!eottae_golf_join_table_exists($table)) {
+                continue;
+            }
+            $res = sql_query("
+                SELECT CONSTRAINT_NAME
+                FROM information_schema.TABLE_CONSTRAINTS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = '".sql_escape_string($table)."'
+                  AND CONSTRAINT_TYPE = 'FOREIGN KEY'
+            ", false);
+            if (!$res) {
+                continue;
+            }
+            while ($fk = sql_fetch_array($res)) {
+                $name = preg_replace('/[^a-z0-9_]/i', '', (string) ($fk['CONSTRAINT_NAME'] ?? ''));
+                if ($name === '') {
+                    continue;
+                }
+                sql_query(" ALTER TABLE `{$table}` DROP FOREIGN KEY `{$name}` ", false);
+            }
         }
     }
 }

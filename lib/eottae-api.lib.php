@@ -27,41 +27,65 @@ if (!function_exists('eottae_api_error')) {
 }
 
 if (!function_exists('eottae_api_shop_thumb')) {
-    function eottae_api_shop_thumb($shop_wr_id)
+    /**
+     * 사이드바·API용 업체 썸네일 (지도 전용 → 첨부 → 대표 이미지 순)
+     *
+     * @param int $shop_wr_id
+     * @param string $bo_table
+     * @param array<string, mixed>|null $row
+     */
+    function eottae_api_shop_thumb($shop_wr_id, $bo_table = '', $row = null)
     {
-        if (function_exists('eottae_shop_listing_thumb_url')) {
-            return eottae_shop_listing_thumb_url(EOTTae_SHOP_TABLE, (int) $shop_wr_id);
-        }
-
-        global $g5;
-
         $shop_wr_id = (int) $shop_wr_id;
         if ($shop_wr_id < 1) {
             return '';
         }
 
-        $bo_table = EOTTae_SHOP_TABLE;
-        $row = sql_fetch(" select bf_file from {$g5['board_file_table']}
-            where bo_table = '{$bo_table}' and wr_id = '{$shop_wr_id}'
-            order by bf_no asc limit 1 ");
-        if (empty($row['bf_file'])) {
-            if (function_exists('eottae_shop_map_thumb_get')) {
-                $map_thumb = eottae_shop_map_thumb_get(EOTTae_SHOP_TABLE, $shop_wr_id);
-                if (!empty($map_thumb['url'])) {
-                    return $map_thumb['url'];
-                }
-            }
-            if (function_exists('get_list_thumbnail')) {
-                $thumb = get_list_thumbnail(EOTTae_SHOP_TABLE, $shop_wr_id, 200, 200, false, true);
-                if (!empty($thumb['src'])) {
-                    return $thumb['src'];
-                }
-            }
-
-            return '';
+        $bo_table = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
+        if ($bo_table === '') {
+            $bo_table = defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop';
         }
 
-        return G5_DATA_URL.'/file/'.$bo_table.'/'.$row['bf_file'];
+        if (!is_array($row) || empty($row['wr_id'])) {
+            global $g5;
+            $write_table = $g5['write_prefix'].$bo_table;
+            $row = sql_fetch("
+                SELECT *
+                FROM `{$write_table}`
+                WHERE wr_id = '{$shop_wr_id}'
+                  AND wr_is_comment = 0
+                LIMIT 1
+            ", false);
+        }
+
+        if (is_array($row) && !empty($row['wr_id'])) {
+            if (!function_exists('eottae_shop_card_thumb') && is_file(G5_PATH.'/components/eottae/shop-card.php')) {
+                include_once G5_PATH.'/components/eottae/shop-card.php';
+            }
+            if (function_exists('eottae_shop_card_thumb')) {
+                $url = eottae_shop_card_thumb($row, $bo_table);
+                if ($url !== '') {
+                    return function_exists('eottae_map_public_url') ? eottae_map_public_url($url) : $url;
+                }
+            }
+        }
+
+        if (function_exists('eottae_shop_listing_thumb_url')) {
+            return eottae_shop_listing_thumb_url($bo_table, $shop_wr_id, is_array($row) ? $row : null);
+        }
+
+        global $g5;
+
+        $file_row = sql_fetch(" SELECT bf_file FROM {$g5['board_file_table']}
+            WHERE bo_table = '".sql_escape_string($bo_table)."' AND wr_id = '{$shop_wr_id}'
+            ORDER BY bf_no ASC LIMIT 1 ", false);
+        if (!empty($file_row['bf_file'])) {
+            $url = G5_DATA_URL.'/file/'.$bo_table.'/'.$file_row['bf_file'];
+
+            return function_exists('eottae_map_public_url') ? eottae_map_public_url($url) : $url;
+        }
+
+        return '';
     }
 }
 
@@ -72,12 +96,18 @@ if (!function_exists('eottae_api_format_shop_row')) {
             return null;
         }
 
-        $shop = eottae_shop_from_write($row);
+        $bo_table = defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop';
+        if (!empty($row['bo_table'])) {
+            $bo_table = preg_replace('/[^a-z0-9_]/i', '', (string) $row['bo_table']);
+        }
+
+        $shop = eottae_shop_from_write($row, $bo_table);
         $wr_id = (int) $shop['wr_id'];
         $summary = eottae_get_shop_review_summary($wr_id);
 
         return array(
             'wr_id'       => $wr_id,
+            'bo_table'    => $bo_table,
             'name'        => $shop['name'],
             'category'    => $shop['category'],
             'region'      => $shop['region'],
@@ -85,8 +115,8 @@ if (!function_exists('eottae_api_format_shop_row')) {
             'address'     => $shop['address'],
             'rating'      => $summary['average'],
             'review_count'=> $summary['count'],
-            'thumb'       => eottae_api_shop_thumb($wr_id),
-            'url'         => G5_BBS_URL.'/board.php?bo_table='.EOTTae_SHOP_TABLE.'&wr_id='.$wr_id,
+            'thumb'       => eottae_api_shop_thumb($wr_id, $bo_table, $row),
+            'url'         => G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$wr_id,
         );
     }
 }

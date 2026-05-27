@@ -402,10 +402,28 @@
     return el ? (el.value || '').trim() : '';
   }
 
+  function eottaeSetEditorContent(fieldId, value, root) {
+    if (!fieldId || value == null || value === '') return;
+    var el = root ? qs('#' + fieldId, root) : document.getElementById(fieldId);
+    if (!el) return;
+    var html = String(value);
+    if (typeof oEditors !== 'undefined' && oEditors.getById && oEditors.getById[fieldId]) {
+      oEditors.getById[fieldId].exec('SET_CONTENTS', [html]);
+      oEditors.getById[fieldId].exec('UPDATE_CONTENTS_FIELD', []);
+      return;
+    }
+    el.value = html;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
   function shopFillAiValue(root, selector, value, overwrite) {
     var el = qs(selector, root);
     if (!el || !value) return;
     if (!overwrite && (el.value || '').trim() !== '') return;
+    if (selector === '#wr_content' || el.id === 'wr_content') {
+      eottaeSetEditorContent('wr_content', value, root);
+      return;
+    }
     el.value = value;
     el.dispatchEvent(new Event('input', { bubbles: true }));
   }
@@ -1474,12 +1492,19 @@
 
     function applySnippet(snippet, skipConfirm) {
       if (!snippet) return;
-      var hasExisting = (subjectInput && subjectInput.value.trim()) || (contentInput && contentInput.value.trim());
+      var contentVal = contentInput ? contentInput.value.trim() : '';
+      if (contentInput && typeof oEditors !== 'undefined' && oEditors.getById && oEditors.getById.wr_content) {
+        oEditors.getById.wr_content.exec('UPDATE_CONTENTS_FIELD', []);
+        contentVal = contentInput.value.trim();
+      }
+      var hasExisting = (subjectInput && subjectInput.value.trim()) || contentVal;
       if (!skipConfirm && hasExisting && !window.confirm('현재 작성 중인 제목·내용을 불러온 문구로 바꿀까요?')) {
         return;
       }
       if (subjectInput) subjectInput.value = snippet.wr_subject || '';
-      if (contentInput) contentInput.value = snippet.wr_content || '';
+      if (contentInput) {
+        eottaeSetEditorContent('wr_content', snippet.wr_content || '', document);
+      }
       setStatus('문구를 불러왔습니다.', false);
       if (panel && toggle && !isDesktop) {
         panel.hidden = true;
@@ -1622,6 +1647,9 @@
     var saveBtn = qs('[data-snippets-save-current]', root);
     if (saveBtn) {
       saveBtn.addEventListener('click', function () {
+        if (contentInput && typeof oEditors !== 'undefined' && oEditors.getById && oEditors.getById.wr_content) {
+          oEditors.getById.wr_content.exec('UPDATE_CONTENTS_FIELD', []);
+        }
         var content = contentInput ? contentInput.value.trim() : '';
         if (!content) {
           alert('저장할 내용을 먼저 입력해 주세요.');

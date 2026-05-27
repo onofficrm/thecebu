@@ -33,7 +33,6 @@ if ($wr_id > 0) {
 }
 
 $categories = eottae_column_category_options();
-$areas = eottae_column_area_options();
 $statuses = eottae_column_status_options();
 $token = eottae_column_member_token();
 $proc_url = eottae_column_proc_url();
@@ -129,21 +128,6 @@ g5_page_start($wr_id > 0 ? '컬럼 수정' : '컬럼 작성');
             </label>
             <?php } ?>
         </div>
-
-        <label class="sebu-column-form__field">
-            <span class="sebu-column-form__label">태그 (쉼표 구분)</span>
-            <input type="text" name="tags" class="sebu-column-form__input" value="<?php echo $post ? get_text($post['tags'] ?? '') : ''; ?>">
-        </label>
-
-        <label class="sebu-column-form__field">
-            <span class="sebu-column-form__label">지역</span>
-            <select name="area" class="sebu-column-form__select">
-                <option value="">선택</option>
-                <?php foreach ($areas as $code => $label) { ?>
-                <option value="<?php echo get_text($code); ?>"<?php echo $post && ($post['area'] ?? '') === $code ? ' selected' : ''; ?>><?php echo get_text($label); ?></option>
-                <?php } ?>
-            </select>
-        </label>
 
         <label class="sebu-column-form__field">
             <span class="sebu-column-form__label">관련 링크</span>
