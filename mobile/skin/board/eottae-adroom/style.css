@@ -349,6 +349,8 @@
     border: 2px solid transparent;
     border-radius: 12px;
     background: #fff;
+    color: var(--adroom-text);
+    font: inherit;
     text-align: left;
     cursor: pointer;
     width: 100%;
@@ -370,7 +372,22 @@
 .adroom-shop-picker__name {
     display: block;
     font-size: 14px;
+    font-weight: 600;
+    color: var(--adroom-text);
     margin-bottom: 2px;
+}
+
+.adroom-shop-picker__board {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--adroom-accent);
+    margin-bottom: 2px;
+}
+
+.adroom-shop-picker__info {
+    flex: 1;
+    min-width: 0;
 }
 
 .adroom-shop-picker__meta,

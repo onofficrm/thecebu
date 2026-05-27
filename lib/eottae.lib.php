@@ -339,8 +339,15 @@ if (!function_exists('eottae_shop_from_write')) {
 
         $sns_raw = eottae_shop_wr_link2_raw($wr);
 
+        $name = '';
+        if (isset($wr['wr_subject']) && trim((string) $wr['wr_subject']) !== '') {
+            $name = get_text($wr['wr_subject']);
+        } elseif (isset($wr['subject']) && trim((string) $wr['subject']) !== '') {
+            $name = get_text($wr['subject']);
+        }
+
         return array(
-            'name'          => isset($wr['wr_subject']) ? get_text($wr['wr_subject']) : '',
+            'name'          => $name,
             'category'      => isset($wr['wr_1']) ? get_text($wr['wr_1']) : '',
             'region'        => isset($wr['wr_2']) ? get_text($wr['wr_2']) : '',
             'address'       => isset($wr['wr_3']) ? get_text($wr['wr_3']) : '',
@@ -5311,14 +5318,87 @@ if (!function_exists('eottae_gnb_board_tables')) {
     }
 }
 
+if (!function_exists('eottae_gnb_hidden_menu_keys')) {
+    /**
+     * GNB·메뉴 DB에서 숨길 항목 (홈 빌더 JS hideMassageMenuLinks와 동일)
+     *
+     * @return array<int, string>
+     */
+    function eottae_gnb_hidden_menu_keys()
+    {
+        return array('massage', 'rentcar');
+    }
+}
+
+if (!function_exists('eottae_filter_menu_datas')) {
+    /**
+     * GNUBoard 메뉴설정(get_menu_db) — 마사지·렌트카 등 숨김
+     *
+     * @param array<int, array<string, mixed>> $menu_datas
+     * @return array<int, array<string, mixed>>
+     */
+    function eottae_filter_menu_datas($menu_datas)
+    {
+        if (!is_array($menu_datas) || !$menu_datas) {
+            return $menu_datas;
+        }
+
+        $hidden_boards = array();
+        foreach (eottae_gnb_hidden_menu_keys() as $key) {
+            if ($key === 'massage') {
+                $hidden_boards[] = defined('EOTTae_MASSAGE_TABLE') ? EOTTae_MASSAGE_TABLE : 'massage';
+            } elseif ($key === 'rentcar') {
+                $hidden_boards[] = defined('EOTTae_RENTCAR_TABLE') ? EOTTae_RENTCAR_TABLE : 'rentcar';
+            }
+        }
+
+        $hidden_labels = array('마사지', '마사지·스파', '렌트카');
+        $filtered = array();
+
+        foreach ($menu_datas as $row) {
+            if (empty($row) || !is_array($row)) {
+                continue;
+            }
+
+            $name = isset($row['me_name']) ? trim((string) $row['me_name']) : '';
+            $link = isset($row['me_link']) ? (string) $row['me_link'] : '';
+            $skip = false;
+
+            if ($name !== '' && in_array($name, $hidden_labels, true)) {
+                $skip = true;
+            }
+
+            if (!$skip && $link !== '') {
+                foreach ($hidden_boards as $bo_table) {
+                    if ($bo_table !== '' && stripos($link, 'bo_table='.$bo_table) !== false) {
+                        $skip = true;
+                        break;
+                    }
+                }
+            }
+
+            if ($skip) {
+                continue;
+            }
+
+            if (!empty($row['sub']) && is_array($row['sub'])) {
+                $row['sub'] = eottae_filter_menu_datas($row['sub']);
+            }
+
+            $filtered[] = $row;
+        }
+
+        return array_values($filtered);
+    }
+}
+
 if (!function_exists('eottae_gnb_nav_links')) {
     function eottae_gnb_nav_links()
     {
-        return array(
+        $links = array(
             array('key' => 'home', 'label' => '홈', 'href' => G5_URL.'/'),
             array('key' => 'shop', 'label' => '내주변', 'href' => eottae_board_list_url(eottae_shop_table())),
             array('key' => 'food', 'label' => '맛집', 'href' => eottae_board_list_url(defined('EOTTae_FOOD_TABLE') ? EOTTae_FOOD_TABLE : 'food')),
-            array('key' => 'massage', 'label' => '마사지', 'href' => eottae_board_list_url(defined('EOTTae_MASSAGE_TABLE') ? EOTTae_MASSAGE_TABLE : 'massage')),
             array('key' => 'golf_join', 'label' => '골프조인', 'href' => function_exists('eottae_golf_join_list_url') ? eottae_golf_join_list_url() : G5_URL.'/golf-join/'),
             array('key' => 'community', 'label' => '커뮤니티', 'href' => eottae_community_list_url()),
             array('key' => 'column', 'label' => function_exists('eottae_column_menu_label') ? eottae_column_menu_label() : '컬럼', 'href' => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/'),
@@ -5331,6 +5411,18 @@ if (!function_exists('eottae_gnb_nav_links')) {
             array('key' => 'talk', 'label' => '세부톡', 'href' => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk', 'desktop_action' => true),
             array('key' => 'calendar', 'label' => '세부일정', 'href' => function_exists('eottae_calendar_list_url') ? eottae_calendar_list_url() : G5_URL.'/calendar/'),
         );
+
+        $hidden = array_flip(eottae_gnb_hidden_menu_keys());
+        $out = array();
+        foreach ($links as $link) {
+            $key = isset($link['key']) ? (string) $link['key'] : '';
+            if ($key !== '' && isset($hidden[$key])) {
+                continue;
+            }
+            $out[] = $link;
+        }
+
+        return $out;
     }
 }
 
@@ -5373,7 +5465,6 @@ if (!function_exists('eottae_gnb_link_is_active')) {
         $board_map = array(
             'shop'      => eottae_shop_table(),
             'food'      => defined('EOTTae_FOOD_TABLE') ? EOTTae_FOOD_TABLE : 'food',
-            'massage'   => defined('EOTTae_MASSAGE_TABLE') ? EOTTae_MASSAGE_TABLE : 'massage',
             'community' => eottae_community_board_table(),
             'people'    => defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people',
             'job'       => defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job',

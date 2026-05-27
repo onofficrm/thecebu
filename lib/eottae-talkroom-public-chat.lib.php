@@ -347,6 +347,14 @@ if (!function_exists('eottae_talkroom_public_group_format_message')) {
             $action_url = '';
         }
 
+        $calendar_event_id = max(0, (int) ($row['wr_5'] ?? 0));
+        if ($calendar_event_id < 1 && $action_url !== '') {
+            if (!function_exists('eottae_calendar_event_id_from_url')) {
+                include_once G5_LIB_PATH.'/eottae-calendar.lib.php';
+            }
+            $calendar_event_id = eottae_calendar_event_id_from_url($action_url);
+        }
+
         $post_row = array(
             'wr_id'        => (int) ($row['wr_id'] ?? 0),
             'wr_name'      => $row['wr_name'] ?? '',
@@ -360,8 +368,9 @@ if (!function_exists('eottae_talkroom_public_group_format_message')) {
             'href'         => function_exists('eottae_talkroom_post_view_url')
                 ? eottae_talkroom_post_view_url((int) ($row['wr_id'] ?? 0), (int) ($row['wr_1'] ?? 0))
                 : '',
-            'action_label' => get_text($row['wr_link2'] ?? ''),
-            'action_url'   => $action_url,
+            'action_label'      => get_text($row['wr_link2'] ?? ''),
+            'action_url'        => $action_url,
+            'calendar_event_id' => $calendar_event_id,
         );
 
         if (function_exists('eottae_talkroom_ai_message_enrich_post_row')) {
@@ -428,7 +437,7 @@ if (!function_exists('eottae_talkroom_public_group_list_messages')) {
         $where_since = $since_wr_id > 0 ? " AND wr_id > '{$since_wr_id}' " : '';
 
         $result = sql_query("
-            SELECT wr_id, wr_subject, wr_content, wr_name, wr_datetime, mb_id, wr_3, wr_1, wr_link1, wr_link2
+            SELECT wr_id, wr_subject, wr_content, wr_name, wr_datetime, mb_id, wr_3, wr_1, wr_link1, wr_link2, wr_5
             FROM `{$write_table}`
             WHERE wr_is_comment = 0
               AND wr_1 = '{$room_id}'
@@ -974,6 +983,7 @@ if (!function_exists('eottae_public_ai_run_manual_group_speak')) {
         $action_label = '';
         $action_url = '';
         $trigger_type = 'admin_manual';
+        $calendar_event_id = 0;
 
         foreach ($candidates as $candidate) {
             $candidate_message = trim((string) ($candidate['message'] ?? ''));
@@ -984,6 +994,9 @@ if (!function_exists('eottae_public_ai_run_manual_group_speak')) {
             $action_label = trim((string) ($candidate['action_label'] ?? ''));
             $action_url = trim((string) ($candidate['action_url'] ?? ''));
             $trigger_type = trim((string) ($candidate['trigger_type'] ?? 'admin_manual'));
+            if (($candidate['source_type'] ?? '') === 'calendar') {
+                $calendar_event_id = max(0, (int) ($candidate['source_id'] ?? 0));
+            }
             break;
         }
 
@@ -998,11 +1011,19 @@ if (!function_exists('eottae_public_ai_run_manual_group_speak')) {
             return array('ok' => false, 'message' => '보낼 AI 메시지를 만들지 못했습니다.');
         }
 
+        if ($calendar_event_id < 1 && $action_url !== '') {
+            if (!function_exists('eottae_calendar_event_id_from_url')) {
+                include_once G5_LIB_PATH.'/eottae-calendar.lib.php';
+            }
+            $calendar_event_id = eottae_calendar_event_id_from_url($action_url);
+        }
+
         $send = eottae_talkroom_public_group_send_ai_message($room_id, $message, array(
-            'trigger_type' => preg_replace('/[^a-z0-9_]/', '', $trigger_type) ?: 'admin_manual',
-            'action_label' => $action_label,
-            'action_url'   => $action_url,
-            'settings'     => $settings,
+            'trigger_type'      => preg_replace('/[^a-z0-9_]/', '', $trigger_type) ?: 'admin_manual',
+            'action_label'      => $action_label,
+            'action_url'        => $action_url,
+            'calendar_event_id' => $calendar_event_id,
+            'settings'          => $settings,
         ));
 
         if (empty($send['ok'])) {
@@ -1014,7 +1035,7 @@ if (!function_exists('eottae_public_ai_run_manual_group_speak')) {
         $row = null;
         if ($wr_id > 0 && $write_table !== '') {
             $row = sql_fetch("
-                SELECT wr_id, wr_subject, wr_content, wr_name, wr_datetime, mb_id, wr_3, wr_1, wr_link1, wr_link2
+                SELECT wr_id, wr_subject, wr_content, wr_name, wr_datetime, mb_id, wr_3, wr_1, wr_link1, wr_link2, wr_5
                 FROM `{$write_table}`
                 WHERE wr_id = '{$wr_id}'
                 LIMIT 1

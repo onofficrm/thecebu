@@ -68,11 +68,9 @@ if (!function_exists('eottae_seed_menus')) {
             array('홈', G5_URL.'/', 1),
             array('내주변', $shop, 2),
             array('맛집', $shop.'&sca='.urlencode('맛집'), 3),
-            array('마사지', $shop.'&sfl=wr_1&stx='.urlencode('마사지'), 4),
-            array('렌트카', $shop.'&sfl=wr_1&stx='.urlencode('렌트카'), 5),
-            array('투어', $shop.'&sfl=wr_1&stx='.urlencode('투어'), 6),
-            array('커뮤니티', G5_BBS_URL.'/board.php?bo_table='.EOTTae_COMMUNITY_TABLE, 7),
-            array('MY', G5_URL.'/page/eottae-mypage.php', 8),
+            array('골프조인', G5_URL.'/golf-join/', 4),
+            array('커뮤니티', G5_BBS_URL.'/board.php?bo_table='.EOTTae_COMMUNITY_TABLE, 5),
+            array('MY', G5_URL.'/page/eottae-mypage.php', 6),
         );
 
         foreach ($items as $item) {

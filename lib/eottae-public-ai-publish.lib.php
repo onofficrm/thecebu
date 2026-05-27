@@ -251,6 +251,16 @@ if (!function_exists('eottae_talkroom_public_group_send_ai_message')) {
         }
         $action_label = trim(strip_tags((string) ($options['action_label'] ?? '')));
         $candidate_id = max(0, (int) ($options['candidate_id'] ?? 0));
+        $calendar_event_id = max(0, (int) ($options['calendar_event_id'] ?? 0));
+        if ($calendar_event_id < 1 && ($options['source_type'] ?? '') === 'calendar') {
+            $calendar_event_id = max(0, (int) ($options['source_id'] ?? 0));
+        }
+        if ($calendar_event_id < 1 && $action_url !== '') {
+            if (!function_exists('eottae_calendar_event_id_from_url')) {
+                include_once G5_LIB_PATH.'/eottae-calendar.lib.php';
+            }
+            $calendar_event_id = eottae_calendar_event_id_from_url($action_url);
+        }
 
         $write_table = eottae_talkroom_write_table();
         $bo_table = preg_replace('/[^a-z0-9_]/', '', eottae_talkroom_board_table());
@@ -268,6 +278,7 @@ if (!function_exists('eottae_talkroom_public_group_send_ai_message')) {
         $wr_link1_sql = sql_escape_string($action_url);
         $wr_link2_sql = sql_escape_string($action_label);
         $wr_4_sql = $candidate_id > 0 ? "'{$candidate_id}'" : "''";
+        $wr_5_sql = $calendar_event_id > 0 ? "'{$calendar_event_id}'" : "''";
         $seo = sql_escape_string(preg_replace('/[^a-z0-9_-]+/i', '-', strtolower($subject)));
 
         sql_query(" INSERT INTO `{$write_table}` SET
@@ -298,7 +309,7 @@ if (!function_exists('eottae_talkroom_public_group_send_ai_message')) {
             wr_2 = '',
             wr_3 = '{$wr_3}',
             wr_4 = {$wr_4_sql},
-            wr_5 = '',
+            wr_5 = {$wr_5_sql},
             wr_6 = '',
             wr_7 = '',
             wr_8 = '',
@@ -320,7 +331,7 @@ if (!function_exists('eottae_talkroom_public_group_send_ai_message')) {
             delete_cache_latest($bo_table);
         }
 
-        $row = sql_fetch(" SELECT wr_id, wr_subject, wr_content, wr_name, wr_datetime, mb_id, wr_3, wr_1, wr_link1, wr_link2
+        $row = sql_fetch(" SELECT wr_id, wr_subject, wr_content, wr_name, wr_datetime, mb_id, wr_3, wr_1, wr_link1, wr_link2, wr_5
             FROM `{$write_table}` WHERE wr_id = '{$wr_id}' LIMIT 1 ");
 
         return array(
@@ -436,12 +447,18 @@ if (!function_exists('eottae_public_ai_publish_candidate')) {
         }
 
         $room_id = (int) eottae_talkroom_public_group_room_id();
+        $calendar_event_id = 0;
+        if (($candidate['source_type'] ?? '') === 'calendar') {
+            $calendar_event_id = max(0, (int) ($candidate['source_id'] ?? 0));
+        }
+
         $send = eottae_talkroom_public_group_send_ai_message($room_id, $publish_message, array(
-            'trigger_type'  => $candidate['trigger_type'],
-            'action_label'  => $candidate['action_label'],
-            'action_url'    => $candidate['action_url'],
-            'candidate_id'  => $candidate_id,
-            'settings'      => $settings,
+            'trigger_type'      => $candidate['trigger_type'],
+            'action_label'      => $candidate['action_label'],
+            'action_url'        => $candidate['action_url'],
+            'calendar_event_id' => $calendar_event_id,
+            'candidate_id'      => $candidate_id,
+            'settings'          => $settings,
         ));
 
         if (empty($send['ok'])) {

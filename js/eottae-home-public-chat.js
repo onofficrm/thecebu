@@ -230,6 +230,32 @@
     return section ? section.querySelector('#eottae-public-chat-messages') : null;
   }
 
+  function buildActionHtml(message) {
+    if (!message || !message.action_label) {
+      return '';
+    }
+
+    var calendarEventId = parseInt(message.calendar_event_id, 10) || 0;
+    if (calendarEventId > 0) {
+      if (typeof global.eottaeCalendarInitEventModal === 'function') {
+        global.eottaeCalendarInitEventModal();
+      }
+      return ''
+        + '<p class="public-group-chat__action-wrap"><a href="#" class="public-group-chat__cta"'
+        + ' data-sebu-cal-event="' + esc(String(calendarEventId)) + '" role="button">'
+        + esc(message.action_label) + '</a></p>';
+    }
+
+    if (message.action_url && /^https?:\/\//i.test(message.action_url)) {
+      return ''
+        + '<p class="public-group-chat__action-wrap"><a href="' + esc(message.action_url)
+        + '" class="public-group-chat__cta" target="_blank" rel="noopener noreferrer">'
+        + esc(message.action_label) + '</a></p>';
+    }
+
+    return '';
+  }
+
   function removeEmptyState(messagesEl) {
     if (!messagesEl) {
       return;
@@ -279,12 +305,7 @@
       ? '<time class="public-group-chat__time">' + esc(message.time_label) + '</time>'
       : '';
 
-    var actionHtml = '';
-    if (message.action_label && message.action_url && /^https?:\/\//i.test(message.action_url)) {
-      actionHtml = '<p class="public-group-chat__action-wrap"><a href="' + esc(message.action_url)
-        + '" class="public-group-chat__cta" target="_blank" rel="noopener noreferrer">'
-        + esc(message.action_label) + '</a></p>';
-    }
+    var actionHtml = buildActionHtml(message);
 
     return ''
       + '<article class="' + classes.join(' ') + '" data-wr-id="' + esc(message.wr_id) + '">'
@@ -445,9 +466,60 @@
 
   function scrollMessagesToBottom(section) {
     var messagesEl = getMessagesEl(section);
-    if (messagesEl) {
-      messagesEl.scrollTop = messagesEl.scrollHeight;
+    if (!messagesEl) {
+      return;
     }
+
+    function apply() {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      var last = messagesEl.lastElementChild;
+      if (last && !last.classList.contains('public-group-chat__empty') && typeof last.scrollIntoView === 'function') {
+        last.scrollIntoView({ block: 'end', inline: 'nearest' });
+      }
+    }
+
+    apply();
+    global.requestAnimationFrame(function () {
+      apply();
+      global.requestAnimationFrame(apply);
+    });
+  }
+
+  function scheduleScrollMessagesToBottom(section) {
+    var target = section || getSection();
+    if (!target) {
+      return;
+    }
+
+    scrollMessagesToBottom(target);
+    global.setTimeout(function () {
+      scrollMessagesToBottom(target);
+    }, 60);
+    global.setTimeout(function () {
+      scrollMessagesToBottom(target);
+    }, 200);
+    global.setTimeout(function () {
+      scrollMessagesToBottom(target);
+    }, 500);
+  }
+
+  function observeMessagesLayout(section) {
+    var messagesEl = getMessagesEl(section);
+    if (!messagesEl || messagesEl.dataset.scrollLayoutObserved === '1') {
+      return;
+    }
+    if (typeof global.ResizeObserver === 'undefined') {
+      return;
+    }
+
+    messagesEl.dataset.scrollLayoutObserved = '1';
+    var observer = new global.ResizeObserver(function () {
+      scrollMessagesToBottom(section);
+    });
+    observer.observe(messagesEl);
+    global.setTimeout(function () {
+      observer.disconnect();
+    }, 4000);
   }
 
   function bindSection(section) {
@@ -456,7 +528,8 @@
     }
     section.dataset.bound = '1';
 
-    scrollMessagesToBottom(section);
+    scheduleScrollMessagesToBottom(section);
+    observeMessagesLayout(section);
 
     var form = section.querySelector('#eottae-public-chat-form');
     if (form) {
@@ -492,7 +565,7 @@
       var section = getSection();
       if (section) {
         bindSection(section);
-        scrollMessagesToBottom(section);
+        scheduleScrollMessagesToBottom(section);
       }
       return true;
     }
@@ -521,5 +594,9 @@
   global.findEottaeHeroGrid = findHeroGrid;
   global.findEottaeHeroSidebarColumn = function () {
     return findHeroSidebarColumn(findHeroGrid());
+  };
+  global.scrollEottaeHomePublicChatToBottom = scrollMessagesToBottom;
+  global.scheduleEottaeHomePublicChatScroll = function () {
+    scheduleScrollMessagesToBottom(getSection());
   };
 }(window));

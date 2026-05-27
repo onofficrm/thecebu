@@ -128,6 +128,11 @@
     grid.style.setProperty('--eottae-hero-col-h', targetH + 'px');
     grid.classList.add(SYNC_CLASS);
     grid.setAttribute('data-eottae-hero-height', String(targetH));
+
+    if (typeof global.scheduleEottaeHomePublicChatScroll === 'function') {
+      global.scheduleEottaeHomePublicChatScroll();
+    }
+
     return true;
   }
 

@@ -200,6 +200,22 @@ if (!function_exists('eottae_calendar_event_url')) {
     }
 }
 
+if (!function_exists('eottae_calendar_event_id_from_url')) {
+    function eottae_calendar_event_id_from_url($url)
+    {
+        $url = trim((string) $url);
+        if ($url === '') {
+            return 0;
+        }
+
+        if (preg_match('#(?:^|[?&])event_id=(\d+)#i', $url, $matches)) {
+            return max(0, (int) $matches[1]);
+        }
+
+        return 0;
+    }
+}
+
 if (!function_exists('eottae_calendar_ensure_schema')) {
     function eottae_calendar_ensure_schema()
     {

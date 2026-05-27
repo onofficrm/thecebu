@@ -262,6 +262,7 @@ if (!function_exists('eottae_business_shop_posts')) {
                 $rows[] = array(
                     'bo_table' => $bo_table,
                     'wr_id' => (int) $row['wr_id'],
+                    'wr_subject' => $row['wr_subject'],
                     'subject' => get_text($row['wr_subject']),
                     'datetime' => $row['wr_datetime'],
                     'category' => get_text($row['ca_name']),

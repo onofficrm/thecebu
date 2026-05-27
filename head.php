@@ -110,6 +110,10 @@ $menu_datas_mo = get_menu_db(1, true);
 if (!is_array($menu_datas_mo) || !count($menu_datas_mo)) {
     $menu_datas_mo = $menu_datas_pc;
 }
+if (function_exists('eottae_filter_menu_datas')) {
+    $menu_datas_pc = eottae_filter_menu_datas($menu_datas_pc);
+    $menu_datas_mo = eottae_filter_menu_datas($menu_datas_mo);
+}
 ?>
 
 <?php if (function_exists('eottae_talkroom_is_admin_shell_page') && eottae_talkroom_is_admin_shell_page()) { ?>

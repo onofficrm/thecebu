@@ -39,6 +39,32 @@
       + '" aria-label="AI 메시지 삭제">삭제</button>';
   }
 
+  function buildActionHtml(message) {
+    if (!message || !message.action_label) {
+      return '';
+    }
+
+    var calendarEventId = parseInt(message.calendar_event_id, 10) || 0;
+    if (calendarEventId > 0) {
+      if (typeof global.eottaeCalendarInitEventModal === 'function') {
+        global.eottaeCalendarInitEventModal();
+      }
+      return ''
+        + '<p class="public-group-chat__action-wrap"><a href="#" class="public-group-chat__cta"'
+        + ' data-sebu-cal-event="' + esc(String(calendarEventId)) + '" role="button">'
+        + esc(message.action_label) + '</a></p>';
+    }
+
+    if (message.action_url && /^https?:\/\//i.test(message.action_url)) {
+      return ''
+        + '<p class="public-group-chat__action-wrap"><a href="' + esc(message.action_url)
+        + '" class="public-group-chat__cta" target="_blank" rel="noopener noreferrer">'
+        + esc(message.action_label) + '</a></p>';
+    }
+
+    return '';
+  }
+
   function messageHtml(message, section) {
     if (!message || !message.wr_id || !message.text) {
       return '';
@@ -81,12 +107,7 @@
       ? '<time class="public-group-chat__time">' + esc(message.time_label) + '</time>'
       : '';
 
-    var actionHtml = '';
-    if (message.action_label && message.action_url && /^https?:\/\//i.test(message.action_url)) {
-      actionHtml = '<p class="public-group-chat__action-wrap"><a href="' + esc(message.action_url)
-        + '" class="public-group-chat__cta" target="_blank" rel="noopener noreferrer">'
-        + esc(message.action_label) + '</a></p>';
-    }
+    var actionHtml = buildActionHtml(message);
 
     return ''
       + '<article class="' + classes.join(' ') + '" data-wr-id="' + esc(message.wr_id) + '">'

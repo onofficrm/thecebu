@@ -49,6 +49,7 @@ if (!function_exists('eottae_adroom_render_shop_picker')) {
                     <span class="adroom-shop-picker__thumb"<?php if (!empty($shop['thumb_url'])) { ?> style="background-image:url('<?php echo get_text($shop['thumb_url']); ?>')"<?php } ?>></span>
                     <span class="adroom-shop-picker__info">
                         <strong class="adroom-shop-picker__name"><?php echo get_text($shop['name'] ?? ''); ?></strong>
+                        <?php if (!empty($shop['board_label'])) { ?><span class="adroom-shop-picker__board"><?php echo get_text($shop['board_label']); ?></span><?php } ?>
                         <?php if (!empty($shop['region'])) { ?><span class="adroom-shop-picker__meta"><?php echo get_text($shop['region']); ?></span><?php } ?>
                         <?php if (!empty($shop['address'])) { ?><span class="adroom-shop-picker__addr"><?php echo get_text($shop['address']); ?></span><?php } ?>
                     </span>

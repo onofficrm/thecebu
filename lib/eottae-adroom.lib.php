@@ -162,7 +162,7 @@ if (!function_exists('eottae_adroom_member_shops')) {
             return array();
         }
 
-        $posts = eottae_business_shop_posts($mb_id, 50);
+        $posts = eottae_business_shop_posts($mb_id, 30);
         $shops = array();
         foreach ($posts as $row) {
             if (!is_array($row)) {
@@ -173,24 +173,52 @@ if (!function_exists('eottae_adroom_member_shops')) {
             if ($bo_table === '' || $wr_id < 1) {
                 continue;
             }
+
+            $shop_row = eottae_adroom_fetch_shop_row($bo_table, $wr_id);
+            if (!$shop_row) {
+                continue;
+            }
+
             $shop = function_exists('eottae_shop_from_write')
-                ? eottae_shop_from_write($row, $bo_table)
+                ? eottae_shop_from_write($shop_row, $bo_table)
                 : array();
+
+            $name = trim((string) ($shop['name'] ?? ''));
+            if ($name === '') {
+                $name = trim((string) ($row['subject'] ?? ''));
+            }
+            if ($name === '') {
+                continue;
+            }
+
+            $board_labels = array(
+                'shop'    => '업체',
+                'food'    => '맛집',
+                'massage' => '마사지',
+                'rentcar' => '렌트카',
+                'tour'    => '투어',
+            );
+            $board_label = isset($board_labels[$bo_table]) ? $board_labels[$bo_table] : '';
+            if ($board_label === '' && !empty($row['category'])) {
+                $board_label = (string) $row['category'];
+            }
+
             $shops[] = array(
-                'bo_table'    => $bo_table,
-                'wr_id'       => $wr_id,
-                'name'        => (string) ($shop['name'] ?? $row['subject'] ?? ''),
-                'region'      => (string) ($shop['region'] ?? ''),
-                'address'     => (string) ($shop['address'] ?? ''),
-                'category'    => (string) ($shop['category'] ?? ''),
-                'view_url'    => function_exists('eottae_shop_view_url')
+                'bo_table'     => $bo_table,
+                'wr_id'        => $wr_id,
+                'name'         => $name,
+                'region'       => (string) ($shop['region'] ?? ''),
+                'address'      => (string) ($shop['address'] ?? ''),
+                'category'     => (string) ($shop['category'] ?? ''),
+                'board_label'  => $board_label,
+                'view_url'     => function_exists('eottae_shop_view_url')
                     ? eottae_shop_view_url($wr_id, $bo_table)
                     : G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$wr_id,
-                'map_url'     => function_exists('eottae_maps_directions_url')
+                'map_url'      => function_exists('eottae_maps_directions_url')
                     ? eottae_maps_directions_url($shop['lat'] ?? '', $shop['lng'] ?? '', $shop['address'] ?? '')
                     : '',
-                'thumb_url'   => function_exists('eottae_shop_card_thumb')
-                    ? eottae_shop_card_thumb($row, $bo_table)
+                'thumb_url'    => function_exists('eottae_shop_card_thumb')
+                    ? eottae_shop_card_thumb($shop_row, $bo_table)
                     : '',
             );
         }
