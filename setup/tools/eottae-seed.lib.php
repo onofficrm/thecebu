@@ -1186,6 +1186,48 @@ if (!function_exists('eottae_seed_barocar_reviews')) {
     }
 }
 
+if (!function_exists('eottae_seed_luckyvilla_reviews')) {
+    /**
+     * 럭키풀빌라 Lucky Pool Villa(shop wr_id=62) 샘플 리뷰 35건 — 평점 5.0
+     *
+     * @param int  $shop_wr_id
+     * @param bool $force true면 lvrv* 시드 리뷰 삭제 후 재등록
+     * @return array<int, array<string, mixed>>
+     */
+    function eottae_seed_luckyvilla_reviews($shop_wr_id = 62, $force = false)
+    {
+        global $g5;
+
+        $shop_wr_id = (int) $shop_wr_id;
+        if ($shop_wr_id < 1) {
+            $shop_table = $g5['write_prefix'].EOTTae_SHOP_TABLE;
+            $shop_row = sql_fetch(" select wr_id from {$shop_table} where wr_is_comment = 0 and (wr_subject like '%럭키%' or wr_subject like '%Lucky%') limit 1 ");
+            $shop_wr_id = !empty($shop_row['wr_id']) ? (int) $shop_row['wr_id'] : 0;
+        }
+
+        $logs = array();
+        if ($force) {
+            $logs[] = eottae_seed_delete_shop_reviews($shop_wr_id, 'lvrv');
+        }
+
+        $items_file = __DIR__.'/eottae-seed-luckyvilla-reviews-items.php';
+        if (!is_file($items_file)) {
+            $logs[] = eottae_seed_log('review', 'luckyvilla review items file missing', false);
+
+            return $logs;
+        }
+
+        $items = include $items_file;
+        if (!is_array($items)) {
+            $logs[] = eottae_seed_log('review', 'luckyvilla review items invalid', false);
+
+            return $logs;
+        }
+
+        return array_merge($logs, eottae_seed_shop_reviews_from_items($shop_wr_id, $items));
+    }
+}
+
 if (!function_exists('eottae_seed_sample_events')) {
     function eottae_seed_sample_events()
 

@@ -6,8 +6,10 @@
  * POST/GET /proc/eottae-sel-reviews-seed.php?shop_wr_id=11&preset=dawon
  * POST/GET /proc/eottae-sel-reviews-seed.php?shop_wr_id=36&preset=shiny
  * POST/GET /proc/eottae-sel-reviews-seed.php?shop_wr_id=39&preset=barocar
+ * POST/GET /proc/eottae-sel-reviews-seed.php?shop_wr_id=62&preset=luckyvilla
  * POST/GET ...&preset=barocar&force=1 — brv* 시드 리뷰 삭제 후 재등록
- * 관리자 로그인 또는 key 파라미터로 샘플 리뷰 시드 (preset: sel | yonggungri | badachamchi | dawon | shiny | barocar)
+ * POST/GET ...&preset=luckyvilla&force=1 — lvrv* 시드 리뷰 삭제 후 재등록
+ * 관리자 로그인 또는 key 파라미터로 샘플 리뷰 시드 (preset: sel | yonggungri | badachamchi | dawon | shiny | barocar | luckyvilla)
  */
 include_once dirname(__DIR__).'/common.php';
 include_once G5_LIB_PATH.'/eottae.lib.php';
@@ -40,6 +42,8 @@ if ($preset === 'yonggungri') {
     $default_shop_id = 36;
 } elseif ($preset === 'barocar') {
     $default_shop_id = 39;
+} elseif ($preset === 'luckyvilla') {
+    $default_shop_id = 62;
 }
 $shop_wr_id = isset($_REQUEST['shop_wr_id']) ? (int) $_REQUEST['shop_wr_id'] : $default_shop_id;
 if ($shop_wr_id < 1) {
@@ -59,6 +63,8 @@ if ($preset === 'yonggungri') {
     $seed_fn = 'eottae_seed_shiny_reviews';
 } elseif ($preset === 'barocar') {
     $seed_fn = 'eottae_seed_barocar_reviews';
+} elseif ($preset === 'luckyvilla') {
+    $seed_fn = 'eottae_seed_luckyvilla_reviews';
 }
 
 if (!function_exists($seed_fn)) {
@@ -70,6 +76,8 @@ if (!function_exists($seed_fn)) {
 $force = !empty($_REQUEST['force']);
 if ($preset === 'barocar') {
     $logs = eottae_seed_barocar_reviews($shop_wr_id, $force);
+} elseif ($preset === 'luckyvilla') {
+    $logs = eottae_seed_luckyvilla_reviews($shop_wr_id, $force);
 } else {
     $logs = call_user_func($seed_fn, $shop_wr_id);
 }
