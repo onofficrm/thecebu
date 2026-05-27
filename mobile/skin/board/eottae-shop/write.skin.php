@@ -78,10 +78,24 @@ $shop_seo_v = function_exists('eottae_shop_seo_resolve_for_write')
         'meta_description' => '',
         'focus_keyword' => '',
     );
-$eottae_ai_cfg = function_exists('eottae_ai_generate_bootstrap_config')
-    ? eottae_ai_generate_bootstrap_config()
-    : array('enabled' => false, 'api_key' => '');
-$eottae_ai_enabled = !empty($eottae_ai_cfg['enabled']) && !empty($eottae_ai_cfg['api_key']);
+if (!function_exists('eottae_secrets_load') && is_file(G5_LIB_PATH.'/eottae-secrets.lib.php')) {
+    include_once G5_LIB_PATH.'/eottae-secrets.lib.php';
+}
+if (function_exists('eottae_secrets_load')) {
+    eottae_secrets_load();
+} elseif (function_exists('eottae_merge_runtime_secrets')) {
+    eottae_merge_runtime_secrets();
+}
+if (function_exists('eottae_ai_generate_clear_config_cache')) {
+    eottae_ai_generate_clear_config_cache();
+}
+$eottae_ai_api_key = function_exists('eottae_ai_openai_api_key')
+    ? eottae_ai_openai_api_key()
+    : (function_exists('g5site_cfg') ? trim((string) g5site_cfg('ai_generate_api_key', '')) : '');
+$eottae_ai_enabled = $eottae_ai_api_key !== '';
+$eottae_ai_hint = $eottae_ai_enabled
+    ? '업체명, 카테고리, 주소를 입력한 뒤 누르면 소개와 SEO 문구를 자동으로 채웁니다.'
+    : (function_exists('eottae_ai_setup_hint_html') ? eottae_ai_setup_hint_html() : 'AI 자동생성은 서버 <strong>data/eottae-secrets.local.php</strong> 에 OpenAI 키(<code>ai_generate_api_key</code>)를 등록한 후 이용할 수 있습니다.');
 ?>
 
 <section class="shop-register-page board-wrap board-wrap--eottae-shop board-write" id="bo_w" style="width:<?php echo $width; ?>" data-ai-enabled="<?php echo $eottae_ai_enabled ? '1' : '0'; ?>">
@@ -135,8 +149,8 @@ $eottae_ai_enabled = !empty($eottae_ai_cfg['enabled']) && !empty($eottae_ai_cfg[
             $eottae_editor_field_class = 'eottae-field__editor-wrap';
             include G5_PATH.'/components/eottae/board-write-editor.php';
             ?>
-            <button type="button" class="eottae-ai-btn shop-register-page__ai-btn<?php echo $eottae_ai_enabled ? '' : ' is-ai-unavailable'; ?>" data-shop-ai-generate="all" data-default-label="AI로 업체소개·SEO 자동생성"<?php echo $eottae_ai_enabled ? '' : ' aria-disabled="true"'; ?>><?php echo $eottae_ai_btn_icon; ?><span class="eottae-ai-btn__label">AI로 업체소개·SEO 자동생성</span></button>
-            <p class="eottae-field__hint" data-shop-ai-status aria-live="polite"><?php echo $eottae_ai_enabled ? '업체명, 카테고리, 주소를 입력한 뒤 누르면 소개와 SEO 문구를 자동으로 채웁니다.' : 'AI 자동생성은 서버에 OpenAI API 키가 설정된 후 이용할 수 있습니다.'; ?></p>
+            <button type="button" class="eottae-ai-btn shop-register-page__ai-btn<?php echo $eottae_ai_enabled ? '' : ' is-ai-unavailable'; ?>" data-shop-ai-generate="all" data-default-label="AI로 업체소개·SEO 자동생성"?>><?php echo $eottae_ai_btn_icon; ?><span class="eottae-ai-btn__label">AI로 업체소개·SEO 자동생성</span></button>
+            <p class="eottae-field__hint" data-shop-ai-status aria-live="polite"><?php echo $eottae_ai_hint; ?></p>
         </div>
     </div>
 
@@ -276,7 +290,7 @@ $eottae_ai_enabled = !empty($eottae_ai_cfg['enabled']) && !empty($eottae_ai_cfg[
     <div class="shop-register-page__panel" data-step="5">
         <h3>6. SEO · 검색 노출</h3>
         <p class="eottae-field__hint">업소 상세 페이지에 적용되는 검색·SNS 메타 정보입니다. 비워 두면 업체명·소개 본문에서 자동 생성됩니다.</p>
-        <button type="button" class="eottae-ai-btn shop-register-page__ai-btn<?php echo $eottae_ai_enabled ? '' : ' is-ai-unavailable'; ?>" data-shop-ai-generate="seo" data-default-label="AI로 SEO 문구 자동생성"<?php echo $eottae_ai_enabled ? '' : ' aria-disabled="true"'; ?>><?php echo $eottae_ai_btn_icon; ?><span class="eottae-ai-btn__label">AI로 SEO 문구 자동생성</span></button>
+        <button type="button" class="eottae-ai-btn shop-register-page__ai-btn<?php echo $eottae_ai_enabled ? '' : ' is-ai-unavailable'; ?>" data-shop-ai-generate="seo" data-default-label="AI로 SEO 문구 자동생성"?>><?php echo $eottae_ai_btn_icon; ?><span class="eottae-ai-btn__label">AI로 SEO 문구 자동생성</span></button>
         <p class="eottae-field__hint" data-shop-ai-status aria-live="polite"><?php echo $eottae_ai_enabled ? '업체명을 입력한 뒤 누르면 SEO 타이틀·소개·메타 설명·키워드를 채웁니다.' : 'AI 자동생성은 서버에 OpenAI API 키가 설정된 후 이용할 수 있습니다.'; ?></p>
         <div class="eottae-field">
             <label for="eottae_seo_title">SEO 타이틀</label>

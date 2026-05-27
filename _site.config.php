@@ -65,7 +65,7 @@ $site_config = array(
     'kakao_map_lng'       => '126.9780',
     /* Google Maps — 내 주변 찾기 (components/maps, page/map-locator.php) */
     'google_maps_api_key'       => '',
-    /* 업체 등록 AI 자동생성 — 운영 키는 _site.config.local.php 또는 GitHub Secret으로 주입 */
+    /* 업체 등록 AI — 키는 data/eottae-secrets.local.php (FTP 업로드, 배포 제외) 권장 */
     'ai_generate_enabled'       => false,
     'ai_generate_provider'      => 'openai',
     'ai_generate_api_key'       => '',
@@ -115,10 +115,19 @@ if (is_file(G5_PATH.'/_site.config.local.php')) {
 }
 
 $eottae_secrets_file = (defined('G5_DATA_PATH') ? G5_DATA_PATH : G5_PATH.'/data').'/eottae-secrets.local.php';
-if (is_file($eottae_secrets_file)) {
-    include_once $eottae_secrets_file;
+if (is_file($eottae_secrets_file) && is_readable($eottae_secrets_file)) {
+    $eottae_secrets_override = null;
+    include $eottae_secrets_file;
     if (isset($eottae_secrets_override) && is_array($eottae_secrets_override)) {
-        $site_config = array_merge($site_config, $eottae_secrets_override);
+        foreach ($eottae_secrets_override as $sk => $sv) {
+            if ($sv === null || $sv === '') {
+                continue;
+            }
+            if (is_string($sv) && trim($sv) === '') {
+                continue;
+            }
+            $site_config[$sk] = $sv;
+        }
     }
 }
 

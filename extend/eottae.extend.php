@@ -4,6 +4,7 @@ if (!defined('_GNUBOARD_')) {
 }
 
 include_once G5_PATH.'/extend/eottae.config.php';
+include_once G5_LIB_PATH.'/eottae-secrets.lib.php';
 include_once G5_LIB_PATH.'/eottae.lib.php';
 include_once G5_LIB_PATH.'/eottae-ai-generate.lib.php';
 include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
@@ -37,7 +38,9 @@ include_once G5_LIB_PATH.'/eottae-column-report.lib.php';
 include_once G5_LIB_PATH.'/eottae-adroom.lib.php';
 include_once G5_LIB_PATH.'/eottae-member-growth.lib.php';
 
-if (function_exists('eottae_merge_runtime_secrets')) {
+if (function_exists('eottae_secrets_load')) {
+    eottae_secrets_load();
+} elseif (function_exists('eottae_merge_runtime_secrets')) {
     eottae_merge_runtime_secrets();
 }
 

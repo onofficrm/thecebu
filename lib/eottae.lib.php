@@ -4718,14 +4718,15 @@ if (!function_exists('eottae_merge_runtime_secrets')) {
      */
     function eottae_merge_runtime_secrets()
     {
-        static $merged = false;
-
-        if ($merged) {
-            return;
-        }
-        $merged = true;
+        static $merged_mtime = null;
 
         global $site_config;
+
+        if (!isset($site_config) || !is_array($site_config)) {
+            if (defined('G5_PATH') && is_file(G5_PATH.'/_site.config.php')) {
+                include_once G5_PATH.'/_site.config.php';
+            }
+        }
 
         if (!isset($site_config) || !is_array($site_config)) {
             $site_config = array();
@@ -4736,6 +4737,12 @@ if (!function_exists('eottae_merge_runtime_secrets')) {
             return;
         }
 
+        $mtime = (int) @filemtime($secret_file);
+        if ($merged_mtime !== null && $merged_mtime === $mtime) {
+            return;
+        }
+        $merged_mtime = $mtime;
+
         $eottae_secrets_override = null;
         include $secret_file;
 
@@ -4743,10 +4750,22 @@ if (!function_exists('eottae_merge_runtime_secrets')) {
             return;
         }
 
-        $site_config = array_merge($site_config, $eottae_secrets_override);
+        foreach ($eottae_secrets_override as $sk => $sv) {
+            if ($sv === null || $sv === '') {
+                continue;
+            }
+            if (is_string($sv) && trim($sv) === '') {
+                continue;
+            }
+            $site_config[$sk] = $sv;
+        }
 
         if (function_exists('onoff_map_clear_config_cache')) {
             onoff_map_clear_config_cache();
+        }
+
+        if (function_exists('eottae_ai_generate_clear_config_cache')) {
+            eottae_ai_generate_clear_config_cache();
         }
     }
 }

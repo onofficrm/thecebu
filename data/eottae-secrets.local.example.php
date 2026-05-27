@@ -1,19 +1,31 @@
 <?php
 /**
- * 운영 서버 전용 비밀 설정 (FTP data/ 폴더에 업로드, Git·배포 대상 아님)
+ * 세부어때 비밀 키 전용 설정 (Git·FTP 배포 제외 — 서버에 직접 업로드)
  *
- * 1. 이 파일을 data/eottae-secrets.local.php 로 복사
- * 2. google_maps_api_key 등 입력
- * 3. 권장: /public_html/_site.config.local.php 에 지도·AI·OAuth 키를 한곳에 설정
- *    (GitHub Actions 배포는 _site.config.local.php 를 덮어쓰지 않음)
- * 4. 이 파일(data/eottae-secrets.local.php)은 선택 사항 — FTP 수동 업로드 시에만 사용
+ * 【설정 방법】
+ * 1. 이 파일을 같은 폴더에 eottae-secrets.local.php 로 복사
+ * 2. 아래 ai_generate_api_key 에 OpenAI 키 입력 후 FTP로
+ *    /public_html/data/eottae-secrets.local.php 업로드
+ * 3. 업체 등록 페이지에서 AI 버튼 동작 확인
  *
- * data/ 는 FTP 배포에서 제외되어 배포 후에도 유지됩니다.
+ * 지도 키(google_maps_api_key)도 여기에 넣을 수 있습니다.
+ * _site.config.local.php 와 함께 써도 되며, 이 파일 값이 우선합니다.
  */
 if (!defined('_GNUBOARD_')) {
     exit;
 }
 
 $eottae_secrets_override = array(
+    /* Google Maps — 내주변·업체등록 지도 */
     'google_maps_api_key' => '',
+
+    /* OpenAI — 업체등록 AI 자동작성 (필수) */
+    'ai_generate_enabled'       => true,
+    'ai_generate_api_key'       => 'sk-proj-여기에-OpenAI-키-입력',
+    'ai_generate_model'         => 'gpt-4o-mini',
+    'ai_generate_image_model'   => 'gpt-image-1',
+
+    /* Google 로그인 (선택) */
+    'google_oauth_client_id'     => '',
+    'google_oauth_client_secret' => '',
 );

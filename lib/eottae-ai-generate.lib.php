@@ -3,59 +3,68 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
+if (!function_exists('eottae_ai_generate_clear_config_cache')) {
+    function eottae_ai_generate_clear_config_cache()
+    {
+        eottae_ai_generate_bootstrap_config(true);
+    }
+}
+
 if (!function_exists('eottae_ai_generate_bootstrap_config')) {
     /**
      * 업체 등록·톡방 신청 등 OpenAI 텍스트/이미지 생성 공통 설정
      *
+     * @param bool $force_reload
      * @return array{enabled:bool,api_key:string,model:string,image_model:string}
      */
-    function eottae_ai_generate_bootstrap_config()
+    function eottae_ai_generate_bootstrap_config($force_reload = false)
     {
         static $cached = null;
+
+        if ($force_reload) {
+            $cached = null;
+        }
 
         if (is_array($cached)) {
             return $cached;
         }
 
-        if (!isset($GLOBALS['site_config']) && defined('G5_PATH') && is_file(G5_PATH.'/_site.config.php')) {
-            include_once G5_PATH.'/_site.config.php';
+        if (!function_exists('eottae_secrets_load') && is_file(G5_LIB_PATH.'/eottae-secrets.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-secrets.lib.php';
         }
 
-        if (function_exists('eottae_merge_runtime_secrets')) {
-            eottae_merge_runtime_secrets();
-        }
-
-        $api_key = function_exists('g5site_cfg')
-            ? trim((string) g5site_cfg('ai_generate_api_key', ''))
-            : '';
-
-        if ($api_key === '') {
-            foreach (array('OPENAI_API_KEY', 'EOTTAE_OPENAI_API_KEY') as $env_key) {
-                $env_val = getenv($env_key);
-                if ($env_val !== false && trim((string) $env_val) !== '') {
-                    $api_key = trim((string) $env_val);
-                    break;
-                }
+        if (function_exists('eottae_secrets_load')) {
+            eottae_secrets_load();
+        } else {
+            if (!isset($GLOBALS['site_config']) && defined('G5_PATH') && is_file(G5_PATH.'/_site.config.php')) {
+                include_once G5_PATH.'/_site.config.php';
+            }
+            if (function_exists('eottae_merge_runtime_secrets')) {
+                eottae_merge_runtime_secrets();
             }
         }
 
-        $enabled = function_exists('g5site_cfg_bool')
-            ? g5site_cfg_bool('ai_generate_enabled', false)
+        $api_key = function_exists('eottae_ai_openai_api_key')
+            ? eottae_ai_openai_api_key()
+            : (function_exists('g5site_cfg') ? trim((string) g5site_cfg('ai_generate_api_key', '')) : '');
+
+        $enabled = function_exists('eottae_secrets_get_bool')
+            ? eottae_secrets_get_bool('ai_generate_enabled', false)
             : false;
 
         if ($api_key !== '') {
             $enabled = true;
         }
 
-        $model = function_exists('g5site_cfg')
-            ? trim((string) g5site_cfg('ai_generate_model', 'gpt-4o-mini'))
+        $model = function_exists('eottae_secrets_get')
+            ? trim((string) eottae_secrets_get('ai_generate_model', 'gpt-4o-mini'))
             : 'gpt-4o-mini';
         if ($model === '') {
             $model = 'gpt-4o-mini';
         }
 
-        $image_model = function_exists('g5site_cfg')
-            ? trim((string) g5site_cfg('ai_generate_image_model', 'gpt-image-1'))
+        $image_model = function_exists('eottae_secrets_get')
+            ? trim((string) eottae_secrets_get('ai_generate_image_model', 'gpt-image-1'))
             : 'gpt-image-1';
         if ($image_model === '') {
             $image_model = 'gpt-image-1';
@@ -84,14 +93,14 @@ if (!function_exists('eottae_ai_generate_require_ready')) {
             if (function_exists('eottae_json_send')) {
                 eottae_json_send(array(
                     'success' => false,
-                    'message' => 'AI 자동생성 API 키가 아직 설정되지 않았습니다. _site.config.local.php 또는 GitHub Secret OPENAI_API_KEY를 설정해 주세요.',
+                    'message' => 'AI 자동생성 API 키가 설정되지 않았습니다. 서버 data/eottae-secrets.local.php 파일에 ai_generate_api_key를 등록해 주세요.',
                 ));
             }
 
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode(array(
                 'success' => false,
-                'message' => 'AI 자동생성 API 키가 아직 설정되지 않았습니다. _site.config.local.php 또는 GitHub Secret OPENAI_API_KEY를 설정해 주세요.',
+                'message' => 'AI 자동생성 API 키가 설정되지 않았습니다. 서버 data/eottae-secrets.local.php 파일에 ai_generate_api_key를 등록해 주세요.',
             ), JSON_UNESCAPED_UNICODE);
             exit;
         }

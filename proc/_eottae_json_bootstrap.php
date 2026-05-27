@@ -47,10 +47,16 @@ if (!function_exists('eottae_is_shop_board') && is_file(G5_LIB_PATH.'/eottae.lib
     include_once G5_LIB_PATH.'/eottae.lib.php';
 }
 
+if (!function_exists('eottae_secrets_load') && is_file(G5_LIB_PATH.'/eottae-secrets.lib.php')) {
+    include_once G5_LIB_PATH.'/eottae-secrets.lib.php';
+}
+
 if (!function_exists('eottae_ai_generate_bootstrap_config') && is_file(G5_LIB_PATH.'/eottae-ai-generate.lib.php')) {
     include_once G5_LIB_PATH.'/eottae-ai-generate.lib.php';
 }
 
-if (function_exists('eottae_merge_runtime_secrets')) {
+if (function_exists('eottae_secrets_load')) {
+    eottae_secrets_load();
+} elseif (function_exists('eottae_merge_runtime_secrets')) {
     eottae_merge_runtime_secrets();
 }
