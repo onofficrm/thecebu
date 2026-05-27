@@ -11,8 +11,10 @@ $it_seo_title = isset($it_seo_title) ? $it_seo_title : '';
 
 $it = get_shop_item_with_category($it_id, $it_seo_title);
 
-if (! (isset($it['it_id']) && $it['it_id']))
-    alert('자료가 없습니다.');
+if (!is_array($it) || empty($it['it_id'])) {
+    $fallback = function_exists('eottae_shop_list_url') ? eottae_shop_list_url() : G5_SHOP_URL;
+    alert('자료가 없습니다.', $fallback);
+}
 
 $it_id = $_REQUEST['it_id'] = $it['it_id'];
 

@@ -40,7 +40,7 @@ if (function_exists('eottae_shop_apply_manage_links')) {
 <article class="shop-detail-page board-wrap board-wrap--eottae-shop" id="bo_v" style="width:<?php echo $width; ?>">
 
     <header class="shop-detail-page__topbar">
-        <a href="<?php echo $list_href ? $list_href : eottae_shop_list_url(); ?>" class="shop-detail-page__back">← 내주변 목록</a>
+        <a href="<?php echo $eottae_shop_list_href; ?>" class="shop-detail-page__back">← 내주변 목록</a>
         <span class="shop-detail-page__save-wrap"><?php eottae_render_shop_save_button($view['wr_id'], $shop_is_saved, $share_url); ?></span>
     </header>
 
@@ -136,9 +136,14 @@ if (function_exists('eottae_shop_apply_manage_links')) {
     ));
     ?>
 
+    <a href="<?php echo $eottae_shop_list_href; ?>" class="shop-detail-page__list-fab" aria-label="내주변 목록으로">
+        <span class="shop-detail-page__list-fab-icon" aria-hidden="true">←</span>
+        <span class="shop-detail-page__list-fab-label">목록</span>
+    </a>
+
     <footer class="shop-detail-page__footer">
-        <ul class="board-actions btn_bo_user">
-            <?php if ($list_href) { ?><li><a href="<?php echo $list_href; ?>" class="btn_b01 btn">목록</a></li><?php } ?>
+        <ul class="board-actions btn_bo_user shop-detail-page__footer-actions">
+            <li><a href="<?php echo $eottae_shop_list_href; ?>" class="btn_b01 btn shop-detail-page__list-link">목록</a></li>
             <?php if ($update_href) { ?><li><a href="<?php echo $update_href; ?>" class="btn_b01 btn">수정</a></li><?php } ?>
             <?php if ($delete_href) { ?><li><a href="<?php echo $delete_href; ?>" class="btn_b01 btn shop-detail-page__btn-delete" onclick="del(this.href); return false;">삭제</a></li><?php } ?>
         </ul>

@@ -42,6 +42,119 @@ $featured_members = function_exists('eottae_member_growth_list_featured')
     ? eottae_member_growth_list_featured('', false, 3)
     : array();
 
+$hub_room_count = (int) ($my_talk_hub['room_count'] ?? 0);
+$hub_new_posts = (int) ($my_talk_hub['new_posts'] ?? 0);
+$hub_new_comments = (int) ($my_talk_hub['new_comments'] ?? 0);
+$hub_notifications = (int) ($my_talk_hub['notifications'] ?? 0);
+$hub_owner_tasks = (int) ($my_talk_hub['owner_tasks'] ?? 0);
+$hub_activity_total = $hub_new_posts + $hub_new_comments + $hub_notifications + $hub_owner_tasks;
+
+$challenge_summary = function_exists('eottae_challenge_my_summary') ? eottae_challenge_my_summary($member['mb_id']) : array();
+$challenge_label = '챌린지';
+if ((int) ($challenge_summary['entry_count'] ?? 0) > 0) {
+    $challenge_label .= ' ('.number_format((int) $challenge_summary['entry_count']).')';
+}
+
+$badges_label = '내 등급/뱃지';
+if (!empty($growth_profile['total_score'])) {
+    $badges_label .= ' ('.number_format((int) $growth_profile['total_score']).'점)';
+}
+
+$mypage_menu_groups = array();
+
+$coupon_menu_items = array(
+    array('label' => '쿠폰함', 'href' => G5_URL.'/page/eottae-coupons.php', 'tone' => 'coupon-wallet'),
+);
+if ($is_biz) {
+    $coupon_menu_items[] = array('label' => '쿠폰 발행', 'href' => G5_URL.'/page/eottae-business-coupons.php', 'tone' => 'coupon-issue');
+}
+$coupon_menu_items[] = array('label' => '쿠폰 안내', 'href' => G5_URL.'/page/eottae-coupon-guide.php', 'tone' => 'coupon-guide');
+$mypage_menu_groups[] = array('title' => '쿠폰', 'items' => $coupon_menu_items);
+
+$review_label = '내 리뷰';
+if (!$is_biz && $my_review_count > 0) {
+    $review_label .= ' ('.$my_review_count.')';
+}
+$saved_label = '찜·최근';
+if ($saved_count > 0) {
+    $saved_label .= ' ('.$saved_count.')';
+}
+$inquiry_label = '문의';
+if ($inquiry_count > 0) {
+    $inquiry_label .= ' ('.$inquiry_count.')';
+}
+$talk_label = '내 세부톡';
+if ($hub_activity_total > 0) {
+    $talk_label .= ' ('.number_format($hub_activity_total).')';
+}
+
+$mypage_menu_groups[] = array(
+    'title' => '활동 & 저장',
+    'items' => array(
+        array('label' => '포인트', 'href' => G5_URL.'/page/eottae-points.php', 'tone' => 'point'),
+        array('label' => $review_label, 'href' => G5_URL.'/page/eottae-my-reviews.php', 'tone' => 'default'),
+        array('label' => $saved_label, 'href' => G5_URL.'/page/eottae-saved-shops.php', 'tone' => 'default'),
+        array('label' => $inquiry_label, 'href' => G5_URL.'/page/eottae-inquiries.php', 'tone' => 'default'),
+        array('label' => '이벤트', 'href' => G5_URL.'/page/eottae-events.php', 'tone' => 'default'),
+        array('label' => '내 활동', 'href' => G5_BBS_URL.'/board.php?bo_table='.EOTTae_COMMUNITY_TABLE, 'tone' => 'default'),
+    ),
+);
+
+$mypage_menu_groups[] = array(
+    'title' => '세부톡 & 성장',
+    'items' => array(
+        array('label' => $talk_label, 'href' => $mypage_talk_url, 'tone' => 'talk'),
+        array('label' => $badges_label, 'href' => $badges_url, 'tone' => 'growth'),
+        array('label' => '활동 랭킹', 'href' => function_exists('eottae_member_growth_ranking_url') ? eottae_member_growth_ranking_url('week') : G5_URL.'/ranking/', 'tone' => 'growth'),
+        array('label' => $challenge_label, 'href' => function_exists('eottae_challenge_mypage_url') ? eottae_challenge_mypage_url() : G5_URL.'/mypage/challenges.php', 'tone' => 'growth'),
+    ),
+);
+
+$content_menu_items = array(
+    array('label' => '생활정보 컬럼', 'href' => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/', 'tone' => 'content'),
+);
+if (function_exists('eottae_column_is_columnist') && eottae_column_is_columnist($member['mb_id'])) {
+    $content_menu_items[] = array(
+        'label' => '내 컬럼',
+        'href' => function_exists('eottae_column_mypage_url') ? eottae_column_mypage_url() : G5_URL.'/mypage/column.php',
+        'tone' => 'content',
+    );
+}
+$mypage_menu_groups[] = array('title' => '콘텐츠', 'items' => $content_menu_items);
+
+$mypage_menu_groups[] = array(
+    'title' => '계정',
+    'items' => array(
+        array('label' => '정보수정', 'href' => G5_BBS_URL.'/member_confirm.php?url='.urlencode(G5_BBS_URL.'/register_form.php'), 'tone' => 'account'),
+        array('label' => '로그아웃', 'href' => G5_BBS_URL.'/logout.php', 'tone' => 'account-muted'),
+    ),
+);
+
+if ($is_admin === 'super') {
+    $talk_kicked_count = function_exists('eottae_talkroom_admin_kicked_count') ? eottae_talkroom_admin_kicked_count() : 0;
+    $talk_report_pending = function_exists('eottae_talkroom_admin_pending_report_count') ? eottae_talkroom_admin_pending_report_count() : 0;
+    $public_ai_pending = function_exists('eottae_public_ai_pending_count') ? eottae_public_ai_pending_count() : 0;
+    $admin_menu_items = array(
+        array('label' => '톡방 목록', 'href' => function_exists('eottae_talkroom_admin_rooms_url') ? eottae_talkroom_admin_rooms_url() : G5_URL.'/page/eottae-admin-talk-rooms.php', 'tone' => 'admin'),
+        array(
+            'label' => '강퇴 회원'.($talk_kicked_count > 0 ? ' ('.number_format($talk_kicked_count).')' : ''),
+            'href' => function_exists('eottae_talkroom_admin_kicked_url') ? eottae_talkroom_admin_kicked_url() : G5_URL.'/page/eottae-admin-talk-kicked.php',
+            'tone' => 'admin',
+        ),
+        array(
+            'label' => '신고 관리'.($talk_report_pending > 0 ? ' ('.number_format($talk_report_pending).')' : ''),
+            'href' => function_exists('eottae_talkroom_admin_reports_url') ? eottae_talkroom_admin_reports_url('pending') : G5_URL.'/page/eottae-admin-talk-reports.php?status=pending',
+            'tone' => 'admin',
+        ),
+        array(
+            'label' => '공개단톡 AI'.($public_ai_pending > 0 ? ' ('.number_format($public_ai_pending).')' : ''),
+            'href' => function_exists('eottae_public_ai_mypage_admin_url') ? eottae_public_ai_mypage_admin_url() : G5_URL.'/page/eottae-admin-public-ai.php',
+            'tone' => 'admin',
+        ),
+    );
+    $mypage_menu_groups[] = array('title' => '관리', 'items' => $admin_menu_items);
+}
+
 add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-my-talk.css">', 22);
 if (function_exists('eottae_briefing_load_assets')) {
     eottae_briefing_load_assets();
@@ -75,16 +188,46 @@ g5_page_start('마이페이지');
         </a>
     </section>
 
+    <?php if ($is_biz) { ?>
+    <section class="business-dashboard business-dashboard--top">
+        <h2 class="business-dashboard__title">사업자 대시보드</h2>
+        <p class="business-dashboard__status">
+            <?php if ($pending_replies > 0) { ?>
+            <strong><?php echo number_format($pending_replies); ?>건</strong>의 리뷰에 답변이 필요합니다.
+            <?php } else { ?>
+            새로운 리뷰 답변 요청이 없습니다.
+            <?php } ?>
+        </p>
+        <div class="business-dashboard__actions" aria-label="사업자 빠른 메뉴">
+            <a href="<?php echo G5_BBS_URL; ?>/write.php?bo_table=<?php echo EOTTae_SHOP_TABLE; ?>" class="business-dashboard__btn">업체 등록</a>
+            <a href="<?php echo G5_URL; ?>/page/eottae-business-snippets.php" class="business-dashboard__btn business-dashboard__btn--secondary">홍보 문구 관리</a>
+            <a href="<?php echo G5_URL; ?>/page/eottae-business-coupons.php" class="business-dashboard__btn business-dashboard__btn--coupon">쿠폰 발행 관리</a>
+            <a href="<?php echo G5_URL; ?>/page/eottae-business-coupon-guide.php" class="business-dashboard__btn business-dashboard__btn--guide">쿠폰 발행 안내</a>
+            <a href="<?php echo G5_BBS_URL; ?>/write.php?bo_table=<?php echo EOTTae_COMMUNITY_TABLE; ?>" class="business-dashboard__btn business-dashboard__btn--secondary">커뮤니티 글쓰기</a>
+        </div>
+        <?php eottae_render_inquiry_buttons('business', array()); ?>
+
+        <?php if (!empty($my_shop_posts)) { ?>
+        <div class="business-dashboard__shops">
+            <h3 class="business-dashboard__shops-title">내 업체</h3>
+            <ul class="business-dashboard__shop-list">
+                <?php foreach ($my_shop_posts as $shop_row) { ?>
+                <li class="business-dashboard__shop-item">
+                    <a href="<?php echo $shop_row['view_url']; ?>" class="business-dashboard__shop-name"><?php echo $shop_row['subject']; ?></a>
+                    <a href="<?php echo $shop_row['update_url']; ?>" class="business-dashboard__shop-edit">수정</a>
+                    <?php if (!empty($shop_row['delete_url'])) { ?>
+                    <a href="<?php echo $shop_row['delete_url']; ?>" class="business-dashboard__shop-delete" onclick="del(this.href); return false;">삭제</a>
+                    <?php } ?>
+                </li>
+                <?php } ?>
+            </ul>
+        </div>
+        <?php } ?>
+    </section>
+    <?php } ?>
+
     <?php render_my_sebu_briefing(collect_my_sebu_briefing_data($member['mb_id'])); ?>
 
-    <?php
-    $hub_room_count = (int) ($my_talk_hub['room_count'] ?? 0);
-    $hub_new_posts = (int) ($my_talk_hub['new_posts'] ?? 0);
-    $hub_new_comments = (int) ($my_talk_hub['new_comments'] ?? 0);
-    $hub_notifications = (int) ($my_talk_hub['notifications'] ?? 0);
-    $hub_owner_tasks = (int) ($my_talk_hub['owner_tasks'] ?? 0);
-    $hub_activity_total = $hub_new_posts + $hub_new_comments + $hub_notifications + $hub_owner_tasks;
-    ?>
     <section class="my-talk-hub-card<?php echo !empty($my_talk_hub['has_activity']) ? ' my-talk-hub-card--active' : ''; ?>" aria-labelledby="my-talk-hub-title">
         <div class="my-talk-hub-card__head">
             <h2 class="my-talk-hub-card__title" id="my-talk-hub-title">내 세부톡</h2>
@@ -116,43 +259,28 @@ g5_page_start('마이페이지');
         <a href="<?php echo $mypage_talk_url; ?>" class="my-talk-hub-card__link">내 세부톡 대시보드 열기</a>
     </section>
 
-    <nav class="mypage-quick-menu" aria-label="마이페이지 메뉴">
-        <a href="<?php echo G5_URL; ?>/page/eottae-points.php" class="mypage-quick-menu__item">포인트</a>
-        <a href="<?php echo G5_URL; ?>/page/eottae-coupons.php" class="mypage-quick-menu__item">쿠폰함</a>
-        <a href="<?php echo G5_URL; ?>/page/eottae-my-reviews.php" class="mypage-quick-menu__item">내 리뷰<?php if (!$is_biz && $my_review_count > 0) { ?> (<?php echo $my_review_count; ?>)<?php } ?></a>
-        <a href="<?php echo G5_URL; ?>/page/eottae-saved-shops.php" class="mypage-quick-menu__item">찜·최근<?php if ($saved_count > 0) { ?> (<?php echo $saved_count; ?>)<?php } ?></a>
-        <a href="<?php echo G5_URL; ?>/page/eottae-inquiries.php" class="mypage-quick-menu__item">문의<?php if ($inquiry_count > 0) { ?> (<?php echo $inquiry_count; ?>)<?php } ?></a>
-        <a href="<?php echo G5_URL; ?>/page/eottae-events.php" class="mypage-quick-menu__item">이벤트</a>
-        <a href="<?php echo $mypage_talk_url; ?>" class="mypage-quick-menu__item">내 세부톡<?php if ($hub_activity_total > 0) { ?> (<?php echo number_format($hub_activity_total); ?>)<?php } ?></a>
-        <a href="<?php echo $badges_url; ?>" class="mypage-quick-menu__item">내 등급/뱃지<?php if (!empty($growth_profile['total_score'])) { ?> (<?php echo number_format((int) $growth_profile['total_score']); ?>점)<?php } ?></a>
-        <a href="<?php echo function_exists('eottae_member_growth_badge_book_url') ? eottae_member_growth_badge_book_url() : G5_URL.'/badges/'; ?>" class="mypage-quick-menu__item">뱃지 도감</a>
-        <a href="<?php echo function_exists('eottae_member_growth_ranking_url') ? eottae_member_growth_ranking_url('week') : G5_URL.'/ranking/'; ?>" class="mypage-quick-menu__item">활동 랭킹</a>
-        <a href="<?php echo function_exists('eottae_challenge_mypage_url') ? eottae_challenge_mypage_url() : G5_URL.'/mypage/challenges.php'; ?>" class="mypage-quick-menu__item">챌린지<?php
-            $challenge_summary = function_exists('eottae_challenge_my_summary') ? eottae_challenge_my_summary($member['mb_id']) : array();
-            if ((int) ($challenge_summary['entry_count'] ?? 0) > 0) {
-                echo ' ('.number_format((int) $challenge_summary['entry_count']).')';
+    <nav class="mypage-menu-groups" aria-label="마이페이지 메뉴">
+        <?php foreach ($mypage_menu_groups as $menu_group) {
+            if (empty($menu_group['items'])) {
+                continue;
             }
-        ?></a>
-        <a href="<?php echo function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/'; ?>" class="mypage-quick-menu__item">생활정보 컬럼</a>
-        <?php if (function_exists('eottae_column_is_columnist') && eottae_column_is_columnist($member['mb_id'])) { ?>
-        <a href="<?php echo function_exists('eottae_column_mypage_url') ? eottae_column_mypage_url() : G5_URL.'/mypage/column.php'; ?>" class="mypage-quick-menu__item">내 컬럼</a>
-        <?php } ?>
-        <?php if ($is_admin === 'super') {
-            $talk_kicked_count = function_exists('eottae_talkroom_admin_kicked_count') ? eottae_talkroom_admin_kicked_count() : 0;
-            $talk_report_pending = function_exists('eottae_talkroom_admin_pending_report_count') ? eottae_talkroom_admin_pending_report_count() : 0;
             ?>
-        <a href="<?php echo function_exists('eottae_talkroom_admin_rooms_url') ? eottae_talkroom_admin_rooms_url() : G5_URL.'/page/eottae-admin-talk-rooms.php'; ?>" class="mypage-quick-menu__item">톡방 목록</a>
-        <a href="<?php echo function_exists('eottae_talkroom_admin_kicked_url') ? eottae_talkroom_admin_kicked_url() : G5_URL.'/page/eottae-admin-talk-kicked.php'; ?>" class="mypage-quick-menu__item">강퇴 회원<?php if ($talk_kicked_count > 0) { ?> (<?php echo number_format($talk_kicked_count); ?>)<?php } ?></a>
-        <a href="<?php echo function_exists('eottae_talkroom_admin_reports_url') ? eottae_talkroom_admin_reports_url('pending') : G5_URL.'/page/eottae-admin-talk-reports.php?status=pending'; ?>" class="mypage-quick-menu__item">신고 관리<?php if ($talk_report_pending > 0) { ?> (<?php echo number_format($talk_report_pending); ?>)<?php } ?></a>
-            <?php $public_ai_pending = function_exists('eottae_public_ai_pending_count') ? eottae_public_ai_pending_count() : 0; ?>
-        <a href="<?php echo function_exists('eottae_public_ai_mypage_admin_url') ? eottae_public_ai_mypage_admin_url() : G5_URL.'/page/eottae-admin-public-ai.php'; ?>" class="mypage-quick-menu__item">공개단톡 AI<?php if ($public_ai_pending > 0) { ?> (<?php echo number_format($public_ai_pending); ?>)<?php } ?></a>
+        <section class="mypage-menu-group">
+            <?php if (!empty($menu_group['title'])) { ?>
+            <h2 class="mypage-menu-group__title"><?php echo get_text($menu_group['title']); ?></h2>
+            <?php } ?>
+            <div class="mypage-menu-group__grid">
+                <?php foreach ($menu_group['items'] as $menu_item) {
+                    $menu_tone = isset($menu_item['tone']) ? preg_replace('/[^a-z0-9-]/', '', (string) $menu_item['tone']) : 'default';
+                    if ($menu_tone === '') {
+                        $menu_tone = 'default';
+                    }
+                    ?>
+                <a href="<?php echo $menu_item['href']; ?>" class="mypage-menu-group__item mypage-menu-group__item--<?php echo $menu_tone; ?>"><?php echo get_text($menu_item['label']); ?></a>
+                <?php } ?>
+            </div>
+        </section>
         <?php } ?>
-        <a href="<?php echo G5_URL; ?>/page/eottae-business-snippets.php" class="mypage-quick-menu__item">홍보 문구</a>
-        <?php if ($is_biz) { ?><a href="<?php echo G5_URL; ?>/page/eottae-business-coupons.php" class="mypage-quick-menu__item">쿠폰 발행</a><?php } ?>
-        <a href="<?php echo G5_URL; ?>/page/eottae-coupon-guide.php" class="mypage-quick-menu__item">쿠폰 안내</a>
-        <a href="<?php echo G5_BBS_URL; ?>/board.php?bo_table=<?php echo EOTTae_COMMUNITY_TABLE; ?>" class="mypage-quick-menu__item">내 활동</a>
-        <a href="<?php echo G5_BBS_URL; ?>/member_confirm.php?url=<?php echo urlencode(G5_BBS_URL.'/register_form.php'); ?>" class="mypage-quick-menu__item">정보수정</a>
-        <a href="<?php echo G5_BBS_URL; ?>/logout.php" class="mypage-quick-menu__item">로그아웃</a>
     </nav>
 
     <?php if ($is_admin === 'super') {
@@ -171,39 +299,6 @@ g5_page_start('마이페이지');
     }
     ?>
 
-    <?php if ($is_biz) { ?>
-    <section class="business-dashboard">
-        <h2 class="business-dashboard__title">사업자 대시보드</h2>
-        <?php if ($pending_replies > 0) { ?>
-        <p><strong><?php echo number_format($pending_replies); ?>건</strong>의 리뷰에 답변이 필요합니다.</p>
-        <?php } else { ?>
-        <p>새로운 리뷰 답변 요청이 없습니다.</p>
-        <?php } ?>
-        <a href="<?php echo G5_BBS_URL; ?>/write.php?bo_table=<?php echo EOTTae_SHOP_TABLE; ?>" class="eottae-btn-write" style="margin-top:12px;display:inline-flex">업체 등록</a>
-        <a href="<?php echo G5_URL; ?>/page/eottae-business-snippets.php" class="eottae-btn-write" style="margin-top:8px;display:inline-flex">홍보 문구 관리</a>
-        <a href="<?php echo G5_URL; ?>/page/eottae-business-coupons.php" class="eottae-btn-write" style="margin-top:8px;display:inline-flex">쿠폰 발행 관리</a>
-        <a href="<?php echo G5_URL; ?>/page/eottae-business-coupon-guide.php" class="eottae-btn-write" style="margin-top:8px;display:inline-flex">쿠폰 발행 안내</a>
-        <a href="<?php echo G5_BBS_URL; ?>/write.php?bo_table=<?php echo EOTTae_COMMUNITY_TABLE; ?>" class="eottae-btn-write" style="margin-top:8px;display:inline-flex">커뮤니티 글쓰기</a>
-        <?php eottae_render_inquiry_buttons('business', array()); ?>
-
-        <?php if (!empty($my_shop_posts)) { ?>
-        <div class="business-dashboard__shops">
-            <h3 class="business-dashboard__shops-title">내 업체</h3>
-            <ul class="business-dashboard__shop-list">
-                <?php foreach ($my_shop_posts as $shop_row) { ?>
-                <li class="business-dashboard__shop-item">
-                    <a href="<?php echo $shop_row['view_url']; ?>" class="business-dashboard__shop-name"><?php echo $shop_row['subject']; ?></a>
-                    <a href="<?php echo $shop_row['update_url']; ?>" class="business-dashboard__shop-edit">수정</a>
-                    <?php if (!empty($shop_row['delete_url'])) { ?>
-                    <a href="<?php echo $shop_row['delete_url']; ?>" class="business-dashboard__shop-delete" onclick="del(this.href); return false;">삭제</a>
-                    <?php } ?>
-                </li>
-                <?php } ?>
-            </ul>
-        </div>
-        <?php } ?>
-    </section>
-    <?php } ?>
 </main>
 
 <?php

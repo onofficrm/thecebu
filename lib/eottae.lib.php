@@ -1000,6 +1000,29 @@ if (!function_exists('eottae_builder_inject_home_hero_talk_script')) {
     }
 }
 
+if (!function_exists('eottae_builder_inject_home_hero_sidebar_script')) {
+    function eottae_builder_inject_home_hero_sidebar_script()
+    {
+        $return_url = function_exists('eottae_current_url') ? eottae_current_url() : G5_URL;
+        $payload = array(
+            'login_url'               => function_exists('eottae_login_url') ? eottae_login_url($return_url) : G5_BBS_URL.'/login.php',
+            'register_url'            => function_exists('eottae_register_url') ? eottae_register_url() : G5_BBS_URL.'/register.php',
+            'password_url'            => function_exists('eottae_password_lost_url') ? eottae_password_lost_url() : G5_BBS_URL.'/password_lost.php',
+            'member_growth_guide_url' => G5_URL.'/page/eottae-member-growth-guide.php',
+            'coupon_guide_url'        => G5_URL.'/page/eottae-coupon-guide.php',
+        );
+        $payload_json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($payload_json === false) {
+            return '';
+        }
+
+        $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-hero-sidebar.js' : '/js/eottae-home-hero-sidebar.js';
+
+        return '<script>window.__EOTTae_HOME_HERO_SIDEBAR__='.$payload_json.';</script>'
+            .'<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
+    }
+}
+
 if (!function_exists('eottae_builder_inject_home_events_banner_script')) {
     function eottae_builder_inject_home_events_banner_script()
     {
@@ -1294,6 +1317,7 @@ if (!function_exists('eottae_builder_inject_html')) {
         $body_scripts .= eottae_builder_inject_home_main_section_script();
         $body_scripts .= eottae_builder_inject_home_public_chat_script();
         $body_scripts .= eottae_builder_inject_home_events_banner_script();
+        $body_scripts .= eottae_builder_inject_home_hero_sidebar_script();
         $body_scripts .= eottae_builder_inject_home_header_actions_script();
         $body_scripts .= eottae_builder_inject_home_map_categories_script();
 
@@ -4578,6 +4602,63 @@ if (!function_exists('eottae_shop_list_url')) {
     }
 }
 
+if (!function_exists('eottae_shop_resolve_list_href')) {
+    /**
+     * 업체 상세 — 목록 버튼 URL (영카트 /shop/item.php·짧은주소 충돌 방지)
+     *
+     * @param string $list_href  bbs/view.php 의 $list_href
+     * @param string $bo_table
+     * @param string $qstr
+     */
+    function eottae_shop_resolve_list_href($list_href = '', $bo_table = '', $qstr = '')
+    {
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+        if ($bo_table === '') {
+            $bo_table = eottae_shop_table();
+        }
+
+        $params = array();
+        if ($qstr !== '') {
+            $raw = html_entity_decode(str_replace('&amp;', '&', (string) $qstr), ENT_QUOTES, 'UTF-8');
+            $parsed = array();
+            parse_str(ltrim($raw, '&?'), $parsed);
+            $allowed = array('sca', 'sfl', 'stx', 'sst', 'sod', 'sop', 'page', 'eottae_lat', 'eottae_lng');
+            foreach ($allowed as $key) {
+                if (isset($parsed[$key]) && $parsed[$key] !== '') {
+                    $params[$key] = $parsed[$key];
+                }
+            }
+        }
+
+        $safe = function_exists('eottae_board_list_url')
+            ? eottae_board_list_url($bo_table, $params)
+            : eottae_shop_list_url($params);
+
+        $list_href = trim((string) $list_href);
+        if ($list_href === '') {
+            return $safe;
+        }
+
+        if (preg_match('#/shop/item(?:\.php)?(?:\?|$)#i', $list_href)) {
+            return $safe;
+        }
+
+        if (defined('G5_SHOP_URL') && G5_SHOP_URL !== '' && strpos($list_href, G5_SHOP_URL) === 0 && strpos($list_href, 'board.php') === false) {
+            return $safe;
+        }
+
+        if (strpos($list_href, 'board.php') !== false && strpos($list_href, 'bo_table=') !== false) {
+            return $list_href;
+        }
+
+        if (preg_match('#/shop/?(\?|$)#i', $list_href) && strpos($list_href, 'board.php') === false) {
+            return $safe;
+        }
+
+        return $safe;
+    }
+}
+
 if (!function_exists('eottae_shop_view_url')) {
     /**
      * 업체(shop 게시판) 상세 URL — 영카트 /shop/{id} 짧은주소와 충돌하지 않도록 board.php 사용
@@ -5137,7 +5218,6 @@ if (!function_exists('eottae_gnb_nav_links')) {
             array('key' => 'community', 'label' => '커뮤니티', 'href' => eottae_community_list_url()),
             array('key' => 'column', 'label' => '생활정보 컬럼', 'href' => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/'),
             array('key' => 'ranking', 'label' => '활동랭킹', 'href' => function_exists('eottae_member_growth_ranking_url') ? eottae_member_growth_ranking_url('week') : G5_URL.'/ranking/'),
-            array('key' => 'badges', 'label' => '뱃지 도감', 'href' => function_exists('eottae_member_growth_badge_book_url') ? eottae_member_growth_badge_book_url() : G5_URL.'/badges/'),
             array('key' => 'people', 'label' => '사람찾기', 'href' => eottae_board_list_url(defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people')),
             array('key' => 'job', 'label' => '구인구직', 'href' => eottae_board_list_url(defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job')),
             array('key' => 'estate', 'label' => '부동산', 'href' => eottae_board_list_url(defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate')),
@@ -5207,8 +5287,6 @@ if (!function_exists('eottae_gnb_link_is_active')) {
                 return strpos($uri, '/calendar') !== false || strpos($uri, '/page/eottae-calendar') !== false;
             case 'ranking':
                 return strpos($uri, '/ranking') !== false || strpos($uri, '/member/ranking') !== false;
-            case 'badges':
-                return strpos($uri, '/badges') !== false;
             case 'mypage':
                 return strpos($uri, '/page/eottae-') !== false;
             default:

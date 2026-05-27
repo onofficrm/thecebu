@@ -30,3 +30,7 @@ if ($shop_can_edit_content) {
 if ($shop_map_coords['lat'] !== '' && $shop_map_coords['lng'] !== '') {
     eottae_enqueue_google_maps();
 }
+
+$eottae_shop_list_href = function_exists('eottae_shop_resolve_list_href')
+    ? eottae_shop_resolve_list_href(isset($list_href) ? $list_href : '', $bo_table, isset($qstr) ? $qstr : '')
+    : (function_exists('eottae_shop_list_url') ? eottae_shop_list_url() : G5_BBS_URL.'/board.php?bo_table='.$bo_table);

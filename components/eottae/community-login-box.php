@@ -73,7 +73,25 @@ if ($is_member && is_array($member)) {
     <?php } else { ?>
     <div class="community-login-box community-login-box--guest">
         <h2 class="community-login-box__title">세부어때를 더 편리하게</h2>
+
+        <div class="community-login-box__stats community-login-box__stats--guest" aria-hidden="true">
+            <div class="community-login-box__stat community-login-box__stat--guest">
+                <span class="community-login-box__stat-label">포인트</span>
+                <strong class="community-login-box__stat-value">활동·리뷰 적립</strong>
+            </div>
+            <div class="community-login-box__stat community-login-box__stat--guest">
+                <span class="community-login-box__stat-label">쿠폰</span>
+                <strong class="community-login-box__stat-value">할인·이벤트</strong>
+            </div>
+        </div>
+
         <a href="<?php echo $eottae_login_url; ?>" class="community-login-box__cta">세부어때 로그인</a>
+
+        <p class="community-login-box__coupon-hint community-login-box__coupon-hint--guest">
+            <a href="<?php echo G5_URL; ?>/page/eottae-member-growth-guide.php">활동 등급·뱃지</a>
+            · <a href="<?php echo G5_URL; ?>/page/eottae-coupon-guide.php">쿠폰 사용 방법</a>
+        </p>
+
         <div class="community-login-box__links">
             <a href="<?php echo $eottae_register_url; ?>">회원가입</a>
             <span class="community-login-box__divider" aria-hidden="true"></span>
