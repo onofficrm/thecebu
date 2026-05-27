@@ -31,6 +31,7 @@ if (!function_exists('eottae_public_group_chat_html')) {
             data-login-url="<?php echo get_text($payload['login_href']); ?>"
             data-register-url="<?php echo get_text($payload['register_href']); ?>"
             data-needs-join="<?php echo !empty($payload['needs_join']) ? '1' : '0'; ?>"
+            data-can-manage-ai="<?php echo !empty($payload['can_manage_ai']) ? '1' : '0'; ?>"
         >
             <div class="public-group-chat__inner">
                 <header class="public-group-chat__head">
@@ -44,6 +45,9 @@ if (!function_exists('eottae_public_group_chat_html')) {
                     <div class="public-group-chat__head-actions">
                         <?php if ((int) $payload['room_id'] > 0) { ?>
                         <span class="public-group-chat__live-badge" aria-hidden="true">LIVE</span>
+                        <?php } ?>
+                        <?php if (!empty($payload['can_manage_ai'])) { ?>
+                        <button type="button" class="public-group-chat__ai-speak" data-public-chat-ai-speak aria-label="AI 말걸기">🤖 AI 말걸기</button>
                         <?php } ?>
                         <a href="<?php echo $payload['enter_href']; ?>" class="public-group-chat__enter">단체톡방 입장</a>
                     </div>
@@ -93,6 +97,10 @@ if (!function_exists('eottae_public_group_chat_html')) {
             </div>
         </section>
         <?php
+        if (!empty($payload['can_manage_ai'])) {
+            $manage_js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-public-chat-manage.js' : '/js/eottae-public-chat-manage.js';
+            echo '<script src="'.htmlspecialchars($manage_js, ENT_QUOTES, 'UTF-8').'" defer></script>';
+        }
 
         return (string) ob_get_clean();
     }

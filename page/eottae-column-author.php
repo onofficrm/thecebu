@@ -4,6 +4,7 @@ include_once G5_LIB_PATH.'/eottae-column.lib.php';
 include_once G5_LIB_PATH.'/eottae-column-likes.lib.php';
 include_once G5_PATH.'/components/eottae/column-card.php';
 include_once G5_PATH.'/components/eottae/column-author-card.php';
+include_once G5_PATH.'/components/eottae/column-author-profile.php';
 
 $mb_id = isset($_GET['mb_id']) ? trim((string) $_GET['mb_id']) : '';
 if ($mb_id === '') {
@@ -50,7 +51,9 @@ g5_page_start(get_text($author['display_name'] ?? '').' · 칼럼니스트');
     <p class="sebu-writer-page__back"><a href="<?php echo eottae_column_list_url(); ?>">← 생활정보 컬럼</a></p>
 
     <header class="sebu-writer-page__profile">
-        <img src="<?php echo get_text($author['profile_image_url'] ?? ''); ?>" alt="" class="sebu-writer-page__avatar" width="96" height="96">
+        <div class="sebu-writer-page__profile-visual">
+            <?php echo eottae_column_render_avatar_html($author, 'lg', 'sebu-writer-page__avatar'); ?>
+        </div>
         <div class="sebu-writer-page__intro">
             <?php if (!empty($author['grade_label'])) { ?>
             <span class="sebu-writer-page__grade"><?php echo get_text($author['grade_label']); ?></span>
@@ -68,12 +71,12 @@ g5_page_start(get_text($author['display_name'] ?? '').' · 칼럼니스트');
             <?php if (!empty($author['bio'])) { ?>
             <p class="sebu-writer-page__bio"><?php echo nl2br(get_text($author['bio'])); ?></p>
             <?php } ?>
-            <?php if (!empty($author['website_url']) || !empty($author['sns_url'])) { ?>
+            <?php if (!empty($author['website_url'])) { ?>
             <p class="sebu-writer-page__links">
-                <?php if (!empty($author['website_url'])) { ?><a href="<?php echo get_text($author['website_url']); ?>" target="_blank" rel="noopener noreferrer">홈페이지</a><?php } ?>
-                <?php if (!empty($author['sns_url'])) { ?><a href="<?php echo get_text($author['sns_url']); ?>" target="_blank" rel="noopener noreferrer">SNS</a><?php } ?>
+                <a href="<?php echo get_text($author['website_url']); ?>" target="_blank" rel="noopener noreferrer">홈페이지</a>
             </p>
             <?php } ?>
+            <?php echo eottae_column_render_social_links_html($author, 'sebu-writer-page__social'); ?>
         </div>
     </header>
 

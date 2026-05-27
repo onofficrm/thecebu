@@ -103,7 +103,9 @@ if (!function_exists('eottae_public_ai_evaluate_publish_eligibility')) {
         $force = !empty($options['force']);
         $is_admin_publish = !empty($options['is_admin_publish']);
 
-        if (empty($settings['ai_enabled'])) {
+        $slot_broadcast = !empty($options['slot_broadcast']);
+
+        if (empty($settings['ai_enabled']) && !$slot_broadcast && !$force) {
             return array('ok' => false, 'reason' => 'ai_disabled');
         }
 
@@ -120,19 +122,21 @@ if (!function_exists('eottae_public_ai_evaluate_publish_eligibility')) {
             return array('ok' => false, 'reason' => 'empty_message');
         }
 
-        if (!$force && !$is_admin_publish) {
+        if (!$force && !$is_admin_publish && !$slot_broadcast) {
             if (!eottae_public_ai_is_within_active_hours($settings, $now)) {
                 return array('ok' => false, 'reason' => 'outside_active_hours');
             }
         }
 
-        $max_per_day = max(1, (int) ($settings['max_messages_per_day'] ?? 3));
-        $published_today = eottae_public_ai_count_public_chat_published_today($now);
-        if ($published_today >= $max_per_day) {
-            return array('ok' => false, 'reason' => 'daily_publish_limit');
+        if (!$slot_broadcast) {
+            $max_per_day = max(1, (int) ($settings['max_messages_per_day'] ?? 3));
+            $published_today = eottae_public_ai_count_public_chat_published_today($now);
+            if ($published_today >= $max_per_day) {
+                return array('ok' => false, 'reason' => 'daily_publish_limit');
+            }
         }
 
-        if (!$force && !$is_admin_publish && eottae_public_ai_public_chat_latest_is_ai()) {
+        if (!$force && !$is_admin_publish && !$slot_broadcast && eottae_public_ai_public_chat_latest_is_ai()) {
             return array('ok' => false, 'reason' => 'latest_message_is_ai');
         }
 
@@ -411,7 +415,8 @@ if (!function_exists('eottae_public_ai_publish_candidate')) {
             );
         }
 
-        if (eottae_public_ai_has_similar_published_message($candidate['message'])) {
+        if (empty($options['slot_broadcast'])
+            && eottae_public_ai_has_similar_published_message($candidate['message'])) {
             eottae_public_ai_insert_log(array(
                 'candidate_id'    => $candidate_id,
                 'trigger_type'    => $candidate['trigger_type'],

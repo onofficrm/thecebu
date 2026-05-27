@@ -13,6 +13,18 @@ $map_has_key = onoff_map_has_api_key();
 $map_locations_json = eottae_shop_map_locations_json($markers);
 $map_markers_api = isset($eottae_shop_list_api) ? (string) $eottae_shop_list_api : G5_URL.'/proc/eottae-shop-list.php';
 $map_bo_table = isset($bo_table) ? preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table) : (defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop');
+$map_near_radius_km = function_exists('eottae_shop_near_radius_km') ? eottae_shop_near_radius_km() : 1;
+$map_near_active = false;
+$map_user_lat = '';
+$map_user_lng = '';
+if (function_exists('eottae_shop_user_coords_from_request')) {
+    $map_user_coords = eottae_shop_user_coords_from_request();
+    if ($map_user_coords && function_exists('eottae_shop_is_near_search_request') && eottae_shop_is_near_search_request()) {
+        $map_near_active = true;
+        $map_user_lat = (string) $map_user_coords['lat'];
+        $map_user_lng = (string) $map_user_coords['lng'];
+    }
+}
 $map_embed_url = '';
 if (!$map_has_key && function_exists('eottae_shop_map_embed_url')) {
     $map_embed_url = eottae_shop_map_embed_url(
@@ -31,9 +43,15 @@ $map_use_embed = !$map_has_key && $map_embed_url !== '';
          data-shop-locations="<?php echo htmlspecialchars($map_locations_json, ENT_QUOTES, 'UTF-8'); ?>"
          data-map-markers-api="<?php echo htmlspecialchars($map_markers_api, ENT_QUOTES, 'UTF-8'); ?>"
          data-map-bo-table="<?php echo htmlspecialchars($map_bo_table, ENT_QUOTES, 'UTF-8'); ?>"
-         data-map-lat="<?php echo htmlspecialchars((string) $map_cfg['default_lat'], ENT_QUOTES, 'UTF-8'); ?>"
-         data-map-lng="<?php echo htmlspecialchars((string) $map_cfg['default_lng'], ENT_QUOTES, 'UTF-8'); ?>"
+         data-map-lat="<?php echo htmlspecialchars($map_near_active ? $map_user_lat : (string) $map_cfg['default_lat'], ENT_QUOTES, 'UTF-8'); ?>"
+         data-map-lng="<?php echo htmlspecialchars($map_near_active ? $map_user_lng : (string) $map_cfg['default_lng'], ENT_QUOTES, 'UTF-8'); ?>"
          data-map-zoom="<?php echo (int) $map_cfg['default_zoom']; ?>"
+         data-map-near-radius-km="<?php echo htmlspecialchars((string) $map_near_radius_km, ENT_QUOTES, 'UTF-8'); ?>"
+         data-map-near-active="<?php echo $map_near_active ? '1' : '0'; ?>"
+         <?php if ($map_near_active) { ?>
+         data-map-user-lat="<?php echo htmlspecialchars($map_user_lat, ENT_QUOTES, 'UTF-8'); ?>"
+         data-map-user-lng="<?php echo htmlspecialchars($map_user_lng, ENT_QUOTES, 'UTF-8'); ?>"
+         <?php } ?>
          <?php } ?>>
     <div class="shop-map-panel__canvas" id="shopMapPlaceholder">
         <?php if ($map_has_key) { ?>

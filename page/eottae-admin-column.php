@@ -6,6 +6,7 @@ if ($is_admin !== 'super') {
 }
 
 include_once G5_LIB_PATH.'/eottae-column.lib.php';
+include_once G5_PATH.'/components/eottae/column-author-profile.php';
 include_once G5_LIB_PATH.'/eottae-column-likes.lib.php';
 include_once G5_LIB_PATH.'/eottae-column-report.lib.php';
 include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
@@ -43,7 +44,12 @@ g5_page_start('생활정보 컬럼 관리');
     <nav class="sebu-column-admin__tabs" aria-label="관리 메뉴">
         <a href="<?php echo eottae_column_admin_url(array('tab' => 'columns')); ?>" class="sebu-column-admin__tab<?php echo $tab === 'columns' ? ' is-active' : ''; ?>">컬럼 목록</a>
         <a href="<?php echo eottae_column_admin_url(array('tab' => 'authors')); ?>" class="sebu-column-admin__tab<?php echo $tab === 'authors' ? ' is-active' : ''; ?>">칼럼니스트</a>
-        <a href="<?php echo eottae_column_admin_url(array('tab' => 'applications')); ?>" class="sebu-column-admin__tab<?php echo $tab === 'applications' ? ' is-active' : ''; ?>">신청 관리<?php if (count($applications) > 0) { ?> (<?php echo count($applications); ?>)<?php } ?></a>
+        <a href="<?php echo eottae_column_admin_url(array('tab' => 'applications')); ?>" class="sebu-column-admin__tab<?php echo $tab === 'applications' ? ' is-active' : ''; ?>">신청 관리<?php
+            $pending_tab_count = eottae_column_pending_application_count();
+            if ($pending_tab_count > 0) {
+                echo ' ('.number_format($pending_tab_count).')';
+            }
+        ?></a>
         <a href="<?php echo eottae_column_admin_url(array('tab' => 'monthly')); ?>" class="sebu-column-admin__tab<?php echo $tab === 'monthly' ? ' is-active' : ''; ?>">이달의 칼럼니스트</a>
         <a href="<?php echo eottae_column_admin_url(array('tab' => 'reports')); ?>" class="sebu-column-admin__tab<?php echo $tab === 'reports' ? ' is-active' : ''; ?>">신고 관리<?php if (count($reports) > 0) { ?> (<?php echo count($reports); ?>)<?php } ?></a>
         <a href="<?php echo eottae_column_admin_url(array('tab' => 'categories')); ?>" class="sebu-column-admin__tab<?php echo $tab === 'categories' ? ' is-active' : ''; ?>">카테고리</a>
@@ -171,37 +177,12 @@ g5_page_start('생활정보 컬럼 관리');
         <p class="sebu-column-empty">표시할 신청서가 없습니다.</p>
         <?php } else { ?>
         <ul class="sebu-column-admin__applications">
-            <?php foreach ($applications as $application) { ?>
-            <li class="sebu-column-admin__application-item">
-                <div class="sebu-column-admin__application-head">
-                    <strong><?php echo get_text($application['pen_name'] ?? ''); ?></strong>
-                    <span><?php echo get_text($application['mb_id'] ?? ''); ?> · <?php echo get_text($application['status_label'] ?? ''); ?></span>
-                </div>
-                <p class="sebu-column-admin__application-title"><?php echo get_text($application['title'] ?? ''); ?> · <?php echo get_text($application['specialty'] ?? ''); ?></p>
-                <?php if (!empty($application['area_label'])) { ?>
-                <p class="sebu-column-admin__application-meta">활동 지역: <?php echo get_text($application['area_label']); ?></p>
-                <?php } ?>
-                <p class="sebu-column-admin__application-bio"><?php echo nl2br(get_text($application['bio'] ?? '')); ?></p>
-                <?php if (!empty($application['sample_url'])) { ?>
-                <p class="sebu-column-admin__application-meta">샘플: <a href="<?php echo get_text($application['sample_url']); ?>" target="_blank" rel="noopener noreferrer"><?php echo get_text($application['sample_url']); ?></a></p>
-                <?php } ?>
-                <?php if (!empty($application['message'])) { ?>
-                <p class="sebu-column-admin__application-meta">메모: <?php echo nl2br(get_text($application['message'])); ?></p>
-                <?php } ?>
-                <?php if (($application['status'] ?? '') === 'pending') { ?>
-                <form class="sebu-column-admin__application-form" data-sebu-column-application-form>
-                    <input type="hidden" name="application_id" value="<?php echo (int) ($application['application_id'] ?? 0); ?>">
-                    <textarea name="review_memo" class="sebu-column-form__textarea" rows="2" placeholder="승인/반려 메모"></textarea>
-                    <div class="sebu-column-admin__inline-form">
-                        <button type="submit" name="decision" value="approve" class="sebu-column-btn sebu-column-btn--primary sebu-column-btn--sm">승인</button>
-                        <button type="submit" name="decision" value="reject" class="sebu-column-btn sebu-column-btn--ghost sebu-column-btn--sm">반려</button>
-                    </div>
-                </form>
-                <?php } elseif (!empty($application['review_memo'])) { ?>
-                <p class="sebu-column-admin__application-meta">처리 메모: <?php echo nl2br(get_text($application['review_memo'])); ?></p>
-                <?php } ?>
-            </li>
-            <?php } ?>
+            <?php
+            include_once G5_PATH.'/components/eottae/column-admin-mypage.php';
+            foreach ($applications as $application) {
+                echo eottae_column_render_admin_application_item_html($application);
+            }
+            ?>
         </ul>
         <?php } ?>
     </section>

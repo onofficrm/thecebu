@@ -430,6 +430,9 @@ if (eottae_should_load_assets()) {
     if (strpos($g5['body_script'], 'eottae-page') === false) {
         $g5['body_script'] .= ' class="eottae-page"';
     }
+    if (function_exists('eottae_maybe_append_auth_body_class')) {
+        eottae_maybe_append_auth_body_class();
+    }
 
     if (defined('G5_IS_MOBILE') && G5_IS_MOBILE && function_exists('eottae_filter_mobile_duplicate_head_assets')) {
         add_replace('html_process_css_files', function ($links) {
@@ -474,6 +477,34 @@ if (!function_exists('eottae_talkroom_append_body_class')) {
         }
 
         $g5['body_script'] .= ' class="'.$class.'"';
+    }
+}
+
+if (!function_exists('eottae_maybe_append_auth_body_class')) {
+    function eottae_maybe_append_auth_body_class()
+    {
+        if (defined('G5_IS_ADMIN') && G5_IS_ADMIN) {
+            return;
+        }
+
+        $script = basename($_SERVER['SCRIPT_FILENAME'] ?? $_SERVER['SCRIPT_NAME'] ?? '');
+        $auth_scripts = array(
+            'login.php',
+            'register.php',
+            'register_form.php',
+            'register_result.php',
+            'password_lost.php',
+            'password_reset.php',
+            'member_confirm.php',
+        );
+
+        if (!in_array($script, $auth_scripts, true)) {
+            return;
+        }
+
+        if (function_exists('eottae_talkroom_append_body_class')) {
+            eottae_talkroom_append_body_class('eottae-auth-page');
+        }
     }
 }
 

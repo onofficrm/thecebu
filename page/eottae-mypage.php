@@ -14,6 +14,7 @@ include_once G5_LIB_PATH.'/eottae-member-growth.lib.php';
 include_once G5_PATH.'/components/eottae/member-growth-display.php';
 include_once G5_PATH.'/components/eottae/talk-admin-nav.php';
 include_once G5_PATH.'/components/eottae/public-ai-admin-nav.php';
+include_once G5_PATH.'/components/eottae/column-admin-mypage.php';
 if (is_file(G5_LIB_PATH.'/eottae-public-ai.lib.php')) {
     include_once G5_LIB_PATH.'/eottae-public-ai.lib.php';
 }
@@ -105,7 +106,6 @@ $mypage_menu_groups[] = array(
     'items' => array(
         array('label' => $talk_label, 'href' => $mypage_talk_url, 'tone' => 'talk'),
         array('label' => $badges_label, 'href' => $badges_url, 'tone' => 'growth'),
-        array('label' => '활동 랭킹', 'href' => function_exists('eottae_member_growth_ranking_url') ? eottae_member_growth_ranking_url('week') : G5_URL.'/ranking/', 'tone' => 'growth'),
         array('label' => $challenge_label, 'href' => function_exists('eottae_challenge_mypage_url') ? eottae_challenge_mypage_url() : G5_URL.'/mypage/challenges.php', 'tone' => 'growth'),
     ),
 );
@@ -131,9 +131,13 @@ $mypage_menu_groups[] = array(
 );
 
 if ($is_admin === 'super') {
+    include_once G5_LIB_PATH.'/eottae-column.lib.php';
     $talk_kicked_count = function_exists('eottae_talkroom_admin_kicked_count') ? eottae_talkroom_admin_kicked_count() : 0;
     $talk_report_pending = function_exists('eottae_talkroom_admin_pending_report_count') ? eottae_talkroom_admin_pending_report_count() : 0;
     $public_ai_pending = function_exists('eottae_public_ai_pending_count') ? eottae_public_ai_pending_count() : 0;
+    $column_pending = function_exists('eottae_column_pending_application_count')
+        ? eottae_column_pending_application_count()
+        : 0;
     $admin_menu_items = array(
         array('label' => '톡방 목록', 'href' => function_exists('eottae_talkroom_admin_rooms_url') ? eottae_talkroom_admin_rooms_url() : G5_URL.'/page/eottae-admin-talk-rooms.php', 'tone' => 'admin'),
         array(
@@ -284,6 +288,9 @@ g5_page_start('마이페이지');
     </nav>
 
     <?php if ($is_admin === 'super') {
+        if (function_exists('eottae_column_render_mypage_super_admin_section')) {
+            eottae_column_render_mypage_super_admin_section(5);
+        }
         if (function_exists('eottae_public_ai_render_mypage_admin_section')) {
             eottae_public_ai_render_mypage_admin_section();
         }

@@ -6,6 +6,7 @@ include_once G5_LIB_PATH.'/eottae-column-bookmarks.lib.php';
 include_once G5_LIB_PATH.'/eottae-column-report.lib.php';
 include_once G5_PATH.'/components/eottae/column-card.php';
 include_once G5_PATH.'/components/eottae/column-author-card.php';
+include_once G5_PATH.'/components/eottae/column-author-profile.php';
 
 $wr_id = isset($_GET['wr_id']) ? (int) $_GET['wr_id'] : 0;
 $member_mb_id = $is_member ? ($member['mb_id'] ?? '') : '';
@@ -72,13 +73,7 @@ g5_page_start(get_text($post['wr_subject'] ?? '컬럼'));
 
             <div class="sebu-article__author-bar">
                 <?php if ($author) { ?>
-                <a href="<?php echo get_text($author['profile_url'] ?? '#'); ?>" class="sebu-article__author-link">
-                    <img src="<?php echo get_text($author['profile_image_url'] ?? ''); ?>" alt="" class="sebu-article__author-avatar" width="48" height="48">
-                    <span class="sebu-article__author-name"><?php echo get_text($author['display_name'] ?? ''); ?></span>
-                    <?php if (!empty($author['title'])) { ?>
-                    <span class="sebu-article__author-title"><?php echo get_text($author['title']); ?></span>
-                    <?php } ?>
-                </a>
+                <?php echo eottae_column_render_author_profile_block_html($author, 'sm'); ?>
                 <?php } else { ?>
                 <span class="sebu-article__author-name"><?php echo get_text($post['author_name'] ?? ''); ?></span>
                 <?php } ?>

@@ -40,6 +40,168 @@ if (!function_exists('eottae_column_table_exists')) {
     }
 }
 
+if (!function_exists('eottae_column_table_has_column')) {
+    function eottae_column_table_has_column($table, $column)
+    {
+        $table = preg_replace('/[^a-z0-9_]/i', '', (string) $table);
+        $column = preg_replace('/[^a-z0-9_]/i', '', (string) $column);
+        if ($table === '' || $column === '' || !eottae_column_table_exists($table)) {
+            return false;
+        }
+
+        $row = sql_fetch(" SHOW COLUMNS FROM `{$table}` LIKE '".sql_escape_string($column)."' ", false);
+
+        return is_array($row) && !empty($row['Field']);
+    }
+}
+
+if (!function_exists('eottae_column_social_field_keys')) {
+    function eottae_column_social_field_keys()
+    {
+        return array('youtube_url', 'facebook_url', 'instagram_url', 'tiktok_url', 'naver_blog_url');
+    }
+}
+
+if (!function_exists('eottae_column_social_platform_labels')) {
+    function eottae_column_social_platform_labels()
+    {
+        return array(
+            'youtube_url'     => 'YouTube',
+            'facebook_url'    => 'Facebook',
+            'instagram_url'   => 'Instagram',
+            'tiktok_url'      => 'TikTok',
+            'naver_blog_url'  => '네이버 블로그',
+        );
+    }
+}
+
+if (!function_exists('eottae_column_normalize_url')) {
+    function eottae_column_normalize_url($url)
+    {
+        $url = trim((string) $url);
+        if ($url === '') {
+            return '';
+        }
+        if (!preg_match('#^https?://#i', $url)) {
+            $url = 'https://'.$url;
+        }
+
+        return filter_var($url, FILTER_VALIDATE_URL) ? $url : '';
+    }
+}
+
+if (!function_exists('eottae_column_collect_social_from_input')) {
+    function eottae_column_collect_social_from_input(array $input)
+    {
+        $values = array();
+        foreach (eottae_column_social_field_keys() as $key) {
+            $values[$key] = eottae_column_normalize_url($input[$key] ?? '');
+        }
+
+        $legacy = eottae_column_normalize_url($input['sns_url'] ?? '');
+        if ($legacy !== '' && $values['youtube_url'] === '') {
+            $values['youtube_url'] = $legacy;
+        }
+
+        return $values;
+    }
+}
+
+if (!function_exists('eottae_column_social_from_row')) {
+    function eottae_column_social_from_row(array $row)
+    {
+        $values = array();
+        foreach (eottae_column_social_field_keys() as $key) {
+            $values[$key] = eottae_column_normalize_url($row[$key] ?? '');
+        }
+
+        $legacy = eottae_column_normalize_url($row['sns_url'] ?? '');
+        if ($legacy !== '' && $values['youtube_url'] === '') {
+            $values['youtube_url'] = $legacy;
+        }
+
+        return $values;
+    }
+}
+
+if (!function_exists('eottae_column_initials_from_name')) {
+    function eottae_column_initials_from_name($name)
+    {
+        $name = trim(preg_replace('/\s+/u', ' ', (string) $name));
+        if ($name === '') {
+            return '?';
+        }
+
+        if (preg_match('/^[a-zA-Z]/u', $name)) {
+            $parts = preg_split('/\s+/u', $name, -1, PREG_SPLIT_NO_EMPTY);
+            if (count($parts) >= 2) {
+                return mb_strtoupper(mb_substr($parts[0], 0, 1, 'UTF-8').mb_substr($parts[1], 0, 1, 'UTF-8'), 'UTF-8');
+            }
+
+            return mb_strtoupper(mb_substr($name, 0, 2, 'UTF-8'), 'UTF-8');
+        }
+
+        $compact = preg_replace('/\s+/u', '', $name);
+
+        return mb_substr($compact, 0, 2, 'UTF-8');
+    }
+}
+
+if (!function_exists('eottae_column_author_social_links')) {
+    function eottae_column_author_social_links(array $author)
+    {
+        $labels = eottae_column_social_platform_labels();
+        $links = array();
+        foreach (eottae_column_social_field_keys() as $key) {
+            $url = eottae_column_normalize_url($author[$key] ?? '');
+            if ($url === '') {
+                continue;
+            }
+            $links[] = array(
+                'key'   => $key,
+                'url'   => $url,
+                'label' => $labels[$key] ?? $key,
+            );
+        }
+
+        return $links;
+    }
+}
+
+if (!function_exists('eottae_column_migrate_profile_columns')) {
+    function eottae_column_migrate_profile_columns()
+    {
+        eottae_column_bootstrap_tables();
+        global $g5;
+
+        $social_columns = array_fill_keys(
+            eottae_column_social_field_keys(),
+            "varchar(255) NOT NULL DEFAULT ''"
+        );
+        $author_columns = $social_columns;
+        $application_columns = array_merge(
+            array('profile_image' => "varchar(255) NOT NULL DEFAULT ''"),
+            $social_columns
+        );
+
+        $tables = array(
+            $g5['sebu_column_authors_table']       => $author_columns,
+            $g5['sebu_column_author_applications_table'] => $application_columns,
+        );
+
+        foreach ($tables as $table => $columns) {
+            if (!eottae_column_table_exists($table)) {
+                continue;
+            }
+            foreach ($columns as $column => $definition) {
+                if (!eottae_column_table_has_column($table, $column)) {
+                    sql_query(" ALTER TABLE `{$table}` ADD COLUMN `{$column}` {$definition} ", false);
+                }
+            }
+        }
+    }
+}
+
 if (!function_exists('eottae_column_board_def')) {
     function eottae_column_board_def()
     {
@@ -282,6 +444,27 @@ if (!function_exists('eottae_column_admin_proc_url')) {
     }
 }
 
+if (!function_exists('eottae_column_pending_application_count')) {
+    function eottae_column_pending_application_count()
+    {
+        eottae_column_bootstrap_tables();
+        global $g5;
+
+        $table = $g5['sebu_column_author_applications_table'];
+        if (!eottae_column_table_exists($table)) {
+            return 0;
+        }
+
+        $row = sql_fetch("
+            SELECT COUNT(*) AS cnt
+            FROM `{$table}`
+            WHERE status = 'pending'
+        ", false);
+
+        return (int) ($row['cnt'] ?? 0);
+    }
+}
+
 if (!function_exists('eottae_column_member_token')) {
     function eottae_column_member_token($regenerate = false)
     {
@@ -326,6 +509,11 @@ if (!function_exists('eottae_column_ensure_schema')) {
                     `area` varchar(60) NOT NULL DEFAULT '',
                     `website_url` varchar(255) NOT NULL DEFAULT '',
                     `sns_url` varchar(255) NOT NULL DEFAULT '',
+                    `youtube_url` varchar(255) NOT NULL DEFAULT '',
+                    `facebook_url` varchar(255) NOT NULL DEFAULT '',
+                    `instagram_url` varchar(255) NOT NULL DEFAULT '',
+                    `tiktok_url` varchar(255) NOT NULL DEFAULT '',
+                    `naver_blog_url` varchar(255) NOT NULL DEFAULT '',
                     `contact_open` tinyint(1) NOT NULL DEFAULT '0',
                     `is_official` tinyint(1) NOT NULL DEFAULT '0',
                     `is_active` tinyint(1) NOT NULL DEFAULT '1',
@@ -418,6 +606,12 @@ if (!function_exists('eottae_column_ensure_schema')) {
                     `area` varchar(60) NOT NULL DEFAULT '',
                     `website_url` varchar(255) NOT NULL DEFAULT '',
                     `sns_url` varchar(255) NOT NULL DEFAULT '',
+                    `profile_image` varchar(255) NOT NULL DEFAULT '',
+                    `youtube_url` varchar(255) NOT NULL DEFAULT '',
+                    `facebook_url` varchar(255) NOT NULL DEFAULT '',
+                    `instagram_url` varchar(255) NOT NULL DEFAULT '',
+                    `tiktok_url` varchar(255) NOT NULL DEFAULT '',
+                    `naver_blog_url` varchar(255) NOT NULL DEFAULT '',
                     `sample_url` varchar(255) NOT NULL DEFAULT '',
                     `message` text NOT NULL,
                     `status` varchar(20) NOT NULL DEFAULT 'pending',
@@ -435,6 +629,7 @@ if (!function_exists('eottae_column_ensure_schema')) {
         }
 
         eottae_column_ensure_board();
+        eottae_column_migrate_profile_columns();
 
         return array('ok' => true, 'results' => $results);
     }
@@ -647,7 +842,12 @@ if (!function_exists('eottae_column_enrich_author')) {
         $author['grade'] = eottae_column_author_grade($stats, !empty($author['is_official']));
         $author['grade_label'] = eottae_column_grade_label($author['grade']);
         $author['profile_url'] = eottae_column_author_url($author['mb_id'] ?? '');
-        $author['profile_image_url'] = eottae_column_profile_image_url($author['profile_image'] ?? '', $author['mb_id'] ?? '');
+        $author['has_profile_image'] = trim((string) ($author['profile_image'] ?? '')) !== '';
+        $author['profile_image_url'] = $author['has_profile_image']
+            ? eottae_column_profile_image_url($author['profile_image'] ?? '')
+            : '';
+        $author['profile_initials'] = eottae_column_initials_from_name($author['display_name'] ?? '');
+        $author['social_links'] = eottae_column_author_social_links($author);
         $author['area_label'] = eottae_column_area_label($author['area'] ?? '');
 
         return $author;
@@ -752,11 +952,7 @@ if (!function_exists('eottae_column_profile_image_url')) {
             return G5_DATA_URL.'/'.ltrim($path, '/');
         }
 
-        if ($mb_id !== '' && function_exists('get_member_profile_img')) {
-            return get_member_profile_img($mb_id, 120, 120);
-        }
-
-        return G5_IMG_URL.'/no_profile.gif';
+        return '';
     }
 }
 
@@ -1235,8 +1431,9 @@ if (!function_exists('eottae_column_save_author')) {
         $specialty = trim(strip_tags((string) ($input['specialty'] ?? '')));
         $bio = trim((string) ($input['bio'] ?? ''));
         $area = preg_replace('/[^a-z0-9_]/', '', (string) ($input['area'] ?? ''));
-        $website_url = trim((string) ($input['website_url'] ?? ''));
-        $sns_url = trim((string) ($input['sns_url'] ?? ''));
+        $website_url = eottae_column_normalize_url($input['website_url'] ?? '');
+        $social = eottae_column_collect_social_from_input($input);
+        $sns_url = $social['youtube_url'];
         $contact_open = !empty($input['contact_open']) ? 1 : 0;
         $is_active = !isset($input['is_active']) || !empty($input['is_active']) ? 1 : 0;
         $is_visible = !isset($input['is_visible']) || !empty($input['is_visible']) ? 1 : 0;
@@ -1246,11 +1443,19 @@ if (!function_exists('eottae_column_save_author')) {
         if (!empty($input['profile_image_keep'])) {
             $profile_image = (string) ($existing['profile_image'] ?? '');
         }
+        if (!empty($input['profile_image']) && empty($_FILES['profile_image']['tmp_name'])) {
+            $profile_image = trim((string) $input['profile_image']);
+        }
         if (!empty($_FILES['profile_image']['tmp_name'])) {
             $upload = eottae_column_upload_profile_image($_FILES['profile_image'], $mb_id);
             if (!empty($upload['ok']) && !empty($upload['path'])) {
                 $profile_image = $upload['path'];
             }
+        }
+
+        $social_sql = '';
+        foreach ($social as $key => $value) {
+            $social_sql .= ", {$key} = '".sql_escape_string($value)."'";
         }
 
         $table = $g5['sebu_column_authors_table'];
@@ -1265,7 +1470,8 @@ if (!function_exists('eottae_column_save_author')) {
                 profile_image = '".sql_escape_string($profile_image)."',
                 area = '".sql_escape_string($area)."',
                 website_url = '".sql_escape_string($website_url)."',
-                sns_url = '".sql_escape_string($sns_url)."',
+                sns_url = '".sql_escape_string($sns_url)."'
+                {$social_sql},
                 contact_open = '{$contact_open}',
                 is_official = '{$is_official}',
                 is_active = '{$is_active}',
@@ -1283,7 +1489,8 @@ if (!function_exists('eottae_column_save_author')) {
                 profile_image = '".sql_escape_string($profile_image)."',
                 area = '".sql_escape_string($area)."',
                 website_url = '".sql_escape_string($website_url)."',
-                sns_url = '".sql_escape_string($sns_url)."',
+                sns_url = '".sql_escape_string($sns_url)."'
+                {$social_sql},
                 contact_open = '{$contact_open}',
                 is_official = '{$is_official}',
                 is_active = '{$is_active}',
@@ -1401,9 +1608,10 @@ if (!function_exists('eottae_column_submit_application')) {
         $specialty = trim(strip_tags((string) ($input['specialty'] ?? '')));
         $bio = trim((string) ($input['bio'] ?? ''));
         $area = preg_replace('/[^a-z0-9_]/', '', (string) ($input['area'] ?? ''));
-        $website_url = trim((string) ($input['website_url'] ?? ''));
-        $sns_url = trim((string) ($input['sns_url'] ?? ''));
-        $sample_url = trim((string) ($input['sample_url'] ?? ''));
+        $website_url = eottae_column_normalize_url($input['website_url'] ?? '');
+        $social = eottae_column_collect_social_from_input($input);
+        $sns_url = $social['youtube_url'];
+        $sample_url = eottae_column_normalize_url($input['sample_url'] ?? '');
         $message = trim((string) ($input['message'] ?? ''));
 
         if ($pen_name === '') {
@@ -1411,6 +1619,20 @@ if (!function_exists('eottae_column_submit_application')) {
         }
         if ($title === '' || $specialty === '' || $bio === '') {
             return array('ok' => false, 'message' => '타이틀, 전문 분야, 소개글은 필수입니다.');
+        }
+
+        $profile_image = '';
+        if (!empty($_FILES['profile_image']['tmp_name'])) {
+            $upload = eottae_column_upload_profile_image($_FILES['profile_image'], $mb_id);
+            if (empty($upload['ok'])) {
+                return array('ok' => false, 'message' => $upload['message'] ?? '프로필 사진 업로드에 실패했습니다.');
+            }
+            $profile_image = (string) ($upload['path'] ?? '');
+        }
+
+        $social_sql = '';
+        foreach ($social as $key => $value) {
+            $social_sql .= ", {$key} = '".sql_escape_string($value)."'";
         }
 
         $table = $g5['sebu_column_author_applications_table'];
@@ -1425,6 +1647,8 @@ if (!function_exists('eottae_column_submit_application')) {
             area = '".sql_escape_string($area)."',
             website_url = '".sql_escape_string($website_url)."',
             sns_url = '".sql_escape_string($sns_url)."',
+            profile_image = '".sql_escape_string($profile_image)."'
+            {$social_sql},
             sample_url = '".sql_escape_string($sample_url)."',
             message = '".sql_escape_string($message)."',
             status = 'pending',
@@ -1472,6 +1696,12 @@ if (!function_exists('eottae_column_list_applications')) {
         while ($row = sql_fetch_array($result)) {
             $row['status_label'] = eottae_column_application_status_label($row['status'] ?? '');
             $row['area_label'] = eottae_column_area_label($row['area'] ?? '');
+            $row['has_profile_image'] = trim((string) ($row['profile_image'] ?? '')) !== '';
+            $row['profile_image_url'] = $row['has_profile_image']
+                ? eottae_column_profile_image_url($row['profile_image'] ?? '')
+                : '';
+            $row['profile_initials'] = eottae_column_initials_from_name($row['pen_name'] ?? $row['mb_nick'] ?? '');
+            $row['social_links'] = eottae_column_author_social_links($row);
             $items[] = $row;
         }
 
@@ -1512,18 +1742,21 @@ if (!function_exists('eottae_column_review_application')) {
         ", false);
 
         if ($decision === 'approve') {
-            $author_input = array(
-                'mb_id'        => $application['mb_id'],
-                'pen_name'     => $application['pen_name'],
-                'title'        => $application['title'],
-                'specialty'    => $application['specialty'],
-                'bio'          => $application['bio'],
-                'area'         => $application['area'],
-                'website_url'  => $application['website_url'],
-                'sns_url'      => $application['sns_url'],
-                'is_active'    => 1,
-                'is_visible'   => 1,
-                'is_official'  => 0,
+            $author_input = array_merge(
+                array(
+                    'mb_id'          => $application['mb_id'],
+                    'pen_name'       => $application['pen_name'],
+                    'title'          => $application['title'],
+                    'specialty'      => $application['specialty'],
+                    'bio'            => $application['bio'],
+                    'area'           => $application['area'],
+                    'website_url'    => $application['website_url'],
+                    'profile_image'  => $application['profile_image'] ?? '',
+                    'is_active'      => 1,
+                    'is_visible'     => 1,
+                    'is_official'    => 0,
+                ),
+                eottae_column_social_from_row($application)
             );
             $saved = eottae_column_save_author($author_input, true);
             if (empty($saved['ok'])) {

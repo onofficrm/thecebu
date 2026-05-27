@@ -23,6 +23,7 @@ include_once G5_LIB_PATH.'/eottae-public-ai-weather.lib.php';
 include_once G5_LIB_PATH.'/eottae-public-ai-news.lib.php';
 include_once G5_LIB_PATH.'/eottae-public-ai-poll.lib.php';
 include_once G5_LIB_PATH.'/eottae-public-ai-openai.lib.php';
+include_once G5_LIB_PATH.'/eottae-public-ai-schedule.lib.php';
 
 if (!defined('_GNUBOARD_')) {
     fwrite(STDERR, "bootstrap failed\n");
@@ -96,6 +97,36 @@ $elig = eottae_public_ai_evaluate_publish_eligibility(array(
     'force_admin_approval' => 1,
 ), eottae_public_ai_get_settings(), array());
 public_ai_test_line('publish_block_external_cron', empty($elig['ok']) && ($elig['reason'] ?? '') === 'external_news_admin_only');
+
+$slots = eottae_public_ai_publish_slots();
+public_ai_test_line('schedule_slots_defined', count($slots) === 4);
+public_ai_test_line('schedule_detect_morning', eottae_public_ai_detect_publish_slot('2026-05-27 07:30:00') === 'morning');
+public_ai_test_line('schedule_detect_noon', eottae_public_ai_detect_publish_slot('2026-05-27 12:15:00') === 'noon');
+public_ai_test_line('schedule_detect_midnight', eottae_public_ai_detect_publish_slot('2026-05-27 23:45:00') === 'midnight');
+
+$fallback = eottae_public_ai_build_slot_fallback_candidate('noon', $sources);
+public_ai_test_line('schedule_fallback_message', is_array($fallback) && strpos($fallback['message'] ?? '', '세부어때') !== false);
+
+$health = eottae_public_ai_schedule_health_check();
+public_ai_test_line('schedule_health_check', is_array($health) && array_key_exists('ai_enabled', $health));
+
+$monitor = eottae_public_ai_run_health_monitor(array('notify' => false));
+public_ai_test_line('schedule_health_monitor', is_array($monitor) && isset($monitor['issues']));
+
+$traffic_dry = eottae_public_ai_maybe_run_traffic_slot_broadcast(array(
+    'source'  => 'self_test',
+    'dry_run' => true,
+    'now'     => '2026-05-27 12:30:00',
+));
+public_ai_test_line('traffic_tick_dry_run', !empty($traffic_dry['ran']) && ($traffic_dry['slot'] ?? '') === 'noon');
+
+$slot_dry = eottae_public_ai_run_slot_broadcast(array(
+    'dry_run' => true,
+    'force'   => true,
+    'slot'    => 'noon',
+    'now'     => '2026-05-27 12:30:00',
+));
+public_ai_test_line('schedule_slot_dry_run', !empty($slot_dry['published']) || ($slot_dry['reason'] ?? '') === 'dry_run');
 
 echo "\n=== summary: pass={$pass} fail={$fail} ===\n";
 exit($fail > 0 ? 1 : 0);

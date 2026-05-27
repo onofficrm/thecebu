@@ -36,6 +36,7 @@ if (!function_exists('eottae_talkroom_chat_html')) {
             data-login-url="<?php echo get_text($payload['login_href']); ?>"
             data-register-url="<?php echo get_text($payload['register_href']); ?>"
             data-needs-join="<?php echo !empty($payload['needs_join']) ? '1' : '0'; ?>"
+            data-can-manage-ai="<?php echo !empty($payload['can_manage_ai']) ? '1' : '0'; ?>"
         >
             <div class="public-group-chat__inner">
                 <header class="public-group-chat__head talk-room-chat__head">
@@ -52,6 +53,9 @@ if (!function_exists('eottae_talkroom_chat_html')) {
                     </div>
                     <div class="public-group-chat__head-actions">
                         <span class="public-group-chat__live-badge" aria-hidden="true">LIVE</span>
+                        <?php if (!empty($payload['can_manage_ai'])) { ?>
+                        <button type="button" class="public-group-chat__ai-speak" data-public-chat-ai-speak aria-label="AI 말걸기">🤖 AI 말걸기</button>
+                        <?php } ?>
                     </div>
                 </header>
 

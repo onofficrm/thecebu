@@ -181,11 +181,97 @@ if (!function_exists('eottae_public_ai_weather_list_recent')) {
     }
 }
 
+if (!function_exists('eottae_public_ai_weather_wmo_summary_ko')) {
+    function eottae_public_ai_weather_wmo_summary_ko($code)
+    {
+        $code = (int) $code;
+        if ($code === 0) {
+            return '맑음';
+        }
+        if (in_array($code, array(1, 2, 3), true)) {
+            return '구름 조금';
+        }
+        if (in_array($code, array(45, 48), true)) {
+            return '안개';
+        }
+        if (in_array($code, array(51, 53, 55, 56, 57), true)) {
+            return '이슬비';
+        }
+        if (in_array($code, array(61, 63, 65, 66, 67, 80, 81, 82), true)) {
+            return '비';
+        }
+        if (in_array($code, array(71, 73, 75, 77, 85, 86), true)) {
+            return '눈';
+        }
+        if (in_array($code, array(95, 96, 99), true)) {
+            return '뇌우';
+        }
+
+        return '흐림';
+    }
+}
+
+if (!function_exists('eottae_public_ai_weather_upsert_system')) {
+    function eottae_public_ai_weather_upsert_system(array $data)
+    {
+        eottae_public_ai_weather_ensure_schema();
+        $date = eottae_public_ai_weather_normalize_date($data['forecast_date'] ?? '');
+        if ($date === '') {
+            return null;
+        }
+
+        $summary = trim(strip_tags((string) ($data['weather_summary'] ?? '')));
+        if ($summary === '') {
+            return null;
+        }
+
+        $rain = max(0, min(100, (int) ($data['rain_chance'] ?? 0)));
+        $tmin = isset($data['temperature_min']) && $data['temperature_min'] !== '' && $data['temperature_min'] !== null
+            ? (int) $data['temperature_min'] : null;
+        $tmax = isset($data['temperature_max']) && $data['temperature_max'] !== '' && $data['temperature_max'] !== null
+            ? (int) $data['temperature_max'] : null;
+        $source = trim(strip_tags((string) ($data['source'] ?? 'open-meteo')));
+        if ($source === '') {
+            $source = 'open-meteo';
+        }
+        $note = trim(strip_tags((string) ($data['source_note'] ?? '')));
+        $now = defined('G5_TIME_YMDHIS') ? G5_TIME_YMDHIS : date('Y-m-d H:i:s');
+
+        $tmin_sql = $tmin === null ? 'NULL' : "'".(int) $tmin."'";
+        $tmax_sql = $tmax === null ? 'NULL' : "'".(int) $tmax."'";
+
+        $ok = (bool) sql_query("
+            INSERT INTO `".eottae_public_ai_weather_table()."` SET
+                forecast_date = '".sql_real_escape_string($date)."',
+                weather_summary = '".sql_escape_string($summary)."',
+                rain_chance = '{$rain}',
+                temperature_min = {$tmin_sql},
+                temperature_max = {$tmax_sql},
+                source = '".sql_escape_string($source)."',
+                source_note = '".sql_escape_string($note)."',
+                created_at = '{$now}',
+                updated_at = '{$now}'
+            ON DUPLICATE KEY UPDATE
+                weather_summary = VALUES(weather_summary),
+                rain_chance = VALUES(rain_chance),
+                temperature_min = VALUES(temperature_min),
+                temperature_max = VALUES(temperature_max),
+                source = VALUES(source),
+                source_note = VALUES(source_note),
+                updated_at = VALUES(updated_at)
+        ", false);
+
+        if (!$ok) {
+            return null;
+        }
+
+        return eottae_public_ai_weather_get_for_date($date);
+    }
+}
+
 if (!function_exists('eottae_public_ai_weather_fetch_from_api')) {
     /**
-     * TODO(6단계): 날씨 API 연동 (OpenWeather 등)
-     * - g5site_cfg('public_ai_weather_api_key')
-     * - g5site_cfg('public_ai_weather_lat'), public_ai_weather_lon
+     * Open-Meteo (무료) — 세부 좌표 기준 일별 예보
      *
      * @return array|null
      */
@@ -195,12 +281,66 @@ if (!function_exists('eottae_public_ai_weather_fetch_from_api')) {
             include_once G5_PATH.'/_site.config.php';
         }
 
-        $api_key = function_exists('g5site_cfg') ? trim((string) g5site_cfg('public_ai_weather_api_key', '')) : '';
-        if ($api_key === '') {
+        $date = eottae_public_ai_weather_normalize_date($date);
+        if ($date === '') {
             return null;
         }
 
-        return null;
+        $lat = function_exists('g5site_cfg') ? (float) g5site_cfg('public_ai_weather_lat', '10.3157') : 10.3157;
+        $lng = function_exists('g5site_cfg') ? (float) g5site_cfg('public_ai_weather_lon', '123.8854') : 123.8854;
+        if ($lat < -90 || $lat > 90) {
+            $lat = 10.3157;
+        }
+        if ($lng < -180 || $lng > 180) {
+            $lng = 123.8854;
+        }
+
+        $url = 'https://api.open-meteo.com/v1/forecast?latitude='.rawurlencode((string) $lat)
+            .'&longitude='.rawurlencode((string) $lng)
+            .'&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
+            .'&timezone=Asia%2FManila&forecast_days=4';
+
+        $ctx = stream_context_create(array(
+            'http' => array(
+                'timeout' => 8,
+                'header'  => "User-Agent: SebuEottaePublicAI/1.0\r\n",
+            ),
+        ));
+        $raw = @file_get_contents($url, false, $ctx);
+        if ($raw === false || trim($raw) === '') {
+            return null;
+        }
+
+        $json = json_decode($raw, true);
+        if (!is_array($json) || empty($json['daily']['time']) || !is_array($json['daily']['time'])) {
+            return null;
+        }
+
+        $idx = array_search($date, $json['daily']['time'], true);
+        if ($idx === false) {
+            return null;
+        }
+
+        $code = isset($json['daily']['weathercode'][$idx]) ? (int) $json['daily']['weathercode'][$idx] : 0;
+        $tmax = isset($json['daily']['temperature_2m_max'][$idx]) ? (int) round((float) $json['daily']['temperature_2m_max'][$idx]) : null;
+        $tmin = isset($json['daily']['temperature_2m_min'][$idx]) ? (int) round((float) $json['daily']['temperature_2m_min'][$idx]) : null;
+        $rain = isset($json['daily']['precipitation_probability_max'][$idx])
+            ? (int) round((float) $json['daily']['precipitation_probability_max'][$idx]) : 0;
+
+        $summary = eottae_public_ai_weather_wmo_summary_ko($code);
+        if ($tmin !== null && $tmax !== null) {
+            $summary .= ' ('.$tmin.'~'.$tmax.'°C)';
+        }
+
+        return eottae_public_ai_weather_upsert_system(array(
+            'forecast_date'   => $date,
+            'weather_summary' => $summary,
+            'rain_chance'     => $rain,
+            'temperature_min' => $tmin,
+            'temperature_max' => $tmax,
+            'source'          => 'open-meteo',
+            'source_note'     => 'Open-Meteo 자동 수집',
+        ));
     }
 }
 

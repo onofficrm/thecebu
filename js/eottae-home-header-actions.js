@@ -217,6 +217,107 @@
     mountCalendarInMobileMenu(data);
   }
 
+  function normalizeNavLabel(text) {
+    return (text || '').replace(/\s+/g, '');
+  }
+
+  function columnNavExists(scope) {
+    if (!scope) {
+      return false;
+    }
+
+    var links = scope.querySelectorAll('a[href]');
+    var i;
+    for (i = 0; i < links.length; i += 1) {
+      var href = links[i].getAttribute('href') || '';
+      var label = normalizeNavLabel(links[i].textContent);
+      if (label.indexOf('생활정보컬럼') !== -1 || label === '컬럼' || href.indexOf('/column') !== -1) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function findNavLinkByLabel(scope, labelText) {
+    if (!scope) {
+      return null;
+    }
+
+    var target = normalizeNavLabel(labelText);
+    var links = scope.querySelectorAll('a[href]');
+    var i;
+    for (i = 0; i < links.length; i += 1) {
+      if (normalizeNavLabel(links[i].textContent) === target) {
+        return links[i];
+      }
+    }
+
+    return null;
+  }
+
+  function buildColumnNavLink(data, className, attrName) {
+    var link = document.createElement('a');
+    link.href = data.column_url;
+    link.className = className || 'eottae-gnb-header__nav-link';
+    link.setAttribute(attrName, '1');
+    link.textContent = data.column_label || '생활정보 컬럼';
+    return link;
+  }
+
+  function mountColumnNav(data) {
+    if (!data.column_url) {
+      return;
+    }
+
+    var header = document.querySelector('header');
+    if (!header || columnNavExists(header)) {
+      return;
+    }
+
+    var community = findNavLinkByLabel(header, '커뮤니티');
+    if (!community || !community.parentNode) {
+      return;
+    }
+
+    var columnLink = buildColumnNavLink(
+      data,
+      community.className || 'eottae-gnb-header__nav-link',
+      'data-eottae-home-column-nav'
+    );
+    community.parentNode.insertBefore(columnLink, community.nextSibling);
+  }
+
+  function mountColumnInMobileMenu(data) {
+    if (!data.column_url) {
+      return;
+    }
+
+    var menu = findMobileMenuNav();
+    if (!menu || menu.querySelector('[data-eottae-home-column-menu="1"]')) {
+      return;
+    }
+
+    if (columnNavExists(menu)) {
+      return;
+    }
+
+    var community = findNavLinkByLabel(menu, '커뮤니티');
+    var link = buildColumnNavLink(
+      data,
+      'eottae-gnb-header__mobile-link',
+      'data-eottae-home-column-menu'
+    );
+    link.setAttribute('data-eottae-home-column-menu', '1');
+
+    if (community && community.parentNode === menu) {
+      menu.insertBefore(link, community.nextSibling);
+      return;
+    }
+
+    menu.appendChild(link);
+  }
+
   function hideRentcarMenuLinks() {
     var links = document.querySelectorAll('a[href*="bo_table=rentcar"], a[href*="bo_table%3Drentcar"]');
     var i;
@@ -252,6 +353,8 @@
     mountDesktop(data);
     mountMobile(data);
     mountCalendarInMobileMenu(data);
+    mountColumnNav(data);
+    mountColumnInMobileMenu(data);
     hideRentcarMenuLinks();
   }
 

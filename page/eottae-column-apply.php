@@ -1,6 +1,7 @@
 <?php
 include_once(dirname(__FILE__).'/_init.php');
 include_once G5_LIB_PATH.'/eottae-column.lib.php';
+include_once G5_PATH.'/components/eottae/column-author-profile.php';
 
 global $is_member, $member;
 
@@ -46,7 +47,7 @@ g5_page_start('칼럼니스트 신청');
     <?php if ($latest_application && ($latest_application['status'] ?? '') === 'pending') { ?>
     <p class="sebu-column-empty">현재 검토 중인 신청서가 있습니다. 관리자 확인 후 다시 안내됩니다.</p>
     <?php } else { ?>
-    <form class="sebu-column-write-form" method="post" action="<?php echo eottae_column_proc_url(); ?>">
+    <form class="sebu-column-write-form" method="post" action="<?php echo eottae_column_proc_url(); ?>" enctype="multipart/form-data">
         <input type="hidden" name="action" value="apply_columnist">
         <input type="hidden" name="eottae_column_token" value="<?php echo get_text($token); ?>">
 
@@ -71,6 +72,17 @@ g5_page_start('칼럼니스트 신청');
         </label>
 
         <label class="sebu-column-form__field">
+            <span class="sebu-column-form__label">프로필 사진</span>
+            <input type="file" name="profile_image" class="sebu-column-form__file" accept="image/jpeg,image/png,image/gif,image/webp">
+            <span class="sebu-column-form__hint">등록하지 않으면 필명 첫 글자로 프로필이 자동 생성됩니다.</span>
+        </label>
+
+        <fieldset class="sebu-column-form__fieldset">
+            <legend class="sebu-column-form__legend">SNS · 채널 링크</legend>
+            <?php echo eottae_column_render_social_form_fields(); ?>
+        </fieldset>
+
+        <label class="sebu-column-form__field">
             <span class="sebu-column-form__label">활동 지역</span>
             <select name="area" class="sebu-column-form__select">
                 <option value="">선택</option>
@@ -83,11 +95,6 @@ g5_page_start('칼럼니스트 신청');
         <label class="sebu-column-form__field">
             <span class="sebu-column-form__label">홈페이지</span>
             <input type="url" name="website_url" class="sebu-column-form__input" placeholder="https://">
-        </label>
-
-        <label class="sebu-column-form__field">
-            <span class="sebu-column-form__label">SNS</span>
-            <input type="url" name="sns_url" class="sebu-column-form__input" placeholder="https://">
         </label>
 
         <label class="sebu-column-form__field">

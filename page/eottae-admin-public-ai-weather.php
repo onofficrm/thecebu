@@ -65,7 +65,7 @@ g5_page_start('공개톡 AI 날씨 데이터');
             </div>
             <button type="submit" class="promo-admin-btn promo-admin-btn--primary">저장</button>
         </form>
-        <p class="talk-ai-settings__hint">API 연동: <code>g5site_cfg('public_ai_weather_api_key')</code> 설정 시 6단계에서 자동 수집 예정 (현재 미연결)</p>
+        <p class="talk-ai-settings__hint">정기 슬롯 크론 실행 시 Open-Meteo로 오늘·내일 날씨를 자동 수집합니다. 수동 입력은 API 데이터보다 우선합니다.</p>
     </section>
 
     <section class="promo-admin-panel talk-admin-panel">

@@ -290,6 +290,30 @@
     return params;
   }
 
+  function haversineKm(lat1, lng1, lat2, lng2) {
+    var r = 6371;
+    var dLat = ((lat2 - lat1) * Math.PI) / 180;
+    var dLng = ((lng2 - lng1) * Math.PI) / 180;
+    var a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2);
+    return r * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  function isNearModeFromUrl() {
+    var u = new URL(global.location.href);
+    return (
+      u.searchParams.get('sst') === 'near' &&
+      u.searchParams.get('eottae_lat') !== null &&
+      u.searchParams.get('eottae_lat') !== '' &&
+      u.searchParams.get('eottae_lng') !== null &&
+      u.searchParams.get('eottae_lng') !== ''
+    );
+  }
+
   function ShopMapPanel(root) {
     this.root = root;
     this.canvas = root.querySelector('.shop-map-panel__map');
@@ -304,11 +328,113 @@
       lng: parseNum(root.dataset.mapLng, 123.8854)
     };
     this.zoom = parseInt(root.dataset.mapZoom, 10) || 13;
+    this.nearRadiusKm = parseNum(root.dataset.mapNearRadiusKm, 1);
+    if (this.nearRadiusKm <= 0) {
+      this.nearRadiusKm = 1;
+    }
     this.map = null;
     this.markers = [];
     this.markerById = {};
     this.infoWindow = null;
+    this.radiusCircle = null;
+    this.userMarker = null;
   }
+
+  ShopMapPanel.prototype.isNearRadiusMode = function () {
+    return this.root.dataset.mapNearActive === '1' || isNearModeFromUrl();
+  };
+
+  ShopMapPanel.prototype.getNearRadiusKm = function () {
+    return this.nearRadiusKm > 0 ? this.nearRadiusKm : 1;
+  };
+
+  ShopMapPanel.prototype.getNearCenter = function () {
+    if (this.root.dataset.mapUserLat && this.root.dataset.mapUserLng) {
+      return {
+        lat: parseNum(this.root.dataset.mapUserLat, NaN),
+        lng: parseNum(this.root.dataset.mapUserLng, NaN)
+      };
+    }
+    var u = new URL(global.location.href);
+    var lat = parseNum(u.searchParams.get('eottae_lat'), NaN);
+    var lng = parseNum(u.searchParams.get('eottae_lng'), NaN);
+    if (isFinite(lat) && isFinite(lng)) {
+      return { lat: lat, lng: lng };
+    }
+    return null;
+  };
+
+  ShopMapPanel.prototype.filterLocationsWithinRadius = function (center, radiusKm) {
+    if (!center || !Array.isArray(this.locations)) {
+      return;
+    }
+    this.locations = this.locations.filter(function (loc) {
+      return haversineKm(center.lat, center.lng, loc.lat, loc.lng) <= radiusKm;
+    });
+  };
+
+  ShopMapPanel.prototype.clearRadiusOverlay = function () {
+    if (this.radiusCircle) {
+      this.radiusCircle.setMap(null);
+      this.radiusCircle = null;
+    }
+  };
+
+  ShopMapPanel.prototype.setUserMarkerAt = function (center) {
+    if (!this.map || !center) {
+      return;
+    }
+    if (!this.userMarker) {
+      this.userMarker = new global.google.maps.Marker({
+        map: this.map,
+        title: '내 위치',
+        icon: {
+          path: global.google.maps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: '#0ea5e9',
+          fillOpacity: 1,
+          strokeColor: '#ffffff',
+          strokeWeight: 3
+        }
+      });
+    }
+    this.userMarker.setPosition(center);
+  };
+
+  ShopMapPanel.prototype.applyNearRadiusView = function (center) {
+    if (!this.map) {
+      return;
+    }
+    center = center || this.getNearCenter();
+    if (!center || !isFinite(center.lat) || !isFinite(center.lng)) {
+      return;
+    }
+
+    var radiusKm = this.getNearRadiusKm();
+    var radiusM = radiusKm * 1000;
+
+    this.clearRadiusOverlay();
+    this.radiusCircle = new global.google.maps.Circle({
+      strokeColor: '#0ea5e9',
+      strokeOpacity: 0.85,
+      strokeWeight: 2,
+      fillColor: '#0ea5e9',
+      fillOpacity: 0.08,
+      map: this.map,
+      center: center,
+      radius: radiusM
+    });
+
+    var bounds = this.radiusCircle.getBounds();
+    if (bounds) {
+      this.map.fitBounds(bounds);
+    } else {
+      this.map.setCenter(center);
+      this.map.setZoom(15);
+    }
+
+    this.setUserMarkerAt(center);
+  };
 
   ShopMapPanel.prototype.fetchAllMarkers = function () {
     var self = this;
@@ -415,7 +541,17 @@
     self.clearMarkers();
     self.markerById = {};
 
-  if (!self.locations.length) {
+    if (self.isNearRadiusMode()) {
+      var nearCenter = self.getNearCenter();
+      if (nearCenter) {
+        self.filterLocationsWithinRadius(nearCenter, self.getNearRadiusKm());
+      }
+    }
+
+    if (!self.locations.length) {
+      if (self.isNearRadiusMode()) {
+        self.applyNearRadiusView();
+      }
       return;
     }
 
@@ -430,7 +566,11 @@
         }
         completed += 1;
         if (completed >= pending) {
-          self.fitMapToLocations();
+          if (self.isNearRadiusMode()) {
+            self.applyNearRadiusView();
+          } else {
+            self.fitMapToLocations();
+          }
         }
       });
     });
@@ -499,23 +639,7 @@
     navigator.geolocation.getCurrentPosition(
       function (pos) {
         var loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        self.map.setCenter(loc);
-        self.map.setZoom(15);
-        if (!self.userMarker) {
-          self.userMarker = new global.google.maps.Marker({
-            map: self.map,
-            title: '내 위치',
-            icon: {
-              path: global.google.maps.SymbolPath.CIRCLE,
-              scale: 8,
-              fillColor: '#0ea5e9',
-              fillOpacity: 1,
-              strokeColor: '#ffffff',
-              strokeWeight: 3
-            }
-          });
-        }
-        self.userMarker.setPosition(loc);
+        self.applyNearRadiusView(loc);
       },
       function () {
         alert('위치 권한이 필요합니다.');

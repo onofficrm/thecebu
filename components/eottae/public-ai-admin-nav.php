@@ -96,6 +96,10 @@ if (!function_exists('eottae_public_ai_render_mypage_admin_section')) {
                 </div>
             </dl>
 
+            <?php if (function_exists('eottae_public_ai_render_slot_schedule_status')) {
+                eottae_public_ai_render_slot_schedule_status('mypage');
+            } ?>
+
             <ul class="my-public-ai-admin__status" aria-label="AI 운영 상태">
                 <li class="my-public-ai-admin__status-item<?php echo $ai_on ? ' is-on' : ' is-off'; ?>">
                     AI <?php echo $ai_on ? '사용 중' : '꺼짐'; ?>
@@ -106,6 +110,14 @@ if (!function_exists('eottae_public_ai_render_mypage_admin_section')) {
                 <li class="my-public-ai-admin__status-item<?php echo $openai_on ? ' is-on' : ''; ?>">
                     OpenAI <?php echo $openai_on ? 'ON' : 'OFF'; ?>
                 </li>
+            <?php if (!empty($stats['traffic_tick_enabled'])) { ?>
+                <li class="my-public-ai-admin__status-item is-on">방문 트리거 ON</li>
+            <?php } ?>
+            <?php if (!empty($stats['web_cron_urls']['traffic_tick'])) { ?>
+            <li class="my-public-ai-admin__status-item">
+                <a href="<?php echo htmlspecialchars($stats['web_cron_urls']['traffic_tick'], ENT_QUOTES, 'UTF-8'); ?>" class="my-public-ai-admin__web-cron" target="_blank" rel="noopener noreferrer">웹크론 URL</a>
+            </li>
+            <?php } ?>
                 <?php if ($pending > 0) { ?>
                 <li class="my-public-ai-admin__status-item is-pending">승인 대기 <?php echo number_format($pending); ?>건</li>
                 <?php } ?>
@@ -184,6 +196,9 @@ if (!function_exists('eottae_public_ai_render_admin_dashboard_stats')) {
                     <dd><strong><?php echo number_format($pending); ?></strong><span class="public-ai-admin-dashboard__sub">건</span></dd>
                 </div>
             </dl>
+            <?php if (function_exists('eottae_public_ai_render_slot_schedule_status')) {
+                eottae_public_ai_render_slot_schedule_status('admin');
+            } ?>
             <ul class="public-ai-admin-dashboard__status" aria-label="AI 운영 상태">
                 <li class="public-ai-admin-dashboard__status-item<?php echo $ai_on ? ' is-on' : ' is-off'; ?>">AI <?php echo $ai_on ? '사용 중' : '꺼짐'; ?></li>
                 <li class="public-ai-admin-dashboard__status-item">발행 <?php echo $approval ? '승인 후' : '자동 가능'; ?></li>

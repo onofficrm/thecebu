@@ -10,6 +10,7 @@ if (!function_exists('eottae_column_mypage_section_html')) {
         include_once G5_LIB_PATH.'/eottae-column-likes.lib.php';
         include_once G5_LIB_PATH.'/eottae-column-bookmarks.lib.php';
         include_once G5_PATH.'/components/eottae/column-card.php';
+        include_once G5_PATH.'/components/eottae/column-author-profile.php';
 
         $mb_id = $member['mb_id'] ?? '';
         $author = eottae_column_get_author($mb_id);
@@ -25,7 +26,7 @@ if (!function_exists('eottae_column_mypage_section_html')) {
                 $stats = $author['stats'] ?? array();
                 ?>
             <div class="sebu-column-mypage__profile">
-                <img src="<?php echo get_text($author['profile_image_url'] ?? ''); ?>" alt="" class="sebu-column-mypage__avatar" width="56" height="56">
+                <?php echo eottae_column_render_avatar_html($author, 'sm', 'sebu-column-mypage__avatar'); ?>
                 <div>
                     <p class="sebu-column-mypage__name"><?php echo get_text($author['display_name'] ?? ''); ?></p>
                     <p class="sebu-column-mypage__grade"><?php echo get_text($author['grade_label'] ?? ''); ?> · <?php echo get_text($author['title'] ?? ''); ?></p>

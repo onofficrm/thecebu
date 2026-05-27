@@ -233,11 +233,9 @@
   text-decoration: none;
 }
 
-.sebu-author-card__avatar,
-.sebu-writer-monthly__avatar {
-  border-radius: 50%;
-  object-fit: cover;
-  flex: 0 0 auto;
+.sebu-author-card__social,
+.sebu-writer-monthly__social {
+  margin-top: 10px;
 }
 
 .sebu-writer-monthly {
@@ -335,23 +333,115 @@
   margin: 12px 0;
 }
 
-.sebu-article__author-link {
+.sebu-column-avatar {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  object-fit: cover;
+}
+
+.sebu-column-avatar--initials {
+  background: linear-gradient(145deg, #38bdf8 0%, #0ea5e9 45%, #0284c7 100%);
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.sebu-column-avatar--sm {
+  width: 48px;
+  height: 48px;
+  font-size: 1rem;
+}
+
+.sebu-column-avatar--md {
+  width: 64px;
+  height: 64px;
+  font-size: 1.15rem;
+}
+
+.sebu-column-avatar--lg {
+  width: 96px;
+  height: 96px;
+  font-size: 1.6rem;
+}
+
+.sebu-column-profile-block__main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   text-decoration: none;
   color: inherit;
 }
 
-.sebu-article__author-avatar {
-  border-radius: 50%;
-  object-fit: cover;
+.sebu-column-profile-block__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
-.sebu-article__author-title {
-  display: block;
+.sebu-column-profile-block__name {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.sebu-column-profile-block__title {
   font-size: 0.8rem;
-  color: #777;
+  color: #64748b;
+}
+
+.sebu-column-social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.sebu-column-social__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.sebu-column-social__link--youtube_url {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.sebu-column-social__link--facebook_url {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.sebu-column-social__link--instagram_url {
+  border-color: #fbcfe8;
+  background: #fdf2f8;
+  color: #be185d;
+}
+
+.sebu-column-social__link--tiktok_url {
+  border-color: #cbd5e1;
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+.sebu-column-social__link--naver_blog_url {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
 }
 
 .sebu-article__meta {
@@ -482,12 +572,15 @@
   display: flex;
   gap: 16px;
   margin-bottom: 20px;
+  align-items: flex-start;
 }
 
-.sebu-writer-page__avatar {
-  border-radius: 50%;
-  object-fit: cover;
+.sebu-writer-page__profile-visual {
   flex: 0 0 auto;
+}
+
+.sebu-writer-page__social {
+  margin-top: 4px;
 }
 
 .sebu-writer-page__grade {
@@ -626,6 +719,80 @@
   color: #666;
   line-height: 1.6;
   margin-bottom: 0;
+}
+
+.sebu-column-form__fieldset {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 14px 4px;
+  margin: 0 0 14px;
+}
+
+.sebu-column-form__legend {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #334155;
+  padding: 0 6px;
+}
+
+.sebu-column-form__hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.sebu-column-form__file {
+  display: block;
+  width: 100%;
+}
+
+.sebu-column-admin__application-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sebu-column-admin__application-social {
+  margin: 8px 0;
+}
+
+.sebu-column-mypage-admin {
+  margin-bottom: 20px;
+}
+
+.sebu-column-mypage-admin__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.sebu-column-mypage-admin__summary {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #c2410c;
+}
+
+.sebu-column-mypage-admin__more {
+  margin: 12px 0 0;
+  font-size: 13px;
+}
+
+.sebu-column-admin--mypage {
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #fed7aa;
+  background: #fffbeb;
+}
+
+.sebu-column-admin--mypage .sebu-column-admin__inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 /* Mypage */

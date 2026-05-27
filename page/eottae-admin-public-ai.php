@@ -26,11 +26,30 @@ g5_page_start('공개톡 AI 기본 설정');
             <a href="<?php echo G5_ADMIN_URL; ?>/" class="promo-admin-page__back">그누보드 관리자</a>
         </div>
         <h1 class="promo-admin-page__title">공개톡 AI 관리</h1>
-        <p class="promo-admin-page__desc">홈 <strong>세부공개단체톡</strong> 분위기 메이커(어때봇) 설정입니다. 기본은 관리자 승인 후 발행이며, 자동 발행은 옵션으로 켤 수 있습니다.</p>
+        <p class="promo-admin-page__desc">홈 <strong>세부공개단체톡</strong> 분위기 메이커(어때봇)입니다. 일반 호스팅은 <strong>방문 트리거</strong>(홈 공개톡 폴링) 또는 <strong>외부 웹크론</strong>(cron-job.org 등)으로 하루 4회 슬롯 발송이 가능합니다.</p>
         <?php eottae_public_ai_render_admin_nav('settings'); ?>
     </header>
 
     <?php eottae_public_ai_render_admin_dashboard_stats(); ?>
+
+    <?php
+    $dash_stats = eottae_public_ai_mypage_dashboard_stats();
+    $web_urls = isset($dash_stats['web_cron_urls']) && is_array($dash_stats['web_cron_urls']) ? $dash_stats['web_cron_urls'] : array();
+    if ($web_urls) {
+        ?>
+    <section class="promo-admin-panel talk-admin-panel public-ai-webcron-panel">
+        <h2 class="promo-admin-panel__title">일반 호스팅 — 웹크론 URL</h2>
+        <p class="talk-ai-settings__hint">서버 crontab 없이 <a href="https://cron-job.org" target="_blank" rel="noopener noreferrer">cron-job.org</a> 등에서 아래 URL을 <strong>5~15분 간격</strong>으로 호출하세요. 슬롯 시간(07·12·18·23시) 전후면 하루 4회 발송됩니다.</p>
+        <ul class="talk-ai-settings__url-list">
+            <?php foreach ($web_urls as $label => $url) { ?>
+            <li><strong><?php echo get_text($label); ?></strong><br><code><?php echo htmlspecialchars($url, ENT_QUOTES, 'UTF-8'); ?></code></li>
+            <?php } ?>
+        </ul>
+        <p class="talk-ai-settings__hint">또한 홈 공개단톡이 열려 있으면 채팅 폴링(12초)으로 <strong>방문 트리거</strong>가 자동 실행됩니다. <code>talkroom_ai_cron_key</code>를 설정하면 URL에 <code>?key=</code>가 붙습니다.</p>
+    </section>
+        <?php
+    }
+    ?>
 
     <?php if ($saved) { ?>
     <p class="talk-ai-settings__saved" role="status">설정을 저장했습니다.</p>

@@ -912,6 +912,14 @@ if (!function_exists('eottae_public_ai_generator_should_skip_candidate')) {
         $source_id = max(0, (int) ($candidate['source_id'] ?? 0));
         $message = trim((string) ($candidate['message'] ?? ''));
 
+        if (!empty($options['slot_broadcast'])) {
+            if ($message === '') {
+                return 'empty_message';
+            }
+
+            return '';
+        }
+
         if (!$skip_dedup && $source_id > 0 && eottae_public_ai_candidate_exists_today($source_type, $source_id, $now)) {
             return 'duplicate_source_today';
         }
@@ -957,6 +965,10 @@ if (!function_exists('eottae_public_ai_save_candidate_from_generator')) {
 
         if (function_exists('eottae_public_ai_guard_apply_to_candidate')) {
             $candidate = eottae_public_ai_guard_apply_to_candidate($candidate);
+        }
+
+        if (!empty($options['slot_broadcast'])) {
+            $options['skip_dedup'] = true;
         }
 
         $skip_reason = eottae_public_ai_generator_should_skip_candidate($candidate, $options);

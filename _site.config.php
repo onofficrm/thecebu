@@ -88,6 +88,15 @@ $site_config = array(
     'map_default_zoom'          => 12,
     'map_use_current_location'  => true,
     'map_default_radius_km'     => 5,
+    /* 현재 위치 기준 내주변 찾기(sst=near) 지도·목록 반경 */
+    'map_near_radius_km'        => 1,
+    /* 공개단톡 AI — 세부 날씨 자동 수집 (Open-Meteo) */
+    'public_ai_weather_lat'     => '10.3157',
+    'public_ai_weather_lon'     => '123.8854',
+    /* 공개단톡 AI — 일반 호스팅용: 방문·폴링 트리거 (서버 crontab 불필요) */
+    'public_ai_traffic_tick_enabled'  => true,
+    'public_ai_traffic_tick_interval' => 90,
+    'public_ai_traffic_grace_minutes' => 45,
     'map_unit'                  => 'km',
     'map_placeholder_title'     => 'Google Maps API 키가 설정되지 않았습니다.',
     'map_placeholder_desc'      => '_site.config.php에서 google_maps_api_key 값을 입력하면 지도가 표시됩니다.',

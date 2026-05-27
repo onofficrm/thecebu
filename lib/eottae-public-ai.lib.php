@@ -52,6 +52,8 @@ if (!function_exists('eottae_public_ai_trigger_types')) {
             'popular_post'       => '인기글',
             'business_event'     => '업체 이벤트',
             'quiet_chat'         => '조용한 공개톡',
+            'scheduled_slot'     => '정기 안내',
+            'traffic_tick'       => '방문 트리거',
             'daily_question'     => '오늘의 질문',
             'external_news'      => '외부뉴스',
             'admin_manual'       => '관리자 수동',
@@ -243,6 +245,13 @@ if (!function_exists('eottae_public_ai_ensure_schema')) {
             ", false);
         }
 
+        if (is_file(G5_LIB_PATH.'/eottae-public-ai-schedule.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-public-ai-schedule.lib.php';
+            if (function_exists('eottae_public_ai_apply_schedule_friendly_settings')) {
+                eottae_public_ai_apply_schedule_friendly_settings();
+            }
+        }
+
         return array('ok' => $ok);
     }
 }
@@ -278,17 +287,17 @@ if (!function_exists('eottae_public_ai_default_settings')) {
     function eottae_public_ai_default_settings()
     {
         return array(
-            'ai_enabled'             => 0,
+            'ai_enabled'             => 1,
             'ai_name'                => '어때봇',
-            'ai_persona'             => '세부어때 공개톡 분위기 메이커',
-            'auto_publish'           => 0,
-            'require_admin_approval' => 1,
-            'max_messages_per_day'   => 3,
+            'ai_persona'             => '세부어때 공개톡 분위기 메이커 — 일정·날씨·커뮤니티 소식 안내',
+            'auto_publish'           => 1,
+            'require_admin_approval' => 0,
+            'max_messages_per_day'   => 4,
             'min_silence_minutes'    => 180,
-            'active_start_time'      => '08:00:00',
-            'active_end_time'        => '22:00:00',
+            'active_start_time'      => '07:00:00',
+            'active_end_time'        => '23:59:59',
             'use_calendar'           => 1,
-            'use_weather'            => 0,
+            'use_weather'            => 1,
             'use_holidays'           => 1,
             'use_talk_rooms'         => 1,
             'use_popular_posts'      => 1,
@@ -898,12 +907,21 @@ if (!function_exists('eottae_public_ai_mypage_dashboard_stats')) {
         $settings = eottae_public_ai_get_settings();
         $now = $now ?: (defined('G5_TIME_YMDHIS') ? G5_TIME_YMDHIS : date('Y-m-d H:i:s'));
 
+        if (is_file(G5_LIB_PATH.'/eottae-public-ai-schedule.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-public-ai-schedule.lib.php';
+        }
+
         $published_today = 0;
         if (is_file(G5_LIB_PATH.'/eottae-public-ai-publish.lib.php')) {
             include_once G5_LIB_PATH.'/eottae-public-ai-publish.lib.php';
             if (function_exists('eottae_public_ai_count_public_chat_published_today')) {
                 $published_today = eottae_public_ai_count_public_chat_published_today($now);
             }
+        }
+
+        $slot_stats = array();
+        if (function_exists('eottae_public_ai_slot_dashboard_stats')) {
+            $slot_stats = eottae_public_ai_slot_dashboard_stats($now);
         }
 
         $openai_success = 0;
@@ -938,6 +956,13 @@ if (!function_exists('eottae_public_ai_mypage_dashboard_stats')) {
             $last_openai_at = trim((string) ($last_openai['last_at'] ?? ''));
         }
 
+        $traffic_cfg = function_exists('eottae_public_ai_traffic_tick_config')
+            ? eottae_public_ai_traffic_tick_config()
+            : array('enabled' => false, 'interval' => 90, 'grace' => 45);
+        $web_cron = function_exists('eottae_public_ai_web_cron_urls')
+            ? eottae_public_ai_web_cron_urls()
+            : array();
+
         return array(
             'published_today'          => $published_today,
             'max_messages_per_day'     => max(1, (int) ($settings['max_messages_per_day'] ?? 10)),
@@ -948,6 +973,17 @@ if (!function_exists('eottae_public_ai_mypage_dashboard_stats')) {
             'last_candidate_at'        => trim((string) ($last_candidate['last_at'] ?? '')),
             'last_published_at'        => trim((string) ($last_published['last_at'] ?? '')),
             'last_openai_at'           => $last_openai_at,
+            'slot_published_count'     => (int) ($slot_stats['published_count'] ?? 0),
+            'slot_total'               => (int) ($slot_stats['total_slots'] ?? 4),
+            'slot_missed_count'        => (int) ($slot_stats['missed_count'] ?? 0),
+            'slot_current'             => (string) ($slot_stats['current_slot'] ?? ''),
+            'slot_rows'                => isset($slot_stats['slots']) && is_array($slot_stats['slots']) ? $slot_stats['slots'] : array(),
+            'traffic_tick_enabled'     => !empty($traffic_cfg['enabled']),
+            'traffic_tick_interval'    => (int) ($traffic_cfg['interval'] ?? 90),
+            'traffic_grace_minutes'    => (int) ($traffic_cfg['grace'] ?? 45),
+            'web_cron_urls'            => $web_cron,
+            'due_slot_on_traffic'      => function_exists('eottae_public_ai_find_traffic_due_slot')
+                ? eottae_public_ai_find_traffic_due_slot($now) : '',
         );
     }
 }

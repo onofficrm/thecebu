@@ -233,7 +233,11 @@
     }
   }
 
-  function renderMessage(message) {
+  function renderMessage(message, section) {
+    if (global.EottaePublicChatManage && global.EottaePublicChatManage.messageHtml) {
+      return global.EottaePublicChatManage.messageHtml(message, section || getSection());
+    }
+
     if (!message || !message.wr_id || !message.text) {
       return '';
     }
@@ -307,7 +311,7 @@
       if (wrId < 1 || messagesEl.querySelector('[data-wr-id="' + wrId + '"]')) {
         continue;
       }
-      html += renderMessage(message);
+      html += renderMessage(message, section);
       if (wrId > lastId) {
         lastId = wrId;
       }
@@ -460,6 +464,11 @@
     global.setInterval(function () {
       poll(section);
     }, POLL_MS);
+
+    if (global.EottaePublicChatManage) {
+      global.EottaePublicChatManage.appendMessages = appendMessages;
+      global.EottaePublicChatManage.initSection(section);
+    }
   }
 
   function runMount() {

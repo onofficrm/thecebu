@@ -42,6 +42,8 @@ $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
 $action = isset($_REQUEST['action']) ? trim((string) $_REQUEST['action']) : 'poll';
 $since_wr_id = isset($_REQUEST['since_wr_id']) ? (int) $_REQUEST['since_wr_id'] : 0;
 $viewer_mb_id = !empty($member['mb_id']) ? (string) $member['mb_id'] : '';
+$is_super = ($is_admin === 'super');
+$can_manage_ai = eottae_talkroom_public_group_can_manage_ai($room_id, $viewer_mb_id, $is_super);
 
 if ($method === 'GET' || $action === 'poll') {
     $ctx = eottae_talkroom_build_detail_context($room_id, $viewer_mb_id);
@@ -54,15 +56,10 @@ if ($method === 'GET' || $action === 'poll') {
     }
 
     $rows = eottae_talkroom_public_group_list_messages($room_id, 30, $since_wr_id);
-    $messages = array();
+    $messages = eottae_talkroom_public_group_format_messages_for_viewer($rows, $viewer_mb_id, $can_manage_ai);
     $last_wr_id = $since_wr_id;
 
-    foreach ($rows as $row) {
-        $message = eottae_talkroom_public_group_format_message($row, $viewer_mb_id);
-        if ($message['text'] === '') {
-            continue;
-        }
-        $messages[] = $message;
+    foreach ($messages as $message) {
         $last_wr_id = max($last_wr_id, (int) ($message['wr_id'] ?? 0));
     }
 
@@ -100,6 +97,37 @@ if ($action === 'send') {
         'wr_id'       => (int) ($result['wr_id'] ?? 0),
         'message_row' => $result['message_row'] ?? null,
         'last_wr_id'  => (int) ($result['wr_id'] ?? 0),
+        'member_token' => eottae_talkroom_member_token(),
+    ));
+}
+
+if ($action === 'ai_speak') {
+    if (!$can_manage_ai) {
+        eottae_talkroom_room_chat_json(false, 'AI 말걸기 권한이 없습니다.');
+    }
+
+    $result = eottae_public_ai_run_manual_group_speak($room_id, $member['mb_id'], $is_super);
+
+    eottae_talkroom_room_chat_json(!empty($result['ok']), $result['message'] ?? '', array(
+        'room_id'      => $room_id,
+        'wr_id'        => (int) ($result['wr_id'] ?? 0),
+        'message_row'  => $result['message_row'] ?? null,
+        'last_wr_id'   => (int) ($result['wr_id'] ?? 0),
+        'member_token' => eottae_talkroom_member_token(),
+    ));
+}
+
+if ($action === 'delete_message') {
+    if (!$can_manage_ai) {
+        eottae_talkroom_room_chat_json(false, '삭제 권한이 없습니다.');
+    }
+
+    $wr_id = isset($_POST['wr_id']) ? (int) $_POST['wr_id'] : 0;
+    $result = eottae_talkroom_public_group_delete_chat_message($wr_id, $member['mb_id'], $is_super);
+
+    eottae_talkroom_room_chat_json(!empty($result['ok']), $result['message'] ?? '', array(
+        'room_id'      => $room_id,
+        'wr_id'        => (int) ($result['wr_id'] ?? $wr_id),
         'member_token' => eottae_talkroom_member_token(),
     ));
 }

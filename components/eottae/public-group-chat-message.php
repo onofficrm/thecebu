@@ -41,6 +41,7 @@ if (!function_exists('eottae_public_group_chat_message_html')) {
             include_once G5_LIB_PATH.'/eottae-public-ai-poll.lib.php';
             $poll_html = eottae_public_ai_poll_render_html($message['poll_options_raw']);
         }
+        $can_delete = !empty($message['can_delete']);
 
         ob_start();
         ?>
@@ -54,6 +55,13 @@ if (!function_exists('eottae_public_group_chat_message_html')) {
                     } else { ?>
                     <strong class="public-group-chat__author"><?php echo $author; ?></strong>
                     <?php } ?>
+                    <?php if ($can_delete) { ?>
+                    <button type="button" class="public-group-chat__delete" data-public-chat-delete="<?php echo (int) $message['wr_id']; ?>" aria-label="AI 메시지 삭제">삭제</button>
+                    <?php } ?>
+                </div>
+                <?php } elseif ($can_delete) { ?>
+                <div class="public-group-chat__meta public-group-chat__meta--actions">
+                    <button type="button" class="public-group-chat__delete" data-public-chat-delete="<?php echo (int) $message['wr_id']; ?>" aria-label="AI 메시지 삭제">삭제</button>
                 </div>
                 <?php } ?>
                 <div class="public-group-chat__bubble-row">

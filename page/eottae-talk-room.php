@@ -6,6 +6,7 @@ include_once G5_LIB_PATH.'/eottae-talkroom-reads.lib.php';
 include_once G5_LIB_PATH.'/eottae-calendar.lib.php';
 include_once G5_PATH.'/components/eottae/talk-ai-message-ui.php';
 include_once G5_PATH.'/components/eottae/talk-room-chat.php';
+include_once G5_LIB_PATH.'/eottae-talkroom-public-chat.lib.php';
 
 $room_id = isset($_GET['room_id']) ? (int) $_GET['room_id'] : 0;
 $mb_id = !empty($is_member) && !empty($member['mb_id']) ? $member['mb_id'] : '';
@@ -30,6 +31,10 @@ $login_url = function_exists('eottae_login_url')
     ? eottae_login_url(eottae_talkroom_enter_url($room_id))
     : G5_BBS_URL.'/login.php';
 
+$can_manage_public_ai = eottae_talkroom_public_group_can_manage_ai($room_id, $mb_id, $is_super);
+if ($can_manage_public_ai) {
+    add_javascript('<script src="'.G5_JS_URL.'/eottae-public-chat-manage.js" defer></script>', 25);
+}
 add_javascript('<script src="'.G5_JS_URL.'/eottae-talkroom-chat.js" defer></script>', 26);
 
 g5_page_start($room['room_name']);

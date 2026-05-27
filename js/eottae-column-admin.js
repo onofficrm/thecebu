@@ -1,11 +1,12 @@
 (function () {
   'use strict';
 
-  var root = document.querySelector('.sebu-column-admin');
-  if (!root) {
+  var roots = document.querySelectorAll('.sebu-column-admin');
+  if (!roots.length) {
     return;
   }
 
+  var root = roots[0];
   var procUrl = root.getAttribute('data-proc-url');
   var adminToken = root.getAttribute('data-admin-token');
 
@@ -87,21 +88,23 @@
     });
   });
 
-  root.querySelectorAll('[data-sebu-column-application-form]').forEach(function (form) {
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var submitter = e.submitter;
-      var data = {
-        action: 'review_application',
-        application_id: form.querySelector('[name="application_id"]').value,
-        review_memo: form.querySelector('[name="review_memo"]').value,
-        decision: submitter ? submitter.value : 'reject'
-      };
-      postAdmin(data).then(function (res) {
-        alert(res.message || (res.success ? '처리되었습니다.' : '실패했습니다.'));
-        if (res.success) {
-          window.location.reload();
-        }
+  roots.forEach(function (adminRoot) {
+    adminRoot.querySelectorAll('[data-sebu-column-application-form]').forEach(function (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var submitter = e.submitter;
+        var data = {
+          action: 'review_application',
+          application_id: form.querySelector('[name="application_id"]').value,
+          review_memo: form.querySelector('[name="review_memo"]').value,
+          decision: submitter ? submitter.value : 'reject'
+        };
+        postAdmin(data).then(function (res) {
+          alert(res.message || (res.success ? '처리되었습니다.' : '실패했습니다.'));
+          if (res.success) {
+            window.location.reload();
+          }
+        });
       });
     });
   });

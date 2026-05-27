@@ -3,6 +3,10 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
+if (!function_exists('eottae_column_render_avatar_html')) {
+    include_once G5_PATH.'/components/eottae/column-author-profile.php';
+}
+
 if (!function_exists('eottae_column_author_card_html')) {
     function eottae_column_author_card_html(array $author, $variant = 'default')
     {
@@ -48,7 +52,7 @@ if (!function_exists('eottae_column_monthly_card_html')) {
         <article class="sebu-writer-monthly">
             <p class="sebu-writer-monthly__label">이달의 칼럼니스트</p>
             <a href="<?php echo get_text($author['profile_url'] ?? '#'); ?>" class="sebu-writer-monthly__link">
-                <img src="<?php echo get_text($author['profile_image_url'] ?? ''); ?>" alt="" class="sebu-writer-monthly__avatar" width="72" height="72" loading="lazy">
+                <?php echo eottae_column_render_avatar_html($author, 'md', 'sebu-writer-monthly__avatar'); ?>
                 <div class="sebu-writer-monthly__body">
                     <h3 class="sebu-writer-monthly__name"><?php echo get_text($author['display_name'] ?? ''); ?></h3>
                     <?php if (!empty($author['title'])) { ?>

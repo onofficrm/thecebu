@@ -1878,8 +1878,117 @@ body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__status-i
   color: #b91c1c;
 }
 
+body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__slots {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #faf5ff;
+  border: 1px solid #e9d5ff;
+}
+
+body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__slots-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__slots-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #5b21b6;
+}
+
+body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__slots-summary {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+}
+
+body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__slots-alert {
+  font-size: 11px;
+  font-weight: 800;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__slots-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__slots-item {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  font-size: 12px;
+}
+
+body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__slots-label {
+  font-weight: 800;
+  color: #334155;
+}
+
+body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__slots-time {
+  color: #64748b;
+  font-size: 11px;
+}
+
+body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__slots-state {
+  font-weight: 700;
+  font-size: 11px;
+}
+
+body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__slots-item.is-published {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__slots-item.is-published .public-ai-admin-dashboard__slots-state {
+  color: #15803d;
+}
+
+body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__slots-item.is-missed {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__slots-item.is-missed .public-ai-admin-dashboard__slots-state {
+  color: #b91c1c;
+}
+
+body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__slots-item.is-active {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__slots-item.is-active .public-ai-admin-dashboard__slots-state {
+  color: #b45309;
+}
+
+body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__slots-hint {
+  margin: 10px 0 0;
+  font-size: 11px;
+  color: #64748b;
+}
+
 @media (max-width: 900px) {
   body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.talk-admin-shell .public-ai-admin-page .public-ai-admin-dashboard__slots-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

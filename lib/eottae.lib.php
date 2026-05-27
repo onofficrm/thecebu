@@ -1082,6 +1082,8 @@ if (!function_exists('eottae_builder_inject_home_header_actions_script')) {
             'talk_label'    => '세부톡',
             'calendar_url'  => function_exists('eottae_calendar_list_url') ? eottae_calendar_list_url() : G5_URL.'/calendar/',
             'calendar_label'=> '세부일정',
+            'column_url'    => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/',
+            'column_label'  => '생활정보 컬럼',
         );
         $payload_json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if ($payload_json === false) {
@@ -1211,9 +1213,6 @@ if (!function_exists('eottae_builder_inject_site_footer_script')) {
             'briefing_url'                => function_exists('eottae_briefing_url')
                 ? eottae_briefing_url()
                 : G5_URL.'/briefing/',
-            'ranking_url'               => function_exists('eottae_member_growth_ranking_url')
-                ? eottae_member_growth_ranking_url('week')
-                : G5_URL.'/ranking/',
             'badge_book_url'            => function_exists('eottae_member_growth_badge_book_url')
                 ? eottae_member_growth_badge_book_url()
                 : G5_URL.'/badges/',
@@ -3827,6 +3826,73 @@ if (!function_exists('eottae_shop_sort_list_by_distance')) {
     }
 }
 
+if (!function_exists('eottae_shop_near_radius_km')) {
+    function eottae_shop_near_radius_km()
+    {
+        $km = (float) g5site_cfg('map_near_radius_km', '1');
+        if ($km <= 0) {
+            $km = 1;
+        }
+
+        return $km;
+    }
+}
+
+if (!function_exists('eottae_shop_filter_rows_within_radius')) {
+    /**
+     * @param array<int, array<string, mixed>> $rows
+     * @return array<int, array<string, mixed>>
+     */
+    function eottae_shop_filter_rows_within_radius($rows, $radius_km)
+    {
+        if (!is_array($rows)) {
+            return array();
+        }
+
+        $radius_km = (float) $radius_km;
+        if ($radius_km <= 0) {
+            return $rows;
+        }
+
+        $filtered = array();
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $dist = isset($row['_eottae_distance_km']) ? (float) $row['_eottae_distance_km'] : 99999;
+            if ($dist <= $radius_km) {
+                $filtered[] = $row;
+            }
+        }
+
+        return $filtered;
+    }
+}
+
+if (!function_exists('eottae_shop_is_near_search_request')) {
+    function eottae_shop_is_near_search_request(array $args = array())
+    {
+        $sst = isset($args['sst']) ? trim((string) $args['sst']) : '';
+        if ($sst === '' && isset($_GET['sst'])) {
+            $sst = trim((string) $_GET['sst']);
+        }
+        if ($sst !== 'near') {
+            return false;
+        }
+
+        $lat = isset($args['eottae_lat']) ? trim((string) $args['eottae_lat']) : '';
+        $lng = isset($args['eottae_lng']) ? trim((string) $args['eottae_lng']) : '';
+        if ($lat === '' && isset($_GET['eottae_lat'])) {
+            $lat = trim((string) $_GET['eottae_lat']);
+        }
+        if ($lng === '' && isset($_GET['eottae_lng'])) {
+            $lng = trim((string) $_GET['eottae_lng']);
+        }
+
+        return $lat !== '' && $lng !== '' && is_numeric($lat) && is_numeric($lng);
+    }
+}
+
 if (!function_exists('eottae_shop_format_distance_km')) {
     function eottae_shop_format_distance_km($km)
     {
@@ -3885,6 +3951,8 @@ if (!function_exists('eottae_shop_build_nearby_list')) {
         }
 
         eottae_shop_sort_list_by_distance($rows, $user_lat, $user_lng);
+        $rows = eottae_shop_filter_rows_within_radius($rows, eottae_shop_near_radius_km());
+        $total_count = count($rows);
 
         $page = isset($args['page']) ? max(1, (int) $args['page']) : 1;
         $page_rows = isset($args['page_rows']) ? max(1, (int) $args['page_rows']) : (G5_IS_MOBILE ? (int) $board['bo_mobile_page_rows'] : (int) $board['bo_page_rows']);
@@ -4148,8 +4216,10 @@ if (!function_exists('eottae_shop_fetch_raw_rows')) {
                 }
             }
             eottae_shop_sort_list_by_distance($rows, $user_lat, $user_lng);
+            $radius_km = eottae_shop_near_radius_km();
+            $rows = eottae_shop_filter_rows_within_radius($rows, $radius_km);
 
-            return array('total' => $total, 'rows' => $rows);
+            return array('total' => count($rows), 'rows' => $rows);
         }
 
         $order_sql = eottae_shop_list_order_sql($args);
@@ -5217,7 +5287,6 @@ if (!function_exists('eottae_gnb_nav_links')) {
             array('key' => 'tour', 'label' => '투어', 'href' => eottae_board_list_url(defined('EOTTae_TOUR_TABLE') ? EOTTae_TOUR_TABLE : 'tour')),
             array('key' => 'community', 'label' => '커뮤니티', 'href' => eottae_community_list_url()),
             array('key' => 'column', 'label' => '생활정보 컬럼', 'href' => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/'),
-            array('key' => 'ranking', 'label' => '활동랭킹', 'href' => function_exists('eottae_member_growth_ranking_url') ? eottae_member_growth_ranking_url('week') : G5_URL.'/ranking/'),
             array('key' => 'people', 'label' => '사람찾기', 'href' => eottae_board_list_url(defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people')),
             array('key' => 'job', 'label' => '구인구직', 'href' => eottae_board_list_url(defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job')),
             array('key' => 'estate', 'label' => '부동산', 'href' => eottae_board_list_url(defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate')),
@@ -5285,8 +5354,8 @@ if (!function_exists('eottae_gnb_link_is_active')) {
                 return strpos($uri, '/talk') !== false || strpos($uri, '/page/eottae-talk') !== false;
             case 'calendar':
                 return strpos($uri, '/calendar') !== false || strpos($uri, '/page/eottae-calendar') !== false;
-            case 'ranking':
-                return strpos($uri, '/ranking') !== false || strpos($uri, '/member/ranking') !== false;
+            case 'column':
+                return strpos($uri, '/column') !== false || strpos($uri, '/page/eottae-column') !== false;
             case 'mypage':
                 return strpos($uri, '/page/eottae-') !== false;
             default:
