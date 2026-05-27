@@ -4177,6 +4177,12 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   transform: none;
 }
 
+.eottae-ai-btn.is-ai-unavailable {
+  opacity: 0.82;
+  cursor: pointer;
+  filter: grayscale(0.12);
+}
+
 .eottae-ai-btn__icon {
   display: inline-flex;
   align-items: center;

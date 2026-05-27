@@ -32,6 +32,8 @@ $tiktok = isset($_POST['tiktok']) ? trim(strip_tags((string) $_POST['tiktok'])) 
 $facebook = isset($_POST['facebook']) ? trim(strip_tags((string) $_POST['facebook'])) : '';
 $naver_blog = isset($_POST['naver_blog']) ? trim(strip_tags((string) $_POST['naver_blog'])) : '';
 $existing_intro = isset($_POST['intro']) ? trim(strip_tags((string) $_POST['intro'])) : '';
+$mode = isset($_POST['mode']) ? strtolower(trim((string) $_POST['mode'])) : 'all';
+$seo_only = ($mode === 'seo');
 
 if ($name === '') {
     eottae_json_send(array('success' => false, 'message' => '업체명을 먼저 입력해 주세요.'));
@@ -60,12 +62,18 @@ foreach ($context as $key => $value) {
     }
 }
 
+$json_fields = $seo_only
+    ? 'seo_title, seo_intro, meta_description, focus_keyword'
+    : 'intro, seo_title, seo_intro, meta_description, focus_keyword';
+
 $prompt = "필리핀 세부 지역 생활정보 웹사이트 '세부어때'의 업체 등록 문구를 작성해 주세요.\n"
     ."아래 업체 정보를 바탕으로 과장 없이 자연스러운 한국어로 작성합니다.\n"
     ."반드시 JSON만 응답하고, 마크다운/설명 문장은 넣지 마세요.\n"
-    ."JSON 필드: intro, seo_title, seo_intro, meta_description, focus_keyword\n"
-    ."- intro: 업체 소개 본문, 350~600자, 문단 2개 정도\n"
-    ."- seo_title: 35자 이내, 검색 제목\n"
+    .'JSON 필드: '.$json_fields."\n";
+if (!$seo_only) {
+    $prompt .= "- intro: 업체 소개 본문, 350~600자, 문단 2개 정도\n";
+}
+$prompt .= "- seo_title: 35자 이내, 검색 제목\n"
     ."- seo_intro: 80자 이내 한 줄 소개\n"
     ."- meta_description: 120~155자 검색 설명\n"
     ."- focus_keyword: 쉼표로 구분한 핵심 키워드 3~6개\n\n"

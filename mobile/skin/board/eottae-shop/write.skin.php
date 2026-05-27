@@ -84,7 +84,7 @@ $eottae_ai_cfg = function_exists('eottae_ai_generate_bootstrap_config')
 $eottae_ai_enabled = !empty($eottae_ai_cfg['enabled']) && !empty($eottae_ai_cfg['api_key']);
 ?>
 
-<section class="shop-register-page board-wrap board-wrap--eottae-shop board-write" id="bo_w" style="width:<?php echo $width; ?>">
+<section class="shop-register-page board-wrap board-wrap--eottae-shop board-write" id="bo_w" style="width:<?php echo $width; ?>" data-ai-enabled="<?php echo $eottae_ai_enabled ? '1' : '0'; ?>">
     <header class="shop-register-page__header">
         <h1 class="shop-register-page__title"><?php echo $w === 'u' ? '업체 정보 수정' : '업체 등록'; ?></h1>
         <p class="shop-register-page__desc">세부 교민·여행객에게 업체를 알려보세요. 등록 후 관리자 검토를 거쳐 노출됩니다.</p>
@@ -135,7 +135,7 @@ $eottae_ai_enabled = !empty($eottae_ai_cfg['enabled']) && !empty($eottae_ai_cfg[
             $eottae_editor_field_class = 'eottae-field__editor-wrap';
             include G5_PATH.'/components/eottae/board-write-editor.php';
             ?>
-            <button type="button" class="eottae-ai-btn shop-register-page__ai-btn" data-shop-ai-generate="all"<?php echo $eottae_ai_enabled ? '' : ' disabled'; ?>><?php echo $eottae_ai_btn_icon; ?><span class="eottae-ai-btn__label">AI로 업체소개·SEO 자동생성</span></button>
+            <button type="button" class="eottae-ai-btn shop-register-page__ai-btn<?php echo $eottae_ai_enabled ? '' : ' is-ai-unavailable'; ?>" data-shop-ai-generate="all" data-default-label="AI로 업체소개·SEO 자동생성"<?php echo $eottae_ai_enabled ? '' : ' aria-disabled="true"'; ?>><?php echo $eottae_ai_btn_icon; ?><span class="eottae-ai-btn__label">AI로 업체소개·SEO 자동생성</span></button>
             <p class="eottae-field__hint" data-shop-ai-status aria-live="polite"><?php echo $eottae_ai_enabled ? '업체명, 카테고리, 주소를 입력한 뒤 누르면 소개와 SEO 문구를 자동으로 채웁니다.' : 'AI 자동생성은 서버에 OpenAI API 키가 설정된 후 이용할 수 있습니다.'; ?></p>
         </div>
     </div>
@@ -276,8 +276,8 @@ $eottae_ai_enabled = !empty($eottae_ai_cfg['enabled']) && !empty($eottae_ai_cfg[
     <div class="shop-register-page__panel" data-step="5">
         <h3>6. SEO · 검색 노출</h3>
         <p class="eottae-field__hint">업소 상세 페이지에 적용되는 검색·SNS 메타 정보입니다. 비워 두면 업체명·소개 본문에서 자동 생성됩니다.</p>
-        <button type="button" class="eottae-ai-btn shop-register-page__ai-btn" data-shop-ai-generate="seo"<?php echo $eottae_ai_enabled ? '' : ' disabled'; ?>><?php echo $eottae_ai_btn_icon; ?><span class="eottae-ai-btn__label">AI로 SEO 문구 자동생성</span></button>
-        <p class="eottae-field__hint" data-shop-ai-status aria-live="polite"></p>
+        <button type="button" class="eottae-ai-btn shop-register-page__ai-btn<?php echo $eottae_ai_enabled ? '' : ' is-ai-unavailable'; ?>" data-shop-ai-generate="seo" data-default-label="AI로 SEO 문구 자동생성"<?php echo $eottae_ai_enabled ? '' : ' aria-disabled="true"'; ?>><?php echo $eottae_ai_btn_icon; ?><span class="eottae-ai-btn__label">AI로 SEO 문구 자동생성</span></button>
+        <p class="eottae-field__hint" data-shop-ai-status aria-live="polite"><?php echo $eottae_ai_enabled ? '업체명을 입력한 뒤 누르면 SEO 타이틀·소개·메타 설명·키워드를 채웁니다.' : 'AI 자동생성은 서버에 OpenAI API 키가 설정된 후 이용할 수 있습니다.'; ?></p>
         <div class="eottae-field">
             <label for="eottae_seo_title">SEO 타이틀</label>
             <input type="text" name="eottae_seo_title" id="eottae_seo_title" value="<?php echo get_text($shop_seo_v['meta_title']); ?>" maxlength="255" placeholder="예: 세부 맛집 OO식당 | 세부어때">

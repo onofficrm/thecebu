@@ -402,6 +402,20 @@
     return el ? (el.value || '').trim() : '';
   }
 
+  function shopAiEnabled(root) {
+    if (root && root.getAttribute('data-ai-enabled') === '1') {
+      return true;
+    }
+    return !!(global.__EOTTae__ && global.__EOTTae__.aiEnabled);
+  }
+
+  function shopSyncEditorField(root, fieldId) {
+    if (!fieldId || typeof oEditors === 'undefined' || !oEditors.getById || !oEditors.getById[fieldId]) {
+      return;
+    }
+    oEditors.getById[fieldId].exec('UPDATE_CONTENTS_FIELD', []);
+  }
+
   function eottaeSetEditorContent(fieldId, value, root) {
     if (!fieldId || value == null || value === '') return;
     var el = root ? qs('#' + fieldId, root) : document.getElementById(fieldId);
@@ -429,75 +443,113 @@
   }
 
   function initShopAiGenerator(root) {
-    var buttons = qsa('[data-shop-ai-generate]', root);
-    if (!buttons.length || !window.fetch) return;
+    var form = qs('#fwrite', root) || root;
+    if (!form || !window.fetch) return;
 
-    buttons.forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var subject = shopAiValue(root, '#wr_subject');
-        if (!subject) {
-          alert('업체명을 먼저 입력해 주세요.');
-          var subjectInput = qs('#wr_subject', root);
-          if (subjectInput) subjectInput.focus();
-          return;
-        }
+  function runShopAiGenerate(btn) {
+      if (!shopAiEnabled(root)) {
+        var disabledMsg = 'AI 자동생성은 서버에 OpenAI API 키가 설정된 후 이용할 수 있습니다.';
+        shopSetAiStatus(root, disabledMsg, true);
+        alert(disabledMsg);
+        return;
+      }
 
-        var mode = btn.getAttribute('data-shop-ai-generate') || 'all';
-        var form = new FormData();
-        form.append('bo_table', shopAiValue(root, 'input[name="bo_table"]') || 'shop');
-        form.append('name', subject);
-        form.append('category', shopAiValue(root, '#ca_name'));
-        form.append('region', shopAiValue(root, '#wr_2'));
-        form.append('address', shopAiValue(root, '#wr_3'));
-        form.append('phone', shopAiValue(root, '#wr_4'));
-        form.append('hours', shopAiValue(root, '#wr_6'));
-        form.append('closed', shopAiValue(root, '#wr_7'));
-        form.append('website', shopAiValue(root, '#wr_link1'));
-        form.append('instagram', shopAiValue(root, '#eottae_sns_instagram'));
-        form.append('tiktok', shopAiValue(root, '#eottae_sns_tiktok'));
-        form.append('facebook', shopAiValue(root, '#eottae_sns_facebook'));
-        form.append('naver_blog', shopAiValue(root, '#eottae_sns_naver_blog'));
-        form.append('youtube', shopAiValue(root, '#eottae_sns_youtube'));
-        form.append('intro', shopAiValue(root, '#wr_content'));
-
-        buttons.forEach(function (b) {
-          setAiBtnLoading(b, true);
-          setAiBtnLabel(b, 'AI 생성 중…');
-        });
-        shopSetAiStatus(root, 'AI가 업체 소개와 SEO 문구를 작성 중입니다...', false);
-
-        fetch(eottaeProcPath('eottae-shop-ai-generate.php'), {
-          method: 'POST',
-          credentials: 'same-origin',
-          body: form
-        })
-          .then(function (res) { return parseJsonResponse(res); })
-          .then(function (json) {
-            if (!json || !json.success) {
-              throw new Error((json && json.message) || 'AI 자동생성에 실패했습니다.');
-            }
-            var data = json.data || {};
-            if (mode !== 'seo') {
-              shopFillAiValue(root, '#wr_content', data.intro, true);
-            }
-            shopFillAiValue(root, '#eottae_seo_title', data.seo_title, true);
-            shopFillAiValue(root, '#eottae_seo_intro', data.seo_intro, true);
-            shopFillAiValue(root, '#eottae_seo_description', data.meta_description, true);
-            shopFillAiValue(root, '#eottae_seo_keyword', data.focus_keyword, true);
-            shopSetAiStatus(root, 'AI 문구를 입력했습니다. 등록 전 내용이 맞는지 한 번 확인해 주세요.', false);
-          })
-          .catch(function (err) {
-            shopSetAiStatus(root, err.message || 'AI 자동생성에 실패했습니다.', true);
-          })
-          .finally(function () {
-            buttons.forEach(function (b) {
-              setAiBtnLoading(b, false);
-              setAiBtnLabel(b, b.getAttribute('data-shop-ai-generate') === 'seo'
-                ? 'AI로 SEO 문구 자동생성'
-                : 'AI로 업체소개·SEO 자동생성');
-            });
+      var subject = shopAiValue(root, '#wr_subject');
+      if (!subject) {
+        alert('1단계에서 업체명을 먼저 입력해 주세요.');
+        var subjectInput = qs('#wr_subject', root);
+        var firstPanel = qs('.shop-register-page__panel[data-step="0"]', root);
+        if (firstPanel) {
+          qsa('.shop-register-page__panel', root).forEach(function (panel, index) {
+            panel.classList.toggle('is-active', panel === firstPanel);
           });
+          qsa('.shop-register-page__step', root).forEach(function (step, index) {
+            step.classList.toggle('is-active', index === 0);
+            step.classList.toggle('is-done', false);
+          });
+          var btnPrev = qs('[data-wizard="prev"]', root);
+          var btnNext = qs('[data-wizard="next"]', root);
+          var btnSubmit = qs('[data-wizard="submit"]', root);
+          if (btnPrev) btnPrev.style.display = 'none';
+          if (btnNext) btnNext.style.display = '';
+          if (btnSubmit) btnSubmit.style.display = 'none';
+        }
+        if (subjectInput) subjectInput.focus();
+        return;
+      }
+
+      var mode = btn.getAttribute('data-shop-ai-generate') || 'all';
+      var buttons = qsa('[data-shop-ai-generate]', form);
+      shopSyncEditorField(root, 'wr_content');
+
+      var payload = new FormData();
+      payload.append('bo_table', shopAiValue(root, 'input[name="bo_table"]') || 'shop');
+      payload.append('mode', mode);
+      payload.append('name', subject);
+      payload.append('category', shopAiValue(root, '#ca_name'));
+      payload.append('region', shopAiValue(root, '#wr_2'));
+      payload.append('address', shopAiValue(root, '#wr_3'));
+      payload.append('phone', shopAiValue(root, '#wr_4'));
+      payload.append('hours', shopAiValue(root, '#wr_6'));
+      payload.append('closed', shopAiValue(root, '#wr_7'));
+      payload.append('website', shopAiValue(root, '#wr_link1'));
+      payload.append('instagram', shopAiValue(root, '#eottae_sns_instagram'));
+      payload.append('tiktok', shopAiValue(root, '#eottae_sns_tiktok'));
+      payload.append('facebook', shopAiValue(root, '#eottae_sns_facebook'));
+      payload.append('naver_blog', shopAiValue(root, '#eottae_sns_naver_blog'));
+      payload.append('youtube', shopAiValue(root, '#eottae_sns_youtube'));
+      payload.append('intro', shopAiValue(root, '#wr_content'));
+
+      buttons.forEach(function (b) {
+        setAiBtnLoading(b, true);
+        setAiBtnLabel(b, 'AI 생성 중…');
       });
+      shopSetAiStatus(
+        root,
+        mode === 'seo'
+          ? 'AI가 SEO 문구를 작성 중입니다...'
+          : 'AI가 업체 소개와 SEO 문구를 작성 중입니다...',
+        false
+      );
+
+      fetch(eottaeProcPath('eottae-shop-ai-generate.php'), {
+        method: 'POST',
+        credentials: 'same-origin',
+        body: payload
+      })
+        .then(function (res) { return parseJsonResponse(res); })
+        .then(function (json) {
+          if (!json || !json.success) {
+            throw new Error((json && json.message) || 'AI 자동생성에 실패했습니다.');
+          }
+          var data = json.data || {};
+          if (mode !== 'seo' && data.intro) {
+            shopFillAiValue(root, '#wr_content', data.intro, true);
+          }
+          shopFillAiValue(root, '#eottae_seo_title', data.seo_title, true);
+          shopFillAiValue(root, '#eottae_seo_intro', data.seo_intro, true);
+          shopFillAiValue(root, '#eottae_seo_description', data.meta_description, true);
+          shopFillAiValue(root, '#eottae_seo_keyword', data.focus_keyword, true);
+          shopSetAiStatus(root, 'AI 문구를 입력했습니다. 등록 전 내용이 맞는지 한 번 확인해 주세요.', false);
+        })
+        .catch(function (err) {
+          var message = err.message || 'AI 자동생성에 실패했습니다.';
+          shopSetAiStatus(root, message, true);
+          alert(message);
+        })
+        .finally(function () {
+          buttons.forEach(function (b) {
+            setAiBtnLoading(b, false);
+            setAiBtnLabel(b, getAiBtnDefaultLabel(b));
+          });
+        });
+    }
+
+    form.addEventListener('click', function (event) {
+      var btn = event.target.closest('[data-shop-ai-generate]');
+      if (!btn || !form.contains(btn)) return;
+      event.preventDefault();
+      runShopAiGenerate(btn);
     });
   }
 
@@ -1104,6 +1156,7 @@
   }
 
   window.shopDetectRegionFromText = shopDetectRegionFromText;
+  window.eottaeSetEditorContent = eottaeSetEditorContent;
 
   function shopApplyRegionFromAddress(address, regionInput, regionDisplay, status) {
     var region = shopDetectRegionFromText(address);
