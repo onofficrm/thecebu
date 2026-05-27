@@ -953,3 +953,270 @@ body.calendar-ui .sebu-cal-detail__related .sebu-cal-btn {
   margin-top: 12px;
 }
 
+/* ── Site-wide — 홈·기타 페이지 일정 상세 팝업 (calendar-ui 없이도 동작) ── */
+.sebu-cal-event-modal {
+  --sebu-cal-primary: var(--eottae-primary, #0ea5e9);
+  --sebu-cal-line: #e2e8f0;
+  --sebu-cal-muted: #64748b;
+  --sebu-cal-surface: #fff;
+  --sebu-cal-radius: 16px;
+}
+
+.sebu-cal-event-modal[hidden] {
+  display: none !important;
+}
+
+.sebu-cal-event-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1250;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+
+@media (min-width: 640px) {
+  .sebu-cal-event-modal {
+    align-items: center;
+    padding: 16px;
+  }
+}
+
+.sebu-cal-event-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(2px);
+}
+
+.sebu-cal-event-modal__panel {
+  position: relative;
+  width: min(100%, 560px);
+  max-height: min(92vh, 720px);
+  overflow: auto;
+  margin: 0;
+  padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px));
+  border-radius: 20px 20px 0 0;
+  background: #fff;
+  box-shadow: 0 -8px 32px rgba(15, 23, 42, 0.12);
+}
+
+@media (min-width: 640px) {
+  .sebu-cal-event-modal__panel {
+    border-radius: 18px;
+    padding: 18px 18px 20px;
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.2);
+  }
+}
+
+.sebu-cal-event-modal__close {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: 0 0 8px auto;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.sebu-cal-event-modal__close:hover {
+  background: #e2e8f0;
+}
+
+.sebu-cal-event-modal__loading,
+.sebu-cal-event-modal__error {
+  margin: 28px 12px;
+  text-align: center;
+  font-size: 0.92rem;
+  color: var(--sebu-cal-muted);
+}
+
+.sebu-cal-event-modal__error {
+  color: #b91c1c;
+}
+
+body.sebu-cal-event-modal-open {
+  overflow: hidden;
+}
+
+.sebu-cal-event-modal .sebu-cal-detail--modal {
+  border: 0;
+  padding: 4px 4px 8px;
+  background: transparent;
+}
+
+.sebu-cal-event-modal .sebu-cal-detail__head {
+  margin-bottom: 4px;
+}
+
+.sebu-cal-event-modal .sebu-cal-detail__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.sebu-cal-event-modal .sebu-cal-detail__category,
+.sebu-cal-event-modal .sebu-cal-detail__badge,
+.sebu-cal-event-modal .sebu-cal-detail__source {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.sebu-cal-event-modal .sebu-cal-detail__category {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.sebu-cal-event-modal .sebu-cal-detail__badge {
+  background: #1e293b;
+  color: #fff;
+}
+
+.sebu-cal-event-modal .sebu-cal-detail__source {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.sebu-cal-event-modal .sebu-cal-detail__title {
+  margin: 0 0 16px;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.35;
+  color: #0f172a;
+  word-break: break-word;
+}
+
+.sebu-cal-event-modal .sebu-cal-detail__meta {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 18px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px solid var(--sebu-cal-line);
+}
+
+.sebu-cal-event-modal .sebu-cal-detail__meta div {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: 8px;
+  font-size: 0.88rem;
+}
+
+.sebu-cal-event-modal .sebu-cal-detail__meta dt {
+  margin: 0;
+  font-weight: 700;
+  color: var(--sebu-cal-muted);
+}
+
+.sebu-cal-event-modal .sebu-cal-detail__meta dd {
+  margin: 0;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.sebu-cal-event-modal .sebu-cal-detail__section {
+  margin-bottom: 16px;
+}
+
+.sebu-cal-event-modal .sebu-cal-detail__section-title {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.sebu-cal-event-modal .sebu-cal-detail__content {
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: #334155;
+}
+
+.sebu-cal-event-modal .sebu-cal-detail__link a {
+  color: #0369a1;
+  font-weight: 700;
+}
+
+.sebu-cal-event-modal .sebu-cal-detail__related .sebu-cal-detail__room {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.sebu-cal-event-modal .sebu-cal-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--sebu-cal-line);
+}
+
+.sebu-cal-event-modal .sebu-cal-detail__delete-form {
+  margin: 0;
+}
+
+.sebu-cal-event-modal .sebu-cal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid var(--sebu-cal-line);
+  background: #fff;
+  color: #334155;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.sebu-cal-event-modal .sebu-cal-btn--primary {
+  border-color: #0ea5e9;
+  background: #0ea5e9;
+  color: #fff;
+}
+
+.sebu-cal-event-modal .sebu-cal-btn--danger {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.sebu-cal-event-modal .sebu-cal-cat--holiday { background: #fef3c7; color: #b45309; }
+.sebu-cal-event-modal .sebu-cal-cat--talk { background: #dbeafe; color: #1d4ed8; }
+.sebu-cal-event-modal .sebu-cal-cat--festival { background: #fce7f3; color: #9d174d; }
+.sebu-cal-event-modal .sebu-cal-cat--event { background: #e0e7ff; color: #4338ca; }
+.sebu-cal-event-modal .sebu-cal-cat--meetup { background: #d1fae5; color: #047857; }
+.sebu-cal-event-modal .sebu-cal-cat--travel { background: #cffafe; color: #0e7490; }
+.sebu-cal-event-modal .sebu-cal-cat--life { background: #f3e8ff; color: #7e22ce; }
+.sebu-cal-event-modal .sebu-cal-cat--business { background: #ffedd5; color: #c2410c; }
+.sebu-cal-event-modal .sebu-cal-cat--etc { background: #f1f5f9; color: #475569; }
+
+.sebu-cal-event-modal .calendar-badge-default { background: #e2e8f0; color: #475569; }
+.sebu-cal-event-modal .calendar-badge-important { background: #1e293b; color: #fff; }
+.sebu-cal-event-modal .calendar-badge-recommend { background: #fef08a; color: #854d0e; }
+.sebu-cal-event-modal .calendar-badge-new { background: #bbf7d0; color: #166534; }
+.sebu-cal-event-modal .calendar-badge-hot { background: #fecaca; color: #991b1b; }
+.sebu-cal-event-modal .calendar-badge-free { background: #a7f3d0; color: #065f46; }
+.sebu-cal-event-modal .calendar-badge-paid { background: #ddd6fe; color: #5b21b6; }
+.sebu-cal-event-modal .calendar-badge-deadline { background: #fb923c; color: #fff; }
+

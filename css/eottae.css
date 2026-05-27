@@ -8950,14 +8950,24 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
     grid-column: auto !important;
     width: 100%;
     max-width: 100%;
+    min-height: 0;
+  }
+
+  .eottae-home-hero-grid--3col > .lg\:col-span-8 {
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
   }
 
   .eottae-home-hero-grid--3col > .home-hero-chat-column {
-    align-self: start;
+    align-self: stretch;
     display: flex;
     flex-direction: column;
     min-height: 0;
+    height: 100%;
+    max-height: none;
     width: 100%;
+    overflow: hidden;
   }
 
   .eottae-home-hero-grid--3col > .lg\:col-span-4,
@@ -9804,8 +9814,12 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
 
 .home-hero-chat-column {
   min-width: 0;
-  height: auto;
-  max-height: clamp(320px, 42vh, 480px);
+  min-height: 0;
+  height: 100%;
+  max-height: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .home-hero-talk-legacy-list {

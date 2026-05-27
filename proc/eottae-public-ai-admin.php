@@ -194,6 +194,85 @@ if ($action === 'save_external_news') {
     eottae_public_ai_admin_json(!empty($result['ok']), $result['message']);
 }
 
+if ($action === 'save_news_feed') {
+    include_once G5_LIB_PATH.'/eottae-public-ai-news-feed.lib.php';
+    $result = eottae_public_ai_news_feed_save(array(
+        'feed_id'            => isset($_POST['feed_id']) ? (int) $_POST['feed_id'] : 0,
+        'name'               => isset($_POST['name']) ? (string) $_POST['name'] : '',
+        'feed_url'           => isset($_POST['feed_url']) ? (string) $_POST['feed_url'] : '',
+        'site_url'           => isset($_POST['site_url']) ? (string) $_POST['site_url'] : '',
+        'category'           => isset($_POST['category']) ? (string) $_POST['category'] : '',
+        'is_enabled'         => !empty($_POST['is_enabled']),
+        'fetch_interval_min' => isset($_POST['fetch_interval_min']) ? (int) $_POST['fetch_interval_min'] : 60,
+        'max_items_per_run'  => isset($_POST['max_items_per_run']) ? (int) $_POST['max_items_per_run'] : 8,
+    ));
+    if (!empty($result['ok'])) {
+        eottae_public_ai_admin_token(true);
+    }
+    eottae_public_ai_admin_json(!empty($result['ok']), $result['message'], array(
+        'feed_id' => (int) ($result['feed_id'] ?? 0),
+    ));
+}
+
+if ($action === 'delete_news_feed') {
+    include_once G5_LIB_PATH.'/eottae-public-ai-news-feed.lib.php';
+    $result = eottae_public_ai_news_feed_delete(isset($_POST['feed_id']) ? (int) $_POST['feed_id'] : 0);
+    if (!empty($result['ok'])) {
+        eottae_public_ai_admin_token(true);
+    }
+    eottae_public_ai_admin_json(!empty($result['ok']), $result['message']);
+}
+
+if ($action === 'fetch_news_feeds') {
+    include_once G5_LIB_PATH.'/eottae-public-ai-news-feed.lib.php';
+    $feed_id = isset($_POST['feed_id']) ? (int) $_POST['feed_id'] : 0;
+    $force = !empty($_POST['force']);
+
+    if ($feed_id > 0) {
+        $result = eottae_public_ai_news_feed_fetch_one($feed_id, array('force' => $force));
+        $message = '신규 '.(int) ($result['inserted'] ?? 0).'건을 수집했습니다.';
+        if (empty($result['ok'])) {
+            $message = (string) ($result['message'] ?? '수집 실패');
+        }
+        eottae_public_ai_admin_json(!empty($result['ok']), $message, $result);
+    }
+
+    $summary = eottae_public_ai_news_feed_run_all(array('force' => $force));
+    $message = '총 '.(int) ($summary['inserted'] ?? 0).'건의 뉴스를 새로 등록했습니다.';
+    if (!empty($summary['errors'])) {
+        $message .= ' (일부 오류: '.implode('; ', $summary['errors']).')';
+    }
+    eottae_public_ai_admin_json(!empty($summary['ok']), $message, $summary);
+}
+
+if ($action === 'test_news_feed') {
+    include_once G5_LIB_PATH.'/eottae-public-ai-news-feed.lib.php';
+    $feed_url = isset($_POST['feed_url']) ? trim((string) $_POST['feed_url']) : '';
+    if ($feed_url === '') {
+        eottae_public_ai_admin_json(false, 'RSS URL을 입력해 주세요.');
+    }
+    $http = eottae_public_ai_news_feed_http_get($feed_url);
+    if (empty($http['ok'])) {
+        eottae_public_ai_admin_json(false, (string) ($http['message'] ?? '피드를 가져오지 못했습니다.'));
+    }
+    $parsed = eottae_public_ai_news_feed_parse_xml($http['body']);
+    if (empty($parsed['ok'])) {
+        eottae_public_ai_admin_json(false, (string) ($parsed['message'] ?? '파싱 실패'));
+    }
+    $preview = array();
+    foreach (array_slice($parsed['items'], 0, 5) as $item) {
+        $preview[] = array(
+            'title'   => eottae_public_ai_news_feed_strip_text($item['title'] ?? '', 120),
+            'link'    => (string) ($item['link'] ?? ''),
+            'summary' => eottae_public_ai_news_feed_strip_text($item['description'] ?? '', 160),
+        );
+    }
+    eottae_public_ai_admin_json(true, 'RSS 피드 미리보기 ('.count($parsed['items']).'건 항목)', array(
+        'total'   => count($parsed['items']),
+        'preview' => $preview,
+    ));
+}
+
 if ($action === 'test_openai') {
     $test_type = isset($_POST['test_type']) ? trim((string) $_POST['test_type']) : '';
     $custom_text = isset($_POST['custom_text']) ? (string) $_POST['custom_text'] : '';

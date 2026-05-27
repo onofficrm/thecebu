@@ -30,7 +30,7 @@ if (!function_exists('eottae_column_home_feed_html')) {
         <section class="sebu-column-home" id="eottae-home-column" aria-labelledby="sebu-column-home-title">
             <div class="sebu-column-home__inner">
                 <header class="sebu-column-home__head">
-                    <h2 class="sebu-column-home__title" id="sebu-column-home-title">세부 생활정보 컬럼</h2>
+                    <h2 class="sebu-column-home__title" id="sebu-column-home-title"><?php echo function_exists('eottae_column_menu_label') ? eottae_column_menu_label() : '컬럼'; ?></h2>
                     <p class="sebu-column-home__desc">세부 교민에게 필요한 생활정보를 칼럼니스트가 직접 전합니다.</p>
                 </header>
 
@@ -58,7 +58,7 @@ if (!function_exists('eottae_column_home_feed_html')) {
                 <?php } ?>
 
                 <div class="sebu-column-home__footer">
-                    <a href="<?php echo $list_url; ?>" class="sebu-column-home__more">생활정보 컬럼 전체 보기</a>
+                    <a href="<?php echo $list_url; ?>" class="sebu-column-home__more"><?php echo function_exists('eottae_column_menu_label') ? eottae_column_menu_label() : '컬럼'; ?> 전체 보기</a>
                 </div>
             </div>
         </section>

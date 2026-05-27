@@ -8,6 +8,7 @@
   var modal = null;
   var modalBody = null;
   var lastFocus = null;
+  var modalInitialized = false;
 
   function esc(value) {
     return String(value == null ? '' : value)
@@ -258,8 +259,12 @@
   }
 
   function initModal() {
+    if (modalInitialized) {
+      return ensureModal();
+    }
+
     if (!ensureModal()) {
-      return;
+      return false;
     }
 
     modal.addEventListener('click', function (e) {
@@ -276,6 +281,9 @@
     });
 
     document.addEventListener('click', handleEventClick);
+    modalInitialized = true;
+
+    return true;
   }
 
   document.querySelectorAll('[data-sebu-cal-form]').forEach(function (form) {
@@ -283,11 +291,18 @@
     initStartEndDate(form);
   });
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initModal);
-  } else {
+  function bootModal() {
     initModal();
   }
 
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootModal);
+  } else {
+    bootModal();
+  }
+
+  window.addEventListener('load', bootModal);
+
   window.eottaeCalendarOpenEvent = openEventDetail;
+  window.eottaeCalendarInitEventModal = bootModal;
 })();

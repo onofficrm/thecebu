@@ -73,7 +73,7 @@ g5_page_start(get_text($post['wr_subject'] ?? '컬럼'));
 
 <main class="sebu-article-page sebu-column-editorial" data-sebu-column-view data-wr-id="<?php echo (int) $wr_id; ?>" data-proc-url="<?php echo get_text(eottae_column_proc_url()); ?>" data-member-token="<?php echo get_text($token); ?>">
     <nav class="sebu-article-page__breadcrumb" aria-label="경로">
-        <a href="<?php echo eottae_column_list_url(); ?>">Column</a>
+        <a href="<?php echo eottae_column_list_url(); ?>"><?php echo eottae_column_menu_label(); ?></a>
         <?php if (!empty($post['category_label'])) { ?>
         <span class="sebu-article-page__breadcrumb-sep" aria-hidden="true">·</span>
         <a href="<?php echo eottae_column_category_url($post['category'] ?? ''); ?>"><?php echo get_text($post['category_label']); ?></a>

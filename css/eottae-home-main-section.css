@@ -114,6 +114,14 @@
   color: #94a3b8;
 }
 
+.sebu-cal-summary-event__link[role="button"] {
+  cursor: pointer;
+}
+
+.sebu-cal-summary-talk__link[role="button"] {
+  cursor: pointer;
+}
+
 .sebu-cal-summary-event__link {
   display: block;
   padding: 10px 12px;

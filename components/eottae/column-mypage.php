@@ -20,7 +20,7 @@ if (!function_exists('eottae_column_mypage_section_html')) {
         ob_start();
         ?>
         <section class="sebu-column-mypage" aria-labelledby="sebu-column-mypage-title">
-            <h2 class="sebu-column-mypage__title" id="sebu-column-mypage-title">생활정보 컬럼</h2>
+            <h2 class="sebu-column-mypage__title" id="sebu-column-mypage-title"><?php echo function_exists('eottae_column_menu_label') ? eottae_column_menu_label() : '컬럼'; ?></h2>
 
             <?php if ($is_columnist && $author) {
                 $stats = $author['stats'] ?? array();

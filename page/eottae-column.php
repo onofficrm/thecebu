@@ -29,13 +29,13 @@ $categories = eottae_column_category_options();
 add_stylesheet('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">', 20);
 add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-column.css">', 24);
 
-g5_page_start('세부 생활정보 컬럼');
+g5_page_start(eottae_column_menu_label());
 ?>
 
 <main class="sebu-column-page sebu-column-page--list sebu-column-editorial">
     <header class="sebu-column-masthead">
         <p class="sebu-column-masthead__eyebrow">Cebu Living · Column</p>
-        <h1 class="sebu-column-masthead__title">세부 생활정보 컬럼</h1>
+        <h1 class="sebu-column-masthead__title"><?php echo eottae_column_menu_label(); ?></h1>
         <p class="sebu-column-masthead__deck">세부에 살아가는 사람들의 경험과 통찰.<br class="sebu-column-masthead__br">병원·학교·비자·가족생활까지, 검증된 생활정보를 깊이 있게 읽습니다.</p>
         <div class="sebu-column-masthead__actions">
             <?php if ($is_member && eottae_column_can_write($member['mb_id'], $is_admin === 'super')) { ?>

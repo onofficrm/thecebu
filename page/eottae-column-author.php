@@ -48,7 +48,7 @@ g5_page_start(get_text($author['display_name'] ?? '').' · 칼럼니스트');
 ?>
 
 <main class="sebu-writer-page">
-    <p class="sebu-writer-page__back"><a href="<?php echo eottae_column_list_url(); ?>">← 생활정보 컬럼</a></p>
+    <p class="sebu-writer-page__back"><a href="<?php echo eottae_column_list_url(); ?>">← <?php echo eottae_column_menu_label(); ?></a></p>
 
     <header class="sebu-writer-page__profile">
         <div class="sebu-writer-page__profile-visual">

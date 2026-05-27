@@ -31,6 +31,7 @@ include_once G5_LIB_PATH.'/eottae-column.lib.php';
 include_once G5_LIB_PATH.'/eottae-column-likes.lib.php';
 include_once G5_LIB_PATH.'/eottae-column-bookmarks.lib.php';
 include_once G5_LIB_PATH.'/eottae-column-report.lib.php';
+include_once G5_LIB_PATH.'/eottae-adroom.lib.php';
 include_once G5_LIB_PATH.'/eottae-member-growth.lib.php';
 
 if (function_exists('eottae_merge_runtime_secrets')) {
@@ -61,6 +62,9 @@ if (function_exists('eottae_golf_join_ensure_schema')) {
 if (function_exists('eottae_column_ensure_schema')) {
     eottae_column_ensure_schema();
 }
+if (function_exists('eottae_adroom_ensure_schema')) {
+    eottae_adroom_ensure_schema();
+}
 if (function_exists('eottae_member_growth_ensure_schema')) {
     eottae_member_growth_ensure_schema();
 }
@@ -85,7 +89,7 @@ if (is_file(G5_LIB_PATH.'/eottae-public-ai-generator.lib.php')) {
 if (is_file(G5_LIB_PATH.'/eottae-public-ai-publish.lib.php')) {
     include_once G5_LIB_PATH.'/eottae-public-ai-publish.lib.php';
 }
-foreach (array('guard', 'weather', 'news', 'poll', 'openai') as $public_ai_module) {
+foreach (array('guard', 'weather', 'news', 'news-feed', 'poll', 'openai') as $public_ai_module) {
     $public_ai_lib = G5_LIB_PATH.'/eottae-public-ai-'.$public_ai_module.'.lib.php';
     if (is_file($public_ai_lib)) {
         include_once $public_ai_lib;
@@ -1305,6 +1309,26 @@ if (!function_exists('eottae_column_on_bbs_write')) {
     }
 }
 add_event('bbs_write', 'eottae_column_on_bbs_write', 10, 3);
+
+add_event('bbs_write', 'eottae_adroom_on_bbs_write', 11, 3);
+add_event('write_update_before', 'eottae_adroom_on_write_update_before', 16, 4);
+add_event('write_update_after', 'eottae_adroom_on_write_after', 26, 5);
+
+if (!function_exists('eottae_adroom_on_board_head')) {
+    function eottae_adroom_on_board_head($board, $write, $wr_id)
+    {
+        if (empty($board['bo_table']) || !eottae_adroom_is_board($board['bo_table'])) {
+            return;
+        }
+
+        global $bo_table;
+        $script = isset($_SERVER['SCRIPT_NAME']) ? basename($_SERVER['SCRIPT_NAME']) : '';
+        if ($bo_table === eottae_adroom_board_table() && empty($_GET['wr_id']) && $script === 'board.php') {
+            goto_url(eottae_adroom_list_url());
+        }
+    }
+}
+add_event('board_head_before', 'eottae_adroom_on_board_head', 7, 3);
 
 if (!function_exists('eottae_apply_google_oauth_config')) {
     function eottae_apply_google_oauth_config()

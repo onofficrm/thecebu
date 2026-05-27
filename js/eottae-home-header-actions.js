@@ -261,7 +261,7 @@
     link.href = data.column_url;
     link.className = className || 'eottae-gnb-header__nav-link';
     link.setAttribute(attrName, '1');
-    link.textContent = data.column_label || '생활정보 컬럼';
+    link.textContent = data.column_label || '컬럼';
     return link;
   }
 
@@ -318,6 +318,33 @@
     menu.appendChild(link);
   }
 
+  function replaceTourNavWithGolfJoin(data) {
+    if (!data || !data.golf_join_url) {
+      return;
+    }
+
+    var scopes = [document.querySelector('header'), findMobileMenuNav()];
+    var s;
+    for (s = 0; s < scopes.length; s += 1) {
+      var scope = scopes[s];
+      if (!scope) {
+        continue;
+      }
+      var links = scope.querySelectorAll('a[href]');
+      var i;
+      for (i = 0; i < links.length; i += 1) {
+        var link = links[i];
+        var label = normalizeNavLabel(link.textContent);
+        var href = link.getAttribute('href') || '';
+        if (label === '투어' || href.indexOf('bo_table=tour') !== -1 || href.indexOf('bo_table%3Dtour') !== -1) {
+          link.textContent = data.golf_join_label || '골프조인';
+          link.href = data.golf_join_url;
+          link.setAttribute('data-eottae-home-golf-nav', '1');
+        }
+      }
+    }
+  }
+
   function hideRentcarMenuLinks() {
     var links = document.querySelectorAll('a[href*="bo_table=rentcar"], a[href*="bo_table%3Drentcar"]');
     var i;
@@ -350,12 +377,14 @@
       return;
     }
 
+    replaceTourNavWithGolfJoin(data);
     mountDesktop(data);
     mountMobile(data);
     mountCalendarInMobileMenu(data);
     mountColumnNav(data);
     mountColumnInMobileMenu(data);
     hideRentcarMenuLinks();
+    replaceTourNavWithGolfJoin(data);
   }
 
   function init() {

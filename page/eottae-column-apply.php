@@ -26,7 +26,7 @@ g5_page_start('칼럼니스트 신청');
 
 <main class="sebu-column-write-page sebu-column-apply-page">
     <header class="sebu-column-write-page__head">
-        <p class="sebu-column-page__back"><a href="<?php echo eottae_column_list_url(); ?>">← 생활정보 컬럼</a></p>
+        <p class="sebu-column-page__back"><a href="<?php echo eottae_column_list_url(); ?>">← <?php echo eottae_column_menu_label(); ?></a></p>
         <h1 class="sebu-column-write-page__title">칼럼니스트 신청</h1>
         <p class="sebu-column-write-page__guide">세부 교민에게 실제 도움이 되는 경험과 정보를 꾸준히 전할 분을 기다립니다. 신청이 승인되면 전용 글쓰기 화면과 칼럼니스트 프로필이 열립니다.</p>
     </header>

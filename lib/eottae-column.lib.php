@@ -25,6 +25,13 @@ if (!function_exists('eottae_column_board_table')) {
     }
 }
 
+if (!function_exists('eottae_column_menu_label')) {
+    function eottae_column_menu_label()
+    {
+        return '컬럼';
+    }
+}
+
 if (!function_exists('eottae_column_table_exists')) {
     function eottae_column_table_exists($table)
     {
@@ -2183,7 +2190,8 @@ if (!function_exists('eottae_column_apply_seo')) {
 
         $title = get_text($post['wr_subject'] ?? '');
         $desc = get_text($post['summary'] ?? '');
-        $page_title = $title !== '' ? $title.' | 세부 생활정보 컬럼' : '세부 생활정보 컬럼';
+        $brand = eottae_column_menu_label();
+        $page_title = $title !== '' ? $title.' | '.$brand : $brand;
         $page_description = $desc;
         $page_og_image = $post['thumbnail_url'] ?? '';
         $page_canonical = $post['view_url'] ?? eottae_column_view_url($post['wr_id'] ?? 0);

@@ -68,13 +68,13 @@
       meta.push(event.source_label);
     }
 
-    var href = event.detail_href || '#';
     var eventId = event.event_id ? String(event.event_id) : '';
+    var href = eventId ? '#' : (event.detail_href || '#');
 
     return ''
       + '<li class="sebu-cal-summary-event">'
       + '<a href="' + esc(href) + '" class="sebu-cal-summary-event__link"'
-      + (eventId ? ' data-sebu-cal-event="' + esc(eventId) + '"' : '')
+      + (eventId ? ' data-sebu-cal-event="' + esc(eventId) + '" role="button"' : '')
       + '>'
       + '<div class="sebu-cal-summary-event__head">'
       + '<span class="sebu-cal-summary-event__category ' + esc(event.category_class || '') + '">' + esc(event.category_label || '') + '</span>'
@@ -129,10 +129,11 @@
     for (i = 0; i < talkEvents.length; i += 1) {
       var event = talkEvents[i];
       var talkEventId = event.event_id ? String(event.event_id) : '';
+      var talkHref = talkEventId ? '#' : (event.detail_href || '#');
       html += ''
         + '<li class="sebu-cal-summary-talk__item">'
-        + '<a href="' + esc(event.detail_href || '#') + '" class="sebu-cal-summary-talk__link"'
-        + (talkEventId ? ' data-sebu-cal-event="' + esc(talkEventId) + '"' : '')
+        + '<a href="' + esc(talkHref) + '" class="sebu-cal-summary-talk__link"'
+        + (talkEventId ? ' data-sebu-cal-event="' + esc(talkEventId) + '" role="button"' : '')
         + '>'
         + '<span class="sebu-cal-summary-talk__day">' + esc(event.day_label || '') + '</span>'
         + '<strong class="sebu-cal-summary-talk__name">' + esc(event.title || '') + '</strong>'
@@ -308,6 +309,10 @@
     }
     section.appendChild(mountRoot);
     mountDone = true;
+
+    if (typeof global.eottaeCalendarInitEventModal === 'function') {
+      global.eottaeCalendarInitEventModal();
+    }
 
     return true;
   }

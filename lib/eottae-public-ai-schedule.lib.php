@@ -757,6 +757,7 @@ if (!function_exists('eottae_public_ai_web_cron_urls')) {
             'traffic_tick' => $base.'/proc/eottae-public-ai-traffic-tick.php',
             'slot_broadcast' => $base.'/cron/sebu_public_ai_slot_broadcast.php',
             'health_monitor' => $base.'/cron/sebu_public_ai_health_monitor.php',
+            'fetch_news_feeds' => $base.'/cron/sebu_public_ai_fetch_news_feeds.php',
         );
 
         if ($key !== '') {

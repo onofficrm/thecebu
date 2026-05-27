@@ -39,7 +39,7 @@ $popular = eottae_column_list(array(
 ));
 
 global $page_title, $page_description, $page_canonical;
-$page_title = $category_label.' | 세부 생활정보 컬럼';
+$page_title = $category_label.' | '.eottae_column_menu_label();
 $page_description = $category_desc;
 $page_canonical = eottae_column_category_url($category);
 

@@ -99,6 +99,10 @@ if (!defined('EOTTae_COLUMN_TABLE')) {
     define('EOTTae_COLUMN_TABLE', 'column');
 }
 
+if (!defined('EOTTae_ADROOM_TABLE')) {
+    define('EOTTae_ADROOM_TABLE', 'adroom');
+}
+
 if (!defined('EOTTae_PUBLIC_GROUP_TALK_ROOM_ID')) {
     define('EOTTae_PUBLIC_GROUP_TALK_ROOM_ID', 0);
 }

@@ -1078,12 +1078,14 @@ if (!function_exists('eottae_builder_inject_home_header_actions_script')) {
     function eottae_builder_inject_home_header_actions_script()
     {
         $payload = array(
-            'talk_url'      => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk',
-            'talk_label'    => '세부톡',
-            'calendar_url'  => function_exists('eottae_calendar_list_url') ? eottae_calendar_list_url() : G5_URL.'/calendar/',
-            'calendar_label'=> '세부일정',
-            'column_url'    => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/',
-            'column_label'  => '생활정보 컬럼',
+            'talk_url'       => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk',
+            'talk_label'     => '세부톡',
+            'calendar_url'   => function_exists('eottae_calendar_list_url') ? eottae_calendar_list_url() : G5_URL.'/calendar/',
+            'calendar_label' => '세부일정',
+            'golf_join_url'  => function_exists('eottae_golf_join_list_url') ? eottae_golf_join_list_url() : G5_URL.'/golf-join/',
+            'golf_join_label'=> '골프조인',
+            'column_url'     => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/',
+            'column_label'   => function_exists('eottae_column_menu_label') ? eottae_column_menu_label() : '컬럼',
         );
         $payload_json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if ($payload_json === false) {
@@ -5284,9 +5286,10 @@ if (!function_exists('eottae_gnb_nav_links')) {
             array('key' => 'shop', 'label' => '내주변', 'href' => eottae_board_list_url(eottae_shop_table())),
             array('key' => 'food', 'label' => '맛집', 'href' => eottae_board_list_url(defined('EOTTae_FOOD_TABLE') ? EOTTae_FOOD_TABLE : 'food')),
             array('key' => 'massage', 'label' => '마사지', 'href' => eottae_board_list_url(defined('EOTTae_MASSAGE_TABLE') ? EOTTae_MASSAGE_TABLE : 'massage')),
-            array('key' => 'tour', 'label' => '투어', 'href' => eottae_board_list_url(defined('EOTTae_TOUR_TABLE') ? EOTTae_TOUR_TABLE : 'tour')),
+            array('key' => 'golf_join', 'label' => '골프조인', 'href' => function_exists('eottae_golf_join_list_url') ? eottae_golf_join_list_url() : G5_URL.'/golf-join/'),
             array('key' => 'community', 'label' => '커뮤니티', 'href' => eottae_community_list_url()),
-            array('key' => 'column', 'label' => '생활정보 컬럼', 'href' => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/'),
+            array('key' => 'column', 'label' => function_exists('eottae_column_menu_label') ? eottae_column_menu_label() : '컬럼', 'href' => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/'),
+            array('key' => 'adroom', 'label' => '광고방', 'href' => function_exists('eottae_adroom_list_url') ? eottae_adroom_list_url() : G5_URL.'/ad-room/'),
             array('key' => 'people', 'label' => '사람찾기', 'href' => eottae_board_list_url(defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people')),
             array('key' => 'job', 'label' => '구인구직', 'href' => eottae_board_list_url(defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job')),
             array('key' => 'estate', 'label' => '부동산', 'href' => eottae_board_list_url(defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate')),
@@ -5338,7 +5341,6 @@ if (!function_exists('eottae_gnb_link_is_active')) {
             'shop'      => eottae_shop_table(),
             'food'      => defined('EOTTae_FOOD_TABLE') ? EOTTae_FOOD_TABLE : 'food',
             'massage'   => defined('EOTTae_MASSAGE_TABLE') ? EOTTae_MASSAGE_TABLE : 'massage',
-            'tour'      => defined('EOTTae_TOUR_TABLE') ? EOTTae_TOUR_TABLE : 'tour',
             'community' => eottae_community_board_table(),
             'people'    => defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people',
             'job'       => defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job',
@@ -5356,6 +5358,11 @@ if (!function_exists('eottae_gnb_link_is_active')) {
                 return strpos($uri, '/calendar') !== false || strpos($uri, '/page/eottae-calendar') !== false;
             case 'column':
                 return strpos($uri, '/column') !== false || strpos($uri, '/page/eottae-column') !== false;
+            case 'golf_join':
+                return strpos($uri, '/golf-join') !== false || strpos($uri, '/page/eottae-golf') !== false;
+            case 'adroom':
+                return strpos($uri, '/ad-room') !== false
+                    || $bo === (defined('EOTTae_ADROOM_TABLE') ? EOTTae_ADROOM_TABLE : 'adroom');
             case 'mypage':
                 return strpos($uri, '/page/eottae-') !== false;
             default:

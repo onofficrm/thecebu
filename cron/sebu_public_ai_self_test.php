@@ -21,6 +21,7 @@ include_once G5_LIB_PATH.'/eottae-public-ai-publish.lib.php';
 include_once G5_LIB_PATH.'/eottae-public-ai-guard.lib.php';
 include_once G5_LIB_PATH.'/eottae-public-ai-weather.lib.php';
 include_once G5_LIB_PATH.'/eottae-public-ai-news.lib.php';
+include_once G5_LIB_PATH.'/eottae-public-ai-news-feed.lib.php';
 include_once G5_LIB_PATH.'/eottae-public-ai-poll.lib.php';
 include_once G5_LIB_PATH.'/eottae-public-ai-openai.lib.php';
 include_once G5_LIB_PATH.'/eottae-public-ai-schedule.lib.php';
@@ -51,7 +52,13 @@ public_ai_test_line('schema_settings', eottae_talkroom_table_exists(eottae_publi
 public_ai_test_line('schema_candidates', eottae_talkroom_table_exists(eottae_public_ai_candidates_table()));
 public_ai_test_line('schema_weather', eottae_talkroom_table_exists(eottae_public_ai_weather_table()));
 public_ai_test_line('schema_external_news', eottae_talkroom_table_exists(eottae_public_ai_external_news_table()));
+public_ai_test_line('schema_news_feeds', eottae_talkroom_table_exists(eottae_public_ai_news_feed_table()));
+public_ai_test_line('fn_news_feed_parse', function_exists('eottae_public_ai_news_feed_parse_xml'));
 public_ai_test_line('schema_openai_logs', eottae_talkroom_table_exists(eottae_public_ai_openai_logs_table()));
+
+$rss_sample = '<?xml version="1.0"?><rss version="2.0"><channel><item><title>Test</title><link>https://example.com/a</link><description>Hello</description><guid>1</guid></item></channel></rss>';
+$rss_parsed = eottae_public_ai_news_feed_parse_xml($rss_sample);
+public_ai_test_line('rss_parse_sample', !empty($rss_parsed['ok']) && count($rss_parsed['items']) === 1);
 public_ai_test_line('fn_build_public_ai_prompt', function_exists('build_public_ai_prompt'));
 public_ai_test_line('fn_generate_public_ai_message', function_exists('generate_public_ai_message'));
 

@@ -111,7 +111,7 @@ $mypage_menu_groups[] = array(
 );
 
 $content_menu_items = array(
-    array('label' => '생활정보 컬럼', 'href' => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/', 'tone' => 'content'),
+    array('label' => function_exists('eottae_column_menu_label') ? eottae_column_menu_label() : '컬럼', 'href' => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/', 'tone' => 'content'),
 );
 if (function_exists('eottae_column_is_columnist') && eottae_column_is_columnist($member['mb_id'])) {
     $content_menu_items[] = array(
