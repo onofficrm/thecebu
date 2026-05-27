@@ -139,7 +139,38 @@
     }
   }
 
-  /** 3열 자연 높이 = 자식 블록 높이 합 + gap (stretch/min-height 100% 영향 제거) */
+  function elementContentHeight(el) {
+    if (!el) {
+      return 0;
+    }
+
+    return Math.max(
+      Math.ceil(el.getBoundingClientRect().height),
+      Math.ceil(el.scrollHeight || 0),
+      Math.ceil(el.offsetHeight || 0)
+    );
+  }
+
+  function measureChildBlockHeight(child) {
+    if (!child) {
+      return 0;
+    }
+
+    var cs = global.getComputedStyle(child);
+    if (cs.display === 'none' || cs.visibility === 'hidden') {
+      return 0;
+    }
+
+    var h = elementContentHeight(child);
+    var stack = child.querySelector ? child.querySelector('.home-events-stack') : null;
+    if (stack) {
+      h = Math.max(h, elementContentHeight(stack));
+    }
+
+    return h;
+  }
+
+  /** 3열 자연 높이 = 자식 블록(이벤트 카드 포함) 실제 콘텐츠 높이 합 + gap */
   function measureSidebarNaturalHeight(sidebar) {
     if (!sidebar) {
       return 0;
@@ -158,16 +189,7 @@
 
     for (i = 0; i < children.length; i += 1) {
       child = children[i];
-      if (!child || child.offsetParent === null && style.display !== 'contents') {
-        var cs = global.getComputedStyle(child);
-        if (cs.display === 'none' || cs.visibility === 'hidden') {
-          continue;
-        }
-      }
-      h = Math.ceil(child.getBoundingClientRect().height);
-      if (h < 1) {
-        h = Math.ceil(child.offsetHeight || 0);
-      }
+      h = measureChildBlockHeight(child);
       if (h < 1) {
         continue;
       }
@@ -179,11 +201,41 @@
       total += gap * (visibleCount - 1);
     }
 
-    if (total < 1) {
-      total = Math.ceil(sidebar.getBoundingClientRect().height);
-    }
+    total = Math.max(total, elementContentHeight(sidebar));
 
     return total;
+  }
+
+  function ensureSidebarMounted() {
+    if (typeof global.mountEottaeHomeEventsBanner === 'function') {
+      global.mountEottaeHomeEventsBanner();
+    }
+    if (typeof global.mountEottaeHomeHeroSidebar === 'function') {
+      global.mountEottaeHomeHeroSidebar();
+    }
+  }
+
+  function remeasureSidebarExpandedHeight(grid, targetH) {
+    var sidebar = findHeroSidebarColumn(grid);
+    if (!sidebar) {
+      return targetH;
+    }
+
+    var prevHeight = sidebar.style.height;
+    var prevMax = sidebar.style.maxHeight;
+    var prevMin = sidebar.style.minHeight;
+
+    sidebar.style.height = 'auto';
+    sidebar.style.maxHeight = 'none';
+    sidebar.style.minHeight = '0';
+
+    var natural = measureSidebarNaturalHeight(sidebar);
+
+    sidebar.style.height = prevHeight;
+    sidebar.style.maxHeight = prevMax;
+    sidebar.style.minHeight = prevMin;
+
+    return Math.max(targetH, natural);
   }
 
   function measureSidebarColumnHeight(grid) {
@@ -245,6 +297,21 @@
     });
 
     resizeObserver.observe(sidebar);
+
+    var events = sidebar.querySelector('.home-hero-sidebar-events');
+    if (events) {
+      resizeObserver.observe(events);
+    }
+
+    var stack = sidebar.querySelector('.home-events-stack');
+    if (stack) {
+      resizeObserver.observe(stack);
+    }
+
+    var loginBox = sidebar.querySelector('.community-login-box');
+    if (loginBox) {
+      resizeObserver.observe(loginBox);
+    }
   }
 
   function syncHeroColumnHeights() {
@@ -279,6 +346,7 @@
     }
 
     clearHeroColumnHeights(grid);
+    ensureSidebarMounted();
 
     var targetH = measureSidebarColumnHeight(grid);
     if (targetH < MIN_COL_H) {
@@ -287,7 +355,13 @@
       return false;
     }
 
+    targetH = remeasureSidebarExpandedHeight(grid, targetH);
     applyHeroColumnHeights(grid, targetH);
+    targetH = remeasureSidebarExpandedHeight(grid, targetH);
+    if (parseInt(grid.getAttribute('data-eottae-hero-height') || '0', 10) !== targetH) {
+      applyHeroColumnHeights(grid, targetH);
+    }
+
     syncing = false;
     observeHeroSidebar(grid);
 

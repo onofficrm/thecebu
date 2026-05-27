@@ -266,6 +266,7 @@
 
     if (typeof global.scheduleEottaeHeroColumnHeights === 'function') {
       global.scheduleEottaeHeroColumnHeights(80);
+      global.scheduleEottaeHeroColumnHeights(400);
     }
 
     return true;
@@ -321,5 +322,6 @@
     init();
   }
 
+  global.mountEottaeHomeEventsBanner = mount;
   global.initEottaeHomeEventsBanner = init;
 }(window));

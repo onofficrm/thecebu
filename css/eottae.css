@@ -9112,9 +9112,10 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
   .eottae-home-hero-grid--3col > .home-hero-sidebar-column {
     display: flex !important;
     flex-direction: column;
-    align-self: stretch;
+    align-self: start;
     gap: 1rem;
-    min-height: 100%;
+    min-height: 0;
+    overflow: visible;
   }
 
   .eottae-home-hero-grid--3col > .lg\:col-span-4 > section.community-login-box,
@@ -9124,15 +9125,21 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
 
   .eottae-home-hero-grid--3col .home-hero-sidebar-events,
   .home-hero-sidebar-column .home-hero-sidebar-events {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     display: flex;
     flex-direction: column;
-    min-height: 0;
+    min-height: auto;
+    overflow: visible;
   }
 
   .home-hero-sidebar-events .home-events-stack {
-    flex: 1 1 auto;
-    min-height: 0;
+    flex: 0 0 auto;
+    min-height: auto;
+    overflow: visible;
+  }
+
+  .eottae-home-hero-grid--3col .home-events-stack {
+    padding-bottom: 16px;
   }
 
   /* 측정 중: 채팅 열이 그리드 행 높이를 늘리지 않게 (3열 자연 높이만 읽음) */
@@ -9225,6 +9232,13 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
     min-height: var(--eottae-hero-col-h, 0) !important;
     overflow: visible;
     box-sizing: border-box;
+  }
+
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync .home-hero-sidebar-events,
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync .home-events-stack {
+    flex: 0 0 auto;
+    min-height: auto;
+    overflow: visible;
   }
 }
 
