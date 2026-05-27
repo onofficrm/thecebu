@@ -271,6 +271,17 @@
   word-break: break-word;
 }
 
+.public-group-chat--kakao .public-group-chat__unread {
+  flex: 0 0 auto;
+  margin: 0;
+  padding-bottom: 2px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--kakao-time);
+  white-space: nowrap;
+}
+
 .public-group-chat--kakao .public-group-chat__time {
   flex: 0 0 auto;
   margin: 0;
@@ -293,26 +304,34 @@
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  padding: 6px 6px 6px 12px;
-  border: 1px solid var(--kakao-composer-border);
-  border-radius: 22px;
-  background: #f9fafb;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .public-group-chat--kakao .public-group-chat__composer-field:focus-within {
-  border-color: #9ca3af;
-  background: #fff;
+  border: 0;
+  background: transparent;
   box-shadow: none;
 }
 
 .public-group-chat--kakao .public-group-chat__composer-field .public-group-chat__input {
+  flex: 1 1 auto;
   min-height: 36px;
   max-height: 100px;
-  padding: 6px 0;
+  padding: 8px 4px;
+  border: 0;
+  background: transparent;
   font-size: 0.88rem;
   line-height: 1.4;
   color: var(--kakao-text);
+  box-shadow: none;
+}
+
+.public-group-chat--kakao .public-group-chat__composer-field .public-group-chat__input:focus {
+  outline: none;
+  box-shadow: none;
 }
 
 .public-group-chat--kakao .public-group-chat__send {

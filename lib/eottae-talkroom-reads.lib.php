@@ -320,6 +320,128 @@ if (!function_exists('eottae_talkroom_reads_proc_url')) {
     }
 }
 
+if (!function_exists('eottae_talkroom_chat_unread_counts_for_messages')) {
+    /**
+     * 내 메시지별 아직 읽지 않은 참여자 수 (카카오톡 미읽음 숫자)
+     *
+     * @param array<int, array{wr_id?:int, mb_id?:string}|int> $specs
+     * @return array<int, int> wr_id => unread_count
+     */
+    function eottae_talkroom_chat_unread_counts_for_messages($room_id, array $specs)
+    {
+        $room_id = (int) $room_id;
+        if ($room_id < 1 || empty($specs)) {
+            return array();
+        }
+
+        if (!function_exists('eottae_talkroom_list_room_members')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
+        }
+
+        $by_wr = array();
+        foreach ($specs as $spec) {
+            if (is_int($spec) || (is_string($spec) && ctype_digit($spec))) {
+                $wr_id = (int) $spec;
+                $sender = '';
+            } elseif (is_array($spec)) {
+                $wr_id = (int) ($spec['wr_id'] ?? 0);
+                $sender = preg_replace('/[^a-z0-9_@.-]/i', '', (string) ($spec['mb_id'] ?? ''));
+            } else {
+                continue;
+            }
+            if ($wr_id < 1) {
+                continue;
+            }
+            $by_wr[$wr_id] = $sender;
+        }
+
+        if (empty($by_wr)) {
+            return array();
+        }
+
+        $need_sender = array();
+        foreach ($by_wr as $wr_id => $sender) {
+            if ($sender === '') {
+                $need_sender[] = $wr_id;
+            }
+        }
+
+        if (!empty($need_sender) && function_exists('eottae_talkroom_write_table')) {
+            $write_table = eottae_talkroom_write_table();
+            if ($write_table !== '') {
+                $id_list = implode(',', array_map('intval', $need_sender));
+                $result = sql_query("
+                    SELECT wr_id, mb_id
+                    FROM `{$write_table}`
+                    WHERE wr_id IN ({$id_list})
+                      AND wr_is_comment = 0
+                ", false);
+                if ($result) {
+                    while ($row = sql_fetch_array($result)) {
+                        $wr_id = (int) ($row['wr_id'] ?? 0);
+                        if ($wr_id > 0) {
+                            $by_wr[$wr_id] = preg_replace('/[^a-z0-9_@.-]/i', '', (string) ($row['mb_id'] ?? ''));
+                        }
+                    }
+                }
+            }
+        }
+
+        $bot_mb_id = '';
+        if (is_file(G5_LIB_PATH.'/eottae-talkroom-ai.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom-ai.lib.php';
+            if (function_exists('eottae_talkroom_ai_get_bot_member')) {
+                $bot = eottae_talkroom_ai_get_bot_member();
+                $bot_mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) ($bot['mb_id'] ?? ''));
+            }
+        }
+
+        $recipient_ids = array();
+        $members = eottae_talkroom_list_room_members($room_id, 'active', 200);
+        foreach ($members as $member_row) {
+            $mbid = preg_replace('/[^a-z0-9_@.-]/i', '', (string) ($member_row['mb_id'] ?? ''));
+            if ($mbid === '' || ($bot_mb_id !== '' && $mbid === $bot_mb_id)) {
+                continue;
+            }
+            $recipient_ids[$mbid] = true;
+        }
+
+        $read_map = array();
+        $reads_table = eottae_talkroom_reads_table();
+        $read_result = sql_query("
+            SELECT mb_id, last_read_post_id
+            FROM `{$reads_table}`
+            WHERE room_id = '{$room_id}'
+        ", false);
+        if ($read_result) {
+            while ($read_row = sql_fetch_array($read_result)) {
+                $mbid = preg_replace('/[^a-z0-9_@.-]/i', '', (string) ($read_row['mb_id'] ?? ''));
+                if ($mbid === '') {
+                    continue;
+                }
+                $read_map[$mbid] = max(0, (int) ($read_row['last_read_post_id'] ?? 0));
+            }
+        }
+
+        $out = array();
+        foreach ($by_wr as $wr_id => $sender) {
+            $count = 0;
+            foreach (array_keys($recipient_ids) as $mbid) {
+                if ($sender !== '' && $mbid === $sender) {
+                    continue;
+                }
+                $last_read = (int) ($read_map[$mbid] ?? 0);
+                if ($last_read < $wr_id) {
+                    $count++;
+                }
+            }
+            $out[$wr_id] = $count;
+        }
+
+        return $out;
+    }
+}
+
 if (!function_exists('eottae_talkroom_reads_auto_mark_on_view')) {
     function eottae_talkroom_reads_auto_mark_on_view($room_id, $mb_id, array $ctx = array())
     {

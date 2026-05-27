@@ -484,7 +484,7 @@ if (!function_exists('eottae_talkroom_public_group_chat_payload')) {
 
         if ($room_id > 0) {
             $rows = eottae_talkroom_public_group_list_messages($room_id, $limit);
-            $messages = eottae_talkroom_public_group_format_messages_for_viewer($rows, $viewer_mb_id, $can_manage_ai);
+            $messages = eottae_talkroom_public_group_format_messages_for_viewer($rows, $viewer_mb_id, $can_manage_ai, $room_id);
             foreach ($messages as $message) {
                 $last_wr_id = max($last_wr_id, (int) ($message['wr_id'] ?? 0));
             }
@@ -834,7 +834,7 @@ if (!function_exists('eottae_talkroom_room_chat_payload')) {
 
         if (!empty($ctx['can_view_posts'])) {
             $rows = eottae_talkroom_public_group_list_messages($room_id, 50);
-            $messages = eottae_talkroom_public_group_format_messages_for_viewer($rows, $viewer_mb_id, $can_manage_ai);
+            $messages = eottae_talkroom_public_group_format_messages_for_viewer($rows, $viewer_mb_id, $can_manage_ai, $room_id);
             foreach ($messages as $message) {
                 $last_wr_id = max($last_wr_id, (int) ($message['wr_id'] ?? 0));
             }
@@ -912,12 +912,141 @@ if (!function_exists('eottae_talkroom_public_group_enrich_message_for_manager'))
     }
 }
 
+if (!function_exists('eottae_talkroom_public_group_attach_message_unread_counts')) {
+    /**
+     * @param array<int, array<string, mixed>> $messages
+     * @return array<int, array<string, mixed>>
+     */
+    function eottae_talkroom_public_group_attach_message_unread_counts(array $messages, $room_id, $viewer_mb_id)
+    {
+        $room_id = (int) $room_id;
+        $viewer_mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $viewer_mb_id);
+        if ($room_id < 1 || $viewer_mb_id === '' || empty($messages)) {
+            return $messages;
+        }
+
+        $specs = array();
+        foreach ($messages as $message) {
+            if (empty($message['is_mine'])) {
+                continue;
+            }
+            $wr_id = (int) ($message['wr_id'] ?? 0);
+            if ($wr_id < 1) {
+                continue;
+            }
+            $specs[] = array(
+                'wr_id' => $wr_id,
+                'mb_id' => $viewer_mb_id,
+            );
+        }
+
+        if (empty($specs)) {
+            return $messages;
+        }
+
+        if (!function_exists('eottae_talkroom_chat_unread_counts_for_messages')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom-reads.lib.php';
+        }
+
+        $counts = eottae_talkroom_chat_unread_counts_for_messages($room_id, $specs);
+        foreach ($messages as $idx => $message) {
+            if (empty($message['is_mine'])) {
+                continue;
+            }
+            $wr_id = (int) ($message['wr_id'] ?? 0);
+            $messages[$idx]['unread_count'] = isset($counts[$wr_id]) ? (int) $counts[$wr_id] : 0;
+        }
+
+        return $messages;
+    }
+}
+
+if (!function_exists('eottae_talkroom_public_group_chat_poll_extras')) {
+    /**
+     * 폴링 시 읽음 처리 + 내 메시지 미읽음 수 갱신
+     *
+     * @return array{unread_updates: array<string, int>}
+     */
+    function eottae_talkroom_public_group_chat_poll_extras($room_id, $viewer_mb_id, $mark_read = true)
+    {
+        $room_id = (int) $room_id;
+        $viewer_mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $viewer_mb_id);
+        $extras = array('unread_updates' => array());
+
+        if ($mark_read && $viewer_mb_id !== '') {
+            if (!function_exists('eottae_talkroom_reads_can_mark')) {
+                include_once G5_LIB_PATH.'/eottae-talkroom-reads.lib.php';
+            }
+            if (eottae_talkroom_reads_can_mark($room_id, $viewer_mb_id)) {
+                eottae_talkroom_mark_room_read($room_id, $viewer_mb_id);
+            }
+        }
+
+        $raw = isset($_REQUEST['read_check_wr_ids']) ? trim((string) $_REQUEST['read_check_wr_ids']) : '';
+        if ($viewer_mb_id === '' || $raw === '') {
+            return $extras;
+        }
+
+        $wr_ids = array();
+        foreach (explode(',', $raw) as $part) {
+            $wr_id = (int) trim($part);
+            if ($wr_id > 0) {
+                $wr_ids[$wr_id] = $wr_id;
+            }
+        }
+        $wr_ids = array_values($wr_ids);
+        if (empty($wr_ids)) {
+            return $extras;
+        }
+
+        if (!function_exists('eottae_talkroom_chat_unread_counts_for_messages')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom-reads.lib.php';
+        }
+
+        $specs = array();
+        foreach ($wr_ids as $wr_id) {
+            $specs[] = array(
+                'wr_id' => $wr_id,
+                'mb_id' => $viewer_mb_id,
+            );
+        }
+
+        $counts = eottae_talkroom_chat_unread_counts_for_messages($room_id, $specs);
+        foreach ($counts as $wr_id => $count) {
+            $extras['unread_updates'][(string) $wr_id] = (int) $count;
+        }
+
+        return $extras;
+    }
+}
+
+if (!function_exists('eottae_talkroom_public_group_enrich_message_row')) {
+    /**
+     * @param array<string, mixed>|null $message_row
+     * @return array<string, mixed>|null
+     */
+    function eottae_talkroom_public_group_enrich_message_row($message_row, $room_id, $viewer_mb_id)
+    {
+        if (!is_array($message_row) || empty($message_row)) {
+            return $message_row;
+        }
+
+        $rows = eottae_talkroom_public_group_attach_message_unread_counts(
+            array($message_row),
+            (int) $room_id,
+            (string) $viewer_mb_id
+        );
+
+        return $rows[0] ?? $message_row;
+    }
+}
+
 if (!function_exists('eottae_talkroom_public_group_format_messages_for_viewer')) {
     /**
      * @param array<int, array<string, mixed>> $rows
      * @return array<int, array<string, mixed>>
      */
-    function eottae_talkroom_public_group_format_messages_for_viewer(array $rows, $viewer_mb_id, $can_manage_ai)
+    function eottae_talkroom_public_group_format_messages_for_viewer(array $rows, $viewer_mb_id, $can_manage_ai, $room_id = 0)
     {
         $messages = array();
 
@@ -927,6 +1056,10 @@ if (!function_exists('eottae_talkroom_public_group_format_messages_for_viewer'))
                 continue;
             }
             $messages[] = eottae_talkroom_public_group_enrich_message_for_manager($message, $can_manage_ai);
+        }
+
+        if ((int) $room_id > 0) {
+            $messages = eottae_talkroom_public_group_attach_message_unread_counts($messages, (int) $room_id, (string) $viewer_mb_id);
         }
 
         return $messages;

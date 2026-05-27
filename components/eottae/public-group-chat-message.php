@@ -29,6 +29,7 @@ if (!function_exists('eottae_public_group_chat_message_html')) {
             ? ($message['ai_display_name'] ?? $message['author'] ?? '어때봇 · AI 도우미')
             : ($message['author'] ?? '익명');
         $time_label = isset($message['time_label']) ? (string) $message['time_label'] : '';
+        $unread_count = $is_mine ? max(0, (int) ($message['unread_count'] ?? 0)) : 0;
         $text = isset($message['text']) ? (string) $message['text'] : '';
         $action_label = trim((string) ($message['action_label'] ?? ''));
         $action_url = trim((string) ($message['action_url'] ?? ''));
@@ -76,9 +77,14 @@ if (!function_exists('eottae_public_group_chat_message_html')) {
                 </div>
                 <?php } ?>
                 <div class="public-group-chat__bubble-row">
-                    <?php if ($is_mine && $time_label !== '') { ?>
+                    <?php if ($is_mine) {
+                        if ($unread_count > 0) { ?>
+                    <span class="public-group-chat__unread" aria-label="읽지 않은 <?php echo (int) $unread_count; ?>명"><?php echo (int) $unread_count; ?></span>
+                        <?php }
+                        if ($time_label !== '') { ?>
                     <time class="public-group-chat__time"><?php echo $time_label; ?></time>
-                    <?php } ?>
+                        <?php }
+                    } ?>
                     <div class="public-group-chat__bubble">
                         <p class="public-group-chat__text"><?php echo nl2br(get_text($text)); ?></p>
                         <?php if ($poll_html !== '') { echo $poll_html; } ?>

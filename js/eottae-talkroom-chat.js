@@ -99,6 +99,82 @@
     }
   }
 
+  function unreadBeforeHtml(message) {
+    if (!message || !message.is_mine) {
+      return '';
+    }
+    var count = parseInt(message.unread_count, 10) || 0;
+    if (count < 1) {
+      return '';
+    }
+    return '<span class="public-group-chat__unread" aria-label="읽지 않은 '
+      + count + '명">' + count + '</span>';
+  }
+
+  function mineTimeBeforeHtml(message) {
+    var html = unreadBeforeHtml(message);
+    if (message && message.is_mine && message.time_label) {
+      html += '<time class="public-group-chat__time">' + esc(message.time_label) + '</time>';
+    }
+    return html;
+  }
+
+  function collectMineWrIds(section) {
+    if (!section) {
+      return [];
+    }
+    var nodes = section.querySelectorAll('.public-group-chat__message--mine[data-wr-id]');
+    var ids = [];
+    var i;
+    for (i = 0; i < nodes.length; i += 1) {
+      var wrId = parseInt(nodes[i].getAttribute('data-wr-id'), 10) || 0;
+      if (wrId > 0) {
+        ids.push(wrId);
+      }
+    }
+    return ids;
+  }
+
+  function applyUnreadUpdates(section, updates) {
+    if (!section || !updates) {
+      return;
+    }
+    Object.keys(updates).forEach(function (key) {
+      var wrId = parseInt(key, 10) || 0;
+      var count = parseInt(updates[key], 10) || 0;
+      if (wrId < 1) {
+        return;
+      }
+      var article = section.querySelector('.public-group-chat__message--mine[data-wr-id="' + wrId + '"]');
+      if (!article) {
+        return;
+      }
+      var row = article.querySelector('.public-group-chat__bubble-row');
+      if (!row) {
+        return;
+      }
+      var unread = row.querySelector('.public-group-chat__unread');
+      if (count < 1) {
+        if (unread && unread.parentNode) {
+          unread.parentNode.removeChild(unread);
+        }
+        return;
+      }
+      if (!unread) {
+        unread = document.createElement('span');
+        unread.className = 'public-group-chat__unread';
+        var time = row.querySelector('.public-group-chat__time');
+        if (time) {
+          row.insertBefore(unread, time);
+        } else {
+          row.insertBefore(unread, row.firstChild);
+        }
+      }
+      unread.textContent = String(count);
+      unread.setAttribute('aria-label', '읽지 않은 ' + count + '명');
+    });
+  }
+
   function renderMessage(message, section) {
     if (global.EottaePublicChatManage && global.EottaePublicChatManage.messageHtml) {
       return global.EottaePublicChatManage.messageHtml(message, section || getSection());
@@ -131,9 +207,7 @@
         + (message.is_ai ? badge : '<strong class="public-group-chat__author">' + esc(author) + '</strong>')
         + '</div>';
     }
-    var timeBefore = message.is_mine && message.time_label
-      ? '<time class="public-group-chat__time">' + esc(message.time_label) + '</time>'
-      : '';
+    var timeBefore = mineTimeBeforeHtml(message);
     var timeAfter = !message.is_mine && message.time_label
       ? '<time class="public-group-chat__time">' + esc(message.time_label) + '</time>'
       : '';
@@ -208,6 +282,10 @@
       + encodeURIComponent(roomId)
       + '&since_wr_id='
       + encodeURIComponent(String(since));
+    var mineIds = collectMineWrIds(section);
+    if (mineIds.length) {
+      url += '&read_check_wr_ids=' + encodeURIComponent(mineIds.join(','));
+    }
 
     return fetch(url, {
       credentials: 'same-origin',
@@ -219,6 +297,7 @@
           return;
         }
         appendMessages(section, data.messages || []);
+        applyUnreadUpdates(section, data.unread_updates || null);
       })
       .catch(function () {});
   }

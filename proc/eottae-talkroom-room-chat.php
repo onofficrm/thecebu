@@ -7,6 +7,7 @@
 chdir(dirname(__FILE__).'/..');
 include_once dirname(__FILE__).'/../_common.php';
 include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
+include_once G5_LIB_PATH.'/eottae-talkroom-reads.lib.php';
 include_once G5_LIB_PATH.'/eottae-talkroom-public-chat.lib.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -56,18 +57,20 @@ if ($method === 'GET' || $action === 'poll') {
     }
 
     $rows = eottae_talkroom_public_group_list_messages($room_id, 30, $since_wr_id);
-    $messages = eottae_talkroom_public_group_format_messages_for_viewer($rows, $viewer_mb_id, $can_manage_ai);
+    $messages = eottae_talkroom_public_group_format_messages_for_viewer($rows, $viewer_mb_id, $can_manage_ai, $room_id);
     $last_wr_id = $since_wr_id;
 
     foreach ($messages as $message) {
         $last_wr_id = max($last_wr_id, (int) ($message['wr_id'] ?? 0));
     }
 
-    eottae_talkroom_room_chat_json(true, '', array(
+    $poll_extras = eottae_talkroom_public_group_chat_poll_extras($room_id, $viewer_mb_id, true);
+
+    eottae_talkroom_room_chat_json(true, '', array_merge(array(
         'room_id'    => $room_id,
         'messages'   => $messages,
         'last_wr_id' => $last_wr_id,
-    ));
+    ), $poll_extras));
 }
 
 if ($method !== 'POST') {
@@ -95,7 +98,7 @@ if ($action === 'send') {
     eottae_talkroom_room_chat_json(!empty($result['ok']), $result['message'] ?? '', array(
         'room_id'     => $room_id,
         'wr_id'       => (int) ($result['wr_id'] ?? 0),
-        'message_row' => $result['message_row'] ?? null,
+        'message_row' => eottae_talkroom_public_group_enrich_message_row($result['message_row'] ?? null, $room_id, $member['mb_id']),
         'last_wr_id'  => (int) ($result['wr_id'] ?? 0),
         'member_token' => eottae_talkroom_member_token(),
     ));

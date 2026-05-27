@@ -39,6 +39,26 @@
       + '" aria-label="AI 메시지 삭제">삭제</button>';
   }
 
+  function unreadBeforeHtml(message) {
+    if (!message || !message.is_mine) {
+      return '';
+    }
+    var count = parseInt(message.unread_count, 10) || 0;
+    if (count < 1) {
+      return '';
+    }
+    return '<span class="public-group-chat__unread" aria-label="읽지 않은 '
+      + count + '명">' + count + '</span>';
+  }
+
+  function mineTimeBeforeHtml(message) {
+    var html = unreadBeforeHtml(message);
+    if (message && message.is_mine && message.time_label) {
+      html += '<time class="public-group-chat__time">' + esc(message.time_label) + '</time>';
+    }
+    return html;
+  }
+
   function buildActionHtml(message) {
     if (!message || !message.action_label) {
       return '';
@@ -100,9 +120,7 @@
       meta = '<div class="public-group-chat__meta public-group-chat__meta--actions">' + deleteBtn + '</div>';
     }
 
-    var timeBefore = message.is_mine && message.time_label
-      ? '<time class="public-group-chat__time">' + esc(message.time_label) + '</time>'
-      : '';
+    var timeBefore = mineTimeBeforeHtml(message);
     var timeAfter = !message.is_mine && message.time_label
       ? '<time class="public-group-chat__time">' + esc(message.time_label) + '</time>'
       : '';
