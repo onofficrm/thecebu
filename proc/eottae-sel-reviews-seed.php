@@ -5,7 +5,8 @@
  * POST/GET /proc/eottae-sel-reviews-seed.php?shop_wr_id=9&preset=badachamchi
  * POST/GET /proc/eottae-sel-reviews-seed.php?shop_wr_id=11&preset=dawon
  * POST/GET /proc/eottae-sel-reviews-seed.php?shop_wr_id=36&preset=shiny
- * 관리자 로그인 또는 key 파라미터로 샘플 리뷰 시드 (preset: sel | yonggungri | badachamchi | dawon | shiny)
+ * POST/GET /proc/eottae-sel-reviews-seed.php?shop_wr_id=39&preset=barocar
+ * 관리자 로그인 또는 key 파라미터로 샘플 리뷰 시드 (preset: sel | yonggungri | badachamchi | dawon | shiny | barocar)
  */
 include_once dirname(__DIR__).'/common.php';
 include_once G5_LIB_PATH.'/eottae.lib.php';
@@ -36,6 +37,8 @@ if ($preset === 'yonggungri') {
     $default_shop_id = 11;
 } elseif ($preset === 'shiny') {
     $default_shop_id = 36;
+} elseif ($preset === 'barocar') {
+    $default_shop_id = 39;
 }
 $shop_wr_id = isset($_REQUEST['shop_wr_id']) ? (int) $_REQUEST['shop_wr_id'] : $default_shop_id;
 if ($shop_wr_id < 1) {
@@ -53,6 +56,8 @@ if ($preset === 'yonggungri') {
     $seed_fn = 'eottae_seed_dawon_reviews';
 } elseif ($preset === 'shiny') {
     $seed_fn = 'eottae_seed_shiny_reviews';
+} elseif ($preset === 'barocar') {
+    $seed_fn = 'eottae_seed_barocar_reviews';
 }
 
 if (!function_exists($seed_fn)) {

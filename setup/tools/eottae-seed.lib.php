@@ -767,12 +767,19 @@ if (!function_exists('eottae_seed_shop_reviews_from_items')) {
         $logs = array();
 
         foreach ($items as $item) {
+            $rating = isset($item['rating']) ? (int) $item['rating'] : 5;
+            if ($rating < 1) {
+                $rating = 1;
+            } elseif ($rating > 5) {
+                $rating = 5;
+            }
+
             eottae_seed_ensure_member($item['mb_id'], $item['nick']);
             $logs[] = eottae_seed_insert_review(array(
                 'shop_wr_id'  => $shop_wr_id,
                 'shop_name'   => $shop_name,
-                'rating'      => 5,
-                'wr_subject'  => '[5점] '.$shop_name.' 리뷰',
+                'rating'      => $rating,
+                'wr_subject'  => '['.$rating.'점] '.$shop_name.' 리뷰',
                 'wr_content'  => $item['text'],
                 'mb_id'       => $item['mb_id'],
                 'wr_name'     => $item['nick'],
@@ -1082,6 +1089,38 @@ if (!function_exists('eottae_seed_shiny_reviews')) {
         }
 
         return array_merge($logs, eottae_seed_shop_reviews_from_items($shop_wr_id, $items));
+    }
+}
+
+if (!function_exists('eottae_seed_barocar_reviews')) {
+    /**
+     * 바로카 Barocar(shop wr_id=39) 샘플 리뷰 39건 — 평균 약 4.9 (35×5 + 4×4)
+     *
+     * @param int $shop_wr_id
+     * @return array<int, array<string, mixed>>
+     */
+    function eottae_seed_barocar_reviews($shop_wr_id = 39)
+    {
+        global $g5;
+
+        $shop_wr_id = (int) $shop_wr_id;
+        if ($shop_wr_id < 1) {
+            $shop_table = $g5['write_prefix'].EOTTae_SHOP_TABLE;
+            $shop_row = sql_fetch(" select wr_id from {$shop_table} where wr_is_comment = 0 and (wr_subject like '%바로카%' or wr_subject like '%Barocar%') limit 1 ");
+            $shop_wr_id = !empty($shop_row['wr_id']) ? (int) $shop_row['wr_id'] : 0;
+        }
+
+        $items_file = __DIR__.'/eottae-seed-barocar-reviews-items.php';
+        if (!is_file($items_file)) {
+            return array(eottae_seed_log('review', 'barocar review items file missing', false));
+        }
+
+        $items = include $items_file;
+        if (!is_array($items)) {
+            return array(eottae_seed_log('review', 'barocar review items invalid', false));
+        }
+
+        return eottae_seed_shop_reviews_from_items($shop_wr_id, $items);
     }
 }
 
