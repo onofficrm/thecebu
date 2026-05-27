@@ -884,6 +884,13 @@ if (isset($board) && is_array($board) && isset($board['bo_skin'])) {
     if (strpos($skin, 'eottae-') === 0) {
         add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/g5b-board.css">', 4);
     }
+    if ($skin === 'eottae-community' && is_file(G5_PATH.'/css/eottae-community-board.css')) {
+        $community_board_css = G5_PATH.'/css/eottae-community-board.css';
+        add_stylesheet(
+            '<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-community-board.css?ver='.(int) filemtime($community_board_css).'">',
+            31
+        );
+    }
 }
 
 if (!function_exists('eottae_is_media_board_table')) {
