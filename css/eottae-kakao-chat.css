@@ -365,9 +365,16 @@
 }
 
 .public-group-chat--kakao .public-group-chat__action--register {
-  color: var(--kakao-send-text);
-  background: var(--kakao-send-bg);
+  color: var(--kakao-send-text, #191919);
+  background: var(--kakao-send-bg, #fee500);
   border: 0;
+}
+
+.public-group-chat--hero.public-group-chat--kakao .public-group-chat__composer--login .public-group-chat__action--register,
+.public-group-chat--hero.public-group-chat--kakao .public-group-chat__composer--login .public-group-chat__join {
+  color: #191919 !important;
+  background: #fee500 !important;
+  border: 0 !important;
 }
 
 .public-group-chat--kakao .public-group-chat__hint {

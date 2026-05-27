@@ -9074,7 +9074,12 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
   will-change: opacity;
 }
 
-/* 홈 — 히어로 3열 (검색 | 공개단체톡 | 로그인+이벤트) */
+/*
+ * 홈 히어로 3열 높이 규칙 (고정)
+ * - 기준: 3열 사이드바 = 로그인(비회원) 또는 MY(회원) 카드 + gap + 업체 이벤트 카드
+ * - 1열(검색)·2열(채팅)은 JS가 3열 실제 콘텐츠 높이(--eottae-hero-col-h)에만 맞춤
+ * - 로그인/로그아웃(전체 새로고침) 후에도 동일 규칙 — 채팅/검색 열이 높이를 끌어올리지 않음
+ */
 @media (min-width: 1024px) {
   .eottae-home-hero-grid--3col {
     display: grid !important;
@@ -9239,6 +9244,22 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
     flex: 0 0 auto;
     min-height: auto;
     overflow: visible;
+  }
+
+  /* 회원/비회원 사이드바 상단 카드 + 이벤트 — 높이 축소 금지 (로그인 상태와 무관) */
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > .lg\:col-span-4 > *,
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > .home-hero-sidebar-column > * {
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    min-height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync .community-login-box,
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync .community-login-box--guest {
+    flex: 0 0 auto;
+    flex-shrink: 0;
   }
 }
 

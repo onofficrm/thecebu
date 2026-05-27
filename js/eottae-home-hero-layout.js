@@ -1,15 +1,21 @@
 /**
- * 홈(빌더) — 히어로 3열 높이: 3열(로그인+이벤트 사이드바) 콘텐츠 높이 기준으로 1·2·3열 맞춤
+ * 홈(빌더) — 히어로 3열 높이 (고정 규칙)
+ *
+ * 높이 기준: 3열 사이드바 콘텐츠만 (비회원 로그인 카드 | 회원 MY 카드) + 이벤트 카드
+ * 1·2열은 이 높이에 맞추고, 채팅 메시지·입력창(로그인/비로그인)은 2열 내부에서만 스크롤/배치
  */
 (function (global) {
   'use strict';
 
+  var LAYOUT_VERSION = 'sidebar-v2';
   var SYNC_CLASS = 'eottae-home-hero-grid--height-sync';
   var MEASURE_CLASS = 'eottae-home-hero-grid--measuring';
   var MIN_COL_H = 280;
   var resizeTimer = null;
   var resizeObserver = null;
+  var sidebarMutationObserver = null;
   var syncing = false;
+  var lastSidebarFingerprint = '';
 
   function findHeroGrid() {
     if (typeof global.findEottaeHeroGrid === 'function') {
@@ -69,6 +75,27 @@
     ];
   }
 
+  function isVisibleBlock(el) {
+    if (!el) {
+      return false;
+    }
+
+    var cs = global.getComputedStyle(el);
+    if (cs.display === 'none' || cs.visibility === 'hidden') {
+      return false;
+    }
+
+    if (parseFloat(cs.opacity || '1') < 0.01) {
+      return false;
+    }
+
+    if (el.getAttribute('aria-hidden') === 'true') {
+      return false;
+    }
+
+    return true;
+  }
+
   function clearHeroColumnHeights(grid) {
     if (!grid) {
       return;
@@ -97,6 +124,8 @@
     grid.style.removeProperty('grid-template-rows');
     grid.removeAttribute('data-eottae-hero-height');
     grid.removeAttribute('data-eottae-hero-height-source');
+    grid.removeAttribute('data-eottae-hero-sidebar-mode');
+    grid.removeAttribute('data-eottae-hero-layout-version');
   }
 
   /** 1·2열이 그리드 행 높이에 영향 주지 않게 잠시 격리 */
@@ -152,12 +181,7 @@
   }
 
   function measureChildBlockHeight(child) {
-    if (!child) {
-      return 0;
-    }
-
-    var cs = global.getComputedStyle(child);
-    if (cs.display === 'none' || cs.visibility === 'hidden') {
+    if (!isVisibleBlock(child)) {
       return 0;
     }
 
@@ -167,10 +191,45 @@
       h = Math.max(h, elementContentHeight(stack));
     }
 
+    var loginBox = child.querySelector ? child.querySelector('.community-login-box') : null;
+    if (loginBox) {
+      h = Math.max(h, elementContentHeight(loginBox));
+    }
+
     return h;
   }
 
-  /** 3열 자연 높이 = 자식 블록(이벤트 카드 포함) 실제 콘텐츠 높이 합 + gap */
+  function getSidebarAuthMode(sidebar) {
+    if (!sidebar) {
+      return 'unknown';
+    }
+
+    if (sidebar.querySelector('.community-login-box--guest')) {
+      return 'guest';
+    }
+
+    if (sidebar.querySelector('.community-login-box:not(.community-login-box--guest)')) {
+      return 'member';
+    }
+
+    if (sidebar.querySelector('.community-login-box')) {
+      return 'member';
+    }
+
+    return 'unknown';
+  }
+
+  function sidebarFingerprint(sidebar) {
+    if (!sidebar) {
+      return '';
+    }
+
+    var mode = getSidebarAuthMode(sidebar);
+    var h = measureSidebarNaturalHeight(sidebar);
+    return mode + ':' + h;
+  }
+
+  /** 3열 자연 높이 = 자식 블록(로그인/MY + 이벤트) 실제 콘텐츠 높이 합 + gap */
   function measureSidebarNaturalHeight(sidebar) {
     if (!sidebar) {
       return 0;
@@ -189,6 +248,9 @@
 
     for (i = 0; i < children.length; i += 1) {
       child = children[i];
+      if (!isVisibleBlock(child)) {
+        continue;
+      }
       h = measureChildBlockHeight(child);
       if (h < 1) {
         continue;
@@ -256,8 +318,10 @@
   }
 
   function applyHeroColumnHeights(grid, targetH) {
+    var sidebar = findHeroSidebarColumn(grid);
     var cols = heroColumns(grid);
     var i;
+
     for (i = 0; i < cols.length; i += 1) {
       if (!cols[i]) {
         continue;
@@ -275,9 +339,13 @@
     grid.classList.add(SYNC_CLASS);
     grid.setAttribute('data-eottae-hero-height', String(targetH));
     grid.setAttribute('data-eottae-hero-height-source', 'sidebar');
+    grid.setAttribute('data-eottae-hero-layout-version', LAYOUT_VERSION);
+    if (sidebar) {
+      grid.setAttribute('data-eottae-hero-sidebar-mode', getSidebarAuthMode(sidebar));
+    }
   }
 
-  function observeHeroSidebar(grid) {
+  function observeSidebarTargets(grid) {
     if (typeof ResizeObserver === 'undefined' || !grid) {
       return;
     }
@@ -293,7 +361,7 @@
     }
 
     resizeObserver = new ResizeObserver(function () {
-      scheduleSync(150);
+      scheduleSync(120);
     });
 
     resizeObserver.observe(sidebar);
@@ -314,6 +382,38 @@
     }
   }
 
+  function observeSidebarMutations(grid) {
+    if (typeof MutationObserver === 'undefined' || !grid) {
+      return;
+    }
+
+    var sidebar = findHeroSidebarColumn(grid);
+    if (!sidebar) {
+      return;
+    }
+
+    if (sidebarMutationObserver) {
+      sidebarMutationObserver.disconnect();
+      sidebarMutationObserver = null;
+    }
+
+    sidebarMutationObserver = new MutationObserver(function () {
+      var fp = sidebarFingerprint(sidebar);
+      if (fp !== lastSidebarFingerprint) {
+        lastSidebarFingerprint = fp;
+        scheduleSync(80);
+        scheduleSync(350);
+      }
+    });
+
+    sidebarMutationObserver.observe(sidebar, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'style', 'hidden'],
+    });
+  }
+
   function syncHeroColumnHeights() {
     if (syncing) {
       return false;
@@ -330,6 +430,11 @@
         resizeObserver.disconnect();
         resizeObserver = null;
       }
+      if (sidebarMutationObserver) {
+        sidebarMutationObserver.disconnect();
+        sidebarMutationObserver = null;
+      }
+      lastSidebarFingerprint = '';
       return true;
     }
 
@@ -362,8 +467,12 @@
       applyHeroColumnHeights(grid, targetH);
     }
 
+    var sidebar = findHeroSidebarColumn(grid);
+    lastSidebarFingerprint = sidebarFingerprint(sidebar);
+
     syncing = false;
-    observeHeroSidebar(grid);
+    observeSidebarTargets(grid);
+    observeSidebarMutations(grid);
 
     if (typeof global.scheduleEottaeHomePublicChatScroll === 'function') {
       global.scheduleEottaeHomePublicChatScroll();
@@ -382,13 +491,19 @@
     }, wait);
   }
 
+  function runInitialSyncPasses() {
+    scheduleSync(0);
+    scheduleSync(80);
+    scheduleSync(280);
+    scheduleSync(700);
+    scheduleSync(1400);
+    scheduleSync(2800);
+    scheduleSync(4500);
+  }
+
   function init() {
     var run = function () {
-      scheduleSync(50);
-      scheduleSync(300);
-      scheduleSync(900);
-      scheduleSync(1800);
-      scheduleSync(3200);
+      runInitialSyncPasses();
     };
 
     if (typeof global.eottaeHomeAfterReactReady === 'function') {
@@ -397,12 +512,27 @@
       global.setTimeout(run, 1200);
     }
 
+    if (global.document && global.document.fonts && typeof global.document.fonts.ready === 'object') {
+      global.document.fonts.ready.then(function () {
+        scheduleSync(100);
+        scheduleSync(500);
+      }).catch(function () {});
+    }
+
     global.addEventListener('resize', function () {
       scheduleSync(150);
     });
 
     global.addEventListener('load', function () {
       scheduleSync(200);
+      scheduleSync(1200);
+    });
+
+    global.addEventListener('pageshow', function (event) {
+      if (event && event.persisted) {
+        scheduleSync(50);
+        scheduleSync(400);
+      }
     });
 
     if (typeof MutationObserver === 'undefined') {
@@ -444,4 +574,5 @@
 
   global.syncEottaeHeroColumnHeights = syncHeroColumnHeights;
   global.scheduleEottaeHeroColumnHeights = scheduleSync;
+  global.EOTTae_HERO_LAYOUT_VERSION = LAYOUT_VERSION;
 }(window));

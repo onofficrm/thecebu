@@ -120,7 +120,9 @@
     sidebar.setAttribute(MOUNTED_ATTR, '1');
 
     if (typeof global.scheduleEottaeHeroColumnHeights === 'function') {
-      global.scheduleEottaeHeroColumnHeights(60);
+      global.scheduleEottaeHeroColumnHeights(40);
+      global.scheduleEottaeHeroColumnHeights(200);
+      global.scheduleEottaeHeroColumnHeights(600);
     } else if (typeof global.syncEottaeHeroColumnHeights === 'function') {
       global.syncEottaeHeroColumnHeights();
     }

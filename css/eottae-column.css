@@ -585,15 +585,16 @@
 
 .sebu-column-btn--editorial,
 .sebu-column-btn--primary {
-  background: var(--col-accent);
-  border-color: var(--col-accent);
+  background: var(--col-accent, #0f4c5c);
+  border-color: var(--col-accent, #0f4c5c);
   color: #fff;
 }
 
 .sebu-column-btn--editorial:hover,
 .sebu-column-btn--primary:hover {
-  background: var(--col-accent-light);
-  border-color: var(--col-accent-light);
+  background: var(--col-accent-light, #1a6b7d);
+  border-color: var(--col-accent-light, #1a6b7d);
+  color: #fff;
 }
 
 .sebu-column-btn--outline {
@@ -1765,6 +1766,18 @@
 }
 
 /* ── Column admin (super admin) ── */
+.sebu-column-admin,
+.sebu-column-admin--mypage,
+.sebu-column-mypage-admin {
+  --col-sans: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
+  --col-ink: #1c1917;
+  --col-muted: #78716c;
+  --col-line: #e7e5e4;
+  --col-surface: #ffffff;
+  --col-accent: #0f4c5c;
+  --col-accent-light: #1a6b7d;
+}
+
 .sebu-column-admin {
   max-width: 1080px;
   margin: 0 auto;
@@ -2067,6 +2080,19 @@ span.sebu-column-admin__application-avatar.sebu-column-avatar--initials {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.sebu-column-admin__application-form .sebu-column-btn--primary {
+  background: var(--col-accent, #0f4c5c);
+  border-color: var(--col-accent, #0f4c5c);
+  color: #fff;
+}
+
+.sebu-column-admin__application-form .sebu-column-btn--primary:hover,
+.sebu-column-admin__application-form .sebu-column-btn--primary:focus-visible {
+  background: var(--col-accent-light, #1a6b7d);
+  border-color: var(--col-accent-light, #1a6b7d);
+  color: #fff;
 }
 
 .sebu-column-admin--mypage .sebu-column-admin__application-item {
