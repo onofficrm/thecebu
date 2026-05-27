@@ -7,10 +7,13 @@
 (function (global) {
   'use strict';
 
-  var LAYOUT_VERSION = 'sidebar-v2';
+  var LAYOUT_VERSION = 'sidebar-v3';
   var SYNC_CLASS = 'eottae-home-hero-grid--height-sync';
   var MEASURE_CLASS = 'eottae-home-hero-grid--measuring';
   var MIN_COL_H = 280;
+  var SCROLL_IDLE_MS = 450;
+  var HERO_PAST_TOP_PX = -60;
+  var HEIGHT_EPS_PX = 2;
   var resizeTimer = null;
   var resizeObserver = null;
   var sidebarMutationObserver = null;
@@ -26,12 +29,39 @@
     return global.innerWidth >= 1024;
   }
 
+  function getWindowScrollY() {
+    return global.pageYOffset
+      || (document.documentElement && document.documentElement.scrollTop)
+      || 0;
+  }
+
+  function hasScrolledPastHero() {
+    var grid = findHeroGrid();
+    if (!grid) {
+      return false;
+    }
+
+    return grid.getBoundingClientRect().top < HERO_PAST_TOP_PX;
+  }
+
+  function shouldDeferHeroSync() {
+    if (!isDesktopHeroLayout()) {
+      return false;
+    }
+
+    if (userScrolling) {
+      return true;
+    }
+
+    return hasScrolledPastHero();
+  }
+
   function markUserScrolling() {
     userScrolling = true;
     global.clearTimeout(scrollIdleTimer);
     scrollIdleTimer = global.setTimeout(function () {
       userScrolling = false;
-    }, 180);
+    }, SCROLL_IDLE_MS);
   }
 
   function releaseDesktopHeroSyncOnMobile(grid) {
@@ -335,6 +365,96 @@
     return Math.max(targetH, natural);
   }
 
+  function measureSidebarHeightSoft(grid) {
+    var sidebar = findHeroSidebarColumn(grid);
+    if (!sidebar) {
+      return 0;
+    }
+
+    var prevHeight = sidebar.style.height;
+    var prevMax = sidebar.style.maxHeight;
+    var prevMin = sidebar.style.minHeight;
+
+    sidebar.style.height = 'auto';
+    sidebar.style.maxHeight = 'none';
+    sidebar.style.minHeight = '0';
+
+    var h = measureSidebarNaturalHeight(sidebar);
+
+    sidebar.style.height = prevHeight;
+    sidebar.style.maxHeight = prevMax;
+    sidebar.style.minHeight = prevMin;
+
+    return h;
+  }
+
+  function syncExistingHeroHeights(grid) {
+    var sidebar = findHeroSidebarColumn(grid);
+    if (!sidebar) {
+      return false;
+    }
+
+    var targetH = measureSidebarHeightSoft(grid);
+    if (targetH < MIN_COL_H) {
+      return false;
+    }
+
+    targetH = remeasureSidebarExpandedHeight(grid, targetH);
+
+    var currentH = parseInt(grid.getAttribute('data-eottae-hero-height') || '0', 10);
+    if (Math.abs(currentH - targetH) <= HEIGHT_EPS_PX) {
+      markHeroLayoutStable(grid, sidebar);
+      return true;
+    }
+
+    applyHeroColumnHeights(grid, targetH);
+    markHeroLayoutStable(grid, sidebar);
+
+    if (typeof global.scheduleEottaeHomePublicChatScroll === 'function') {
+      global.scheduleEottaeHomePublicChatScroll();
+    }
+
+    return true;
+  }
+
+  function runInitialHeroMeasure(grid) {
+    var scrollY = getWindowScrollY();
+
+    clearHeroColumnHeights(grid);
+    ensureSidebarMounted();
+
+    var sidebar = findHeroSidebarColumn(grid);
+    if (!sidebar) {
+      return false;
+    }
+
+    var targetH = measureSidebarColumnHeight(grid);
+    if (targetH < MIN_COL_H) {
+      return false;
+    }
+
+    targetH = remeasureSidebarExpandedHeight(grid, targetH);
+    applyHeroColumnHeights(grid, targetH);
+    targetH = remeasureSidebarExpandedHeight(grid, targetH);
+
+    if (Math.abs(parseInt(grid.getAttribute('data-eottae-hero-height') || '0', 10) - targetH) > HEIGHT_EPS_PX) {
+      applyHeroColumnHeights(grid, targetH);
+    }
+
+    sidebar = findHeroSidebarColumn(grid);
+    markHeroLayoutStable(grid, sidebar);
+
+    if (scrollY > 0 && Math.abs(getWindowScrollY() - scrollY) > HEIGHT_EPS_PX) {
+      global.scrollTo(0, scrollY);
+    }
+
+    if (typeof global.scheduleEottaeHomePublicChatScroll === 'function') {
+      global.scheduleEottaeHomePublicChatScroll();
+    }
+
+    return true;
+  }
+
   function measureSidebarColumnHeight(grid) {
     var sidebar = findHeroSidebarColumn(grid);
     if (!sidebar) {
@@ -396,6 +516,9 @@
     }
 
     resizeObserver = new ResizeObserver(function () {
+      if (shouldDeferHeroSync()) {
+        return;
+      }
       heroLayoutStable = false;
       scheduleSync(120);
     });
@@ -434,6 +557,9 @@
     }
 
     sidebarMutationObserver = new MutationObserver(function () {
+      if (shouldDeferHeroSync()) {
+        return;
+      }
       var fp = sidebarFingerprint(sidebar);
       if (fp !== lastSidebarFingerprint) {
         heroLayoutStable = false;
@@ -477,8 +603,8 @@
 
     mobileLayoutReleased = false;
 
-    if (userScrolling) {
-      scheduleSync(220);
+    if (shouldDeferHeroSync()) {
+      scheduleSync(SCROLL_IDLE_MS);
       return false;
     }
 
@@ -499,39 +625,22 @@
       resizeObserver = null;
     }
 
-    clearHeroColumnHeights(grid);
-    ensureSidebarMounted();
-
-    sidebar = findHeroSidebarColumn(grid);
-    if (!sidebar) {
-      syncing = false;
-      return false;
+    var ok = false;
+    if (grid.classList.contains(SYNC_CLASS)) {
+      ok = syncExistingHeroHeights(grid);
+    } else {
+      ok = runInitialHeroMeasure(grid);
     }
 
-    var targetH = measureSidebarColumnHeight(grid);
-    if (targetH < MIN_COL_H) {
+    if (!ok) {
       syncing = false;
       scheduleSync(400);
       return false;
     }
 
-    targetH = remeasureSidebarExpandedHeight(grid, targetH);
-    applyHeroColumnHeights(grid, targetH);
-    targetH = remeasureSidebarExpandedHeight(grid, targetH);
-    if (parseInt(grid.getAttribute('data-eottae-hero-height') || '0', 10) !== targetH) {
-      applyHeroColumnHeights(grid, targetH);
-    }
-
-    sidebar = findHeroSidebarColumn(grid);
-    markHeroLayoutStable(grid, sidebar);
-
     syncing = false;
     observeSidebarTargets(grid);
     observeSidebarMutations(grid);
-
-    if (typeof global.scheduleEottaeHomePublicChatScroll === 'function') {
-      global.scheduleEottaeHomePublicChatScroll();
-    }
 
     return true;
   }
@@ -572,6 +681,10 @@
     var wait = typeof delayMs === 'number' ? delayMs : 0;
     global.clearTimeout(resizeTimer);
     resizeTimer = global.setTimeout(function () {
+      if (shouldDeferHeroSync()) {
+        scheduleSync(SCROLL_IDLE_MS);
+        return;
+      }
       global.requestAnimationFrame(function () {
         syncHeroColumnHeights();
       });
@@ -593,6 +706,8 @@
 
   function init() {
     global.addEventListener('scroll', markUserScrolling, { passive: true });
+    global.addEventListener('touchmove', markUserScrolling, { passive: true });
+    global.addEventListener('wheel', markUserScrolling, { passive: true });
 
     var run = function () {
       runInitialSyncPasses();
@@ -613,8 +728,9 @@
 
     global.addEventListener('resize', function () {
       if (!isDesktopHeroLayout()) {
-        mobileLayoutReleased = false;
-        syncHeroColumnHeights();
+        if (!mobileLayoutReleased) {
+          syncHeroColumnHeights();
+        }
         return;
       }
 

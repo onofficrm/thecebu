@@ -218,10 +218,8 @@
     chat.dataset.heroMounted = '1';
 
     if (typeof global.scheduleEottaeHeroColumnHeights === 'function') {
-      global.scheduleEottaeHeroColumnHeights(40);
-      global.scheduleEottaeHeroColumnHeights(280);
-      global.scheduleEottaeHeroColumnHeights(900);
-      global.scheduleEottaeHeroColumnHeights(2000);
+      global.scheduleEottaeHeroColumnHeights(80);
+      global.scheduleEottaeHeroColumnHeights(400);
     } else if (typeof global.syncEottaeHeroColumnHeights === 'function') {
       global.syncEottaeHeroColumnHeights();
     }
