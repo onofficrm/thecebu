@@ -15,14 +15,12 @@
 
   var CATEGORY_BOARDS = {
     restaurant: 'food',
-    massage: 'massage',
     tour: 'tour',
     rentcar: 'rentcar',
   };
 
   var CATEGORY_SCA = {
     restaurant: '맛집',
-    massage: '마사지',
     tour: '투어',
     rentcar: '렌트카',
     cafe: '카페',
@@ -99,6 +97,23 @@
     return null;
   }
 
+  function removeMassageCategoryOption(select) {
+    if (!select) {
+      return;
+    }
+
+    var options = select.querySelectorAll('option');
+    var i;
+    for (i = 0; i < options.length; i += 1) {
+      var option = options[i];
+      var value = (option.value || '').trim();
+      var label = (option.textContent || '').replace(/\s+/g, '');
+      if (value === 'massage' || label === '마사지' || label.indexOf('마사지') !== -1) {
+        option.parentNode.removeChild(option);
+      }
+    }
+  }
+
   function bindSearch(root) {
     if (!root || root.getAttribute('data-eottae-search-bound') === '1') {
       return;
@@ -107,6 +122,7 @@
     var selects = root.querySelectorAll('select');
     var regionSelect = selects[0] || null;
     var categorySelect = selects[1] || null;
+    removeMassageCategoryOption(categorySelect);
     var keywordInput = root.querySelector('input[type="text"], input[type="search"]');
     var searchRow = root.querySelector('[class*="flex-col"][class*="sm:flex-row"]');
     var geoRow = root.querySelector('.border-t');

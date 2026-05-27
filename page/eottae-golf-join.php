@@ -5,8 +5,11 @@ include_once G5_PATH.'/components/eottae/golf-join-card.php';
 
 $filters = eottae_golf_join_parse_filters();
 $posts = eottae_golf_join_list_posts($filters);
-$regions = eottae_golf_join_region_options();
-$time_zones = eottae_golf_join_time_zone_options();
+$venue_types = eottae_golf_join_venue_type_options();
+$time_zones = eottae_golf_join_list_time_zone_options();
+if (($filters['venue_type'] ?? '') === 'screen_golf') {
+    $time_zones['evening'] = '야간';
+}
 $list_url = eottae_golf_join_list_url();
 $create_url = eottae_golf_join_create_url();
 $login_url = function_exists('eottae_login_url') ? eottae_login_url($list_url) : G5_BBS_URL.'/login.php';
@@ -57,15 +60,15 @@ g5_page_start('골프조인');
             <input type="hidden" name="q" value="<?php echo get_text($filters['q'] ?? ''); ?>">
 
             <div class="golf-join-filter-row golf-join-filter-row--scroll">
-                <span class="golf-join-filter-row__label">지역</span>
+                <span class="golf-join-filter-row__label">유형</span>
                 <div class="golf-join-chips">
-                    <label class="golf-join-chip<?php echo ($filters['region'] ?? '') === '' ? ' is-active' : ''; ?>">
-                        <input type="radio" name="region" value=""<?php echo ($filters['region'] ?? '') === '' ? ' checked' : ''; ?>>전체
+                    <label class="golf-join-chip<?php echo ($filters['venue_type'] ?? '') === '' ? ' is-active' : ''; ?>">
+                        <input type="radio" name="venue_type" value=""<?php echo ($filters['venue_type'] ?? '') === '' ? ' checked' : ''; ?>>전체
                     </label>
-                    <?php foreach ($regions as $code => $label) { ?>
-                    <label class="golf-join-chip<?php echo ($filters['region'] ?? '') === $code ? ' is-active' : ''; ?>">
-                        <input type="radio" name="region" value="<?php echo get_text($code); ?>"<?php echo ($filters['region'] ?? '') === $code ? ' checked' : ''; ?>>
-                        <?php echo get_text($label); ?>
+                    <?php foreach ($venue_types as $code => $meta) { ?>
+                    <label class="golf-join-chip<?php echo ($filters['venue_type'] ?? '') === $code ? ' is-active' : ''; ?>">
+                        <input type="radio" name="venue_type" value="<?php echo get_text($code); ?>"<?php echo ($filters['venue_type'] ?? '') === $code ? ' checked' : ''; ?>>
+                        <?php echo get_text($meta['label']); ?>
                     </label>
                     <?php } ?>
                 </div>

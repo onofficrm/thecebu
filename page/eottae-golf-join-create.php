@@ -14,10 +14,18 @@ eottae_golf_join_ensure_schema();
 $member_token = eottae_golf_join_member_token();
 $host_profile = eottae_golf_join_host_profile_from_member($member);
 $host_labels = eottae_golf_join_host_profile_labels($host_profile);
-$courses = eottae_golf_join_list_courses();
+$venue_types = eottae_golf_join_venue_type_options();
+$courses = array();
+foreach ($venue_types as $venue_code => $venue_meta) {
+    foreach (eottae_golf_join_list_courses('', $venue_code) as $course_row) {
+        $courses[] = $course_row;
+    }
+}
 $courses_json = json_encode($courses, JSON_UNESCAPED_UNICODE);
-$regions = eottae_golf_join_region_options();
-$schedule_slots = eottae_golf_join_schedule_slot_options();
+$schedule_slots_by_venue = array();
+foreach ($venue_types as $venue_code => $venue_meta) {
+    $schedule_slots_by_venue[$venue_code] = eottae_golf_join_schedule_slot_options($venue_code);
+}
 $recruit_slots = eottae_golf_join_recruit_slot_options();
 $gender_options = eottae_golf_join_gender_preference_detail_labels();
 $age_options = eottae_golf_join_age_preference_options();
@@ -53,9 +61,12 @@ g5_page_start('골프조인 만들기');
         <input type="hidden" name="eottae_golf_join_token" value="<?php echo get_text($member_token); ?>">
         <input type="hidden" name="register_mode" id="golf-join-register-mode" value="<?php echo get_text($prefill_mode); ?>">
         <input type="hidden" name="round_date" id="golf-join-round-date" value="">
+        <input type="hidden" name="venue_type" id="golf-join-venue-type" value="golf">
         <input type="hidden" name="schedule_slot" id="golf-join-schedule-slot" value="">
         <input type="hidden" name="golf_course_id" id="golf-join-course-id" value="0">
         <input type="hidden" name="golf_course_name" id="golf-join-course-name" value="">
+        <input type="hidden" name="shop_bo_table" id="golf-join-shop-bo-table" value="">
+        <input type="hidden" name="shop_wr_id" id="golf-join-shop-wr-id" value="0">
         <input type="hidden" name="region" id="golf-join-region" value="">
         <input type="hidden" name="recruit_slots" id="golf-join-recruit-slots" value="">
         <input type="hidden" name="gender_preference" id="golf-join-gender-pref" value="">
@@ -80,12 +91,18 @@ g5_page_start('골프조인 만들기');
             </div>
 
             <div class="golf-join-create-field">
-                <p class="golf-join-create-field__label">시간대 <span class="golf-join-create-required">*</span></p>
-                <div class="golf-join-option-grid golf-join-option-grid--2" data-option-group="schedule_slot">
-                    <?php foreach ($schedule_slots as $code => $label) { ?>
-                    <button type="button" class="golf-join-option-btn" data-value="<?php echo get_text($code); ?>"><?php echo get_text($label); ?></button>
+                <p class="golf-join-create-field__label">조인 유형 <span class="golf-join-create-required">*</span></p>
+                <div class="golf-join-option-grid golf-join-option-grid--2" data-option-group="venue_type">
+                    <?php foreach ($venue_types as $code => $meta) { ?>
+                    <button type="button" class="golf-join-option-btn<?php echo $code === 'golf' ? ' is-active' : ''; ?>" data-value="<?php echo get_text($code); ?>"><?php echo get_text($meta['label']); ?></button>
                     <?php } ?>
                 </div>
+            </div>
+
+            <div class="golf-join-create-field">
+                <p class="golf-join-create-field__label">시간대 <span class="golf-join-create-required">*</span></p>
+                <div class="golf-join-option-grid golf-join-option-grid--3" id="golf-join-schedule-slot-grid" data-option-group="schedule_slot"></div>
+                <p class="golf-join-create-field__hint" id="golf-join-schedule-hint" hidden>스크린골프는 야간 시간대도 선택할 수 있습니다.</p>
             </div>
 
             <div class="golf-join-create-field" id="golf-join-tee-time-wrap" hidden>
@@ -94,20 +111,11 @@ g5_page_start('골프조인 만들기');
             </div>
 
             <div class="golf-join-create-field">
-                <p class="golf-join-create-field__label">지역</p>
-                <div class="golf-join-option-grid golf-join-option-grid--scroll" data-option-group="region_filter">
-                    <button type="button" class="golf-join-option-btn is-active" data-value="">전체</button>
-                    <?php foreach ($regions as $code => $label) { ?>
-                    <button type="button" class="golf-join-option-btn" data-value="<?php echo get_text($code); ?>"><?php echo get_text($label); ?></button>
-                    <?php } ?>
-                </div>
-            </div>
-
-            <div class="golf-join-create-field">
-                <p class="golf-join-create-field__label">골프장 <span class="golf-join-create-required">*</span></p>
-                <div class="golf-join-course-list" id="golf-join-course-list" role="listbox" aria-label="골프장 선택"></div>
+                <p class="golf-join-create-field__label" id="golf-join-venue-label">골프장 <span class="golf-join-create-required">*</span></p>
+                <p class="golf-join-create-field__hint" id="golf-join-venue-hint">업체정보에 등록된 골프장이 자동으로 표시됩니다.</p>
+                <div class="golf-join-course-list" id="golf-join-course-list" role="listbox" aria-label="장소 선택"></div>
                 <p class="golf-join-create-field__hint">목록에 없으면 직접 입력해 주세요.</p>
-                <input type="text" class="golf-join-create-text" name="golf_course_custom" id="golf-join-course-custom" maxlength="120" placeholder="골프장명 직접 입력">
+                <input type="text" class="golf-join-create-text" name="golf_course_custom" id="golf-join-course-custom" maxlength="120" placeholder="장소명 직접 입력">
             </div>
         </section>
 
@@ -217,8 +225,9 @@ g5_page_start('골프조인 만들기');
     </form>
 
     <footer class="golf-join-detail-bar golf-join-create-bar">
-        <button type="submit" form="golf-join-create-form" class="golf-join-detail-bar__btn golf-join-detail-bar__btn--primary" id="golf-join-submit-btn">
-            조인 등록하기
+        <button type="submit" form="golf-join-create-form" class="golf-join-detail-bar__btn golf-join-detail-bar__btn--primary golf-join-create-submit" id="golf-join-submit-btn">
+            <span class="golf-join-create-submit__label">골프조인 등록하기</span>
+            <span class="golf-join-create-submit__sub">입력 내용을 확인한 뒤 등록됩니다</span>
         </button>
     </footer>
 </main>
@@ -244,6 +253,8 @@ g5_page_start('골프조인 만들기');
 <script>
 window.EOTTaeGolfJoinCreate = {
     courses: <?php echo $courses_json ?: '[]'; ?>,
+    venueTypes: <?php echo json_encode($venue_types, JSON_UNESCAPED_UNICODE); ?>,
+    scheduleSlots: <?php echo json_encode($schedule_slots_by_venue, JSON_UNESCAPED_UNICODE); ?>,
     registerModes: <?php echo json_encode($register_modes, JSON_UNESCAPED_UNICODE); ?>,
     prefillMode: <?php echo json_encode($prefill_mode, JSON_UNESCAPED_UNICODE); ?>,
     hostLabels: {

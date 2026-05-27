@@ -42,11 +42,19 @@ if (!function_exists('eottae_golf_join_parse_filters')) {
             $sort = 'round_date';
         }
 
+        $venue_type = isset($_GET['venue_type']) ? preg_replace('/[^a-z_]/', '', (string) $_GET['venue_type']) : '';
+        if ($venue_type !== '' && function_exists('eottae_golf_join_normalize_venue_type')) {
+            $venue_type = eottae_golf_join_normalize_venue_type($venue_type);
+        } else {
+            $venue_type = '';
+        }
+
         return array(
             'region'        => $region,
             'date_preset'   => $date_preset,
             'date'          => $date,
             'time_zone'     => $time_zone,
+            'venue_type'    => $venue_type,
             'exclude_full'  => !empty($_GET['exclude_full']),
             'sort'          => $sort,
             'q'             => $q,
@@ -119,12 +127,12 @@ if (!function_exists('eottae_golf_join_format_tee_time')) {
     function eottae_golf_join_format_tee_time($time, $is_unknown = false)
     {
         if ($is_unknown) {
-            return '티타임 미정';
+            return '미정';
         }
 
         $time = trim((string) $time);
         if ($time === '' || $time === '00:00:00') {
-            return '티타임 미정';
+            return '미정';
         }
 
         $ts = strtotime('1970-01-01 '.$time);
@@ -237,6 +245,15 @@ if (!function_exists('eottae_golf_join_normalize_post_row')) {
             }
         }
 
+        $venue_type = function_exists('eottae_golf_join_normalize_venue_type')
+            ? eottae_golf_join_normalize_venue_type($row['venue_type'] ?? 'golf')
+            : 'golf';
+        $shop_meta = eottae_golf_join_resolve_post_shop_meta($row);
+        $shop_wr_id = (int) ($shop_meta['shop_wr_id'] ?? 0);
+        $shop_bo_table = (string) ($shop_meta['shop_bo_table'] ?? '');
+        $shop_detail_url = (string) ($shop_meta['shop_detail_url'] ?? '');
+        $thumb_url = (string) ($shop_meta['thumb_url'] ?? '');
+
         return array_merge($row, array(
             'id'                      => $id,
             'status'                  => $status,
@@ -244,6 +261,12 @@ if (!function_exists('eottae_golf_join_normalize_post_row')) {
             'status_class'            => $status_meta['class'],
             'banner_message'          => $status_meta['banner'],
             'banner_tone'             => $status_meta['banner_tone'],
+            'venue_type'              => $venue_type,
+            'venue_type_label'        => eottae_golf_join_venue_type_label($venue_type),
+            'shop_detail_url'         => $shop_detail_url,
+            'shop_wr_id'              => $shop_wr_id,
+            'shop_bo_table'           => $shop_bo_table,
+            'thumb_url'               => $thumb_url,
             'region_label'            => eottae_golf_join_region_label($row['region'] ?? ''),
             'round_date_label'        => eottae_golf_join_format_round_date($row['round_date'] ?? ''),
             'tee_time_label'          => eottae_golf_join_format_tee_time($row['tee_time'] ?? '', $is_tee_unknown),
@@ -546,6 +569,9 @@ if (!function_exists('eottae_golf_join_fetch_posts_from_db')) {
         if (!empty($filters['time_zone'])) {
             $where[] = " p.time_zone = '".sql_escape_string($filters['time_zone'])."' ";
         }
+        if (!empty($filters['venue_type'])) {
+            $where[] = " p.venue_type = '".sql_escape_string(eottae_golf_join_normalize_venue_type($filters['venue_type']))."' ";
+        }
         if (!empty($filters['exclude_full'])) {
             $where[] = " p.status IN ('recruiting') ";
         }
@@ -643,6 +669,14 @@ if (!function_exists('eottae_golf_join_apply_list_filters')) {
             }
             if (!empty($filters['time_zone']) && ($post['time_zone'] ?? '') !== $filters['time_zone']) {
                 return false;
+            }
+            if (!empty($filters['venue_type'])) {
+                $post_venue = function_exists('eottae_golf_join_normalize_venue_type')
+                    ? eottae_golf_join_normalize_venue_type($post['venue_type'] ?? 'golf')
+                    : 'golf';
+                if ($post_venue !== eottae_golf_join_normalize_venue_type($filters['venue_type'])) {
+                    return false;
+                }
             }
             if (!empty($filters['exclude_full']) && !in_array($post['status'] ?? '', array('recruiting'), true)) {
                 return false;
@@ -864,38 +898,160 @@ if (!function_exists('eottae_golf_join_approved_members')) {
     }
 }
 
+if (!function_exists('eottae_golf_join_shop_course_index')) {
+    /**
+     * 골프 업체명 → 업체 메타 (목록 썸네일·상세 링크용)
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    function eottae_golf_join_shop_course_index()
+    {
+        static $index = null;
+        if ($index !== null) {
+            return $index;
+        }
+
+        $index = array();
+        foreach (eottae_golf_join_venue_type_options() as $venue_code => $meta) {
+            foreach (eottae_golf_join_list_courses('', $venue_code) as $course) {
+                $name = trim((string) ($course['name'] ?? ''));
+                if ($name === '') {
+                    continue;
+                }
+                $index[$venue_code.'|'.$name] = $course;
+            }
+        }
+
+        return $index;
+    }
+}
+
+if (!function_exists('eottae_golf_join_resolve_post_shop_meta')) {
+    /**
+     * @param array<string, mixed> $row
+     * @return array{shop_wr_id:int, shop_bo_table:string, shop_detail_url:string, thumb_url:string}
+     */
+    function eottae_golf_join_resolve_post_shop_meta(array $row)
+    {
+        $shop_wr_id = (int) ($row['shop_wr_id'] ?? 0);
+        $shop_bo_table = preg_replace('/[^a-z0-9_]/', '', (string) ($row['shop_bo_table'] ?? ''));
+
+        $venue_type = function_exists('eottae_golf_join_normalize_venue_type')
+            ? eottae_golf_join_normalize_venue_type($row['venue_type'] ?? 'golf')
+            : 'golf';
+
+        if ($shop_wr_id < 1) {
+            $name = trim((string) ($row['golf_course_name'] ?? ''));
+            if ($name !== '') {
+                $index = eottae_golf_join_shop_course_index();
+                $lookup_key = $venue_type.'|'.$name;
+                if (isset($index[$lookup_key])) {
+                    $matched = $index[$lookup_key];
+                } elseif (isset($index['golf|'.$name])) {
+                    $matched = $index['golf|'.$name];
+                } else {
+                    $matched = null;
+                }
+                if (is_array($matched)) {
+                    $shop_wr_id = (int) ($matched['shop_wr_id'] ?? $matched['id'] ?? 0);
+                    $shop_bo_table = preg_replace('/[^a-z0-9_]/', '', (string) ($matched['shop_bo_table'] ?? ''));
+                }
+            }
+        }
+
+        if ($shop_bo_table === '' && $shop_wr_id > 0 && function_exists('eottae_golf_join_shop_bo_table')) {
+            $shop_bo_table = eottae_golf_join_shop_bo_table();
+        }
+
+        $shop_detail_url = '';
+        $thumb_url = '';
+        if ($shop_wr_id > 0 && $shop_bo_table !== '') {
+            if (!function_exists('eottae_shop_listing_thumb_url')) {
+                include_once G5_LIB_PATH.'/eottae.lib.php';
+            }
+            if (function_exists('eottae_shop_view_url')) {
+                $shop_detail_url = eottae_shop_view_url($shop_wr_id, $shop_bo_table);
+            }
+            if (function_exists('eottae_shop_listing_thumb_url')) {
+                $thumb_url = eottae_shop_listing_thumb_url($shop_bo_table, $shop_wr_id);
+            }
+        }
+
+        return array(
+            'shop_wr_id'       => $shop_wr_id,
+            'shop_bo_table'    => $shop_bo_table,
+            'shop_detail_url'  => $shop_detail_url,
+            'thumb_url'        => $thumb_url,
+        );
+    }
+}
+
 if (!function_exists('eottae_golf_join_list_courses')) {
     /**
+     * 업체정보(shop) 골프 카테고리 목록
+     *
      * @return array<int, array<string, mixed>>
      */
-    function eottae_golf_join_list_courses($region = '')
+    function eottae_golf_join_list_courses($region = '', $venue_type = 'golf')
     {
-        $tables = eottae_golf_join_table_names();
-        if (!eottae_golf_join_table_exists($tables['courses'])) {
+        global $g5;
+
+        if (!function_exists('eottae_shop_table')) {
+            include_once G5_LIB_PATH.'/eottae.lib.php';
+        }
+
+        $venue_type = eottae_golf_join_normalize_venue_type($venue_type);
+        $bo_table = eottae_golf_join_shop_bo_table();
+        $write_table = $g5['write_prefix'].preg_replace('/[^a-z0-9_]/', '', $bo_table);
+        $category = eottae_golf_join_shop_category_name($venue_type);
+        $category_sql = sql_escape_string($category);
+
+        $result = sql_query("
+            SELECT wr_id, wr_subject, wr_2, wr_3
+            FROM `{$write_table}`
+            WHERE wr_is_comment = 0
+              AND (wr_1 = '{$category_sql}' OR ca_name = '{$category_sql}')
+            ORDER BY wr_subject ASC
+        ", false);
+
+        if (!$result) {
             return array();
         }
 
-        $where = " is_active = '1' ";
-        $region = preg_replace('/[^a-z_]/', '', (string) $region);
-        if ($region !== '') {
-            $where .= " AND region = '".sql_escape_string($region)."' ";
-        }
-
-        $result = sql_query("
-            SELECT id, region, name, address
-            FROM `{$tables['courses']}`
-            WHERE {$where}
-            ORDER BY region ASC, name ASC
-        ", false);
-
         $rows = array();
         while ($row = sql_fetch_array($result)) {
+            $wr_id = (int) ($row['wr_id'] ?? 0);
+            if ($wr_id < 1) {
+                continue;
+            }
+
+            $region_label = isset($row['wr_2']) ? get_text($row['wr_2']) : '';
+            $region_code = eottae_golf_join_region_code_from_shop_label($region_label);
+            if ($region !== '') {
+                $region_filter = preg_replace('/[^a-z_]/', '', (string) $region);
+                if ($region_filter !== '' && $region_code !== $region_filter) {
+                    continue;
+                }
+            }
+
+            $thumb_url = function_exists('eottae_shop_listing_thumb_url')
+                ? eottae_shop_listing_thumb_url($bo_table, $wr_id)
+                : '';
+
             $rows[] = array(
-                'id'          => (int) ($row['id'] ?? 0),
-                'region'      => (string) ($row['region'] ?? ''),
-                'region_label'=> eottae_golf_join_region_label($row['region'] ?? ''),
-                'name'        => (string) ($row['name'] ?? ''),
-                'address'     => (string) ($row['address'] ?? ''),
+                'id'           => $wr_id,
+                'venue_type'   => $venue_type,
+                'venue_type_label' => eottae_golf_join_venue_type_label($venue_type),
+                'shop_bo_table'=> $bo_table,
+                'shop_wr_id'   => $wr_id,
+                'region'       => $region_code,
+                'region_label' => $region_label,
+                'name'         => isset($row['wr_subject']) ? get_text($row['wr_subject']) : '',
+                'address'      => isset($row['wr_3']) ? get_text($row['wr_3']) : '',
+                'thumb_url'    => $thumb_url,
+                'detail_url'   => function_exists('eottae_shop_view_url')
+                    ? eottae_shop_view_url($wr_id, $bo_table)
+                    : '',
             );
         }
 
@@ -920,35 +1076,60 @@ if (!function_exists('eottae_golf_join_validate_create_input')) {
             return array('ok' => false, 'message' => '라운드 날짜를 선택해 주세요.');
         }
 
+        $venue_type = eottae_golf_join_normalize_venue_type($input['venue_type'] ?? 'golf');
+
         $schedule_slot = preg_replace('/[^a-z]/', '', (string) ($input['schedule_slot'] ?? ''));
-        $schedule_options = eottae_golf_join_schedule_slot_options();
+        $schedule_options = eottae_golf_join_schedule_slot_options($venue_type);
         if (!isset($schedule_options[$schedule_slot])) {
             return array('ok' => false, 'message' => '시간대를 선택해 주세요.');
         }
 
-        $golf_course_id = (int) ($input['golf_course_id'] ?? 0);
+        $shop_bo_table = preg_replace('/[^a-z0-9_]/', '', (string) ($input['shop_bo_table'] ?? ''));
+        $shop_wr_id = (int) ($input['shop_wr_id'] ?? 0);
         $golf_course_name = trim((string) ($input['golf_course_name'] ?? ''));
         $course_custom = trim((string) ($input['golf_course_custom'] ?? ''));
-        if ($golf_course_id < 1 && $course_custom !== '') {
+
+        if ($shop_wr_id > 0) {
+            $expected_bo = eottae_golf_join_shop_bo_table();
+            if ($shop_bo_table === '') {
+                $shop_bo_table = $expected_bo;
+            }
+            if ($shop_bo_table !== $expected_bo) {
+                return array('ok' => false, 'message' => '골프장 정보가 올바르지 않습니다.');
+            }
+
+            $matched = null;
+            foreach (eottae_golf_join_list_courses('', $venue_type) as $course) {
+                if ((int) ($course['shop_wr_id'] ?? 0) === $shop_wr_id) {
+                    $matched = $course;
+                    break;
+                }
+            }
+            if (!$matched) {
+                return array('ok' => false, 'message' => '선택한 장소를 찾을 수 없습니다.');
+            }
+
+            $golf_course_name = (string) ($matched['name'] ?? '');
+            $region = (string) ($matched['region'] ?? 'cebu');
+            $golf_course_id = 0;
+            $course_custom = '';
+        } elseif ($course_custom !== '') {
             $golf_course_name = $course_custom;
             $golf_course_id = 0;
+            $shop_wr_id = 0;
+            $shop_bo_table = '';
+            $region = 'cebu';
+        } else {
+            return array('ok' => false, 'message' => '골프장을 선택하거나 직접 입력해 주세요.');
         }
+
         if ($golf_course_name === '') {
             return array('ok' => false, 'message' => '골프장을 선택하거나 직접 입력해 주세요.');
         }
 
-        $region = preg_replace('/[^a-z_]/', '', (string) ($input['region'] ?? ''));
-        if ($region === '' && $golf_course_id > 0) {
-            $courses = eottae_golf_join_list_courses();
-            foreach ($courses as $c) {
-                if ((int) ($c['id'] ?? 0) === $golf_course_id) {
-                    $region = (string) ($c['region'] ?? '');
-                    break;
-                }
-            }
-        }
+        $region = preg_replace('/[^a-z_]/', '', (string) $region);
         if ($region === '' || !isset(eottae_golf_join_region_options()[$region])) {
-            return array('ok' => false, 'message' => '지역 정보를 확인해 주세요.');
+            $region = 'cebu';
         }
 
         $recruit_slots = (int) ($input['recruit_slots'] ?? 0);
@@ -1019,8 +1200,10 @@ if (!function_exists('eottae_golf_join_validate_create_input')) {
                 'is_tee_time_unknown'=> $is_unknown,
                 'time_zone'          => $time_zone,
                 'tee_time'           => $tee_time,
-                'golf_course_id'     => $golf_course_id > 0 ? $golf_course_id : null,
+                'golf_course_id'     => null,
                 'golf_course_name'   => $golf_course_name,
+                'shop_bo_table'      => $shop_bo_table,
+                'shop_wr_id'         => $shop_wr_id,
                 'region'             => $region,
                 'recruit_slots'      => $recruit_slots,
                 'recruit_count'      => $recruit_count,
@@ -1034,6 +1217,7 @@ if (!function_exists('eottae_golf_join_validate_create_input')) {
                 'host_gender'        => strtoupper(substr((string) ($input['host_gender'] ?? ''), 0, 1)),
                 'host_age_group'     => preg_replace('/[^a-z0-9_]/', '', (string) ($input['host_age_group'] ?? '')),
                 'host_score_range'   => preg_replace('/[^a-z0-9_]/', '', (string) ($input['host_score_range'] ?? '')),
+                'venue_type'         => $venue_type,
             ),
         );
     }
@@ -1066,16 +1250,22 @@ if (!function_exists('eottae_golf_join_create_post')) {
         }
 
         $now = G5_TIME_YMDHIS;
-        $course_id_sql = $data['golf_course_id'] ? "'".(int) $data['golf_course_id']."'" : 'NULL';
         $tee_sql = $data['tee_time'] ? "'".sql_escape_string($data['tee_time'])."'" : 'NULL';
+        $shop_bo_sql = !empty($data['shop_bo_table'])
+            ? "'".sql_escape_string($data['shop_bo_table'])."'"
+            : "''";
+        $shop_wr_sql = (int) ($data['shop_wr_id'] ?? 0);
 
         $sql = "
             INSERT INTO `{$tables['posts']}` SET
                 user_id = '".sql_escape_string($mb_id)."',
                 title = '".sql_escape_string($data['title'])."',
                 region = '".sql_escape_string($data['region'])."',
-                golf_course_id = {$course_id_sql},
+                golf_course_id = NULL,
                 golf_course_name = '".sql_escape_string($data['golf_course_name'])."',
+                shop_bo_table = {$shop_bo_sql},
+                shop_wr_id = '{$shop_wr_sql}',
+                venue_type = '".sql_escape_string($data['venue_type'])."',
                 round_date = '".sql_escape_string($data['round_date'])."',
                 tee_time = {$tee_sql},
                 is_tee_time_unknown = '".(int) $data['is_tee_time_unknown']."',

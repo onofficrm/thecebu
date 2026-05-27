@@ -8934,13 +8934,13 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
   will-change: opacity;
 }
 
-/* 홈 — 히어로 세부톡 위젯 (3열) */
+/* 홈 — 히어로 3열 (검색 | 공개단체톡 | 로그인+이벤트) */
 @media (min-width: 1024px) {
   .eottae-home-hero-grid--3col {
     display: grid !important;
     grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.95fr) minmax(0, 0.85fr);
     gap: 1rem;
-    align-items: stretch;
+    align-items: start;
   }
 
   .eottae-home-hero-grid--3col > .lg\:col-span-8,
@@ -8956,16 +8956,14 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
   .eottae-home-hero-grid--3col > .lg\:col-span-8 {
     display: flex;
     flex-direction: column;
-    align-self: stretch;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .eottae-home-hero-grid--3col > .home-hero-chat-column {
-    align-self: stretch;
     display: flex;
     flex-direction: column;
     min-height: 0;
-    height: 100%;
-    max-height: none;
     width: 100%;
     overflow: hidden;
   }
@@ -8974,8 +8972,7 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
   .eottae-home-hero-grid--3col > .home-hero-sidebar-column {
     display: flex !important;
     flex-direction: column;
-    align-self: stretch;
-    min-height: 100%;
+    align-self: start;
     gap: 1rem;
   }
 
@@ -8984,17 +8981,31 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
     flex: 0 0 auto;
   }
 
-  .eottae-home-hero-grid--3col .home-hero-sidebar-events--fill,
-  .home-hero-sidebar-column .home-hero-sidebar-events--fill {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
+  .eottae-home-hero-grid--3col .home-hero-sidebar-events,
+  .home-hero-sidebar-column .home-hero-sidebar-events {
+    flex: 0 0 auto;
   }
 
-  .home-hero-sidebar-events--fill .home-events-stack {
-    flex: 1 1 auto;
-    justify-content: center;
+  .home-hero-sidebar-events .home-events-stack {
+    flex: 0 0 auto;
+  }
+
+  /* 3열 높이 기준 — JS syncEottaeHeroColumnHeights */
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > .lg\:col-span-8 > section {
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: 100%;
+    box-sizing: border-box;
+  }
+
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > .home-hero-chat-column {
+    height: var(--eottae-hero-col-h, auto);
+    max-height: var(--eottae-hero-col-h, none);
+    min-height: var(--eottae-hero-col-h, 0);
+  }
+
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync .public-group-chat--hero .public-group-chat__inner {
+    min-height: 0 !important;
   }
 }
 
@@ -9339,8 +9350,8 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
 .home-events-stack {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px 14px 14px;
+  gap: 10px;
+  padding: 14px 14px 12px;
   border-radius: 22px;
   background: linear-gradient(160deg, #38bdf8 0%, #2563eb 52%, #1d4ed8 100%);
   border: 1px solid rgba(186, 230, 253, 0.55);

@@ -264,27 +264,60 @@ body.golf-join-ui .golf-join-card {
   list-style: none;
 }
 
-body.golf-join-ui .golf-join-card__link {
-  display: block;
-  padding: 16px;
+body.golf-join-ui .golf-join-card__inner {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
   border-radius: var(--golf-radius);
   background: var(--golf-surface);
   border: 1px solid var(--golf-line);
   box-shadow: var(--golf-shadow);
-  text-decoration: none;
-  color: inherit;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
-body.golf-join-ui .golf-join-card__link:active {
-  transform: scale(0.99);
+body.golf-join-ui .golf-join-card__thumb {
+  flex: 0 0 72px;
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+body.golf-join-ui .golf-join-card__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+body.golf-join-ui .golf-join-card__thumb--empty {
+  font-size: 26px;
+  color: #94a3b8;
+}
+
+body.golf-join-ui .golf-join-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+body.golf-join-ui .golf-join-card__detail {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+body.golf-join-ui .golf-join-card__detail:active {
+  opacity: 0.92;
 }
 
 body.golf-join-ui .golf-join-card__top {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 body.golf-join-ui .golf-join-card__status {
@@ -321,12 +354,32 @@ body.golf-join-ui .golf-join-card__badge {
 }
 
 body.golf-join-ui .golf-join-card__course {
-  margin: 0 0 6px;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
   font-size: 1.05rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.35;
   color: var(--golf-text);
+  text-decoration: none;
+}
+
+body.golf-join-ui .golf-join-card__course--shop {
+  color: var(--golf-primary-dark);
+}
+
+body.golf-join-ui .golf-join-card__course-hint {
+  display: inline-flex;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: var(--golf-primary-dark);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
 }
 
 body.golf-join-ui .golf-join-card__meta {
@@ -504,12 +557,25 @@ body.golf-join-ui .golf-join-detail-hero__status--full {
   color: var(--golf-primary-dark);
 }
 
+body.golf-join-ui .golf-join-detail-hero__venue {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #6d28d9;
+}
+
 body.golf-join-ui .golf-join-detail-hero__course {
   margin: 0 0 6px;
   font-size: 1.25rem;
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.35;
+}
+
+body.golf-join-ui .golf-join-detail-hero__course-link {
+  color: var(--golf-primary-dark);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 body.golf-join-ui .golf-join-detail-hero__title {
@@ -1132,6 +1198,21 @@ body.golf-join-ui .golf-join-option-grid--3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+body.golf-join-ui .golf-join-option-grid--4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 420px) {
+  body.golf-join-ui .golf-join-option-grid--4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+body.golf-join-ui .golf-join-card__badge--venue {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
 body.golf-join-ui .golf-join-option-grid--scroll {
   display: flex;
   flex-wrap: nowrap;
@@ -1174,18 +1255,17 @@ body.golf-join-ui .golf-join-course-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 220px;
+  max-height: 320px;
   overflow-y: auto;
   margin-bottom: 10px;
 }
 
 body.golf-join-ui .golf-join-course-item {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
+  align-items: center;
+  gap: 12px;
   width: 100%;
-  padding: 12px 14px;
+  padding: 10px 12px;
   border: 1px solid var(--golf-line);
   border-radius: var(--golf-radius-sm);
   background: #fff;
@@ -1196,17 +1276,51 @@ body.golf-join-ui .golf-join-course-item {
 body.golf-join-ui .golf-join-course-item.is-active {
   border-color: var(--golf-primary);
   background: #f0f9ff;
+  box-shadow: 0 0 0 1px var(--golf-primary);
+}
+
+body.golf-join-ui .golf-join-course-item__thumb {
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.golf-join-ui .golf-join-course-item__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+body.golf-join-ui .golf-join-course-item__thumb--empty {
+  font-size: 22px;
+  color: #94a3b8;
+}
+
+body.golf-join-ui .golf-join-course-item__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
 }
 
 body.golf-join-ui .golf-join-course-item__name {
   font-size: 14px;
   font-weight: 800;
   color: var(--golf-text);
+  line-height: 1.3;
 }
 
 body.golf-join-ui .golf-join-course-item__meta {
   font-size: 12px;
   color: var(--golf-muted);
+  line-height: 1.35;
 }
 
 body.golf-join-ui .golf-join-create-profile {
@@ -1256,11 +1370,42 @@ body.golf-join-ui .golf-join-create-profile-edit-panel {
 }
 
 body.golf-join-ui .golf-join-create-spacer {
-  height: 16px;
+  height: 96px;
 }
 
 body.golf-join-ui .golf-join-create-bar {
   position: fixed;
+  bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+}
+
+body.golf-join-ui .golf-join-create-submit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 56px;
+  box-shadow: 0 8px 24px rgba(14, 116, 144, 0.28);
+}
+
+body.golf-join-ui .golf-join-create-submit__label {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+body.golf-join-ui .golf-join-create-submit__sub {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.88;
+  line-height: 1.2;
+}
+
+body.golf-join-ui .golf-join-create-submit.is-loading,
+body.golf-join-ui .golf-join-create-submit:disabled {
+  opacity: 0.72;
+  cursor: wait;
 }
 
 /* ── Bottom sheet ── */

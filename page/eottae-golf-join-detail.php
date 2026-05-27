@@ -78,7 +78,16 @@ g5_page_start('조인');
         <p class="golf-join-detail-hero__status golf-join-detail-hero__status--<?php echo get_text($post['status_class'] ?? ''); ?>">
             <?php echo get_text($post['status_label'] ?? ''); ?>
         </p>
-        <h2 class="golf-join-detail-hero__course"><?php echo get_text($post['golf_course_name'] ?? ''); ?></h2>
+        <?php if (!empty($post['venue_type']) && ($post['venue_type'] ?? '') === 'screen_golf') { ?>
+        <p class="golf-join-detail-hero__venue">스크린골프</p>
+        <?php } ?>
+        <h2 class="golf-join-detail-hero__course">
+            <?php if (!empty($post['shop_detail_url'])) { ?>
+            <a href="<?php echo get_text($post['shop_detail_url']); ?>" class="golf-join-detail-hero__course-link"><?php echo get_text($post['golf_course_name'] ?? ''); ?></a>
+            <?php } else { ?>
+            <?php echo get_text($post['golf_course_name'] ?? ''); ?>
+            <?php } ?>
+        </h2>
         <?php if (!empty($post['title'])) { ?>
         <p class="golf-join-detail-hero__title"><?php echo get_text($post['title']); ?></p>
         <?php } ?>

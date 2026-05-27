@@ -260,7 +260,7 @@ if (!function_exists('eottae_shop_wr_link2_raw')) {
 
 if (!function_exists('eottae_shop_sns_decode')) {
     /**
-     * wr_link2 SNS JSON 디코드 (get_text로 깨진 레거시 문자열 보정 시도)
+     * wr_link2 SNS JSON 디코드 (HTML 엔티티·레거시 이중인코딩 보정)
      *
      * @return array<string, string>|null
      */
@@ -271,14 +271,23 @@ if (!function_exists('eottae_shop_sns_decode')) {
             return null;
         }
 
-        $decoded = json_decode($raw, true);
-        if (is_array($decoded)) {
-            return $decoded;
+        $attempts = array($raw);
+
+        if (strpos($raw, '&') !== false) {
+            if (function_exists('html_entity_decode')) {
+                $attempts[] = html_entity_decode($raw, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            }
+            if (function_exists('get_text') && preg_match('/&#0?34;|&quot;|&lt;|&gt;|&#0?39;/i', $raw)) {
+                $attempts[] = get_text($raw, 0, true);
+            }
         }
 
-        if (strpos($raw, '&#034;') !== false && function_exists('get_text')) {
-            $restored = get_text($raw, 0, true);
-            $decoded = json_decode($restored, true);
+        foreach (array_unique($attempts) as $candidate) {
+            $candidate = trim(stripslashes((string) $candidate));
+            if ($candidate === '' || $candidate[0] !== '{') {
+                continue;
+            }
+            $decoded = json_decode($candidate, true);
             if (is_array($decoded)) {
                 return $decoded;
             }
@@ -400,18 +409,28 @@ if (!function_exists('eottae_shop_sns_links')) {
 if (!function_exists('eottae_shop_sns_value')) {
     function eottae_shop_sns_value($raw, $key)
     {
-        $raw = trim(stripslashes((string) $raw));
         $key = (string) $key;
-        if ($raw === '') {
+        $decoded = function_exists('eottae_shop_sns_decode') ? eottae_shop_sns_decode($raw) : null;
+        if (!is_array($decoded) || !isset($decoded[$key])) {
             return '';
         }
 
-        $decoded = function_exists('eottae_shop_sns_decode') ? eottae_shop_sns_decode($raw) : json_decode($raw, true);
-        if (is_array($decoded)) {
-            return isset($decoded[$key]) ? get_text($decoded[$key]) : '';
+        $val = trim(stripslashes((string) $decoded[$key]));
+        if ($val === '') {
+            return '';
         }
 
-        return $key === 'instagram' ? get_text($raw) : '';
+        // 레거시: instagram 값에 wr_link2 JSON 전체가 들어간 경우
+        if ($val[0] === '{' || preg_match('/&#0?34;|&quot;/i', $val)) {
+            $inner = eottae_shop_sns_decode($val);
+            if (is_array($inner) && isset($inner[$key])) {
+                $val = trim(stripslashes((string) $inner[$key]));
+            } else {
+                return '';
+            }
+        }
+
+        return $val;
     }
 }
 
@@ -1000,6 +1019,15 @@ if (!function_exists('eottae_builder_inject_home_hero_talk_script')) {
     }
 }
 
+if (!function_exists('eottae_builder_inject_home_hero_layout_script')) {
+    function eottae_builder_inject_home_hero_layout_script()
+    {
+        $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-hero-layout.js' : '/js/eottae-home-hero-layout.js';
+
+        return '<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
+    }
+}
+
 if (!function_exists('eottae_builder_inject_home_hero_sidebar_script')) {
     function eottae_builder_inject_home_hero_sidebar_script()
     {
@@ -1316,6 +1344,7 @@ if (!function_exists('eottae_builder_inject_html')) {
         $body_scripts .= eottae_builder_inject_home_search_script();
         $body_scripts .= eottae_builder_inject_home_briefing_script();
         $body_scripts .= eottae_builder_inject_home_main_section_script();
+        $body_scripts .= eottae_builder_inject_home_hero_layout_script();
         $body_scripts .= eottae_builder_inject_home_public_chat_script();
         $body_scripts .= eottae_builder_inject_home_events_banner_script();
         $body_scripts .= eottae_builder_inject_home_hero_sidebar_script();
@@ -3413,6 +3442,7 @@ if (!function_exists('eottae_shop_master_categories')) {
             '렌트카',
             '투어',
             '골프',
+            '스크린골프',
             '세탁',
             '법률',
             '회계',
@@ -3422,6 +3452,9 @@ if (!function_exists('eottae_shop_master_categories')) {
             '헬스',
             'IT',
             '쇼핑',
+            'JTV',
+            'KTV',
+            '클럽',
             '기타',
         );
     }

@@ -191,6 +191,113 @@ if (!function_exists('eottae_golf_join_time_zone_options')) {
     }
 }
 
+if (!function_exists('eottae_golf_join_list_time_zone_options')) {
+    /** 목록 필터용 시간대 (야간 제외) */
+    function eottae_golf_join_list_time_zone_options()
+    {
+        $options = eottae_golf_join_time_zone_options();
+        unset($options['evening']);
+
+        return $options;
+    }
+}
+
+if (!function_exists('eottae_golf_join_venue_type_options')) {
+    /**
+     * @return array<string, array{label:string, shop_category:string}>
+     */
+    function eottae_golf_join_venue_type_options()
+    {
+        return array(
+            'golf'        => array(
+                'label'         => '필드골프',
+                'shop_category' => '골프',
+            ),
+            'screen_golf' => array(
+                'label'         => '스크린골프',
+                'shop_category' => '스크린골프',
+            ),
+        );
+    }
+}
+
+if (!function_exists('eottae_golf_join_normalize_venue_type')) {
+    function eottae_golf_join_normalize_venue_type($venue_type)
+    {
+        $venue_type = preg_replace('/[^a-z_]/', '', (string) $venue_type);
+        $options = eottae_golf_join_venue_type_options();
+
+        return isset($options[$venue_type]) ? $venue_type : 'golf';
+    }
+}
+
+if (!function_exists('eottae_golf_join_venue_type_label')) {
+    function eottae_golf_join_venue_type_label($venue_type)
+    {
+        $venue_type = eottae_golf_join_normalize_venue_type($venue_type);
+        $options = eottae_golf_join_venue_type_options();
+
+        return $options[$venue_type]['label'] ?? '필드골프';
+    }
+}
+
+if (!function_exists('eottae_golf_join_shop_category_name')) {
+    function eottae_golf_join_shop_category_name($venue_type = 'golf')
+    {
+        $venue_type = eottae_golf_join_normalize_venue_type($venue_type);
+        $options = eottae_golf_join_venue_type_options();
+
+        return $options[$venue_type]['shop_category'] ?? '골프';
+    }
+}
+
+if (!function_exists('eottae_golf_join_shop_bo_table')) {
+    function eottae_golf_join_shop_bo_table()
+    {
+        return function_exists('eottae_shop_table') ? eottae_shop_table() : 'shop';
+    }
+}
+
+if (!function_exists('eottae_golf_join_region_code_from_shop_label')) {
+    /**
+     * 업체 wr_2(대표 지역) → 골프조인 region 코드
+     */
+    function eottae_golf_join_region_code_from_shop_label($label)
+    {
+        $label = trim((string) $label);
+        if ($label === '') {
+            return 'cebu';
+        }
+
+        $rules = array(
+            'cebu'      => array('세부', 'cebu', 'sugbu'),
+            'mactan'    => array('막탄', 'mactan'),
+            'lapu_lapu' => array('라푸', 'lapu', 'lapu-lapu'),
+            'bohol'     => array('보홀', 'bohol', 'panglao'),
+            'clark'     => array('클락', 'clark', '앙헬레스', 'angeles'),
+            'manila'    => array('마닐라', 'manila', '메트로', 'metro'),
+        );
+
+        $lower = mb_strtolower($label, 'UTF-8');
+        foreach ($rules as $code => $keywords) {
+            foreach ($keywords as $keyword) {
+                if ($keyword !== '' && mb_strpos($lower, mb_strtolower($keyword, 'UTF-8'), 0, 'UTF-8') !== false) {
+                    return $code;
+                }
+            }
+        }
+
+        if (function_exists('eottae_shop_detect_region')) {
+            $detected = eottae_shop_detect_region($label);
+            if ($detected !== '') {
+                return eottae_golf_join_region_code_from_shop_label($detected);
+            }
+        }
+
+        return 'cebu';
+    }
+}
+
 if (!function_exists('eottae_golf_join_age_preference_options')) {
     function eottae_golf_join_age_preference_options()
     {
@@ -231,14 +338,19 @@ if (!function_exists('eottae_golf_join_recruit_slot_options')) {
 }
 
 if (!function_exists('eottae_golf_join_schedule_slot_options')) {
-    function eottae_golf_join_schedule_slot_options()
+    function eottae_golf_join_schedule_slot_options($venue_type = 'golf')
     {
-        return array(
-            'morning' => '오전',
+        $venue_type = eottae_golf_join_normalize_venue_type($venue_type);
+        $slots = array(
+            'morning'   => '오전',
             'afternoon' => '오후',
-            'evening' => '야간',
-            'unknown' => '티타임 미정',
         );
+        if ($venue_type === 'screen_golf') {
+            $slots['evening'] = '야간';
+        }
+        $slots['unknown'] = '미정';
+
+        return $slots;
     }
 }
 
@@ -632,6 +744,29 @@ if (!function_exists('eottae_golf_join_upgrade_schema')) {
                     sql_query(" ALTER TABLE `{$tables['reports']}` ADD COLUMN `{$name}` {$def} ", false);
                 }
             }
+        }
+
+        foreach (array(
+            'shop_bo_table' => "varchar(30) NOT NULL DEFAULT ''",
+            'shop_wr_id'    => "int(11) unsigned NOT NULL DEFAULT '0'",
+            'venue_type'    => "varchar(20) NOT NULL DEFAULT 'golf'",
+        ) as $name => $def) {
+            $c = sql_fetch(" SHOW COLUMNS FROM `{$tables['posts']}` LIKE '{$name}' ", false);
+            if (empty($c)) {
+                sql_query(" ALTER TABLE `{$tables['posts']}` ADD COLUMN `{$name}` {$def} AFTER `golf_course_name` ", false);
+            }
+        }
+
+        $fk = sql_fetch("
+            SELECT CONSTRAINT_NAME
+            FROM information_schema.TABLE_CONSTRAINTS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = '".sql_escape_string($tables['posts'])."'
+              AND CONSTRAINT_NAME = 'fk_golf_join_posts_course'
+            LIMIT 1
+        ", false);
+        if (!empty($fk['CONSTRAINT_NAME'])) {
+            sql_query(" ALTER TABLE `{$tables['posts']}` DROP FOREIGN KEY `fk_golf_join_posts_course` ", false);
         }
     }
 }

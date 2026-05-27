@@ -183,25 +183,25 @@ $eottae_ai_enabled = !empty($eottae_ai_cfg['enabled']) && !empty($eottae_ai_cfg[
         <input type="hidden" name="wr_link2" id="wr_link2" value="<?php echo htmlspecialchars($v['wr_link2'], ENT_QUOTES, 'UTF-8'); ?>">
         <div class="eottae-field">
             <label for="eottae_sns_youtube">유튜브 소개 영상 URL <span class="board-write-form__optional">(선택)</span></label>
-            <input type="url" name="eottae_sns_youtube" id="eottae_sns_youtube" value="<?php echo $sns_values['youtube']; ?>" placeholder="https://www.youtube.com/watch?v=...">
+            <input type="url" name="eottae_sns_youtube" id="eottae_sns_youtube" value="<?php echo htmlspecialchars($sns_values['youtube'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="https://www.youtube.com/watch?v=...">
             <p class="eottae-field__hint">등록하면 업체 상세 페이지 업체소개 영역에 영상이 표시됩니다.</p>
         </div>
         <div class="shop-register-page__sns-grid">
             <div class="eottae-field">
                 <label for="eottae_sns_instagram">인스타그램 URL</label>
-                <input type="url" name="eottae_sns_instagram" id="eottae_sns_instagram" value="<?php echo $sns_values['instagram']; ?>" placeholder="https://www.instagram.com/...">
+                <input type="url" name="eottae_sns_instagram" id="eottae_sns_instagram" value="<?php echo htmlspecialchars($sns_values['instagram'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="https://www.instagram.com/...">
             </div>
             <div class="eottae-field">
                 <label for="eottae_sns_tiktok">틱톡 URL</label>
-                <input type="url" name="eottae_sns_tiktok" id="eottae_sns_tiktok" value="<?php echo $sns_values['tiktok']; ?>" placeholder="https://www.tiktok.com/@...">
+                <input type="url" name="eottae_sns_tiktok" id="eottae_sns_tiktok" value="<?php echo htmlspecialchars($sns_values['tiktok'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="https://www.tiktok.com/@...">
             </div>
             <div class="eottae-field">
                 <label for="eottae_sns_facebook">페이스북 URL</label>
-                <input type="url" name="eottae_sns_facebook" id="eottae_sns_facebook" value="<?php echo $sns_values['facebook']; ?>" placeholder="https://www.facebook.com/...">
+                <input type="url" name="eottae_sns_facebook" id="eottae_sns_facebook" value="<?php echo htmlspecialchars($sns_values['facebook'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="https://www.facebook.com/...">
             </div>
             <div class="eottae-field">
                 <label for="eottae_sns_naver_blog">네이버블로그 URL</label>
-                <input type="url" name="eottae_sns_naver_blog" id="eottae_sns_naver_blog" value="<?php echo $sns_values['naver_blog']; ?>" placeholder="https://blog.naver.com/...">
+                <input type="url" name="eottae_sns_naver_blog" id="eottae_sns_naver_blog" value="<?php echo htmlspecialchars($sns_values['naver_blog'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="https://blog.naver.com/...">
             </div>
         </div>
     </div>

@@ -4,6 +4,8 @@
   var cfg = window.EOTTaeGolfJoinCreate || {};
   var courses = cfg.courses || [];
   var registerModes = cfg.registerModes || {};
+  var scheduleSlotsMap = cfg.scheduleSlots || {};
+  var venueTypesMeta = cfg.venueTypes || {};
 
   var form = document.getElementById('golf-join-create-form');
   var modeSheet = document.getElementById('golf-join-mode-sheet');
@@ -16,9 +18,10 @@
   var teeTimeWrap = document.getElementById('golf-join-tee-time-wrap');
   var courseList = document.getElementById('golf-join-course-list');
   var courseCustom = document.getElementById('golf-join-course-custom');
-  var regionFilter = 'all';
+  var submitBtn = document.getElementById('golf-join-submit-btn');
 
   var hiddenMap = {
+    venue_type: 'golf-join-venue-type',
     schedule_slot: 'golf-join-schedule-slot',
     recruit_slots: 'golf-join-recruit-slots',
     gender_preference: 'golf-join-gender-pref',
@@ -44,6 +47,89 @@
     if (group === 'round_date' && roundDateHidden) {
       roundDateHidden.value = value;
     }
+  }
+
+  function clearShopSelection() {
+    getHidden('golf-join-course-id').value = '0';
+    getHidden('golf-join-course-name').value = '';
+    getHidden('golf-join-shop-bo-table').value = '';
+    getHidden('golf-join-shop-wr-id').value = '0';
+    getHidden('golf-join-region').value = '';
+  }
+
+  function setShopSelection(course) {
+    getHidden('golf-join-course-id').value = String(course.id || 0);
+    getHidden('golf-join-course-name').value = course.name || '';
+    getHidden('golf-join-shop-bo-table').value = course.shop_bo_table || '';
+    getHidden('golf-join-shop-wr-id').value = String(course.shop_wr_id || course.id || 0);
+    getHidden('golf-join-region').value = course.region || '';
+  }
+
+  function getVenueType() {
+    var el = getHidden('golf-join-venue-type');
+    return el && el.value ? el.value : 'golf';
+  }
+
+  function renderScheduleSlots(venueType) {
+    var grid = document.getElementById('golf-join-schedule-slot-grid');
+    if (!grid) {
+      return;
+    }
+    var slots = scheduleSlotsMap[venueType] || scheduleSlotsMap.golf || {};
+    var codes = Object.keys(slots);
+    grid.className =
+      'golf-join-option-grid golf-join-option-grid--' + (codes.length >= 4 ? '4' : '3');
+    grid.innerHTML = '';
+    codes.forEach(function (code) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'golf-join-option-btn';
+      btn.setAttribute('data-value', code);
+      btn.textContent = slots[code];
+      grid.appendChild(btn);
+    });
+    getHidden('golf-join-schedule-slot').value = '';
+  }
+
+  function applyVenueType(venueType) {
+    venueType = venueType || 'golf';
+    var venueInput = getHidden('golf-join-venue-type');
+    if (venueInput) {
+      venueInput.value = venueType;
+    }
+
+    var isScreen = venueType === 'screen_golf';
+    var venueLabel = document.getElementById('golf-join-venue-label');
+    var venueHint = document.getElementById('golf-join-venue-hint');
+    var scheduleHint = document.getElementById('golf-join-schedule-hint');
+    if (venueLabel) {
+      venueLabel.innerHTML =
+        (isScreen ? '스크린골프장' : '골프장') +
+        ' <span class="golf-join-create-required">*</span>';
+    }
+    if (venueHint) {
+      venueHint.textContent = isScreen
+        ? '업체정보에 등록된 스크린골프장이 표시됩니다.'
+        : '업체정보에 등록된 골프장이 자동으로 표시됩니다.';
+    }
+    if (scheduleHint) {
+      scheduleHint.hidden = !isScreen;
+    }
+    if (courseCustom) {
+      courseCustom.placeholder = isScreen ? '스크린골프장명 직접 입력' : '골프장명 직접 입력';
+    }
+
+    renderScheduleSlots(venueType);
+    clearShopSelection();
+    if (courseCustom) {
+      courseCustom.value = '';
+    }
+    if (courseList) {
+      courseList.querySelectorAll('.golf-join-course-item').forEach(function (el) {
+        el.classList.remove('is-active');
+      });
+    }
+    renderCourses();
   }
 
   function showModeSheet(show) {
@@ -119,9 +205,8 @@
     });
     btn.classList.add('is-active');
 
-    if (groupName === 'region_filter') {
-      regionFilter = btn.getAttribute('data-value') || '';
-      renderCourses();
+    if (groupName === 'venue_type') {
+      applyVenueType(btn.getAttribute('data-value') || 'golf');
       return;
     }
 
@@ -167,15 +252,17 @@
       return;
     }
     courseList.innerHTML = '';
-    var filtered = courses.filter(function (c) {
-      if (!regionFilter) {
-        return true;
-      }
-      return c.region === regionFilter;
+
+    var venueType = getVenueType();
+    var filtered = courses.filter(function (course) {
+      return (course.venue_type || 'golf') === venueType;
     });
 
     if (!filtered.length) {
-      courseList.innerHTML = '<p class="golf-join-create-field__hint">선택 가능한 골프장이 없습니다. 직접 입력해 주세요.</p>';
+      courseList.innerHTML =
+        '<p class="golf-join-create-field__hint">업체정보에 등록된 ' +
+        (venueType === 'screen_golf' ? '스크린골프장' : '골프장') +
+        '이 없습니다. 아래에 직접 입력해 주세요.</p>';
       return;
     }
 
@@ -184,22 +271,32 @@
       btn.type = 'button';
       btn.className = 'golf-join-course-item';
       btn.setAttribute('data-course-id', String(course.id));
-      btn.setAttribute('data-course-name', course.name);
-      btn.setAttribute('data-region', course.region);
+      btn.setAttribute('role', 'option');
+
+      var thumbHtml = course.thumb_url
+        ? '<span class="golf-join-course-item__thumb"><img src="' +
+          escapeHtml(course.thumb_url) +
+          '" alt="" loading="lazy" decoding="async"></span>'
+        : '<span class="golf-join-course-item__thumb golf-join-course-item__thumb--empty" aria-hidden="true">' +
+          (course.venue_type === 'screen_golf' ? '🖥' : '⛳') +
+          '</span>';
+
+      var meta = course.region_label || course.address || '';
       btn.innerHTML =
+        thumbHtml +
+        '<span class="golf-join-course-item__body">' +
         '<span class="golf-join-course-item__name">' +
         escapeHtml(course.name) +
-        '</span><span class="golf-join-course-item__meta">' +
-        escapeHtml(course.region_label || '') +
+        '</span>' +
+        (meta ? '<span class="golf-join-course-item__meta">' + escapeHtml(meta) + '</span>' : '') +
         '</span>';
+
       btn.addEventListener('click', function () {
         courseList.querySelectorAll('.golf-join-course-item').forEach(function (el) {
           el.classList.remove('is-active');
         });
         btn.classList.add('is-active');
-        getHidden('golf-join-course-id').value = course.id;
-        getHidden('golf-join-course-name').value = course.name;
-        getHidden('golf-join-region').value = course.region;
+        setShopSelection(course);
         if (courseCustom) {
           courseCustom.value = '';
         }
@@ -250,24 +347,10 @@
       alert('시간대를 선택해 주세요.');
       return false;
     }
-    var courseName = getHidden('golf-join-course-name').value;
+    var shopWrId = parseInt(getHidden('golf-join-shop-wr-id').value || '0', 10);
     var custom = courseCustom ? courseCustom.value.trim() : '';
-    if (!courseName && !custom) {
-      alert('골프장을 선택하거나 직접 입력해 주세요.');
-      return false;
-    }
-    if (custom && !getHidden('golf-join-region').value) {
-      var regionVal = document.querySelector('[data-option-group="region_filter"] .is-active');
-      var rv = regionVal ? regionVal.getAttribute('data-value') : '';
-      if (rv) {
-        getHidden('golf-join-region').value = rv;
-      } else {
-        alert('골프장 직접 입력 시 지역을 선택해 주세요.');
-        return false;
-      }
-    }
-    if (!custom && !getHidden('golf-join-region').value) {
-      alert('골프장 지역을 확인해 주세요.');
+    if (shopWrId < 1 && !custom) {
+      alert(getVenueType() === 'screen_golf' ? '스크린골프장을 선택하거나 직접 입력해 주세요.' : '골프장을 선택하거나 직접 입력해 주세요.');
       return false;
     }
     if (!getHidden('golf-join-recruit-slots').value) {
@@ -328,8 +411,7 @@
         courseList.querySelectorAll('.golf-join-course-item').forEach(function (el) {
           el.classList.remove('is-active');
         });
-        getHidden('golf-join-course-id').value = '0';
-        getHidden('golf-join-course-name').value = '';
+        clearShopSelection();
       }
     });
   }
@@ -375,19 +457,24 @@
 
   if (form) {
     form.addEventListener('submit', function (e) {
-      if (courseCustom && courseCustom.value.trim() !== '') {
-        getHidden('golf-join-course-id').value = '0';
-        getHidden('golf-join-course-name').value = '';
-        var regionBtn = document.querySelector('[data-option-group="region_filter"] .is-active');
-        if (regionBtn && regionBtn.getAttribute('data-value')) {
-          getHidden('golf-join-region').value = regionBtn.getAttribute('data-value');
+      var custom = courseCustom ? courseCustom.value.trim() : '';
+      if (custom !== '') {
+        clearShopSelection();
+        getHidden('golf-join-region').value = 'cebu';
+      } else if (parseInt(getHidden('golf-join-shop-wr-id').value || '0', 10) > 0) {
+        if (courseCustom) {
+          courseCustom.value = '';
         }
-      } else if (getHidden('golf-join-course-name').value) {
-        courseCustom.value = '';
       }
 
       if (!validateForm()) {
         e.preventDefault();
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('is-loading');
       }
     });
   }
@@ -399,7 +486,7 @@
     }
   });
 
-  renderCourses();
+  applyVenueType(getVenueType());
   updateProfileLabels();
 
   if (cfg.prefillMode) {

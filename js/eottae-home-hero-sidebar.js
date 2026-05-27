@@ -109,7 +109,7 @@
 
     var eventsWrap = sidebar.querySelector('.home-hero-sidebar-events');
     if (eventsWrap) {
-      eventsWrap.classList.add('home-hero-sidebar-events--fill');
+      eventsWrap.classList.remove('home-hero-sidebar-events--fill');
     }
 
     var legacyEvents = sidebar.querySelector('section.flex-1');
@@ -118,6 +118,13 @@
     }
 
     sidebar.setAttribute(MOUNTED_ATTR, '1');
+
+    if (typeof global.scheduleEottaeHeroColumnHeights === 'function') {
+      global.scheduleEottaeHeroColumnHeights(60);
+    } else if (typeof global.syncEottaeHeroColumnHeights === 'function') {
+      global.syncEottaeHeroColumnHeights();
+    }
+
     return true;
   }
 

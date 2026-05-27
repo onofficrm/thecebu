@@ -345,8 +345,13 @@
     }
   }
 
-  function hideRentcarMenuLinks() {
-    var links = document.querySelectorAll('a[href*="bo_table=rentcar"], a[href*="bo_table%3Drentcar"]');
+  function hideBoardMenuLinks(boardKeys, labels) {
+    var pattern = boardKeys
+      .map(function (key) {
+        return 'a[href*="bo_table=' + key + '"], a[href*="bo_table%3D' + key + '"]';
+      })
+      .join(', ');
+    var links = pattern ? document.querySelectorAll(pattern) : [];
     var i;
     for (i = 0; i < links.length; i += 1) {
       var link = links[i];
@@ -358,19 +363,30 @@
     var textLinks = document.querySelectorAll('a, button');
     for (i = 0; i < textLinks.length; i += 1) {
       var node = textLinks[i];
-      if ((node.textContent || '').replace(/\s+/g, '') === '렌트카') {
-        var item = node.closest('li') || node.closest('nav') || node.parentElement;
-        if (item && item.parentNode && item !== document.body) {
-          item.parentNode.removeChild(item);
-        } else if (node.parentNode) {
-          node.parentNode.removeChild(node);
-        }
+      var normalized = (node.textContent || '').replace(/\s+/g, '');
+      if (labels.indexOf(normalized) === -1) {
+        continue;
+      }
+      var item = node.closest('li') || node.closest('nav') || node.parentElement;
+      if (item && item.parentNode && item !== document.body) {
+        item.parentNode.removeChild(item);
+      } else if (node.parentNode) {
+        node.parentNode.removeChild(node);
       }
     }
   }
 
+  function hideRentcarMenuLinks() {
+    hideBoardMenuLinks(['rentcar'], ['렌트카']);
+  }
+
+  function hideMassageMenuLinks() {
+    hideBoardMenuLinks(['massage'], ['마사지', '마사지·스파']);
+  }
+
   function mount() {
     hideRentcarMenuLinks();
+    hideMassageMenuLinks();
 
     var data = cfg();
     if (!data) {
@@ -384,6 +400,7 @@
     mountColumnNav(data);
     mountColumnInMobileMenu(data);
     hideRentcarMenuLinks();
+    hideMassageMenuLinks();
     replaceTourNavWithGolfJoin(data);
   }
 

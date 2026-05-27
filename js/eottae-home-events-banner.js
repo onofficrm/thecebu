@@ -191,7 +191,7 @@
 
   function buildWrap(stack) {
     var wrap = document.createElement('div');
-    wrap.className = 'home-hero-sidebar-events home-hero-sidebar-events--fill';
+    wrap.className = 'home-hero-sidebar-events';
     wrap.setAttribute('aria-label', '업체 이벤트 / 기획전');
     wrap.setAttribute('data-eottae-events-banner-mounted', '1');
     wrap.appendChild(stack);
@@ -227,11 +227,14 @@
 
     var existingWrap = sidebar.querySelector('.home-hero-sidebar-events[data-eottae-events-banner-mounted]');
     if (existingWrap && existingWrap.querySelector('[data-eottae-events-stack]')) {
-      existingWrap.classList.add('home-hero-sidebar-events--fill');
+      existingWrap.classList.remove('home-hero-sidebar-events--fill');
       removeDuplicateLegacyEvents(sidebar, existingWrap);
       replaceCarouselWithStack(sidebar);
       if (typeof global.mountEottaeHomeHeroSidebar === 'function') {
         global.mountEottaeHomeHeroSidebar();
+      }
+      if (typeof global.scheduleEottaeHeroColumnHeights === 'function') {
+        global.scheduleEottaeHeroColumnHeights(80);
       }
       return true;
     }
@@ -259,6 +262,10 @@
 
     if (typeof global.mountEottaeHomeHeroSidebar === 'function') {
       global.mountEottaeHomeHeroSidebar();
+    }
+
+    if (typeof global.scheduleEottaeHeroColumnHeights === 'function') {
+      global.scheduleEottaeHeroColumnHeights(80);
     }
 
     return true;

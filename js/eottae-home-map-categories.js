@@ -124,6 +124,24 @@
     return tile;
   }
 
+  function removeMassageTile(grid) {
+    if (!grid) {
+      return;
+    }
+
+    var links = grid.querySelectorAll('a');
+    var i;
+    for (i = 0; i < links.length; i += 1) {
+      var link = links[i];
+      if (normalizeText(link) !== '마사지') {
+        continue;
+      }
+      if (link.parentNode) {
+        link.parentNode.removeChild(link);
+      }
+    }
+  }
+
   function mountGolf() {
     var grid = findCategoryGrid();
     if (!grid || hasGolfTile(grid)) {
@@ -137,6 +155,8 @@
 
   function init() {
     var run = function () {
+      var grid = findCategoryGrid();
+      removeMassageTile(grid);
       mountGolf();
     };
 

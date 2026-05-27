@@ -216,6 +216,13 @@
     }
 
     chat.dataset.heroMounted = '1';
+
+    if (typeof global.scheduleEottaeHeroColumnHeights === 'function') {
+      global.scheduleEottaeHeroColumnHeights(100);
+    } else if (typeof global.syncEottaeHeroColumnHeights === 'function') {
+      global.syncEottaeHeroColumnHeights();
+    }
+
     return true;
   }
 
