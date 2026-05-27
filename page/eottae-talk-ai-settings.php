@@ -127,6 +127,7 @@ g5_page_start('AI 도우미 설정');
   var tokenField = <?php echo json_encode((string) $form_token_field, JSON_UNESCAPED_UNICODE); ?>;
   var tokenValue = <?php echo json_encode((string) $form_token, JSON_UNESCAPED_UNICODE); ?>;
   var lastTestPostId = 0;
+  var settingsProcUrl = <?php echo json_encode(G5_URL.'/proc/eottae-talkroom-ai-settings.php', JSON_UNESCAPED_UNICODE); ?>;
 
   function parseJsonResponse(response) {
     return response.text().then(function (text) {
@@ -142,6 +143,49 @@ g5_page_start('AI 도우미 설정');
     });
   }
 
+  function syncTalkAiSettingsFormData(form, fd) {
+    form.querySelectorAll('input[type="checkbox"]').forEach(function (el) {
+      if (!el.name) return;
+      fd.set(el.name, el.checked ? '1' : '0');
+    });
+  }
+
+  function bindTalkAiSettingsSave() {
+    var form = document.getElementById('talkAiSettingsForm');
+    if (!form || form.getAttribute('data-readonly') === '1') return;
+
+    var submitBtn = form.querySelector('.talk-ai-settings-form__submit');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var fd = new FormData(form);
+      syncTalkAiSettingsFormData(form, fd);
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.setAttribute('aria-busy', 'true');
+      }
+
+      fetch(settingsProcUrl, { method: 'POST', body: fd, credentials: 'same-origin' })
+        .then(parseJsonResponse)
+        .then(function (data) {
+          if (data.success && data.redirect_url) {
+            window.location.href = data.redirect_url;
+            return;
+          }
+          alert(data.message || (data.success ? '저장되었습니다.' : '저장에 실패했습니다.'));
+        })
+        .catch(function (err) {
+          alert(err && err.message ? err.message : '네트워크 오류가 발생했습니다.');
+        })
+        .finally(function () {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.removeAttribute('aria-busy');
+          }
+        });
+    });
+  }
+
   function runTest(trigger, dryRun, btn) {
     var fd = new FormData();
     fd.append('action', 'test_ai_trigger');
@@ -150,7 +194,7 @@ g5_page_start('AI 도우미 설정');
     if (dryRun) fd.append('dry_run', '1');
     fd.append(tokenField, tokenValue);
 
-  return fetch('<?php echo G5_URL; ?>/proc/eottae-talkroom-ai-settings.php', { method: 'POST', body: fd, credentials: 'same-origin' })
+  return fetch(settingsProcUrl, { method: 'POST', body: fd, credentials: 'same-origin' })
       .then(parseJsonResponse)
       .then(function (data) {
         if (btn) btn.disabled = false;
@@ -225,34 +269,8 @@ g5_page_start('AI 도우미 설정');
         });
     });
   }
-})();
-</script>
 
-<script>
-(function () {
-  var form = document.getElementById('talkAiSettingsForm');
-  if (!form || form.getAttribute('data-readonly') === '1') return;
-
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    var fd = new FormData(form);
-    var aiEnabled = form.querySelector('input[name="ai_enabled"]:checked');
-    if (aiEnabled) {
-      fd.set('ai_enabled', aiEnabled.value === '1' ? '1' : '0');
-    }
-    fetch(form.action, { method: 'POST', body: fd, credentials: 'same-origin' })
-      .then(parseJsonResponse)
-      .then(function (data) {
-        if (data.success && data.redirect_url) {
-          window.location.href = data.redirect_url;
-          return;
-        }
-        alert(data.message || (data.success ? '저장되었습니다.' : '저장에 실패했습니다.'));
-      })
-      .catch(function (err) {
-        alert(err && err.message ? err.message : '네트워크 오류가 발생했습니다.');
-      });
-  });
+  bindTalkAiSettingsSave();
 })();
 </script>
 
