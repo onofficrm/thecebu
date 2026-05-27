@@ -5,7 +5,9 @@ if (!defined('_GNUBOARD_')) {
 
 include_once G5_LIB_PATH.'/eottae.lib.php';
 include_once G5_LIB_PATH.'/eottae-adroom.lib.php';
-add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
+$adroom_skin_css = G5_SKIN_PATH.'/board/eottae-adroom/style.css';
+$adroom_skin_ver = is_file($adroom_skin_css) ? (string) filemtime($adroom_skin_css) : '1';
+add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css?ver='.$adroom_skin_ver.'">', 0);
 
 $adroom_tabs = eottae_adroom_category_tabs($board);
 $list_base = function_exists('eottae_adroom_list_url') ? eottae_adroom_list_url() : get_pretty_url($bo_table);

@@ -869,47 +869,65 @@ if (!function_exists('eottae_adroom_render_write_guide')) {
         ob_start();
         ?>
         <aside class="adroom-write-guide" aria-labelledby="adroom-write-guide-title">
-            <div class="adroom-write-guide__head">
+            <div class="adroom-write-guide__banner">
+                <span class="adroom-write-guide__badge">안내</span>
                 <h2 class="adroom-write-guide__title" id="adroom-write-guide-title">광고 등록 안내</h2>
-                <p class="adroom-write-guide__lead"><strong>「광고 등록」</strong> 버튼은 아래 <strong>두 가지 조건을 모두</strong> 충족할 때 표시됩니다.</p>
+                <p class="adroom-write-guide__lead">사업자 회원으로 로그인한 뒤, <strong>아래 두 조건을 모두</strong> 충족하면 상단에 <strong>「광고 등록」</strong> 버튼이 표시됩니다.</p>
             </div>
 
-            <ol class="adroom-write-guide__steps">
-                <li class="adroom-write-guide__step<?php echo $is_biz ? ' is-ok' : ' is-pending'; ?>">
-                    <div class="adroom-write-guide__step-head">
-                        <span class="adroom-write-guide__step-num" aria-hidden="true">1</span>
-                        <h3 class="adroom-write-guide__step-title">사업자(업체) 회원</h3>
+            <div class="adroom-write-guide__grid" role="list">
+                <article class="adroom-write-guide__card<?php echo $is_biz ? ' is-ok' : ' is-pending'; ?>" role="listitem">
+                    <div class="adroom-write-guide__card-top">
+                        <span class="adroom-write-guide__num" aria-hidden="true">1</span>
+                        <h3 class="adroom-write-guide__card-title">사업자(업체) 회원</h3>
                         <?php if ($is_member) { ?>
-                        <span class="adroom-write-guide__status<?php echo $is_biz ? ' is-ok' : ''; ?>"><?php echo $is_biz ? '충족' : '미충족'; ?></span>
+                        <span class="adroom-write-guide__pill<?php echo $is_biz ? ' is-ok' : ' is-no'; ?>"><?php echo $is_biz ? '충족' : '미충족'; ?></span>
                         <?php } ?>
                     </div>
-                    <p class="adroom-write-guide__step-desc">회원 <strong>레벨 <?php echo (int) $biz_level; ?> 이상</strong>이거나, 가입 시 <strong>사업자</strong>로 선택한 회원입니다.</p>
+                    <ul class="adroom-write-guide__checks">
+                        <li>회원 레벨 <strong><?php echo (int) $biz_level; ?> 이상</strong></li>
+                        <li>또는 가입 시 <strong>사업자</strong>로 선택</li>
+                    </ul>
                     <?php if ($is_member && !$is_biz) { ?>
-                    <p class="adroom-write-guide__step-meta">현재 레벨 <strong><?php echo (int) $mb_level; ?></strong><?php if ($role_business) { ?> · 가입 역할 <strong>사업자</strong><?php } else { ?> · 가입 역할 <strong>일반</strong><?php } ?></p>
+                    <p class="adroom-write-guide__meta">내 정보 · 레벨 <strong><?php echo (int) $mb_level; ?></strong> · <?php echo $role_business ? '가입 역할 <strong>사업자</strong>' : '가입 역할 <strong>일반</strong>'; ?></p>
                     <?php } ?>
-                </li>
-                <li class="adroom-write-guide__step<?php echo $has_board_write ? ' is-ok' : ' is-pending'; ?>">
-                    <div class="adroom-write-guide__step-head">
-                        <span class="adroom-write-guide__step-num" aria-hidden="true">2</span>
-                        <h3 class="adroom-write-guide__step-title">게시판 글쓰기 권한</h3>
+                </article>
+
+                <article class="adroom-write-guide__card<?php echo $has_board_write ? ' is-ok' : ' is-pending'; ?>" role="listitem">
+                    <div class="adroom-write-guide__card-top">
+                        <span class="adroom-write-guide__num" aria-hidden="true">2</span>
+                        <h3 class="adroom-write-guide__card-title">광고방 글쓰기 권한</h3>
                         <?php if ($is_member) { ?>
-                        <span class="adroom-write-guide__status<?php echo $has_board_write ? ' is-ok' : ''; ?>"><?php echo $has_board_write ? '충족' : '미충족'; ?></span>
+                        <span class="adroom-write-guide__pill<?php echo $has_board_write ? ' is-ok' : ' is-no'; ?>"><?php echo $has_board_write ? '충족' : '미충족'; ?></span>
                         <?php } ?>
                     </div>
-                    <p class="adroom-write-guide__step-desc">광고방 게시판 글쓰기 레벨 <strong><?php echo (int) $bo_write_level; ?> 이상</strong>이어야 합니다.<?php if ($is_member) { ?> (현재 내 레벨 <strong><?php echo (int) $mb_level; ?></strong>)<?php } ?></p>
-                </li>
-            </ol>
-
-            <div class="adroom-write-guide__note">
-                <p><strong>업소 등록</strong>과 <strong>광고 등록</strong>은 별개입니다. 업소만 등록해 두어도 사업자 회원이 아니면 광고 버튼이 보이지 않습니다. 광고 작성 시에는 <strong>본인 명의로 등록된 업체 1곳</strong>을 연동해야 합니다.</p>
+                    <ul class="adroom-write-guide__checks">
+                        <li>광고방 글쓰기 레벨 <strong><?php echo (int) $bo_write_level; ?> 이상</strong> 필요</li>
+                        <?php if ($is_member) { ?>
+                        <li>현재 내 레벨 <strong><?php echo (int) $mb_level; ?></strong></li>
+                        <?php } ?>
+                    </ul>
+                </article>
             </div>
 
-            <div class="adroom-write-guide__actions">
+            <div class="adroom-write-guide__tips">
+                <p class="adroom-write-guide__tips-title">참고</p>
+                <ul class="adroom-write-guide__tips-list">
+                    <li><strong>업소 등록</strong>과 <strong>광고 등록</strong>은 별도입니다. 업소만 등록해 두어도 사업자 회원이 아니면 버튼이 보이지 않습니다.</li>
+                    <li>광고를 올릴 때는 <strong>본인 명의 업체 1곳</strong>을 반드시 연동해야 합니다.</li>
+                </ul>
+            </div>
+
+            <div class="adroom-write-guide__foot">
                 <?php if (!$is_member) { ?>
-                <a href="<?php echo $login_url; ?>" class="adroom-btn adroom-btn--primary">로그인</a>
+                <p class="adroom-write-guide__foot-text">사업자 회원 계정으로 로그인해 주세요.</p>
+                <a href="<?php echo $login_url; ?>" class="adroom-btn adroom-btn--primary adroom-write-guide__cta">로그인</a>
                 <?php } else { ?>
-                <a href="<?php echo $mypage_url; ?>" class="adroom-btn adroom-btn--outline">마이페이지</a>
-                <a href="<?php echo $shop_write_url; ?>" class="adroom-btn adroom-btn--ghost">업소 등록</a>
+                <p class="adroom-write-guide__foot-text">조건을 충족했는데도 버튼이 없다면 마이페이지에서 회원 유형을 확인해 주세요.</p>
+                <div class="adroom-write-guide__actions">
+                    <a href="<?php echo $mypage_url; ?>" class="adroom-btn adroom-btn--primary adroom-write-guide__cta">마이페이지</a>
+                    <a href="<?php echo $shop_write_url; ?>" class="adroom-btn adroom-btn--outline">업소 등록</a>
+                </div>
                 <?php } ?>
             </div>
         </aside>

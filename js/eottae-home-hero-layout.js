@@ -1,10 +1,11 @@
 /**
- * 홈(빌더) — 히어로 3열 높이: 검색·채팅·사이드바 중 가장 높은 열 기준으로 맞춤
+ * 홈(빌더) — 히어로 3열 높이: 3열(로그인+이벤트 사이드바) 기준으로 1·2·3열 맞춤
  */
 (function (global) {
   'use strict';
 
   var SYNC_CLASS = 'eottae-home-hero-grid--height-sync';
+  var MEASURE_CLASS = 'eottae-home-hero-grid--measuring';
   var MIN_COL_H = 280;
   var resizeTimer = null;
   var resizeObserver = null;
@@ -86,27 +87,28 @@
     }
 
     grid.classList.remove(SYNC_CLASS);
+    grid.classList.remove(MEASURE_CLASS);
     grid.style.removeProperty('--eottae-hero-col-h');
     grid.removeAttribute('data-eottae-hero-height');
+    grid.removeAttribute('data-eottae-hero-height-source');
   }
 
-  function measureMaxColumnHeight(grid) {
-    var cols = heroColumns(grid);
-    var maxH = 0;
-    var i;
-    var h;
-
-    for (i = 0; i < cols.length; i += 1) {
-      if (!cols[i]) {
-        continue;
-      }
-      h = Math.ceil(cols[i].getBoundingClientRect().height);
-      if (h > maxH) {
-        maxH = h;
-      }
+  /** 3열(사이드바) 자연 높이 — 채팅 열이 그리드를 늘리지 않도록 measuring 클래스 사용 */
+  function measureSidebarColumnHeight(grid) {
+    var sidebar = findHeroSidebarColumn(grid);
+    if (!sidebar) {
+      return 0;
     }
 
-    return maxH;
+    grid.classList.add(MEASURE_CLASS);
+
+    var h = Math.ceil(sidebar.getBoundingClientRect().height);
+    if (h < 1) {
+      h = Math.ceil(sidebar.offsetHeight || 0);
+    }
+
+    grid.classList.remove(MEASURE_CLASS);
+    return h;
   }
 
   function applyHeroColumnHeights(grid, targetH) {
@@ -125,6 +127,7 @@
     grid.style.setProperty('--eottae-hero-col-h', targetH + 'px');
     grid.classList.add(SYNC_CLASS);
     grid.setAttribute('data-eottae-hero-height', String(targetH));
+    grid.setAttribute('data-eottae-hero-height-source', 'sidebar');
   }
 
   function observeHeroColumns(grid) {
@@ -137,8 +140,8 @@
       resizeObserver = null;
     }
 
-    var cols = heroColumns(grid);
-    if (!cols.length) {
+    var sidebar = findHeroSidebarColumn(grid);
+    if (!sidebar) {
       return;
     }
 
@@ -146,12 +149,7 @@
       scheduleSync(120);
     });
 
-    var i;
-    for (i = 0; i < cols.length; i += 1) {
-      if (cols[i]) {
-        resizeObserver.observe(cols[i]);
-      }
-    }
+    resizeObserver.observe(sidebar);
   }
 
   function syncHeroColumnHeights() {
@@ -188,13 +186,13 @@
     var prevH = parseInt(grid.getAttribute('data-eottae-hero-height') || '0', 10) || 0;
     clearHeroColumnHeights(grid);
 
-    var targetH = measureMaxColumnHeight(grid);
+    var targetH = measureSidebarColumnHeight(grid);
     if (targetH < MIN_COL_H) {
       syncing = false;
       return false;
     }
 
-    if (prevH > 0 && Math.abs(targetH - prevH) < 3) {
+    if (prevH > 0 && Math.abs(targetH - prevH) < 2) {
       targetH = prevH;
     }
 

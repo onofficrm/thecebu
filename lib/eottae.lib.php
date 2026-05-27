@@ -1040,6 +1040,10 @@ if (!function_exists('eottae_builder_inject_home_hero_layout_script')) {
     function eottae_builder_inject_home_hero_layout_script()
     {
         $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-hero-layout.js' : '/js/eottae-home-hero-layout.js';
+        $path = defined('G5_PATH') ? G5_PATH.'/js/eottae-home-hero-layout.js' : '';
+        if ($path !== '' && is_file($path)) {
+            $js .= '?ver='.(int) filemtime($path);
+        }
 
         return '<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
     }

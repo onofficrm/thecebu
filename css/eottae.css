@@ -9135,7 +9135,26 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
     min-height: 0;
   }
 
-  /* 3열 높이 맞춤 — JS syncEottaeHeroColumnHeights (가장 높은 열 기준) */
+  /* 측정 중: 채팅 열이 그리드 행 높이를 늘리지 않게 (3열 자연 높이만 읽음) */
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--measuring {
+    align-items: start !important;
+  }
+
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--measuring > .lg\:col-span-8,
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--measuring > .home-hero-chat-column {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow: visible;
+  }
+
+  /* 3열 높이 맞춤 — JS syncEottaeHeroColumnHeights (3열 사이드바 기준) */
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > .lg\:col-span-8 {
+    height: var(--eottae-hero-col-h, auto);
+    max-height: var(--eottae-hero-col-h, none);
+    min-height: var(--eottae-hero-col-h, 0);
+  }
+
   .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > .lg\:col-span-8 > section:first-of-type {
     flex: 1 1 auto;
     display: flex;
@@ -9157,8 +9176,16 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
     min-height: var(--eottae-hero-col-h, 0);
   }
 
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync .public-group-chat--hero.public-group-chat--kakao,
   .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync .public-group-chat--hero .public-group-chat__inner {
     min-height: 0 !important;
+    max-height: 100%;
+  }
+
+  .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync .public-group-chat--hero.public-group-chat--kakao .public-group-chat__inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
   }
 
   .eottae-home-hero-grid--3col.eottae-home-hero-grid--height-sync > .lg\:col-span-4,
@@ -12141,5 +12168,260 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
 
   body.talk-room-chat-active .eottae-toast {
     bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* ── 광고방: 등록 조건 안내 (전역 로드) ── */
+.board-wrap--eottae-adroom .adroom-write-guide {
+  --adroom-guide-accent: #c47a12;
+  --adroom-guide-accent-soft: #fff6e8;
+  --adroom-guide-border: #e8e2d8;
+  --adroom-guide-text: #1f1f1f;
+  --adroom-guide-muted: #6b6560;
+  margin: 0 0 24px;
+  border: 1px solid var(--adroom-guide-border);
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 4px 24px rgba(26, 21, 16, 0.06);
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__banner {
+  padding: 20px 22px 18px;
+  background: linear-gradient(135deg, #fff9f0 0%, #fff 100%);
+  border-bottom: 1px solid var(--adroom-guide-border);
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__badge {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--adroom-guide-accent);
+  background: var(--adroom-guide-accent-soft);
+  border: 1px solid #f0dfc4;
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__title {
+  margin: 0 0 8px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--adroom-guide-text);
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__lead {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--adroom-guide-muted);
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 16px 18px 0;
+  list-style: none;
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__card {
+  margin: 0;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--adroom-guide-border);
+  background: #fafaf9;
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__card.is-ok {
+  border-color: #9fd4b0;
+  background: #f3fbf6;
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__card.is-pending {
+  border-color: #ecd9b8;
+  background: #fffaf3;
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__card-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin-bottom: 12px;
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--adroom-guide-accent);
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__card.is-ok .adroom-write-guide__num {
+  background: #2f9d62;
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__card-title {
+  margin: 0;
+  flex: 1 1 auto;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--adroom-guide-text);
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #ece8e3;
+  color: var(--adroom-guide-muted);
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__pill.is-ok {
+  background: #d8f3e2;
+  color: #1a6b3f;
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__pill.is-no {
+  background: #fce8d6;
+  color: #9a4b12;
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__checks,
+.board-wrap--eottae-adroom .adroom-write-guide__tips-list {
+  margin: 0;
+  padding: 0 0 0 1.15em;
+  list-style: disc;
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__checks li,
+.board-wrap--eottae-adroom .adroom-write-guide__tips-list li {
+  margin-bottom: 6px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--adroom-guide-muted);
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__checks li:last-child,
+.board-wrap--eottae-adroom .adroom-write-guide__tips-list li:last-child {
+  margin-bottom: 0;
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__meta {
+  margin: 10px 0 0;
+  padding-top: 10px;
+  border-top: 1px dashed var(--adroom-guide-border);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--adroom-guide-muted);
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__tips {
+  margin: 14px 18px 0;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--adroom-guide-accent-soft);
+  border: 1px solid #f0dfc4;
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__tips-title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8a5a18;
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__tips-list {
+  padding-left: 1.1em;
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__tips-list li {
+  color: #5c4a32;
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  margin-top: 16px;
+  padding: 16px 18px 18px;
+  border-top: 1px solid var(--adroom-guide-border);
+  background: #fafaf9;
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__foot-text {
+  margin: 0;
+  flex: 1 1 220px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--adroom-guide-muted);
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.board-wrap--eottae-adroom .adroom-write-guide__cta.adroom-btn--primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  color: #fff;
+  background: var(--adroom-guide-accent);
+  border: 0;
+}
+
+@media (max-width: 640px) {
+  .board-wrap--eottae-adroom .adroom-write-guide__grid {
+    grid-template-columns: 1fr;
+    padding: 14px 14px 0;
+  }
+
+  .board-wrap--eottae-adroom .adroom-write-guide__banner {
+    padding: 18px 16px 16px;
+  }
+
+  .board-wrap--eottae-adroom .adroom-write-guide__tips {
+    margin: 12px 14px 0;
+  }
+
+  .board-wrap--eottae-adroom .adroom-write-guide__foot {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px;
+  }
+
+  .board-wrap--eottae-adroom .adroom-write-guide__cta,
+  .board-wrap--eottae-adroom .adroom-write-guide__actions .adroom-btn {
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: center;
   }
 }
