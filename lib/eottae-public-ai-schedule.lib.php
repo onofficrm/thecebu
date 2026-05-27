@@ -338,7 +338,12 @@ if (!function_exists('eottae_public_ai_apply_schedule_friendly_settings')) {
      */
     function eottae_public_ai_apply_schedule_friendly_settings()
     {
-        eottae_public_ai_ensure_schema();
+        static $applied = false;
+        if ($applied) {
+            return array('ok' => true, 'updated' => false);
+        }
+        $applied = true;
+
         $table = eottae_public_ai_settings_table();
         $row = sql_fetch(" SELECT * FROM `{$table}` WHERE id = 1 LIMIT 1 ", false);
         if (empty($row['id'])) {

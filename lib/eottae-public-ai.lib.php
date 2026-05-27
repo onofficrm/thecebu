@@ -114,6 +114,12 @@ if (!function_exists('eottae_public_ai_label')) {
 if (!function_exists('eottae_public_ai_ensure_schema')) {
     function eottae_public_ai_ensure_schema()
     {
+        static $done = false;
+        if ($done) {
+            return array('ok' => true);
+        }
+        $done = true;
+
         if (!function_exists('eottae_talkroom_table_exists')) {
             include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
         }
