@@ -64,19 +64,14 @@
   function resolvePopularSectionRoot(heading) {
     var root = document.getElementById('root') || document;
     var node = heading;
-    var best = null;
     var depth = 0;
 
     while (node && node !== root && depth < 16) {
       if (nodeHasLegacyPopularGrid(node)) {
-        best = node;
+        return node;
       }
       node = node.parentElement;
       depth += 1;
-    }
-
-    if (best) {
-      return best;
     }
 
     return heading.closest('section') || heading.parentElement;
@@ -840,6 +835,9 @@
     mountRoot.className = 'sebu-home-main-section';
     mountRoot.setAttribute('data-eottae-home-main-mounted', '1');
     mountRoot.innerHTML = renderPopularBlock(data.popular || {}, data.talk_rooms || {});
+
+    section.classList.add('sebu-home-main-host');
+    section.setAttribute('data-eottae-home-main-host', '1');
 
     while (section.firstChild) {
       section.removeChild(section.firstChild);
