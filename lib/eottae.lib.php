@@ -980,11 +980,6 @@ if (!function_exists('eottae_builder_inject_home_briefing_script')) {
 if (!function_exists('eottae_builder_inject_home_main_section_script')) {
     function eottae_builder_inject_home_main_section_script()
     {
-        // React 빌더 홈이 먼저 그려진 뒤 이 스크립트가 섹션을 교체하면
-        // 사용자가 정상 화면을 잠깐 본 뒤 다른 레이아웃으로 바뀌는 깜빡임이 생긴다.
-        // 홈 메인 영역은 빌더 원본 렌더링을 그대로 사용한다.
-        return '';
-
         include_once G5_LIB_PATH.'/eottae-calendar-home.lib.php';
 
         $payload = eottae_home_main_section_payload();
