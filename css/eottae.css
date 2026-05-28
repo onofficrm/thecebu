@@ -3476,21 +3476,37 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   color: #fff;
 }
 
-.community-login-box__coupon-hint {
-  margin: 10px 0 0;
-  font-size: 12px;
-  text-align: center;
-  line-height: 1.5;
+.community-login-box__head {
+  margin-bottom: 14px;
 }
 
-.community-login-box__coupon-hint a {
+.community-login-box__guides {
+  margin: 10px 0 0;
+  font-size: 11px;
+  line-height: 1.55;
+  text-align: left;
+  color: #64748b;
+}
+
+.community-login-box__guides a {
   color: #0369a1;
   font-weight: 700;
   text-decoration: none;
+  white-space: nowrap;
 }
 
-.community-login-box__coupon-hint a:hover {
+.community-login-box__guides a:hover {
   text-decoration: underline;
+}
+
+.community-login-box__guides-sep {
+  margin: 0 4px;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.community-login-box__guides--guest {
+  margin-top: 10px;
 }
 
 .community-login-box__links {
@@ -3521,9 +3537,14 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 
 .community-login-box__profile {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 0;
+}
+
+.community-login-box__profile-body {
+  flex: 1;
+  min-width: 0;
 }
 
 .community-login-box__avatar {
@@ -10233,8 +10254,32 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
   line-height: 1.35;
 }
 
-.community-login-box--guest .community-login-box__coupon-hint--guest {
+.community-login-box--member .community-login-box__head .community-login-box__guides {
   margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #f1f5f9;
+}
+
+@media (max-width: 767px) {
+  .community-login-box__profile {
+    align-items: center;
+  }
+
+  .community-login-box__welcome {
+    font-size: 15px;
+    line-height: 1.35;
+  }
+
+  .community-login-box__guides {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 0;
+  }
+
+  .community-login-box__guides a {
+    white-space: normal;
+  }
 }
 
 .home-hero-sidebar-events + [data-eottae-legacy-sidebar-events],

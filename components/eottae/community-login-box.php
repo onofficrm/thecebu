@@ -36,13 +36,24 @@ if ($is_member && is_array($member)) {
 <section class="community-sidebar__card community-sidebar__login" aria-label="회원 로그인">
     <?php if ($is_member) { ?>
     <div class="community-login-box community-login-box--member">
-        <div class="community-login-box__profile">
-            <span class="community-login-box__avatar" aria-hidden="true"><?php echo htmlspecialchars($eottae_initial, ENT_QUOTES, 'UTF-8'); ?></span>
-            <div class="community-login-box__profile-body">
-                <p class="community-login-box__welcome"><strong><?php echo $eottae_member_nick; ?></strong>님</p>
-                <p class="community-login-box__type"><?php echo $eottae_member_type; ?></p>
+        <header class="community-login-box__head">
+            <div class="community-login-box__profile">
+                <span class="community-login-box__avatar" aria-hidden="true"><?php echo htmlspecialchars($eottae_initial, ENT_QUOTES, 'UTF-8'); ?></span>
+                <div class="community-login-box__profile-body">
+                    <p class="community-login-box__welcome"><strong><?php echo $eottae_member_nick; ?></strong>님</p>
+                    <p class="community-login-box__type"><?php echo $eottae_member_type; ?></p>
+                </div>
             </div>
-        </div>
+            <p class="community-login-box__guides">
+                <a href="<?php echo G5_URL; ?>/page/eottae-member-growth-guide.php">활동 등급·뱃지</a>
+                <span class="community-login-box__guides-sep" aria-hidden="true">·</span>
+                <a href="<?php echo G5_URL; ?>/page/eottae-coupon-guide.php">쿠폰 사용 방법</a>
+                <?php if ($eottae_member_is_biz) { ?>
+                <span class="community-login-box__guides-sep" aria-hidden="true">·</span>
+                <a href="<?php echo G5_URL; ?>/page/eottae-business-coupon-guide.php">쿠폰 발행 안내</a>
+                <?php } ?>
+            </p>
+        </header>
 
         <div class="community-login-box__stats">
             <a href="<?php echo G5_URL; ?>/page/eottae-points.php" class="community-login-box__stat">
@@ -56,13 +67,6 @@ if ($is_member && is_array($member)) {
         </div>
 
         <a href="<?php echo $eottae_mypage_url; ?>" class="community-login-box__cta">MY 바로가기</a>
-
-        <p class="community-login-box__coupon-hint">
-            <a href="<?php echo G5_URL; ?>/page/eottae-coupon-guide.php">쿠폰 사용 방법</a>
-            <?php if ($eottae_member_is_biz) { ?>
-            · <a href="<?php echo G5_URL; ?>/page/eottae-business-coupon-guide.php">쿠폰 발행 안내</a>
-            <?php } ?>
-        </p>
 
         <div class="community-login-box__links">
             <a href="<?php echo $eottae_profile_url; ?>">정보수정</a>
@@ -87,9 +91,10 @@ if ($is_member && is_array($member)) {
 
         <a href="<?php echo $eottae_login_url; ?>" class="community-login-box__cta">세부어때 로그인</a>
 
-        <p class="community-login-box__coupon-hint community-login-box__coupon-hint--guest">
+        <p class="community-login-box__guides community-login-box__guides--guest">
             <a href="<?php echo G5_URL; ?>/page/eottae-member-growth-guide.php">활동 등급·뱃지</a>
-            · <a href="<?php echo G5_URL; ?>/page/eottae-coupon-guide.php">쿠폰 사용 방법</a>
+            <span class="community-login-box__guides-sep" aria-hidden="true">·</span>
+            <a href="<?php echo G5_URL; ?>/page/eottae-coupon-guide.php">쿠폰 사용 방법</a>
         </p>
 
         <div class="community-login-box__links">
