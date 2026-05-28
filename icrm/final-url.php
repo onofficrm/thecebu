@@ -23,7 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $result = eottae_icrm_resolve_post($bo_table, $wr_id);
 
 if (empty($result['ok'])) {
-    eottae_icrm_json($result, 400);
+    $http = !empty($result['not_found']) ? 404 : 400;
+    eottae_icrm_json($result, $http);
 }
 
 unset($result['seo_created']);

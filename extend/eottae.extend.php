@@ -13,6 +13,7 @@ include_once G5_LIB_PATH.'/eottae-shop-seo.lib.php';
 include_once G5_LIB_PATH.'/eottae-board-seo.lib.php';
 include_once G5_LIB_PATH.'/eottae-job-template.lib.php';
 include_once G5_LIB_PATH.'/eottae-icrm.lib.php';
+include_once G5_LIB_PATH.'/eottae-icrm-template.lib.php';
 include_once G5_LIB_PATH.'/eottae-board-editor.lib.php';
 include_once G5_LIB_PATH.'/eottae-business-snippet.lib.php';
 include_once G5_LIB_PATH.'/eottae-shop-owner.lib.php';
@@ -390,6 +391,40 @@ if (!function_exists('eottae_icrm_on_write_update_after')) {
     }
 }
 add_event('write_update_after', 'eottae_icrm_on_write_update_after', 12, 5);
+
+if (!function_exists('eottae_icrm_on_board_view')) {
+    /**
+     * 게시글 조회 시 wr_seo_title 자동 보정 + iCRM 템플릿 CSS 로드
+     */
+    function eottae_icrm_on_board_view($board, $write_row, $wr_id)
+    {
+        $wr_id = (int) $wr_id;
+        if ($wr_id < 1 || empty($board['bo_table']) || !is_array($write_row) || empty($write_row['wr_id'])) {
+            return;
+        }
+
+        if (function_exists('eottae_icrm_maybe_enqueue_template_styles')) {
+            eottae_icrm_maybe_enqueue_template_styles($write_row);
+        }
+
+        if (!function_exists('eottae_icrm_ensure_wr_seo_title')) {
+            return;
+        }
+
+        $result = eottae_icrm_ensure_wr_seo_title($board['bo_table'], $wr_id);
+        if (empty($result['ok']) || !isset($result['wr_seo_title'])) {
+            return;
+        }
+
+        global $write;
+        if (is_array($write) && (int) $write['wr_id'] === $wr_id) {
+            $write['wr_seo_title'] = (string) $result['wr_seo_title'];
+        }
+    }
+}
+add_event('board_head_before', 'eottae_icrm_on_board_view', 8, 3);
+
+add_event('html_purifier_config', 'eottae_icrm_html_purifier_config', 10, 2);
 
 if (!function_exists('eottae_on_shop_delete')) {
     function eottae_on_shop_delete($write, $board)

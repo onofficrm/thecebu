@@ -640,6 +640,12 @@ if (!function_exists('eottae_emit_mobile_head_assets')) {
         echo '<link rel="stylesheet" href="'.$css_base.'/eottae.css?ver='.$ver.'">'.PHP_EOL;
         echo '<link rel="stylesheet" href="'.$css_base.'/eottae-kakao-chat.css?ver='.$ver.'">'.PHP_EOL;
 
+        $icrm_css = G5_PATH.'/css/eottae-icrm-template.css';
+        if (is_file($icrm_css)) {
+            $icrm_ver = (int) @filemtime($icrm_css);
+            echo '<link rel="stylesheet" href="'.$css_base.'/eottae-icrm-template.css?ver='.$icrm_ver.'">'.PHP_EOL;
+        }
+
         if (function_exists('eottae_talkroom_should_load_ui') && eottae_talkroom_should_load_ui()) {
             echo '<link rel="stylesheet" href="'.$css_base.'/eottae-talkroom-ui.css?ver='.$ver.'">'.PHP_EOL;
         }
@@ -5466,10 +5472,20 @@ if (!function_exists('eottae_community_board_hero')) {
         }
 
         $cebu_img = 'https://images.unsplash.com/photo-%s?auto=format&fit=crop&w=1600&q=85';
+        $sca = trim((string) $sca);
+
+        if ($table === eottae_community_board_table() && $sca !== '' && eottae_community_is_free_category($sca)) {
+            return array(
+                'kicker' => '자유게시판',
+                'title'  => eottae_community_free_category(),
+                'desc'   => '세부 교민·여행자가 가볍게 나누는 자유 주제 게시판입니다. 질문·정보·일상 이야기를 남겨 보세요.',
+                'image'  => sprintf($cebu_img, '1555881400-0d2f29490987'),
+            );
+        }
 
         $presets = array(
             'community' => array(
-                'kicker' => '세부 자유 게시판',
+                'kicker' => '세부 커뮤니티',
                 'title'  => '세부 생활정보',
                 'desc'   => '세부 교민과 여행자가 함께 나누는 생생한 로컬 생활정보 게시판입니다.',
                 'image'  => sprintf($cebu_img, '1555881400-0d2f29490987'),
@@ -5523,6 +5539,37 @@ if (!function_exists('eottae_community_board_hero')) {
         }
 
         return $hero;
+    }
+}
+
+if (!function_exists('eottae_community_free_category')) {
+    /**
+     * 커뮤니티 게시판 — 자유게시판(GNB) 분류명 (bo_category_list 와 동일)
+     */
+    function eottae_community_free_category()
+    {
+        return '자유';
+    }
+}
+
+if (!function_exists('eottae_community_is_free_category')) {
+    function eottae_community_is_free_category($sca)
+    {
+        return trim((string) $sca) === eottae_community_free_category();
+    }
+}
+
+if (!function_exists('eottae_community_free_list_url')) {
+    /**
+     * 자유게시판 — 커뮤니티 게시판 자유 분류 목록
+     */
+    function eottae_community_free_list_url($params = array())
+    {
+        if (!isset($params['sca'])) {
+            $params['sca'] = eottae_community_free_category();
+        }
+
+        return eottae_community_list_url($params);
     }
 }
 
@@ -5799,6 +5846,7 @@ if (!function_exists('eottae_gnb_nav_links')) {
             array('key' => 'golf_join', 'label' => '골프조인', 'href' => function_exists('eottae_golf_join_list_url') ? eottae_golf_join_list_url() : G5_URL.'/golf-join/'),
             array('key' => 'community', 'label' => '커뮤니티', 'href' => eottae_community_list_url()),
             array('key' => 'column', 'label' => function_exists('eottae_column_menu_label') ? eottae_column_menu_label() : '컬럼', 'href' => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/'),
+            array('key' => 'community_free', 'label' => '자유게시판', 'href' => eottae_community_free_list_url()),
             array('key' => 'adroom', 'label' => '광고방', 'href' => function_exists('eottae_adroom_list_url') ? eottae_adroom_list_url() : G5_URL.'/ad-room/'),
             array('key' => 'people', 'label' => '사람찾기', 'href' => eottae_board_list_url(defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people')),
             array('key' => 'job', 'label' => '구인구직', 'href' => eottae_board_list_url(defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job')),
@@ -5859,10 +5907,12 @@ if (!function_exists('eottae_gnb_link_is_active')) {
         $bo = isset($_GET['bo_table']) ? preg_replace('/[^a-z0-9_]/', '', $_GET['bo_table']) : '';
         $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
 
+        $community_table = eottae_community_board_table();
+        $sca = isset($_GET['sca']) ? trim((string) $_GET['sca']) : '';
         $board_map = array(
             'shop'      => eottae_shop_table(),
             'food'      => defined('EOTTae_FOOD_TABLE') ? EOTTae_FOOD_TABLE : 'food',
-            'community' => eottae_community_board_table(),
+            'community' => $community_table,
             'people'    => defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people',
             'job'       => defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job',
             'estate'    => defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate',
@@ -5879,6 +5929,8 @@ if (!function_exists('eottae_gnb_link_is_active')) {
                 return strpos($uri, '/calendar') !== false || strpos($uri, '/page/eottae-calendar') !== false;
             case 'column':
                 return strpos($uri, '/column') !== false || strpos($uri, '/page/eottae-column') !== false;
+            case 'community_free':
+                return $bo === $community_table && eottae_community_is_free_category($sca);
             case 'golf_join':
                 return strpos($uri, '/golf-join') !== false || strpos($uri, '/page/eottae-golf') !== false;
             case 'adroom':
@@ -5886,6 +5938,8 @@ if (!function_exists('eottae_gnb_link_is_active')) {
                     || $bo === (defined('EOTTae_ADROOM_TABLE') ? EOTTae_ADROOM_TABLE : 'adroom');
             case 'mypage':
                 return strpos($uri, '/page/eottae-') !== false;
+            case 'community':
+                return $bo === $community_table && !eottae_community_is_free_category($sca);
             default:
                 return isset($board_map[$key]) && $bo === $board_map[$key];
         }

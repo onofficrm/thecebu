@@ -23,7 +23,8 @@ $wr_id = isset($_POST['wr_id']) ? $_POST['wr_id'] : 0;
 $result = eottae_icrm_resolve_post($bo_table, $wr_id);
 
 if (empty($result['ok'])) {
-    eottae_icrm_json($result, 400);
+    $http = !empty($result['not_found']) ? 404 : 400;
+    eottae_icrm_json($result, $http);
 }
 
 $response = array(

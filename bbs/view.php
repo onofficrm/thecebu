@@ -123,6 +123,8 @@ if (strpos($view['wr_option'], 'html1') !== false)
     $html = 1;
 else if (strpos($view['wr_option'], 'html2') !== false)
     $html = 2;
+elseif (function_exists('eottae_icrm_content_needs_html') && eottae_icrm_content_needs_html($view['wr_content']))
+    $html = 1;
 
 $view['content'] = conv_content($view['wr_content'], $html);
 if (strpos($sfl, 'content') !== false)

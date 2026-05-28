@@ -136,11 +136,71 @@ if (!function_exists('eottae_icrm_build_final_url')) {
     }
 }
 
+if (!function_exists('eottae_icrm_seo_title_is_duplicate')) {
+    /**
+     * 동일 게시판 내 다른 글과 wr_seo_title 충돌 여부
+     */
+    function eottae_icrm_seo_title_is_duplicate($write_table, $seo_title, $wr_id)
+    {
+        eottae_icrm_load_uri_lib();
+
+        $seo_title = trim((string) $seo_title);
+        if ($seo_title === '' || !function_exists('exist_seo_url')) {
+            return false;
+        }
+
+        return exist_seo_url('bbs', $seo_title, $write_table, $wr_id) === 'is_exists';
+    }
+}
+
+if (!function_exists('eottae_icrm_save_wr_seo_title')) {
+    function eottae_icrm_save_wr_seo_title($write_table, $wr_id, $seo_title)
+    {
+        $seo_title = trim((string) $seo_title);
+        $wr_id = eottae_icrm_normalize_wr_id($wr_id);
+
+        sql_query("
+            UPDATE `{$write_table}` SET
+                wr_seo_title = '".sql_real_escape_string($seo_title)."'
+            WHERE wr_id = '{$wr_id}'
+        ", false);
+
+        if (function_exists('get_write')) {
+            get_write($write_table, $wr_id, false);
+        }
+
+        return $seo_title;
+    }
+}
+
+if (!function_exists('eottae_icrm_generate_wr_seo_title_from_subject')) {
+    /**
+     * wr_subject → generate_seo_title + exist_seo_title_recursive (write_update.php 동일)
+     */
+    function eottae_icrm_generate_wr_seo_title_from_subject($write_table, $wr_id, $subject)
+    {
+        eottae_icrm_load_uri_lib();
+
+        $subject = trim(strip_tags((string) $subject));
+        if ($subject === '' || !function_exists('generate_seo_title') || !function_exists('exist_seo_title_recursive')) {
+            return '';
+        }
+
+        return exist_seo_title_recursive(
+            'bbs',
+            generate_seo_title($subject),
+            $write_table,
+            $wr_id
+        );
+    }
+}
+
 if (!function_exists('eottae_icrm_ensure_wr_seo_title')) {
     /**
-     * wr_seo_title이 비어 있으면 write_update.php와 동일하게 확정 후 DB 반영
+     * wr_seo_title 확정 — 비어 있거나 중복이면 그누보드 기본 함수로 재생성 후 DB 저장
+     * iCRM이 넣은 slug는 충돌 시 홈페이지가 최종값을 결정한다.
      *
-     * @return array{ok:bool,message?:string,wr_seo_title?:string,created?:bool}
+     * @return array{ok:bool,message?:string,wr_seo_title?:string,created?:bool,fixed?:bool,not_found?:bool}
      */
     function eottae_icrm_ensure_wr_seo_title($bo_table, $wr_id)
     {
@@ -157,7 +217,7 @@ if (!function_exists('eottae_icrm_ensure_wr_seo_title')) {
 
         $board = get_board_db($bo_table, true);
         if (empty($board['bo_table'])) {
-            return array('ok' => false, 'message' => '게시판을 찾을 수 없습니다.');
+            return array('ok' => false, 'message' => '게시판을 찾을 수 없습니다.', 'not_found' => true);
         }
 
         $write_table = $g5['write_prefix'].$bo_table;
@@ -169,37 +229,47 @@ if (!function_exists('eottae_icrm_ensure_wr_seo_title')) {
         ", false);
 
         if (empty($write['wr_id']) || !empty($write['wr_is_comment'])) {
-            return array('ok' => false, 'message' => '게시글을 찾을 수 없습니다.');
+            return array(
+                'ok'         => false,
+                'message'    => '게시글을 찾을 수 없습니다.',
+                'not_found'  => true,
+            );
         }
 
+        $subject = trim(strip_tags((string) ($write['wr_subject'] ?? '')));
         $seo_title = trim((string) ($write['wr_seo_title'] ?? ''));
         $created = false;
+        $fixed = false;
 
         if ($seo_title === '') {
-            $subject = trim(strip_tags((string) ($write['wr_subject'] ?? '')));
             if ($subject === '') {
                 return array('ok' => true, 'wr_seo_title' => '', 'created' => false);
             }
 
-            $seo_title = exist_seo_title_recursive(
-                'bbs',
-                generate_seo_title($subject),
-                $write_table,
-                $wr_id
-            );
-
-            sql_query("
-                UPDATE `{$write_table}` SET
-                    wr_seo_title = '".sql_real_escape_string($seo_title)."'
-                WHERE wr_id = '{$wr_id}'
-            ", false);
-
-            if (function_exists('get_write')) {
-                get_write($write_table, $wr_id, false);
+            if (function_exists('seo_title_update')) {
+                seo_title_update($write_table, $wr_id, 'bbs');
+                $refreshed = get_write($write_table, $wr_id, true);
+                $seo_title = trim((string) ($refreshed['wr_seo_title'] ?? ''));
             }
 
-            $created = true;
+            if ($seo_title === '') {
+                $seo_title = eottae_icrm_generate_wr_seo_title_from_subject($write_table, $wr_id, $subject);
+                if ($seo_title !== '') {
+                    eottae_icrm_save_wr_seo_title($write_table, $wr_id, $seo_title);
+                }
+            }
 
+            $created = $seo_title !== '';
+        } elseif (eottae_icrm_seo_title_is_duplicate($write_table, $seo_title, $wr_id)) {
+            $base_subject = $subject !== '' ? $subject : $seo_title;
+            $seo_title = eottae_icrm_generate_wr_seo_title_from_subject($write_table, $wr_id, $base_subject);
+            if ($seo_title !== '') {
+                eottae_icrm_save_wr_seo_title($write_table, $wr_id, $seo_title);
+                $fixed = true;
+            }
+        }
+
+        if ($created || $fixed) {
             if (function_exists('eottae_board_seo_sync_write')) {
                 include_once G5_LIB_PATH.'/eottae-board-seo.lib.php';
                 eottae_board_seo_sync_write($bo_table, $wr_id);
@@ -210,6 +280,7 @@ if (!function_exists('eottae_icrm_ensure_wr_seo_title')) {
             'ok'            => true,
             'wr_seo_title'  => $seo_title,
             'created'       => $created,
+            'fixed'         => $fixed,
         );
     }
 }
@@ -234,10 +305,15 @@ if (!function_exists('eottae_icrm_resolve_post')) {
 
         $ensure = eottae_icrm_ensure_wr_seo_title($bo_table, $wr_id);
         if (empty($ensure['ok'])) {
-            return array(
+            $payload = array(
                 'ok'      => false,
                 'message' => $ensure['message'] ?? 'wr_seo_title 확정에 실패했습니다.',
             );
+            if (!empty($ensure['not_found'])) {
+                $payload['not_found'] = true;
+            }
+
+            return $payload;
         }
 
         $wr_seo_title = trim((string) ($ensure['wr_seo_title'] ?? ''));
