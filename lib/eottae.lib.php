@@ -899,6 +899,19 @@ if (!function_exists('eottae_builder_inject_home_search_script')) {
     }
 }
 
+if (!function_exists('eottae_builder_inject_mobile_near_nav_script')) {
+    function eottae_builder_inject_mobile_near_nav_script()
+    {
+        $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-mobile-near-nav.js' : '/js/eottae-mobile-near-nav.js';
+        $path = G5_PATH.'/js/eottae-mobile-near-nav.js';
+        if (is_file($path)) {
+            $js .= '?ver='.(int) filemtime($path);
+        }
+
+        return '<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
+    }
+}
+
 if (!function_exists('eottae_builder_inject_featured_carousel_script')) {
     function eottae_builder_inject_featured_carousel_script()
     {
@@ -1159,8 +1172,6 @@ if (!function_exists('eottae_builder_inject_home_header_actions_script')) {
             'golf_join_label'=> '골프조인',
             'column_url'     => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/',
             'column_label'   => function_exists('eottae_column_menu_label') ? eottae_column_menu_label() : '컬럼',
-            'free_url'       => function_exists('eottae_free_list_url') ? eottae_free_list_url() : G5_BBS_URL.'/board.php?bo_table=free',
-            'free_label'     => '자유게시판',
             'adroom_url'     => function_exists('eottae_adroom_list_url') ? eottae_adroom_list_url() : G5_URL.'/ad-room/',
             'adroom_label'   => '광고방',
         );
@@ -1400,6 +1411,7 @@ if (!function_exists('eottae_builder_inject_html')) {
         }
 
         $body_scripts = eottae_builder_inject_home_react_ready_script();
+        $body_scripts .= eottae_builder_inject_mobile_near_nav_script();
         $body_scripts .= eottae_builder_inject_featured_carousel_script();
         $body_scripts .= eottae_builder_inject_home_search_script();
         $body_scripts .= eottae_builder_inject_home_briefing_script();
@@ -5793,7 +5805,8 @@ if (!function_exists('eottae_gnb_hidden_menu_keys')) {
      */
     function eottae_gnb_hidden_menu_keys()
     {
-        return array('massage', 'rentcar');
+        // 커뮤니티 허브 하위 게시판은 상위 「커뮤니티」·탭 네비로 통합 (중복 GNB 링크 숨김)
+        return array('massage', 'rentcar', 'community_free', 'people');
     }
 }
 
@@ -5816,10 +5829,14 @@ if (!function_exists('eottae_filter_menu_datas')) {
                 $hidden_boards[] = defined('EOTTae_MASSAGE_TABLE') ? EOTTae_MASSAGE_TABLE : 'massage';
             } elseif ($key === 'rentcar') {
                 $hidden_boards[] = defined('EOTTae_RENTCAR_TABLE') ? EOTTae_RENTCAR_TABLE : 'rentcar';
+            } elseif ($key === 'community_free') {
+                $hidden_boards[] = function_exists('eottae_free_board_table') ? eottae_free_board_table() : 'free';
+            } elseif ($key === 'people') {
+                $hidden_boards[] = defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people';
             }
         }
 
-        $hidden_labels = array('마사지', '마사지·스파', '렌트카');
+        $hidden_labels = array('마사지', '마사지·스파', '렌트카', '자유게시판', '사람찾기');
         $filtered = array();
 
         foreach ($menu_datas as $row) {
@@ -5869,9 +5886,7 @@ if (!function_exists('eottae_gnb_nav_links')) {
             array('key' => 'golf_join', 'label' => '골프조인', 'href' => function_exists('eottae_golf_join_list_url') ? eottae_golf_join_list_url() : G5_URL.'/golf-join/'),
             array('key' => 'community', 'label' => '커뮤니티', 'href' => eottae_community_list_url()),
             array('key' => 'column', 'label' => function_exists('eottae_column_menu_label') ? eottae_column_menu_label() : '컬럼', 'href' => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/'),
-            array('key' => 'community_free', 'label' => '자유게시판', 'href' => eottae_free_list_url()),
             array('key' => 'adroom', 'label' => '광고방', 'href' => function_exists('eottae_adroom_list_url') ? eottae_adroom_list_url() : G5_URL.'/ad-room/'),
-            array('key' => 'people', 'label' => '사람찾기', 'href' => eottae_board_list_url(defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people')),
             array('key' => 'job', 'label' => '구인구직', 'href' => eottae_board_list_url(defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job')),
             array('key' => 'estate', 'label' => '부동산', 'href' => eottae_board_list_url(defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate')),
             array('key' => 'gallery', 'label' => '갤러리', 'href' => eottae_board_list_url(defined('EOTTae_GALLERY_TABLE') ? EOTTae_GALLERY_TABLE : 'gallery')),
@@ -5956,6 +5971,12 @@ if (!function_exists('eottae_gnb_link_is_active')) {
             case 'adroom':
                 return strpos($uri, '/ad-room') !== false
                     || $bo === (defined('EOTTae_ADROOM_TABLE') ? EOTTae_ADROOM_TABLE : 'adroom');
+            case 'community':
+                if (function_exists('eottae_is_community_hub_board') && $bo !== '' && eottae_is_community_hub_board($bo)) {
+                    return true;
+                }
+
+                return $bo === eottae_community_board_table();
             case 'mypage':
                 return strpos($uri, '/page/eottae-') !== false;
             default:

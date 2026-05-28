@@ -12,7 +12,10 @@ include_once G5_LIB_PATH.'/eottae-ad.lib.php';
 include_once G5_LIB_PATH.'/eottae-shop-seo.lib.php';
 include_once G5_LIB_PATH.'/eottae-board-seo.lib.php';
 include_once G5_LIB_PATH.'/eottae-job-template.lib.php';
+include_once G5_LIB_PATH.'/eottae-job.lib.php';
 include_once G5_LIB_PATH.'/eottae-property-template.lib.php';
+include_once G5_LIB_PATH.'/eottae-community-hub.lib.php';
+include_once G5_LIB_PATH.'/eottae-estate.lib.php';
 include_once G5_LIB_PATH.'/eottae-free-board.lib.php';
 include_once G5_LIB_PATH.'/eottae-board-write-mobile.lib.php';
 include_once G5_LIB_PATH.'/eottae-icrm.lib.php';
@@ -43,6 +46,7 @@ include_once G5_LIB_PATH.'/eottae-column-bookmarks.lib.php';
 include_once G5_LIB_PATH.'/eottae-column-report.lib.php';
 include_once G5_LIB_PATH.'/eottae-adroom.lib.php';
 include_once G5_LIB_PATH.'/eottae-member-growth.lib.php';
+include_once G5_LIB_PATH.'/eottae-member-profile.lib.php';
 
 if (function_exists('eottae_secrets_load')) {
     eottae_secrets_load();
@@ -480,6 +484,7 @@ if (!function_exists('eottae_is_community_board')) {
     function eottae_is_community_board($bo_table)
     {
         $community = defined('EOTTae_COMMUNITY_TABLE') ? EOTTae_COMMUNITY_TABLE : 'community';
+
         return (string) $bo_table !== '' && (string) $bo_table === $community;
     }
 }
@@ -487,7 +492,16 @@ if (!function_exists('eottae_is_community_board')) {
 if (!function_exists('eottae_on_community_write_before')) {
     function eottae_on_community_write_before($board, $wr_id, $w, $qstr)
     {
-        if (empty($board['bo_table']) || !eottae_is_community_board($board['bo_table'])) {
+        if (empty($board['bo_table'])) {
+            return;
+        }
+
+        $bo_table = $board['bo_table'];
+        if (function_exists('eottae_is_community_hub_board') && eottae_is_community_hub_board($bo_table)) {
+            if (function_exists('eottae_community_hub_apply_runtime')) {
+                eottae_community_hub_apply_runtime($bo_table);
+            }
+        } elseif (!eottae_is_community_board($bo_table)) {
             return;
         }
 
@@ -767,6 +781,10 @@ if (!function_exists('eottae_talkroom_load_ui_assets')) {
         add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-talkroom-ui.css">', 23);
         eottae_talkroom_append_body_class('talkroom-ui');
 
+        if (function_exists('eottae_talkroom_enqueue_card_delete_assets')) {
+            eottae_talkroom_enqueue_card_delete_assets();
+        }
+
         $script = basename($_SERVER['SCRIPT_FILENAME'] ?? $_SERVER['SCRIPT_NAME'] ?? '');
         if ($script === 'eottae-talk-room.php') {
             eottae_talkroom_append_body_class('talk-room-chat-active');
@@ -1037,6 +1055,14 @@ add_event('board_head_before', 'eottae_talkroom_on_board_head_ui', 8, 3);
 if (!function_exists('eottae_community_on_board_head')) {
     function eottae_community_on_board_head($board, $write, $wr_id)
     {
+        if (empty($board['bo_table'])) {
+            return;
+        }
+
+        if (function_exists('eottae_community_hub_apply_runtime')) {
+            eottae_community_hub_apply_runtime($board['bo_table']);
+        }
+
         if (empty($board['bo_skin']) || (string) $board['bo_skin'] !== 'eottae-community') {
             return;
         }
@@ -1527,6 +1553,85 @@ if (!function_exists('eottae_column_on_bbs_write')) {
     }
 }
 add_event('bbs_write', 'eottae_column_on_bbs_write', 10, 3);
+
+if (!function_exists('eottae_on_estate_write_before')) {
+    function eottae_on_estate_write_before($board, $wr_id, $w, $qstr)
+    {
+        if (empty($board['bo_table']) || !function_exists('eottae_is_estate_board') || !eottae_is_estate_board($board['bo_table'])) {
+            return;
+        }
+
+        $region = isset($_POST['wr_1']) ? trim(strip_tags((string) $_POST['wr_1'])) : '';
+        if (function_exists('cut_str') && $region !== '') {
+            $region = cut_str($region, 120, '');
+        } elseif ($region !== '' && function_exists('mb_substr')) {
+            $region = mb_substr($region, 0, 120, 'UTF-8');
+        }
+        $_POST['wr_1'] = $region;
+
+        $status = isset($_POST['wr_2']) ? $_POST['wr_2'] : (isset($_POST['estate_deal_status']) ? $_POST['estate_deal_status'] : 'trading');
+        $_POST['wr_2'] = eottae_estate_normalize_deal_status($status);
+
+        if (!function_exists('eottae_estate_template_apply_to_post')) {
+            include_once G5_LIB_PATH.'/eottae-estate-template.lib.php';
+        }
+        if (function_exists('eottae_estate_template_apply_to_post')) {
+            eottae_estate_template_apply_to_post();
+        }
+    }
+}
+add_event('write_update_before', 'eottae_on_estate_write_before', 14, 4);
+
+if (!function_exists('eottae_on_job_write_before')) {
+    function eottae_on_job_write_before($board, $wr_id, $w, $qstr)
+    {
+        if (empty($board['bo_table']) || !function_exists('eottae_is_job_board') || !eottae_is_job_board($board['bo_table'])) {
+            return;
+        }
+
+        $region = isset($_POST['wr_1']) ? trim(strip_tags((string) $_POST['wr_1'])) : '';
+        if (function_exists('cut_str') && $region !== '') {
+            $region = cut_str($region, 120, '');
+        } elseif ($region !== '' && function_exists('mb_substr')) {
+            $region = mb_substr($region, 0, 120, 'UTF-8');
+        }
+        $_POST['wr_1'] = $region;
+
+        $status = isset($_POST['wr_2']) ? $_POST['wr_2'] : (isset($_POST['job_recruit_status']) ? $_POST['job_recruit_status'] : 'recruiting');
+        $_POST['wr_2'] = eottae_job_normalize_recruit_status($status);
+
+        if (function_exists('eottae_job_template_apply_to_post')) {
+            eottae_job_template_apply_to_post();
+        }
+    }
+}
+add_event('write_update_before', 'eottae_on_job_write_before', 14, 4);
+
+if (!function_exists('eottae_on_event_write_before')) {
+    function eottae_on_event_write_before($board, $wr_id, $w, $qstr)
+    {
+        if (empty($board['bo_table']) || !function_exists('eottae_is_event_board') || !eottae_is_event_board($board['bo_table'])) {
+            return;
+        }
+
+        if (!function_exists('eottae_event_validate_write_post')) {
+            include_once G5_LIB_PATH.'/eottae-event.lib.php';
+        }
+
+        if (function_exists('eottae_event_ensure_content_on_save')) {
+            eottae_event_ensure_content_on_save();
+        }
+
+        $check = eottae_event_validate_write_post($_POST);
+        if (empty($check['ok'])) {
+            alert($check['message'] ?? '입력값을 확인해 주세요.');
+        }
+
+        $normalized = eottae_event_normalize_write_post($_POST, $w === 'u');
+        eottae_event_apply_write_post($normalized);
+    }
+}
+add_event('write_update_before', 'eottae_on_event_write_before', 14, 4);
 
 add_event('bbs_write', 'eottae_adroom_on_bbs_write', 11, 3);
 add_event('write_update_before', 'eottae_adroom_on_write_update_before', 16, 4);

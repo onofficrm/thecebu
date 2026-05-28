@@ -157,7 +157,12 @@ if (!function_exists('eottae_promo_encode_config')) {
 if (!function_exists('eottae_promo_community_boards')) {
     function eottae_promo_community_boards()
     {
+        if (function_exists('eottae_community_hub_board_tables')) {
+            return eottae_community_hub_board_tables();
+        }
+
         $community = defined('EOTTae_COMMUNITY_TABLE') ? EOTTae_COMMUNITY_TABLE : 'community';
+
         return array($community);
     }
 }

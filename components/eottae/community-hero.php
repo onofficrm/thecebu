@@ -43,7 +43,10 @@ $community_hero_search_placeholder = isset($community_hero_search_placeholder)
 
             <form class="community-hero__search community-search" name="fsearch" method="get" action="<?php echo G5_BBS_URL; ?>/board.php">
                 <input type="hidden" name="bo_table" value="<?php echo $bo_table; ?>">
-                <?php if (!empty($sca)) { ?><input type="hidden" name="sca" value="<?php echo get_text($sca); ?>"><?php } ?>
+                <?php
+                $hero_hide_sca = !empty($is_community_hub_list)
+                    || (function_exists('eottae_is_community_hub_board') && !empty($bo_table) && eottae_is_community_hub_board($bo_table));
+                if (!$hero_hide_sca && !empty($sca)) { ?><input type="hidden" name="sca" value="<?php echo get_text($sca); ?>"><?php } ?>
                 <input type="hidden" name="sfl" value="wr_subject||wr_content">
                 <label class="sound_only" for="community_stx">검색어</label>
                 <span class="community-search__icon" aria-hidden="true">⌕</span>

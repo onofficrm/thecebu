@@ -11,6 +11,45 @@ if (function_exists('eottae_job_template_load_assets')) {
     eottae_job_template_load_assets();
 }
 
+if (!function_exists('eottae_job_recruit_status_from_row') && is_file(G5_LIB_PATH.'/eottae-job.lib.php')) {
+    include_once G5_LIB_PATH.'/eottae-job.lib.php';
+}
+
+$job_recruit_status = 'recruiting';
+$job_region = '';
+$job_template_json = '';
+$job_template_values = array();
+if (isset($write) && is_array($write)) {
+    if (!empty($write['wr_2'])) {
+        $job_recruit_status = eottae_job_normalize_recruit_status($write['wr_2']);
+    }
+    if (!empty($write['wr_1'])) {
+        $job_region = get_text($write['wr_1']);
+    }
+    $decoded = function_exists('eottae_job_template_from_row')
+        ? eottae_job_template_from_row($write)
+        : null;
+    if (is_array($decoded)) {
+        $job_template_values = $decoded;
+        $job_template_json = function_exists('eottae_job_template_encode_json')
+            ? eottae_job_template_encode_json($decoded)
+            : '';
+        if ($job_region === '' && !empty($decoded['region'])) {
+            $job_region = get_text($decoded['region']);
+        }
+        if (!empty($decoded['job_recruit_status'])) {
+            $job_recruit_status = eottae_job_normalize_recruit_status($decoded['job_recruit_status']);
+        }
+    }
+}
+
+if (!function_exists('eottae_job_template_field_value')) {
+    function eottae_job_template_field_value($key, $values = array())
+    {
+        return isset($values[$key]) ? get_text($values[$key]) : '';
+    }
+}
+
 $sebu_job_work_types = array(
     ''           => '선택',
     'fulltime'   => '정규직',
@@ -66,19 +105,27 @@ $sebu_job_languages = array(
             <div class="sebu-job-template__grid">
                 <label class="sebu-job-template__field">
                     <span class="sebu-job-template__label">업체명/상호명 <span class="sebu-job-template__req" aria-hidden="true">*</span></span>
-                    <input type="text" class="sebu-job-template__input" data-job-field="company" maxlength="120" placeholder="예) 세부 한식당" autocomplete="organization">
+                    <input type="text" class="sebu-job-template__input" data-job-field="company" maxlength="120" value="<?php echo htmlspecialchars(eottae_job_template_field_value('company', $job_template_values), ENT_QUOTES, 'UTF-8'); ?>" placeholder="예) 세부 한식당" autocomplete="organization">
                 </label>
                 <label class="sebu-job-template__field">
                     <span class="sebu-job-template__label">모집직종 <span class="sebu-job-template__req" aria-hidden="true">*</span></span>
-                    <input type="text" class="sebu-job-template__input" data-job-field="job_type" maxlength="120" placeholder="예) 홀서빙, 주방보조, 리셉션">
+                    <input type="text" class="sebu-job-template__input" data-job-field="job_type" maxlength="120" value="<?php echo htmlspecialchars(eottae_job_template_field_value('job_type', $job_template_values), ENT_QUOTES, 'UTF-8'); ?>" placeholder="예) 홀서빙, 주방보조, 리셉션">
                 </label>
                 <label class="sebu-job-template__field">
                     <span class="sebu-job-template__label">모집인원 <span class="sebu-job-template__req" aria-hidden="true">*</span></span>
-                    <input type="text" class="sebu-job-template__input" data-job-field="headcount" maxlength="40" placeholder="예) 2명">
+                    <input type="text" class="sebu-job-template__input" data-job-field="headcount" maxlength="40" value="<?php echo htmlspecialchars(eottae_job_template_field_value('headcount', $job_template_values), ENT_QUOTES, 'UTF-8'); ?>" placeholder="예) 2명">
                 </label>
                 <label class="sebu-job-template__field">
                     <span class="sebu-job-template__label">근무지역 <span class="sebu-job-template__req" aria-hidden="true">*</span></span>
-                    <input type="text" class="sebu-job-template__input" data-job-field="region" maxlength="120" placeholder="예) 세부시티, IT Park">
+                    <input type="text" class="sebu-job-template__input" data-job-field="region" id="job_region_field" maxlength="120" value="<?php echo htmlspecialchars($job_region, ENT_QUOTES, 'UTF-8'); ?>" placeholder="예) 세부시티, IT Park">
+                </label>
+                <label class="sebu-job-template__field">
+                    <span class="sebu-job-template__label">모집 상태</span>
+                    <select class="sebu-job-template__select" data-job-field="job_recruit_status" id="job_recruit_status">
+                        <?php foreach (eottae_job_recruit_statuses() as $val => $label) { ?>
+                        <option value="<?php echo get_text($val); ?>"<?php echo $job_recruit_status === $val ? ' selected' : ''; ?>><?php echo get_text($label); ?></option>
+                        <?php } ?>
+                    </select>
                 </label>
                 <label class="sebu-job-template__field">
                     <span class="sebu-job-template__label">근무형태</span>
@@ -189,6 +236,10 @@ $sebu_job_languages = array(
         </fieldset>
     </div>
 
+    <input type="hidden" name="wr_1" id="wr_1" value="<?php echo htmlspecialchars($job_region, ENT_QUOTES, 'UTF-8'); ?>">
+    <input type="hidden" name="wr_2" id="wr_2" value="<?php echo htmlspecialchars($job_recruit_status, ENT_QUOTES, 'UTF-8'); ?>">
+    <input type="hidden" name="job_template_json" id="job_template_json" value="<?php echo htmlspecialchars($job_template_json, ENT_QUOTES, 'UTF-8'); ?>">
+
     <p class="sebu-job-template__error" id="sebuJobTemplateError" role="alert" hidden>필수 정보를 입력해주세요.</p>
 
     <div class="sebu-job-template__actions">
@@ -196,3 +247,6 @@ $sebu_job_languages = array(
         <button type="button" class="sebu-job-template__btn sebu-job-template__btn--ghost" id="sebuJobTemplateReset">입력내용 초기화</button>
     </div>
 </section>
+<?php if ($job_template_values) { ?>
+<script>window.__SEBU_JOB_TEMPLATE_INITIAL__ = <?php echo json_encode($job_template_values, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;</script>
+<?php } ?>

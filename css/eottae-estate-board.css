@@ -1,0 +1,246 @@
+/**
+ * 부동산(estate) — 거래상태·프로필 썸네일 뱃지
+ */
+
+.estate-profile-thumb {
+  position: relative;
+}
+
+.estate-profile-thumb__media {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  border-radius: inherit;
+  overflow: hidden;
+  background: linear-gradient(145deg, #f0f9ff, #e0f2fe);
+}
+
+.estate-profile-thumb__media--profile {
+  background: linear-gradient(145deg, #ecfeff, #cffafe);
+}
+
+.estate-profile-thumb__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.estate-profile-thumb__initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 76px;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0e7490;
+  background: linear-gradient(145deg, #ecfeff, #a5f3fc);
+}
+
+.estate-deal-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.estate-deal-badge--thumb {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+}
+
+.estate-deal-badge--trading {
+  background: rgba(14, 165, 233, 0.92);
+}
+
+.estate-deal-badge--completed {
+  background: rgba(100, 116, 139, 0.92);
+}
+
+.estate-profile-thumb__badge {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  z-index: 3;
+  line-height: 0;
+}
+
+.estate-profile-thumb__badge .community-login-box__badge-icon {
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
+  border: 2px solid #fff;
+}
+
+.estate-profile-thumb__badge .community-login-box__badge-link {
+  display: block;
+  line-height: 0;
+}
+
+.community-post--estate .community-badge.estate-deal-badge--trading {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.community-post--estate .community-badge.estate-deal-badge--completed {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.estate-deal-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.estate-deal-panel__label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.estate-deal-panel__actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.estate-deal-panel__btn {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+}
+
+.estate-deal-panel__btn.is-active {
+  border-color: #0ea5e9;
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.estate-deal-panel__btn[data-estate-status="completed"].is-active {
+  border-color: #64748b;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.community-view-page__estate-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.community-view-page__estate-profile .estate-profile-thumb {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.community-view-page__estate-profile .estate-profile-thumb__media {
+  border-radius: 50%;
+}
+
+.community-view-page__estate-profile .estate-profile-thumb__initial {
+  min-height: 56px;
+  font-size: 1.25rem;
+}
+
+.community-view-page__estate-profile .estate-profile-thumb__badge .community-login-box__badge-icon {
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
+}
+
+.estate-deal-badge--view {
+  font-size: 12px;
+  padding: 4px 10px;
+}
+
+/* 부동산 상세 — 템플릿 정보 패널 */
+.estate-detail-panel {
+  margin: 0 0 1.25rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid #a5f3fc;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ecfeff 0%, #fff 100%);
+}
+
+.estate-detail-panel__block + .estate-detail-panel__block {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #cffafe;
+}
+
+.estate-detail-panel__title {
+  margin: 0 0 0.65rem;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #0e7490;
+}
+
+.estate-detail-panel__list {
+  margin: 0;
+}
+
+.estate-detail-panel__item {
+  display: grid;
+  grid-template-columns: 7.5em 1fr;
+  gap: 0.35rem 0.75rem;
+  margin: 0 0 0.45rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.estate-detail-panel__item--block {
+  display: block;
+}
+
+.estate-detail-panel__item--block dt {
+  display: none;
+}
+
+.estate-detail-panel__item dt {
+  margin: 0;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.estate-detail-panel__item dd {
+  margin: 0;
+  color: #0f172a;
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .estate-detail-panel__item {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+}

@@ -740,9 +740,30 @@
 
   global.initEottaeShopMaps = function () {
     collectPanels();
+    global.__eottaeShopMapPanels = panels;
     panels.forEach(function (panel) {
-      panel.init();
+      if (typeof panel.init === 'function') {
+        panel.init();
+      }
     });
     global.document.dispatchEvent(new CustomEvent('eottae:shop-maps-ready'));
+  };
+
+  global.eottaeShopMapApplyNearView = function (lat, lng) {
+    if (!isFinite(lat) || !isFinite(lng)) {
+      return false;
+    }
+    collectPanels();
+    global.__eottaeShopMapPanels = panels;
+    var center = { lat: lat, lng: lng };
+    var i;
+    var applied = false;
+    for (i = 0; i < panels.length; i += 1) {
+      if (panels[i] && typeof panels[i].applyNearRadiusView === 'function') {
+        panels[i].applyNearRadiusView(center);
+        applied = true;
+      }
+    }
+    return applied;
   };
 })(typeof window !== 'undefined' ? window : this);

@@ -327,7 +327,8 @@ if (!function_exists('eottae_install_get_board_defs')) {
                 'bo_upload_count'  => 10,
                 'bo_order'         => 16,
             ),
-            eottae_install_community_board_def('community', '커뮤니티', 10, '자유|정보|질문|후기'),
+            // 신규 설치: 생활정보(community)는 분류 없이 독립 게시판. 기존 ca_name 데이터 마이그레이션은 별도 작업.
+            eottae_install_community_board_def('community', '생활정보', 10, ''),
             array_merge(
                 eottae_install_community_board_def('free', '자유게시판', 10, ''),
                 array(
@@ -335,7 +336,10 @@ if (!function_exists('eottae_install_get_board_defs')) {
                     'bo_use_category' => 0,
                 )
             ),
-            eottae_install_community_board_def('people', '사람찾기', 11, '실종|만남|동행|지인|기타'),
+            array_merge(
+                eottae_install_community_board_def('people', '사람찾기', 11, ''),
+                array('bo_use_category' => 0)
+            ),
             eottae_install_community_board_def('job', '구인구직', 12, '구인|구직|알바|기타'),
             eottae_install_community_board_def('estate', '부동산', 13, '매매|전월세|양도|기타'),
             array_merge(
@@ -409,8 +413,7 @@ if (!function_exists('eottae_install_get_board_defs')) {
                 'bo_read_level'    => 1,
                 'bo_write_level'   => 5,
                 'bo_comment_level' => 2,
-                'bo_use_category'  => 1,
-                'bo_category_list' => '진행중|예정|종료',
+                'bo_use_category'  => 0,
                 'bo_upload_count'  => 3,
                 'bo_order'         => 90,
             ),

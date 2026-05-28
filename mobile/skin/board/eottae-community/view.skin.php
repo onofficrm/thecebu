@@ -2,10 +2,104 @@
 if (!defined('_GNUBOARD_')) exit;
 
 include_once(G5_LIB_PATH.'/eottae.lib.php');
+include_once(G5_LIB_PATH.'/eottae-estate.lib.php');
+include_once(G5_LIB_PATH.'/eottae-estate-template.lib.php');
+include_once(G5_LIB_PATH.'/eottae-job.lib.php');
+include_once(G5_LIB_PATH.'/eottae-community-hub.lib.php');
+include_once(G5_LIB_PATH.'/eottae-event-template.lib.php');
+include_once(G5_LIB_PATH.'/eottae-event.lib.php');
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
 
-$view_category = isset($view['ca_name']) ? get_text($view['ca_name']) : '';
-if (function_exists('eottae_is_free_board') && eottae_is_free_board($bo_table)) {
+$is_estate_board_view = function_exists('eottae_is_estate_board') && eottae_is_estate_board($bo_table);
+$estate_deal_status = 'trading';
+$estate_can_change_deal = false;
+if ($is_estate_board_view) {
+    $estate_board_css = G5_PATH.'/css/eottae-estate-board.css';
+    if (is_file($estate_board_css)) {
+        add_stylesheet(
+            '<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-estate-board.css?ver='.(int) filemtime($estate_board_css).'">',
+            100
+        );
+    }
+    $estate_deal_status = eottae_estate_deal_status_from_row($view);
+    $estate_can_change_deal = !empty($is_member) && !empty($member['mb_id'])
+        && eottae_estate_can_change_deal_status($view, $member['mb_id'], ($is_admin === 'super'));
+    if ($estate_can_change_deal) {
+        $estate_deal_js = G5_PATH.'/js/eottae-estate-deal-status.js';
+        if (is_file($estate_deal_js)) {
+            add_javascript(
+                '<script src="'.G5_JS_URL.'/eottae-estate-deal-status.js?ver='.(int) filemtime($estate_deal_js).'" defer></script>',
+                25
+            );
+        }
+    }
+}
+
+$is_job_board_view = function_exists('eottae_is_job_board') && eottae_is_job_board($bo_table);
+$is_event_board_view = function_exists('eottae_is_event_board') && eottae_is_event_board($bo_table);
+$event_status = 'active';
+$event_type = 'other';
+$event_display_name = '';
+$event_benefit = '';
+$event_contact = '';
+$event_period_label = '';
+$event_shop = null;
+$event_can_close = false;
+if ($is_event_board_view) {
+    if (function_exists('eottae_event_board_load_assets')) {
+        eottae_event_board_load_assets();
+    }
+    $event_status = eottae_event_status_from_row($view);
+    $event_type = eottae_event_normalize_type($view['wr_1'] ?? 'other');
+    $event_display_name = get_text($view['wr_3'] ?? '');
+    $event_benefit = get_text($view['wr_7'] ?? '');
+    $event_contact = get_text($view['wr_8'] ?? '');
+    $event_period_label = eottae_event_period_label_from_row($view);
+    $event_shop = eottae_event_shop_from_row($view);
+    $event_can_close = !empty($is_member) && eottae_event_can_show_close_button(
+        $view,
+        $member['mb_id'] ?? '',
+        ($is_admin === 'super')
+    );
+    if ($event_can_close) {
+        $event_close_js = G5_PATH.'/js/eottae-event-close.js';
+        if (is_file($event_close_js)) {
+            add_javascript(
+                '<script src="'.G5_JS_URL.'/eottae-event-close.js?ver='.(int) filemtime($event_close_js).'" defer></script>',
+                25
+            );
+        }
+    }
+}
+$job_recruit_status = 'recruiting';
+$job_can_change_recruit = false;
+if ($is_job_board_view) {
+    $job_board_css = G5_PATH.'/css/eottae-job-board.css';
+    if (is_file($job_board_css)) {
+        add_stylesheet(
+            '<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-job-board.css?ver='.(int) filemtime($job_board_css).'">',
+            100
+        );
+    }
+    $job_recruit_status = eottae_job_recruit_status_from_row($view);
+    $job_can_change_recruit = !empty($is_member) && !empty($member['mb_id'])
+        && eottae_job_can_change_recruit_status($view, $member['mb_id'], ($is_admin === 'super'));
+    if ($job_can_change_recruit) {
+        $job_recruit_js = G5_PATH.'/js/eottae-job-recruit-status.js';
+        if (is_file($job_recruit_js)) {
+            add_javascript(
+                '<script src="'.G5_JS_URL.'/eottae-job-recruit-status.js?ver='.(int) filemtime($job_recruit_js).'" defer></script>',
+                25
+            );
+        }
+    }
+}
+
+$is_community_hub_view = function_exists('eottae_is_community_hub_board') && eottae_is_community_hub_board($bo_table);
+$view_category = $is_community_hub_view ? '' : (isset($view['ca_name']) ? get_text($view['ca_name']) : '');
+if ($is_community_hub_view) {
+    $list_url = eottae_community_hub_list_url($bo_table);
+} elseif (function_exists('eottae_is_free_board') && eottae_is_free_board($bo_table)) {
     $list_url = function_exists('eottae_free_list_url') ? eottae_free_list_url() : G5_BBS_URL.'/board.php?bo_table=free';
 } else {
     $list_url = eottae_community_list_url($view_category !== '' ? array('sca' => $view_category) : array());
@@ -44,9 +138,131 @@ if ($is_ai_post) {
 
         <h1 class="community-view-page__title<?php echo $is_ai_post ? ' talk-ai-msg__title' : ''; ?>"><?php echo get_text($view['wr_subject']); ?></h1>
 
+        <?php if ($is_event_board_view) { ?>
+        <div class="event-info-panel">
+            <div class="event-info-panel__head">
+                <?php echo eottae_event_render_status_badge($event_status, 'event-status-badge--view'); ?>
+                <?php echo eottae_event_render_type_badge($event_type); ?>
+            </div>
+            <dl class="event-info-panel__grid">
+                <?php if ($event_display_name !== '') { ?>
+                <div class="event-info-panel__item">
+                    <dt>업체/작성자</dt>
+                    <dd><?php echo $event_display_name; ?></dd>
+                </div>
+                <?php } ?>
+                <div class="event-info-panel__item">
+                    <dt>이벤트 기간</dt>
+                    <dd><?php echo get_text($event_period_label); ?></dd>
+                </div>
+                <?php if ($event_benefit !== '') { ?>
+                <div class="event-info-panel__item event-info-panel__benefit">
+                    <dt>혜택 요약</dt>
+                    <dd><?php echo $event_benefit; ?></dd>
+                </div>
+                <?php } ?>
+                <?php if ($event_contact !== '') { ?>
+                <div class="event-info-panel__item">
+                    <dt>문의 방법</dt>
+                    <dd><?php echo $event_contact; ?></dd>
+                </div>
+                <?php } ?>
+            </dl>
+            <div class="event-info-panel__actions">
+                <?php if (is_array($event_shop) && !empty($event_shop['view_url'])) { ?>
+                <a href="<?php echo get_text($event_shop['view_url']); ?>" class="event-post__btn event-post__btn--shop">업체정보 바로가기</a>
+                <?php } ?>
+            </div>
+        </div>
+        <?php if ($event_can_close) { ?>
+        <div class="event-close-panel" data-event-close-panel data-proc-url="<?php echo G5_URL; ?>/proc/eottae-event-close.php" data-bo-table="<?php echo get_text($bo_table); ?>" data-wr-id="<?php echo (int) $view['wr_id']; ?>">
+            <button type="button" class="event-close-panel__btn" data-event-close-btn>이벤트 종료하기</button>
+        </div>
+        <?php } ?>
+        <?php } ?>
+
+        <?php if ($is_estate_board_view && !empty($view['mb_id'])) {
+            $estate_view_thumb = eottae_estate_render_list_thumb($view, '', array('view_profile' => true));
+            if ($estate_view_thumb !== '') { ?>
+        <div class="community-view-page__estate-profile">
+            <?php echo $estate_view_thumb; ?>
+            <div class="community-view-page__estate-profile-meta">
+                <?php if (function_exists('eottae_member_growth_render_author_line')) {
+                    include_once G5_PATH.'/components/eottae/member-growth-display.php';
+                    echo eottae_member_growth_render_author_line($view['mb_id'], $view['name'], array('inline' => true));
+                } else { ?>
+                <span class="community-view-page__author"><?php echo $view['name']; ?></span>
+                <?php } ?>
+            </div>
+        </div>
+            <?php }
+        } ?>
+
+        <?php if ($is_estate_board_view) { ?>
+        <div class="estate-deal-panel"<?php echo $estate_can_change_deal ? ' data-estate-deal-panel data-proc-url="'.G5_URL.'/proc/eottae-estate-deal-status.php" data-bo-table="'.get_text($bo_table).'" data-wr-id="'.(int) $view['wr_id'].'"' : ''; ?>>
+            <span class="estate-deal-panel__label">거래 상태</span>
+            <?php echo eottae_estate_render_deal_badge($estate_deal_status, 'estate-deal-badge--view'); ?>
+            <?php if ($estate_can_change_deal) { ?>
+            <div class="estate-deal-panel__actions" role="group" aria-label="거래 상태 변경">
+                <?php foreach (eottae_estate_deal_statuses() as $status_key => $status_label) { ?>
+                <button type="button" class="estate-deal-panel__btn<?php echo $estate_deal_status === $status_key ? ' is-active' : ''; ?>" data-estate-status="<?php echo get_text($status_key); ?>" aria-pressed="<?php echo $estate_deal_status === $status_key ? 'true' : 'false'; ?>"><?php echo get_text($status_label); ?></button>
+                <?php } ?>
+            </div>
+            <?php } ?>
+        </div>
+        <?php
+        $estate_template_data = $is_estate_board_view && function_exists('eottae_estate_template_from_row')
+            ? eottae_estate_template_from_row($view)
+            : null;
+        if ($is_estate_board_view && is_array($estate_template_data)) {
+            include G5_PATH.'/components/eottae/estate-view-detail.php';
+        }
+        } ?>
+
+        <?php if ($is_job_board_view && !empty($view['mb_id'])) {
+            $job_view_thumb = eottae_job_render_list_thumb($view, '', array('view_profile' => true));
+            if ($job_view_thumb !== '') { ?>
+        <div class="community-view-page__job-profile">
+            <?php echo $job_view_thumb; ?>
+            <div class="community-view-page__job-profile-meta">
+                <?php if (function_exists('eottae_member_growth_render_author_line')) {
+                    include_once G5_PATH.'/components/eottae/member-growth-display.php';
+                    echo eottae_member_growth_render_author_line($view['mb_id'], $view['name'], array('inline' => true));
+                } else { ?>
+                <span class="community-view-page__author"><?php echo $view['name']; ?></span>
+                <?php } ?>
+            </div>
+        </div>
+            <?php }
+        } ?>
+
+        <?php
+        $job_template_data = $is_job_board_view && function_exists('eottae_job_template_from_row')
+            ? eottae_job_template_from_row($view)
+            : null;
+        if ($is_job_board_view && is_array($job_template_data)) {
+            include G5_PATH.'/components/eottae/job-view-detail.php';
+        }
+        ?>
+        <?php if ($is_job_board_view) { ?>
+        <div class="job-recruit-panel"<?php echo $job_can_change_recruit ? ' data-job-recruit-panel data-proc-url="'.G5_URL.'/proc/eottae-job-recruit-status.php" data-bo-table="'.get_text($bo_table).'" data-wr-id="'.(int) $view['wr_id'].'"' : ''; ?>>
+            <span class="job-recruit-panel__label">모집 상태</span>
+            <?php echo eottae_job_render_recruit_badge($job_recruit_status, 'job-recruit-badge--view'); ?>
+            <?php if ($job_can_change_recruit) { ?>
+            <div class="job-recruit-panel__actions" role="group" aria-label="모집 상태 변경">
+                <?php foreach (eottae_job_recruit_statuses() as $status_key => $status_label) { ?>
+                <button type="button" class="job-recruit-panel__btn<?php echo $job_recruit_status === $status_key ? ' is-active' : ''; ?>" data-job-recruit-status="<?php echo get_text($status_key); ?>" aria-pressed="<?php echo $job_recruit_status === $status_key ? 'true' : 'false'; ?>"><?php echo get_text($status_label); ?></button>
+                <?php } ?>
+            </div>
+            <?php } ?>
+        </div>
+        <?php } ?>
+
         <div class="community-view-page__meta">
             <?php if ($is_ai_post) { ?>
             <span class="community-view-page__author talk-ai-msg__author-line"><?php echo eottae_talkroom_ai_message_display_name($view); ?></span>
+            <?php } elseif (!$is_estate_board_view && !$is_job_board_view && function_exists('eottae_member_growth_render_author_line') && !empty($view['mb_id'])) { ?>
+            <span class="community-view-page__author"><?php echo eottae_member_growth_render_author_line($view['mb_id'], $view['name'], array('inline' => true, 'badge_only' => true)); ?></span>
             <?php } else { ?>
             <span class="community-view-page__author"><?php echo $view['name']; ?></span>
             <?php } ?>
@@ -61,7 +277,17 @@ if ($is_ai_post) {
             include_once G5_PATH.'/components/eottae/community-view-links.php';
         } ?>
 
-        <section class="community-view-page__body talk-ai-msg__body<?php echo $is_ai_post ? ' talk-ai-msg__body--ai' : ''; ?>" id="bo_v_con">
+        <?php
+        $view_body_plain = trim(strip_tags((string) ($view['content'] ?? '')));
+        $job_hide_plain_body = $is_job_board_view && is_array($job_template_data)
+            && strpos($view_body_plain, '[구인정보]') !== false;
+        $estate_hide_plain_body = $is_estate_board_view && is_array($estate_template_data)
+            && strpos($view_body_plain, '[부동산 매물정보]') !== false;
+        $event_hide_plain_body = $is_event_board_view && function_exists('eottae_event_view_should_hide_body')
+            && eottae_event_view_should_hide_body($view);
+        $hide_plain_body = $job_hide_plain_body || $estate_hide_plain_body || $event_hide_plain_body;
+        ?>
+        <section class="community-view-page__body talk-ai-msg__body<?php echo $is_ai_post ? ' talk-ai-msg__body--ai' : ''; ?><?php echo $hide_plain_body ? ' community-view-page__body--template' : ''; ?>" id="bo_v_con"<?php echo $hide_plain_body ? ' hidden' : ''; ?>>
             <?php echo get_view_thumbnail($view['content']); ?>
         </section>
     </article>

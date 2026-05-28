@@ -572,6 +572,117 @@ if (!function_exists('eottae_member_growth_get_level')) {
     }
 }
 
+if (!function_exists('eottae_member_growth_get_lowest_level')) {
+    function eottae_member_growth_get_lowest_level()
+    {
+        static $cached = null;
+        if (is_array($cached)) {
+            return $cached;
+        }
+
+        $table = eottae_member_growth_levels_table();
+        if (!eottae_member_growth_table_exists($table)) {
+            return null;
+        }
+
+        $cached = sql_fetch("
+            SELECT *
+            FROM `{$table}`
+            WHERE is_active = 1
+            ORDER BY min_score ASC, sort_order ASC, level_id ASC
+            LIMIT 1
+        ", false);
+
+        return is_array($cached) && !empty($cached['level_id']) ? $cached : null;
+    }
+}
+
+if (!function_exists('eottae_member_growth_super_admin_level')) {
+    function eottae_member_growth_super_admin_level()
+    {
+        return array(
+            'level_id'          => 0,
+            'level_name'        => '최고관리자',
+            'level_description' => '사이트 최고관리자',
+            'min_score'         => 0,
+            'icon'              => '👑',
+            'color'             => 'official',
+            'sort_order'        => 999,
+            'is_active'         => 1,
+        );
+    }
+}
+
+if (!function_exists('eottae_member_growth_is_super_member')) {
+    function eottae_member_growth_is_super_member($member = null)
+    {
+        if ($member === null) {
+            global $member;
+        }
+        if (!is_array($member) || empty($member['mb_id'])) {
+            return false;
+        }
+
+        global $is_admin;
+        if ($is_admin === 'super') {
+            return true;
+        }
+
+        return (int) ($member['mb_level'] ?? 0) >= 10;
+    }
+}
+
+if (!function_exists('eottae_member_growth_get_login_display_profile')) {
+    /**
+     * 로그인 박스 등 — 활동 등급 배지용 (업적 뱃지보다 등급 우선)
+     *
+     * @param array<string, mixed>|null $member
+     * @return array<string, mixed>|null
+     */
+    function eottae_member_growth_get_login_display_profile($member = null)
+    {
+        if ($member === null) {
+            global $member;
+        }
+        if (!is_array($member) || empty($member['mb_id'])) {
+            return null;
+        }
+
+        $mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $member['mb_id']);
+        if ($mb_id === '') {
+            return null;
+        }
+
+        if (eottae_member_growth_is_super_member($member)) {
+            $profile = eottae_member_growth_get_profile($mb_id);
+            if (!is_array($profile)) {
+                $profile = array(
+                    'mb_id'       => $mb_id,
+                    'total_score' => 0,
+                    'main_badge'  => null,
+                    'next_level'  => null,
+                );
+            }
+            $profile['level'] = eottae_member_growth_super_admin_level();
+            $profile['main_badge'] = null;
+
+            return $profile;
+        }
+
+        $profile = eottae_member_growth_get_profile($mb_id);
+        if (!is_array($profile)) {
+            return null;
+        }
+
+        if (empty($profile['level']['level_name'])) {
+            $profile['level'] = eottae_member_growth_get_lowest_level();
+        }
+        $profile['main_badge'] = null;
+
+        return $profile;
+    }
+}
+
 if (!function_exists('eottae_member_growth_member_stats')) {
     function eottae_member_growth_member_stats($mb_id)
     {
@@ -752,7 +863,7 @@ if (!function_exists('eottae_member_growth_get_profile')) {
 
         $level = eottae_member_growth_get_level((int) ($row['current_level_id'] ?? 0));
         if (!$level) {
-            $level = eottae_member_growth_get_level(1);
+            $level = eottae_member_growth_get_lowest_level();
         }
 
         $main_badge = eottae_member_growth_get_main_badge($mb_id);

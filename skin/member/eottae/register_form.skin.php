@@ -23,6 +23,17 @@ $member_role = (isset($member['mb_1']) && $member['mb_1'] === 'business') ? 'bus
         <input type="hidden" name="mb_name" id="reg_mb_name" value="<?php echo isset($member['mb_name']) ? get_text($member['mb_name']) : ''; ?>">
 
         <?php
+        if (is_file(G5_LIB_PATH.'/eottae-member-profile.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-member-profile.lib.php';
+        }
+        if (function_exists('eottae_render_member_profile_photo_field')) {
+            echo eottae_render_member_profile_photo_field(array(
+                'w'          => $w,
+                'member'     => $member,
+                'mb_img_url' => isset($mb_img_url) ? $mb_img_url : '',
+                'mb_img_path'=> isset($mb_img_path) ? $mb_img_path : '',
+            ));
+        }
         if (function_exists('eottae_render_member_type_fields')) {
             echo eottae_render_member_type_fields(array(
                 'audience' => $member_audience,

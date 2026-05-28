@@ -101,8 +101,12 @@ if (!function_exists('eottae_public_group_chat_html')) {
             </div>
         </section>
         <?php
-        if (!empty($payload['can_manage_ai'])) {
+        if (!empty($payload['is_member'])) {
             $manage_js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-public-chat-manage.js' : '/js/eottae-public-chat-manage.js';
+            $manage_path = defined('G5_PATH') ? G5_PATH.'/js/eottae-public-chat-manage.js' : '';
+            if ($manage_path !== '' && is_file($manage_path)) {
+                $manage_js .= '?ver='.(int) filemtime($manage_path);
+            }
             echo '<script src="'.htmlspecialchars($manage_js, ENT_QUOTES, 'UTF-8').'" defer></script>';
         }
 

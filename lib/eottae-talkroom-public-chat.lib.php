@@ -484,7 +484,13 @@ if (!function_exists('eottae_talkroom_public_group_chat_payload')) {
 
         if ($room_id > 0) {
             $rows = eottae_talkroom_public_group_list_messages($room_id, $limit);
-            $messages = eottae_talkroom_public_group_format_messages_for_viewer($rows, $viewer_mb_id, $can_manage_ai, $room_id);
+            $messages = eottae_talkroom_public_group_format_messages_for_viewer(
+                $rows,
+                $viewer_mb_id,
+                $can_manage_ai,
+                $room_id,
+                $is_super
+            );
             foreach ($messages as $message) {
                 $last_wr_id = max($last_wr_id, (int) ($message['wr_id'] ?? 0));
             }
@@ -834,7 +840,13 @@ if (!function_exists('eottae_talkroom_room_chat_payload')) {
 
         if (!empty($ctx['can_view_posts'])) {
             $rows = eottae_talkroom_public_group_list_messages($room_id, 50);
-            $messages = eottae_talkroom_public_group_format_messages_for_viewer($rows, $viewer_mb_id, $can_manage_ai, $room_id);
+            $messages = eottae_talkroom_public_group_format_messages_for_viewer(
+                $rows,
+                $viewer_mb_id,
+                $can_manage_ai,
+                $room_id,
+                $is_super
+            );
             foreach ($messages as $message) {
                 $last_wr_id = max($last_wr_id, (int) ($message['wr_id'] ?? 0));
             }
@@ -897,13 +909,56 @@ if (!function_exists('eottae_talkroom_public_group_can_manage_ai')) {
     }
 }
 
+if (!function_exists('eottae_talkroom_public_group_can_delete_message')) {
+    /**
+     * 공개·톡방 채팅 메시지 삭제 권한 — 최고관리자 또는 작성자
+     */
+    function eottae_talkroom_public_group_can_delete_message(array $write, $mb_id, $is_super_admin = false)
+    {
+        if (!is_array($write) || empty($write['wr_id'])) {
+            return false;
+        }
+
+        if ($is_super_admin) {
+            return true;
+        }
+
+        $mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $mb_id);
+        if ($mb_id === '') {
+            return false;
+        }
+
+        $author_mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) ($write['mb_id'] ?? ''));
+
+        return $author_mb_id !== '' && $author_mb_id === $mb_id;
+    }
+}
+
 if (!function_exists('eottae_talkroom_public_group_enrich_message_for_manager')) {
     /**
      * @param array<string, mixed> $message
      * @return array<string, mixed>
      */
-    function eottae_talkroom_public_group_enrich_message_for_manager(array $message, $can_manage_ai)
-    {
+    function eottae_talkroom_public_group_enrich_message_for_manager(
+        array $message,
+        $can_manage_ai = false,
+        $viewer_mb_id = '',
+        $is_super_admin = false
+    ) {
+        $message['can_delete'] = 0;
+
+        if ($is_super_admin) {
+            $message['can_delete'] = 1;
+
+            return $message;
+        }
+
+        if ($viewer_mb_id !== '' && !empty($message['is_mine'])) {
+            $message['can_delete'] = 1;
+
+            return $message;
+        }
+
         if ($can_manage_ai && !empty($message['is_ai'])) {
             $message['can_delete'] = 1;
         }
@@ -1025,8 +1080,13 @@ if (!function_exists('eottae_talkroom_public_group_enrich_message_row')) {
      * @param array<string, mixed>|null $message_row
      * @return array<string, mixed>|null
      */
-    function eottae_talkroom_public_group_enrich_message_row($message_row, $room_id, $viewer_mb_id)
-    {
+    function eottae_talkroom_public_group_enrich_message_row(
+        $message_row,
+        $room_id,
+        $viewer_mb_id,
+        $is_super_admin = false,
+        $can_manage_ai = false
+    ) {
         if (!is_array($message_row) || empty($message_row)) {
             return $message_row;
         }
@@ -1037,7 +1097,14 @@ if (!function_exists('eottae_talkroom_public_group_enrich_message_row')) {
             (string) $viewer_mb_id
         );
 
-        return $rows[0] ?? $message_row;
+        $message = $rows[0] ?? $message_row;
+
+        return eottae_talkroom_public_group_enrich_message_for_manager(
+            $message,
+            $can_manage_ai,
+            $viewer_mb_id,
+            $is_super_admin
+        );
     }
 }
 
@@ -1046,8 +1113,13 @@ if (!function_exists('eottae_talkroom_public_group_format_messages_for_viewer'))
      * @param array<int, array<string, mixed>> $rows
      * @return array<int, array<string, mixed>>
      */
-    function eottae_talkroom_public_group_format_messages_for_viewer(array $rows, $viewer_mb_id, $can_manage_ai, $room_id = 0)
-    {
+    function eottae_talkroom_public_group_format_messages_for_viewer(
+        array $rows,
+        $viewer_mb_id,
+        $can_manage_ai,
+        $room_id = 0,
+        $is_super_admin = false
+    ) {
         $messages = array();
 
         foreach ($rows as $row) {
@@ -1055,7 +1127,12 @@ if (!function_exists('eottae_talkroom_public_group_format_messages_for_viewer'))
             if (($message['text'] ?? '') === '') {
                 continue;
             }
-            $messages[] = eottae_talkroom_public_group_enrich_message_for_manager($message, $can_manage_ai);
+            $messages[] = eottae_talkroom_public_group_enrich_message_for_manager(
+                $message,
+                $can_manage_ai,
+                $viewer_mb_id,
+                $is_super_admin
+            );
         }
 
         if ((int) $room_id > 0) {
@@ -1178,7 +1255,9 @@ if (!function_exists('eottae_public_ai_run_manual_group_speak')) {
         $message_row = $row
             ? eottae_talkroom_public_group_enrich_message_for_manager(
                 eottae_talkroom_public_group_format_message($row, $actor_mb_id),
-                true
+                true,
+                $actor_mb_id,
+                $is_super_admin
             )
             : ($send['message_row'] ?? null);
 
@@ -1193,7 +1272,7 @@ if (!function_exists('eottae_public_ai_run_manual_group_speak')) {
 
 if (!function_exists('eottae_talkroom_public_group_delete_chat_message')) {
     /**
-     * 공개 단체톡 — AI 메시지 삭제 (최고관리자·방장)
+     * 공개 단체톡·톡방 채팅 — 메시지 삭제 (최고관리자·작성자)
      *
      * @return array{ok:bool, message:string, wr_id?:int}
      */
@@ -1206,9 +1285,6 @@ if (!function_exists('eottae_talkroom_public_group_delete_chat_message')) {
 
         if (!function_exists('eottae_talkroom_soft_delete_write')) {
             include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
-        }
-        if (!function_exists('eottae_talkroom_ai_message_enrich_post_row')) {
-            include_once G5_PATH.'/components/eottae/talk-ai-message-ui.php';
         }
 
         $write_table = eottae_talkroom_write_table();
@@ -1227,28 +1303,17 @@ if (!function_exists('eottae_talkroom_public_group_delete_chat_message')) {
             return array('ok' => false, 'message' => '메시지를 찾을 수 없습니다.');
         }
 
-        $room_id = (int) ($write['wr_1'] ?? 0);
-        if (!eottae_talkroom_public_group_can_manage_ai($room_id, $mb_id, $is_super_admin)) {
+        if (!eottae_talkroom_public_group_can_delete_message($write, $mb_id, $is_super_admin)) {
             return array('ok' => false, 'message' => '삭제 권한이 없습니다.');
         }
 
-        $post_row = array(
-            'wr_id'  => (int) ($write['wr_id'] ?? 0),
-            'wr_name'=> $write['wr_name'] ?? '',
-            'mb_id'  => $write['mb_id'] ?? '',
-            'wr_3'   => $write['wr_3'] ?? '',
-        );
-        $post_row = eottae_talkroom_ai_message_enrich_post_row($post_row);
-        if (empty($post_row['is_ai'])) {
-            return array('ok' => false, 'message' => 'AI 메시지만 삭제할 수 있습니다.');
-        }
-
-        if (function_exists('eottae_talkroom_is_write_soft_deleted') && eottae_talkroom_is_write_soft_deleted($write)) {
+        if (function_exists('eottae_talkroom_is_post_deleted') && eottae_talkroom_is_post_deleted($write)) {
             return array('ok' => true, 'message' => '이미 삭제된 메시지입니다.', 'wr_id' => $wr_id);
         }
 
         $board = array('bo_table' => eottae_talkroom_board_table());
-        $result = eottae_talkroom_soft_delete_write($write, $board, $mb_id, '공개톡 AI 관리자 삭제');
+        $reason = $is_super_admin ? '공개톡 최고관리자 삭제' : '작성자 삭제';
+        $result = eottae_talkroom_soft_delete_write($write, $board, $mb_id, $reason);
         if (empty($result['ok'])) {
             return array(
                 'ok'      => false,

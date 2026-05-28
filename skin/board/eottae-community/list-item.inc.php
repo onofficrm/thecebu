@@ -21,13 +21,29 @@ if (!defined('_GNUBOARD_')) {
  * @var int    $hit_num
  * @var int    $good_num
  * @var int    $comment_num
+ * @var string $estate_deal_label
+ * @var string $estate_thumb_html
+ * @var string $estate_deal_status
+ * @var string $job_recruit_label
+ * @var string $job_thumb_html
+ * @var string $job_recruit_status
  */
-$has_badges = $is_ai_post || $is_notice || $ca_name !== '' || $region !== '' || $is_new || $is_hot;
+$estate_deal_label = $estate_deal_label ?? '';
+$estate_thumb_html = $estate_thumb_html ?? '';
+$estate_deal_status = $estate_deal_status ?? '';
+$job_recruit_label = $job_recruit_label ?? '';
+$job_thumb_html = $job_thumb_html ?? '';
+$job_recruit_status = $job_recruit_status ?? '';
+$status_thumb_html = $estate_thumb_html !== '' ? $estate_thumb_html : $job_thumb_html;
+$has_badges = $is_ai_post || $is_notice || $ca_name !== '' || $region !== '' || $is_new || $is_hot
+    || $estate_deal_label !== '' || $job_recruit_label !== '';
 ?>
 <article class="<?php echo $item_class; ?>">
     <a href="<?php echo $item['href']; ?>" class="community-post__link">
         <div class="community-post__cols">
-            <?php if ($thumb !== '') { ?>
+            <?php if ($status_thumb_html !== '') {
+                echo $status_thumb_html;
+            } elseif ($thumb !== '') { ?>
             <div class="community-post__thumb" aria-hidden="true">
                 <img src="<?php echo htmlspecialchars($thumb, ENT_QUOTES, 'UTF-8'); ?>" alt="" width="104" height="104" loading="lazy" decoding="async">
             </div>
@@ -48,6 +64,12 @@ $has_badges = $is_ai_post || $is_notice || $ca_name !== '' || $region !== '' || 
                                 <?php } ?>
                                 <?php if ($region !== '') { ?>
                             <span class="community-badge community-badge--region"><?php echo $region; ?></span>
+                                <?php } ?>
+                                <?php if ($estate_deal_label !== '') { ?>
+                            <span class="community-badge estate-deal-badge <?php echo htmlspecialchars('estate-deal-badge--'.$estate_deal_status, ENT_QUOTES, 'UTF-8'); ?>"><?php echo get_text($estate_deal_label); ?></span>
+                                <?php } ?>
+                                <?php if ($job_recruit_label !== '') { ?>
+                            <span class="community-badge job-recruit-badge <?php echo htmlspecialchars('job-recruit-badge--'.$job_recruit_status, ENT_QUOTES, 'UTF-8'); ?>"><?php echo get_text($job_recruit_label); ?></span>
                                 <?php } ?>
                                 <?php if ($is_new) { ?><span class="community-badge community-badge--new">NEW</span><?php } ?>
                                 <?php if ($is_hot) { ?><span class="community-badge community-badge--hot">HOT</span><?php } ?>

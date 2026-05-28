@@ -1557,6 +1557,49 @@ if (!function_exists('eottae_talkroom_render_card')) {
     }
 }
 
+if (!function_exists('eottae_talkroom_enqueue_card_delete_assets')) {
+    /**
+     * 톡방 목록 카드 삭제 — 확인 후 API (로그인 회원만)
+     */
+    function eottae_talkroom_enqueue_card_delete_assets()
+    {
+        global $is_member;
+
+        static $enqueued = false;
+        if ($enqueued || empty($is_member)) {
+            return;
+        }
+        $enqueued = true;
+
+        if (!function_exists('add_javascript')) {
+            return;
+        }
+
+        $owner_token = eottae_talkroom_owner_token();
+        if ($owner_token === '') {
+            return;
+        }
+
+        $proc_url = G5_URL.'/proc/eottae-talkroom-owner.php';
+        $config_json = json_encode(
+            array(
+                'owner_token' => $owner_token,
+                'proc_url'    => $proc_url,
+            ),
+            JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+        );
+
+        add_javascript(
+            '<script>window.__EOTTae_TALKROOM_DELETE__='.$config_json.';</script>',
+            24
+        );
+        add_javascript(
+            '<script src="'.G5_JS_URL.'/eottae-talkroom-card-delete.js"></script>',
+            25
+        );
+    }
+}
+
 if (!function_exists('eottae_talkroom_admin_applies_url')) {
     function eottae_talkroom_admin_applies_url()
     {

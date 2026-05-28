@@ -32,8 +32,10 @@ $login_url = function_exists('eottae_login_url')
     : G5_BBS_URL.'/login.php';
 
 $can_manage_public_ai = eottae_talkroom_public_group_can_manage_ai($room_id, $mb_id, $is_super);
-if ($can_manage_public_ai) {
-    add_javascript('<script src="'.G5_JS_URL.'/eottae-public-chat-manage.js" defer></script>', 25);
+if ($is_member) {
+    $manage_js_path = G5_PATH.'/js/eottae-public-chat-manage.js';
+    $manage_js_ver = is_file($manage_js_path) ? '?ver='.(int) filemtime($manage_js_path) : '';
+    add_javascript('<script src="'.G5_JS_URL.'/eottae-public-chat-manage.js'.$manage_js_ver.'" defer></script>', 25);
 }
 add_javascript('<script src="'.G5_JS_URL.'/eottae-talkroom-chat.js" defer></script>', 26);
 $chat_fs_js = G5_PATH.'/js/eottae-chat-fullscreen.js';

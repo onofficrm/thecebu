@@ -30,15 +30,28 @@ if ($is_member && is_array($member)) {
         }
     }
     $eottae_initial = function_exists('mb_substr') ? mb_substr($eottae_member_nick, 0, 1, 'UTF-8') : substr($eottae_member_nick, 0, 1);
+    $eottae_profile_photo_url = '';
+    if (!empty($member['mb_id']) && function_exists('eottae_member_profile_image_url')) {
+        $eottae_profile_photo_url = eottae_member_profile_image_url($member['mb_id']);
+    }
     $eottae_growth_profile = array();
     $eottae_profile_badge_html = '';
-    if (!empty($member['mb_id']) && is_file(G5_PATH.'/components/eottae/member-growth-display.php')) {
-        include_once G5_PATH.'/components/eottae/member-growth-display.php';
-        if (function_exists('eottae_member_growth_get_profile')) {
+    if (!empty($member['mb_id'])) {
+        if (is_file(G5_LIB_PATH.'/eottae-member-growth.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-member-growth.lib.php';
+        }
+        if (is_file(G5_PATH.'/components/eottae/member-growth-display.php')) {
+            include_once G5_PATH.'/components/eottae/member-growth-display.php';
+        }
+        if (function_exists('eottae_member_growth_get_login_display_profile')) {
+            $eottae_growth_profile = eottae_member_growth_get_login_display_profile($member);
+        } elseif (function_exists('eottae_member_growth_get_profile')) {
             $eottae_growth_profile = eottae_member_growth_get_profile($member['mb_id']);
         }
-        if (function_exists('eottae_member_growth_render_profile_badge_icon')) {
-            $eottae_profile_badge_html = eottae_member_growth_render_profile_badge_icon($eottae_growth_profile);
+        if (function_exists('eottae_member_growth_render_profile_badge_icon') && is_array($eottae_growth_profile)) {
+            $eottae_profile_badge_html = eottae_member_growth_render_profile_badge_icon($eottae_growth_profile, array(
+                'prefer_level' => true,
+            ));
         }
     }
 }
@@ -48,16 +61,20 @@ if ($is_member && is_array($member)) {
     <?php if ($is_member) { ?>
     <div class="community-login-box community-login-box--member">
         <div class="community-login-box__profile">
-            <span class="community-login-box__avatar" aria-hidden="true"><?php echo htmlspecialchars($eottae_initial, ENT_QUOTES, 'UTF-8'); ?></span>
+            <span class="community-login-box__avatar<?php echo $eottae_profile_photo_url !== '' ? ' community-login-box__avatar--photo' : ''; ?>" aria-hidden="true"><?php
+            if ($eottae_profile_photo_url !== '') {
+                echo '<img src="'.get_text($eottae_profile_photo_url).'" alt="" class="community-login-box__avatar-img" width="44" height="44" loading="lazy">';
+            } else {
+                echo htmlspecialchars($eottae_initial, ENT_QUOTES, 'UTF-8');
+            }
+            ?></span>
             <div class="community-login-box__profile-body">
                 <p class="community-login-box__welcome"><strong><?php echo $eottae_member_nick; ?></strong>님</p>
                 <p class="community-login-box__type"><?php echo $eottae_member_type; ?></p>
             </div>
-            <?php if ($eottae_profile_badge_html !== '') { ?>
-            <div class="community-login-box__profile-badge">
+            <div class="community-login-box__profile-badge" aria-label="활동 등급">
                 <?php echo $eottae_profile_badge_html; ?>
             </div>
-            <?php } ?>
         </div>
 
         <div class="community-login-box__stats">

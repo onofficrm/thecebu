@@ -3,6 +3,11 @@ if (!defined('_GNUBOARD_')) exit;
 
 include_once(G5_LIB_PATH.'/eottae.lib.php');
 include_once(G5_LIB_PATH.'/eottae-api.lib.php');
+include_once(G5_LIB_PATH.'/eottae-estate.lib.php');
+include_once(G5_LIB_PATH.'/eottae-job.lib.php');
+include_once(G5_LIB_PATH.'/eottae-community-hub.lib.php');
+include_once(G5_LIB_PATH.'/eottae-event-template.lib.php');
+include_once(G5_LIB_PATH.'/eottae-event.lib.php');
 $community_skin_css = G5_PATH.'/mobile/skin/board/eottae-community/style.css';
 $community_skin_ver = is_file($community_skin_css) ? (int) filemtime($community_skin_css) : 0;
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css?ver='.$community_skin_ver.'">', 30);
@@ -14,14 +19,43 @@ if (is_file($community_board_css)) {
     );
 }
 
-$community_tabs = eottae_community_category_tabs($board);
+$is_community_hub_list = function_exists('eottae_is_community_hub_board') && eottae_is_community_hub_board($bo_table);
+$community_tabs = $is_community_hub_list
+    ? eottae_community_hub_tabs($bo_table)
+    : eottae_community_category_tabs($board);
 $today_count = eottae_community_today_count($bo_table);
 $sort_options = eottae_community_sort_options(isset($sst) ? $sst : '', isset($sod) ? $sod : 'desc');
 $region_options = eottae_community_region_options();
 $current_region = isset($_GET['region']) ? trim($_GET['region']) : '';
 $list_base = get_pretty_url($bo_table);
-$hero = eottae_community_board_hero($board, $sca);
+$hero = $is_community_hub_list
+    ? eottae_community_hub_hero($board)
+    : eottae_community_board_hero($board, $sca);
 $is_free_board_list = function_exists('eottae_is_free_board') && eottae_is_free_board($bo_table);
+$is_estate_board_list = function_exists('eottae_is_estate_board') && eottae_is_estate_board($bo_table);
+$is_job_board_list = function_exists('eottae_is_job_board') && eottae_is_job_board($bo_table);
+$is_event_board_list = function_exists('eottae_is_event_board') && eottae_is_event_board($bo_table);
+if ($is_event_board_list && function_exists('eottae_event_board_load_assets')) {
+    eottae_event_board_load_assets();
+}
+if ($is_estate_board_list) {
+    $estate_board_css = G5_PATH.'/css/eottae-estate-board.css';
+    if (is_file($estate_board_css)) {
+        add_stylesheet(
+            '<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-estate-board.css?ver='.(int) filemtime($estate_board_css).'">',
+            100
+        );
+    }
+}
+if ($is_job_board_list) {
+    $job_board_css = G5_PATH.'/css/eottae-job-board.css';
+    if (is_file($job_board_css)) {
+        add_stylesheet(
+            '<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-job-board.css?ver='.(int) filemtime($job_board_css).'">',
+            100
+        );
+    }
+}
 $is_talkroom_board = function_exists('eottae_talkroom_board_table') && $bo_table === eottae_talkroom_board_table();
 if ($is_talkroom_board) {
     include_once G5_PATH.'/components/eottae/talk-ai-message-ui.php';
@@ -34,21 +68,32 @@ if ($is_talkroom_board) {
 <main class="community-page__main">
 
     <?php
-    $community_hero_search_placeholder = $is_free_board_list
-        ? '자유게시판에서 검색해보세요'
-        : '궁금한 세부 정보를 검색해보세요';
+    if ($is_community_hub_list) {
+        $hub_def = eottae_community_hub_board_def($bo_table);
+        $hub_label = !empty($hub_def['label']) ? get_text($hub_def['label']) : '게시판';
+        $community_hero_search_placeholder = $hub_label.'에서 검색해보세요';
+    } elseif ($is_free_board_list) {
+        $community_hero_search_placeholder = '자유게시판에서 검색해보세요';
+    } else {
+        $community_hero_search_placeholder = '궁금한 세부 정보를 검색해보세요';
+    }
     include G5_PATH.'/components/eottae/community-hero.php';
     ?>
 
-    <?php if ($is_category && !empty($community_tabs)) { ?>
-    <nav class="community-tabs" aria-label="게시판 분류">
+    <?php if (!empty($community_tabs)) { ?>
+    <nav class="community-tabs" aria-label="<?php echo $is_community_hub_list ? '커뮤니티 게시판' : '게시판 분류'; ?>">
         <?php foreach ($community_tabs as $tab) {
-            $href = $tab['slug'] === '' ? $list_base : get_pretty_url($bo_table, '', 'sca='.urlencode($tab['slug']));
-            $active = ($tab['slug'] === '' && $sca === '') || ($tab['slug'] !== '' && $sca === $tab['slug']);
+            if ($is_community_hub_list) {
+                $href = $tab['href'] ?? $list_base;
+                $active = !empty($tab['active']);
+            } else {
+                $href = $tab['slug'] === '' ? $list_base : get_pretty_url($bo_table, '', 'sca='.urlencode($tab['slug']));
+                $active = ($tab['slug'] === '' && $sca === '') || ($tab['slug'] !== '' && $sca === $tab['slug']);
+            }
             ?>
         <a href="<?php echo $href; ?>" class="community-tabs__item<?php echo $active ? ' is-active' : ''; ?>">
             <span><?php echo get_text($tab['label']); ?></span>
-            <em><?php echo number_format($tab['count']); ?></em>
+            <em><?php echo number_format((int) ($tab['count'] ?? 0)); ?></em>
         </a>
         <?php } ?>
     </nav>
@@ -58,7 +103,7 @@ if ($is_talkroom_board) {
         <div class="community-toolbar__filters">
             <form class="community-filter" method="get" action="<?php echo G5_BBS_URL; ?>/board.php">
                 <input type="hidden" name="bo_table" value="<?php echo $bo_table; ?>">
-                <?php if ($sca) { ?><input type="hidden" name="sca" value="<?php echo get_text($sca); ?>"><?php } ?>
+                <?php if (!$is_community_hub_list && $sca) { ?><input type="hidden" name="sca" value="<?php echo get_text($sca); ?>"><?php } ?>
                 <?php if (!empty($stx)) { ?><input type="hidden" name="stx" value="<?php echo get_text($stx); ?>"><input type="hidden" name="sfl" value="wr_subject||wr_content"><?php } ?>
                 <label class="sound_only" for="community_region">구역</label>
                 <select id="community_region" name="stx" class="community-filter__select" onchange="this.form.sfl.value='wr_subject||wr_content'; if(this.value){this.form.submit();}">
@@ -70,7 +115,7 @@ if ($is_talkroom_board) {
             </form>
             <form class="community-filter" method="get" action="<?php echo G5_BBS_URL; ?>/board.php">
                 <input type="hidden" name="bo_table" value="<?php echo $bo_table; ?>">
-                <?php if ($sca) { ?><input type="hidden" name="sca" value="<?php echo get_text($sca); ?>"><?php } ?>
+                <?php if (!$is_community_hub_list && $sca) { ?><input type="hidden" name="sca" value="<?php echo get_text($sca); ?>"><?php } ?>
                 <?php if (!empty($stx)) { ?><input type="hidden" name="stx" value="<?php echo get_text($stx); ?>"><input type="hidden" name="sfl" value="wr_subject||wr_content"><?php } ?>
                 <label class="sound_only" for="community_sort">정렬</label>
                 <select id="community_sort" name="sst" class="community-filter__select" onchange="this.form.submit();">
@@ -87,20 +132,59 @@ if ($is_talkroom_board) {
     <input type="hidden" name="bo_table" value="<?php echo $bo_table ?>">
     <input type="hidden" name="sfl" value="<?php echo $sfl ?>">
     <input type="hidden" name="stx" value="<?php echo $stx ?>">
-    <input type="hidden" name="sca" value="<?php echo $sca ?>">
+    <?php if (!$is_community_hub_list) { ?><input type="hidden" name="sca" value="<?php echo $sca ?>"><?php } ?>
     <input type="hidden" name="sst" value="<?php echo $sst ?>">
     <input type="hidden" name="sod" value="<?php echo $sod ?>">
     <input type="hidden" name="page" value="<?php echo $page ?>">
 
-    <div class="community-list">
+    <div class="community-list<?php echo $is_event_board_list ? ' community-list--event' : ''; ?>">
         <?php
+        if (function_exists('eottae_member_growth_prefetch_members')) {
+            include_once G5_PATH.'/components/eottae/member-growth-display.php';
+            $growth_mb_ids = array();
+            for ($gi = 0; $gi < count($list); $gi++) {
+                $gid = preg_replace('/[^a-z0-9_@.-]/i', '', (string) ($list[$gi]['mb_id'] ?? ''));
+                if ($gid !== '') {
+                    $growth_mb_ids[] = $gid;
+                }
+            }
+            if ($growth_mb_ids) {
+                eottae_member_growth_prefetch_members(array_values(array_unique($growth_mb_ids)));
+            }
+        }
         for ($i = 0; $i < count($list); $i++) {
             $item = $list[$i];
             $ca_name = isset($item['ca_name']) ? get_text($item['ca_name']) : '';
-            $is_notice = !empty($item['is_notice']) || $ca_name === '공지';
+            if ($is_community_hub_list) {
+                $ca_name = '';
+            }
+            $is_notice = !empty($item['is_notice']) || (!$is_community_hub_list && $ca_name === '공지');
             $region = isset($item['wr_1']) ? get_text($item['wr_1']) : '';
+            $estate_deal_status = '';
+            $estate_deal_label = '';
+            $estate_thumb_html = '';
+            $job_recruit_status = '';
+            $job_recruit_label = '';
+            $job_thumb_html = '';
+            $post_thumb = eottae_community_list_thumb(
+                $bo_table,
+                (int) $item['wr_id'],
+                isset($item['wr_content']) ? $item['wr_content'] : ''
+            );
+            if ($is_estate_board_list) {
+                $estate_deal_status = eottae_estate_deal_status_from_row($item);
+                $estate_deal_meta = eottae_estate_deal_status_meta($estate_deal_status);
+                $estate_deal_label = $estate_deal_meta['label'];
+                $estate_thumb_html = eottae_estate_render_list_thumb($item, $post_thumb);
+            }
+            if ($is_job_board_list) {
+                $job_recruit_status = eottae_job_recruit_status_from_row($item);
+                $job_recruit_meta = eottae_job_recruit_status_meta($job_recruit_status);
+                $job_recruit_label = $job_recruit_meta['label'];
+                $job_thumb_html = eottae_job_render_list_thumb($item, $post_thumb);
+            }
             $snippet = eottae_community_snippet(isset($item['wr_content']) ? $item['wr_content'] : '');
-            $thumb = eottae_community_list_thumb(
+            $thumb = ($is_estate_board_list || $is_job_board_list) ? '' : eottae_community_list_thumb(
                 $bo_table,
                 (int) $item['wr_id'],
                 isset($item['wr_content']) ? $item['wr_content'] : ''
@@ -120,7 +204,29 @@ if ($is_talkroom_board) {
             if ($is_ai_post) {
                 $item_class .= ' community-post--ai is-talk-ai-message';
             }
-            include G5_PATH.'/skin/board/eottae-community/list-item.inc.php';
+            if ($is_estate_board_list) {
+                $item_class .= ' community-post--estate';
+                if ($estate_thumb_html !== '') {
+                    $item_class .= ' community-post--has-thumb';
+                }
+            }
+            if ($is_job_board_list) {
+                $item_class .= ' community-post--job';
+                if ($job_thumb_html !== '') {
+                    $item_class .= ' community-post--has-thumb';
+                }
+            }
+            if ($is_event_board_list) {
+                $event_status = eottae_event_status_from_row($item);
+                $event_type = eottae_event_normalize_type($item['wr_1'] ?? 'other');
+                $event_display_name = get_text($item['wr_3'] ?? '');
+                $event_benefit = get_text($item['wr_7'] ?? '');
+                $event_period_label = eottae_event_period_label_from_row($item);
+                $event_shop = eottae_event_shop_from_row($item);
+                include G5_PATH.'/skin/board/eottae-community/list-event-card.inc.php';
+            } else {
+                include G5_PATH.'/skin/board/eottae-community/list-item.inc.php';
+            }
         }
         ?>
 

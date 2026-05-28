@@ -18,9 +18,27 @@ if (!function_exists('onoff_chatbot_site_key')) {
     }
 }
 
+if (!function_exists('onoff_chatbot_is_mobile_hidden')) {
+    /**
+     * 모바일·좁은 화면에서는 하단 글로벌 메뉴를 가리므로 챗봇 비활성
+     */
+    function onoff_chatbot_is_mobile_hidden()
+    {
+        if (defined('G5_IS_MOBILE') && G5_IS_MOBILE) {
+            return true;
+        }
+
+        return function_exists('is_mobile') && is_mobile();
+    }
+}
+
 if (!function_exists('onoff_chatbot_is_enabled')) {
     function onoff_chatbot_is_enabled()
     {
+        if (onoff_chatbot_is_mobile_hidden()) {
+            return false;
+        }
+
         if (function_exists('g5site_cfg_bool')) {
             return g5site_cfg_bool('onoff_chatbot_enabled', true);
         }

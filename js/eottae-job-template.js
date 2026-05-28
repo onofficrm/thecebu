@@ -243,24 +243,78 @@
     }
   }
 
-  function resetTemplateFields() {
-    fieldEls().forEach(function (el) {
-      if (el.tagName === 'SELECT') {
-        el.selectedIndex = 0;
-      } else {
-        el.value = '';
-      }
-    });
-    showError(false);
+  function syncJobMetaFields(data) {
+    var wr1 = document.getElementById('wr_1');
+    var wr2 = document.getElementById('wr_2');
+    if (wr1) {
+      wr1.value = (data && data.region) ? data.region : '';
+    }
+    if (wr2) {
+      var status = (data && data.job_recruit_status) ? data.job_recruit_status : 'recruiting';
+      wr2.value = status === 'completed' ? 'completed' : 'recruiting';
+    }
+    syncJobTemplateJson(data);
   }
 
-  document.getElementById('sebuJobTemplateApply').addEventListener('click', function () {
-    var data = getData();
-    if (!validateRequired(data)) {
-      showError(true);
+  function syncJobTemplateJson(data) {
+    var hidden = document.getElementById('job_template_json');
+    if (!hidden) {
       return;
     }
-    showError(false);
+    try {
+      hidden.value = JSON.stringify(data || {});
+    } catch (e) {
+      hidden.value = '';
+    }
+  }
+
+  function setFieldValue(el, value) {
+    if (!el) {
+      return;
+    }
+    var val = value == null ? '' : String(value);
+    if (el.tagName === 'SELECT') {
+      el.value = val;
+      if (el.value !== val && val !== '') {
+        var opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = val;
+        el.appendChild(opt);
+        el.value = val;
+      }
+      return;
+    }
+    el.value = val;
+  }
+
+  function applyDataToFields(data) {
+    if (!data || typeof data !== 'object') {
+      return;
+    }
+    fieldEls().forEach(function (el) {
+      var key = el.getAttribute('data-job-field');
+      if (!key || typeof data[key] === 'undefined') {
+        return;
+      }
+      setFieldValue(el, data[key]);
+    });
+    syncJobMetaFields(getData());
+  }
+
+  function applyTemplateToEditor(options) {
+    options = options || {};
+    var data = getData();
+    if (!validateRequired(data)) {
+      if (!options.silent) {
+        showError(true);
+      }
+      return false;
+    }
+    if (!options.silent) {
+      showError(false);
+    }
+
+    syncJobMetaFields(data);
 
     var subjectEl = document.getElementById('wr_subject');
     var contentId = 'wr_content';
@@ -270,22 +324,85 @@
     if (subjectEl) {
       subjectEl.value = title;
       subjectEl.dispatchEvent(new Event('input', { bubbles: true }));
-      if (window.matchMedia && window.matchMedia('(max-width: 767px)').matches) {
-        subjectEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
     }
 
     var existing = getEditorPlain(contentId);
-    var applyBody = function () {
+    if (options.force || !existing || existing.indexOf('[구인정보]') === -1) {
       setEditorContent(contentId, body);
-    };
-
-    if (existing) {
+      return true;
+    }
+    if (!options.silent && options.confirmReplace !== false) {
       if (window.confirm('기존 본문 내용이 있습니다. 템플릿 내용으로 교체하시겠습니까?')) {
-        applyBody();
+        setEditorContent(contentId, body);
       }
-    } else {
-      applyBody();
+      return true;
+    }
+    return true;
+  }
+
+  function resetTemplateFields() {
+    fieldEls().forEach(function (el) {
+      if (el.tagName === 'SELECT') {
+        el.selectedIndex = 0;
+      } else {
+        el.value = '';
+      }
+    });
+    syncJobMetaFields({ region: '', job_recruit_status: 'recruiting' });
+    showError(false);
+  }
+
+  fieldEls().forEach(function (el) {
+    el.addEventListener('change', function () {
+      syncJobMetaFields(getData());
+    });
+    el.addEventListener('input', function () {
+      syncJobMetaFields(getData());
+    });
+  });
+
+  if (window.__SEBU_JOB_TEMPLATE_INITIAL__) {
+    applyDataToFields(window.__SEBU_JOB_TEMPLATE_INITIAL__);
+  } else {
+    var jsonEl = document.getElementById('job_template_json');
+    if (jsonEl && jsonEl.value) {
+      try {
+        applyDataToFields(JSON.parse(jsonEl.value));
+      } catch (e) {
+        /* ignore */
+      }
+    }
+  }
+
+  syncJobMetaFields(getData());
+
+  var writeForm = root.closest('form');
+  if (writeForm) {
+    writeForm.addEventListener('submit', function () {
+      syncJobMetaFields(getData());
+      applyTemplateToEditor({ silent: true, force: false, confirmReplace: false });
+      if (typeof oEditors !== 'undefined' && oEditors.getById && oEditors.getById.wr_content) {
+        try {
+          oEditors.getById.wr_content.exec('UPDATE_CONTENTS_FIELD', []);
+        } catch (e) {
+          /* ignore */
+        }
+      }
+    });
+  }
+
+  window.sebuJobTemplateApplyBeforeSubmit = function () {
+    syncJobMetaFields(getData());
+    return applyTemplateToEditor({ silent: true, force: false, confirmReplace: false });
+  };
+
+  document.getElementById('sebuJobTemplateApply').addEventListener('click', function () {
+    if (!applyTemplateToEditor({ confirmReplace: true })) {
+      return;
+    }
+    var subjectEl = document.getElementById('wr_subject');
+    if (subjectEl && window.matchMedia && window.matchMedia('(max-width: 767px)').matches) {
+      subjectEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   });
 

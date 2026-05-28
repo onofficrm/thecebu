@@ -126,8 +126,19 @@ if (!function_exists('eottae_member_growth_render_profile_badge_icon')) {
         $icon = '';
         $label = '';
         $color = 'default';
+        $title = '';
+        $prefer_level = !empty($options['prefer_level']);
 
-        if (!empty($profile['main_badge']['badge_name'])) {
+        if ($prefer_level && !empty($profile['level']['level_name'])) {
+            $level = $profile['level'];
+            $icon = trim((string) ($level['icon'] ?? ''));
+            if ($icon === '') {
+                $icon = '◆';
+            }
+            $label = get_text($level['level_name']);
+            $color = (string) ($level['color'] ?? 'default');
+            $title = get_text($level['level_description'] ?? $label);
+        } elseif (!empty($profile['main_badge']['badge_name'])) {
             $badge = $profile['main_badge'];
             $icon = trim((string) ($badge['badge_icon'] ?? ''));
             if ($icon === '') {
@@ -144,12 +155,19 @@ if (!function_exists('eottae_member_growth_render_profile_badge_icon')) {
             }
             $label = get_text($level['level_name']);
             $color = (string) ($level['color'] ?? 'default');
-            $title = $label;
+            $title = get_text($level['level_description'] ?? $label);
         } else {
-            return '';
+            $icon = '🌱';
+            $label = '새싹회원';
+            $color = 'default';
+            $title = '가입 직후 기본 등급';
         }
 
+        $extra_class = isset($options['class']) ? trim((string) $options['class']) : '';
         $class = 'community-login-box__badge-icon '.eottae_member_growth_badge_color_class($color);
+        if ($extra_class !== '') {
+            $class .= ' '.$extra_class;
+        }
         $inner = '<span class="'.$class.'" title="'.get_text($title).'">'
             .'<span class="community-login-box__badge-emoji" aria-hidden="true">'.htmlspecialchars($icon, ENT_QUOTES, 'UTF-8').'</span>'
             .'<span class="sound_only">'.get_text($label).'</span>'

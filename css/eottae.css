@@ -815,6 +815,17 @@ body.eottae-page hr {
   .eottae-gnb-footer__panel {
     padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px));
   }
+
+  /* iCRM 챗봇 FAB — 하단 글로벌 메뉴 가림 방지 */
+  iframe[id^="chat-icrm-widget-"],
+  iframe[title="chat.icrm.co.kr messenger"] {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
 }
 
 @media (min-width: 640px) {
@@ -3534,6 +3545,31 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   font-size: 0;
   line-height: 1;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  background: #f1f5f9;
+}
+
+.community-login-box__badge-icon.sebu-badge--life {
+  background: #dbeafe;
+}
+
+.community-login-box__badge-icon.sebu-badge--food {
+  background: #ffedd5;
+}
+
+.community-login-box__badge-icon.sebu-badge--meetup {
+  background: #dcfce7;
+}
+
+.community-login-box__badge-icon.sebu-badge--trade {
+  background: #ede9fe;
+}
+
+.community-login-box__badge-icon.sebu-badge--official {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+}
+
+.community-login-box__badge-icon.sebu-badge--vip {
+  background: linear-gradient(135deg, #1e3a5f, #0f172a);
 }
 
 .community-login-box__badge-emoji {
@@ -3557,6 +3593,18 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   color: #fff;
   font-size: 16px;
   font-weight: 800;
+  overflow: hidden;
+}
+
+.community-login-box__avatar--photo {
+  background: #e2e8f0;
+}
+
+.community-login-box__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .community-login-box__welcome {
@@ -4008,16 +4056,30 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   .community-sidebar__login {
     order: 1;
     position: static;
+    width: 100%;
+    max-width: none;
+    align-self: stretch;
+    box-sizing: border-box;
   }
 
   .community-page__main {
     order: 2;
+    width: 100%;
+    min-width: 0;
   }
 
   .community-sidebar__card,
   .community-sidebar__ad,
   .community-ad-carousel {
     order: 3;
+    width: 100%;
+    max-width: none;
+    align-self: stretch;
+    box-sizing: border-box;
+  }
+
+  .community-page__layout > * {
+    align-self: stretch;
   }
 }
 
@@ -9165,16 +9227,30 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
   .community-view-page .community-sidebar__login {
     order: 1;
     position: static;
+    width: 100%;
+    max-width: none;
+    align-self: stretch;
+    box-sizing: border-box;
   }
 
   .community-view-page__main {
     order: 2;
+    width: 100%;
+    min-width: 0;
   }
 
   .community-view-page .community-sidebar__card,
   .community-view-page .community-sidebar__ad,
   .community-view-page .community-ad-carousel {
     order: 3;
+    width: 100%;
+    max-width: none;
+    align-self: stretch;
+    box-sizing: border-box;
+  }
+
+  .community-view-page__layout > * {
+    align-self: stretch;
   }
 }
 
@@ -12683,5 +12759,60 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
     width: 100%;
     box-sizing: border-box;
     justify-content: center;
+  }
+}
+
+/* ── 모바일 — 홈·커뮤니티 카드 너비 통일 ── */
+@media (max-width: 767px) {
+  #root {
+    overflow-x: clip;
+    max-width: 100%;
+  }
+
+  #root .community-sidebar__card,
+  #root .community-sidebar__login,
+  #root section.community-sidebar__login,
+  #root .community-ad-carousel,
+  #root .community-sidebar__ad,
+  #root .home-ad-carousel,
+  #root [data-featured-shops-carousel] {
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box;
+  }
+
+  #root .community-login-box,
+  #root .community-login-box--member,
+  #root .community-login-box--guest {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* 빌더 래퍼가 max-width로 카드만 좁게 감쌀 때 */
+  #root div:has(> .community-sidebar__card),
+  #root div:has(> section.community-sidebar__login) {
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box;
+  }
+
+  .community-page {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .community-view-page {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .community-sidebar__card,
+  .community-sidebar__login {
+    width: 100%;
+    max-width: none;
+  }
+
+  .community-login-box {
+    width: 100%;
   }
 }

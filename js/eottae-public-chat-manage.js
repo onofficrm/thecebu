@@ -36,7 +36,7 @@
     }
     return '<button type="button" class="public-group-chat__delete" data-public-chat-delete="'
       + esc(message.wr_id)
-      + '" aria-label="AI 메시지 삭제">삭제</button>';
+      + '" aria-label="메시지 삭제">삭제</button>';
   }
 
   function unreadBeforeHtml(message) {
@@ -90,7 +90,6 @@
       return '';
     }
 
-    var manage = canManageAi(section);
     var classes = ['public-group-chat__message'];
     if (message.is_mine) {
       classes.push('public-group-chat__message--mine');
@@ -108,7 +107,7 @@
         + '<span class="talk-ai-msg__badge-label">' + esc(author) + '</span>'
         + '</span>'
       : '';
-    var deleteBtn = manage ? deleteButtonHtml(message) : '';
+    var deleteBtn = deleteButtonHtml(message);
     var meta = '';
 
     if (!message.is_mine) {
@@ -238,7 +237,7 @@
       if (target.dataset.deleting === '1') {
         return;
       }
-      if (!global.confirm('이 AI 메시지를 삭제할까요?')) {
+      if (!global.confirm('이 메시지를 삭제할까요?')) {
         return;
       }
 
@@ -263,17 +262,32 @@
     });
   }
 
-  function initSection(section) {
+  function isMemberChat(section) {
+    return section && section.getAttribute('data-is-member') === '1';
+  }
+
+  function initManageSection(section) {
     if (!section || !canManageAi(section) || section.dataset.manageBound === '1') {
       return;
     }
     section.dataset.manageBound = '1';
     bindAiSpeak(section);
-    bindDelete(section);
+  }
+
+  function initSection(section) {
+    if (!section) {
+      return;
+    }
+    if (canManageAi(section)) {
+      initManageSection(section);
+    }
+    if (isMemberChat(section)) {
+      bindDelete(section);
+    }
   }
 
   function scan() {
-    var sections = document.querySelectorAll('.public-group-chat[data-can-manage-ai="1"]');
+    var sections = document.querySelectorAll('.public-group-chat');
     var i;
     for (i = 0; i < sections.length; i += 1) {
       initSection(sections[i]);

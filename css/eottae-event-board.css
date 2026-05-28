@@ -1,0 +1,231 @@
+/**
+ * 이벤트/프로모션(event) — 상태 뱃지·카드·상세 패널
+ */
+
+.event-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.event-status-badge--active {
+  color: #fff;
+  background: linear-gradient(135deg, #ea580c, #f97316);
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.28);
+}
+
+.event-status-badge--ended {
+  color: #475569;
+  background: #e2e8f0;
+}
+
+.event-type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #9a3412;
+  background: #ffedd5;
+  border: 1px solid #fed7aa;
+}
+
+.event-post {
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+  margin-bottom: 0.75rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.event-post:hover {
+  border-color: #fdba74;
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.08);
+}
+
+.event-post--ended {
+  opacity: 0.88;
+  background: #f8fafc;
+}
+
+.event-post--ended:hover {
+  border-color: #cbd5e1;
+  box-shadow: none;
+}
+
+.event-post__link {
+  display: block;
+  padding: 1rem 1.1rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.event-post__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.event-post__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.35;
+}
+
+.event-post--ended .event-post__title {
+  color: #64748b;
+}
+
+.event-post__meta {
+  margin: 0 0 0.35rem;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.event-post__benefit {
+  margin: 0 0 0.5rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #c2410c;
+  line-height: 1.45;
+}
+
+.event-post--ended .event-post__benefit {
+  color: #94a3b8;
+}
+
+.event-post__period {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.event-post__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.event-post__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #334155;
+}
+
+.event-post__btn--shop {
+  border-color: #fdba74;
+  color: #c2410c;
+  background: #fff7ed;
+}
+
+.event-post__btn--detail {
+  border-color: #0f172a;
+  background: #0f172a;
+  color: #fff;
+}
+
+.event-info-panel {
+  margin: 0 0 1.25rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid #fed7aa;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fff7ed 0%, #fff 100%);
+}
+
+.event-info-panel__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.55rem;
+  margin-bottom: 0.75rem;
+}
+
+.event-info-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem 1rem;
+  margin: 0 0 0.85rem;
+}
+
+.event-info-panel__item {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.event-info-panel__item dt {
+  margin: 0 0 0.15rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: none;
+}
+
+.event-info-panel__item dd {
+  margin: 0;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.event-info-panel__benefit dd {
+  color: #c2410c;
+}
+
+.event-info-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.event-close-panel {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px dashed #cbd5e1;
+  background: #f8fafc;
+}
+
+.event-close-panel__btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  background: #64748b;
+  cursor: pointer;
+}
+
+.event-close-panel__btn:hover {
+  background: #475569;
+}
+
+@media (max-width: 640px) {
+  .event-info-panel__grid {
+    grid-template-columns: 1fr;
+  }
+}

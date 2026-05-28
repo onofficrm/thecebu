@@ -73,3 +73,153 @@
   display: flex;
   text-decoration: none;
 }
+
+/* 프로필 사진 (선택) */
+.eottae-member-profile-field {
+  margin-bottom: 18px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--eottae-radius-sm, 12px);
+  background: #f8fafc;
+}
+
+.eottae-member-profile-field__label-row {
+  margin-bottom: 12px;
+}
+
+.eottae-member-profile-field__label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--eottae-text, #0f172a);
+}
+
+.eottae-member-profile-field__optional {
+  font-weight: 500;
+  color: #64748b;
+}
+
+.eottae-member-profile-field__body {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.eottae-member-profile-field__preview {
+  flex: 0 0 72px;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0284c7, #0ea5e9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.2);
+}
+
+.eottae-member-profile-field__preview.has-image {
+  background: #e2e8f0;
+}
+
+.eottae-member-profile-field__preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.eottae-member-profile-field__preview-img[hidden] {
+  display: none;
+}
+
+.eottae-member-profile-field__preview-initial {
+  font-size: 28px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+}
+
+.eottae-member-profile-field__preview-initial[hidden] {
+  display: none;
+}
+
+.eottae-member-profile-field__controls {
+  flex: 1;
+  min-width: 0;
+}
+
+.eottae-member-profile-field__file {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  font-size: 13px;
+}
+
+.eottae-member-profile-field__hint {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.eottae-member-profile-field__ai-btn {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #bae6fd;
+  border-radius: 999px;
+  background: #fff;
+  color: #0369a1;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.eottae-member-profile-field__ai-btn:hover:not(:disabled) {
+  background: #e0f2fe;
+}
+
+.eottae-member-profile-field__ai-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.eottae-member-profile-field__ai-status {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #0369a1;
+}
+
+.eottae-member-profile-field__ai-status.is-error {
+  color: #dc2626;
+}
+
+.eottae-member-profile-field__ai-status[hidden] {
+  display: none;
+}
+
+.eottae-member-profile-field__delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #64748b;
+  cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .eottae-member-profile-field__body {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .eottae-member-profile-field__controls {
+    width: 100%;
+  }
+}

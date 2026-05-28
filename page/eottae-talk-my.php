@@ -8,6 +8,13 @@ if (!$is_member) {
 }
 
 $my = eottae_talkroom_list_my_rooms($member['mb_id']);
+$my['created'] = eottae_talkroom_apply_card_viewer_context(
+    $my['created'],
+    (string) $member['mb_id'],
+    ($is_admin === 'super')
+);
+
+eottae_talkroom_enqueue_card_delete_assets();
 
 g5_page_start('내 톡방');
 ?>

@@ -11,6 +11,48 @@ if (function_exists('eottae_property_template_load_assets')) {
     eottae_property_template_load_assets();
 }
 
+if (!function_exists('eottae_estate_deal_status_from_row') && is_file(G5_LIB_PATH.'/eottae-estate.lib.php')) {
+    include_once G5_LIB_PATH.'/eottae-estate.lib.php';
+}
+
+$estate_deal_status = 'trading';
+$estate_region = '';
+$estate_template_json = '';
+$estate_template_values = array();
+if (isset($write) && is_array($write)) {
+    if (!empty($write['wr_2'])) {
+        $estate_deal_status = eottae_estate_normalize_deal_status($write['wr_2']);
+    }
+    if (!empty($write['wr_1'])) {
+        $estate_region = get_text($write['wr_1']);
+    }
+    if (!function_exists('eottae_estate_template_from_row')) {
+        include_once G5_LIB_PATH.'/eottae-estate-template.lib.php';
+    }
+    $decoded = function_exists('eottae_estate_template_from_row')
+        ? eottae_estate_template_from_row($write)
+        : null;
+    if (is_array($decoded)) {
+        $estate_template_values = $decoded;
+        $estate_template_json = function_exists('eottae_estate_template_encode_json')
+            ? eottae_estate_template_encode_json($decoded)
+            : '';
+        if ($estate_region === '' && !empty($decoded['region'])) {
+            $estate_region = get_text($decoded['region']);
+        }
+        if (!empty($decoded['estate_deal_status'])) {
+            $estate_deal_status = eottae_estate_normalize_deal_status($decoded['estate_deal_status']);
+        }
+    }
+}
+
+if (!function_exists('eottae_estate_template_field_value')) {
+    function eottae_estate_template_field_value($key, $values = array())
+    {
+        return isset($values[$key]) ? get_text($values[$key]) : '';
+    }
+}
+
 $sebu_property_types = array(
     ''           => '선택',
     'condo'      => '콘도',
@@ -66,8 +108,16 @@ $sebu_furnishing_types = array(
                     </select>
                 </label>
                 <label class="sebu-property-template__field">
+                    <span class="sebu-property-template__label">거래 상태</span>
+                    <select class="sebu-property-template__select" data-property-field="estate_deal_status" id="estate_deal_status">
+                        <?php foreach (eottae_estate_deal_statuses() as $val => $label) { ?>
+                        <option value="<?php echo get_text($val); ?>"<?php echo $estate_deal_status === $val ? ' selected' : ''; ?>><?php echo get_text($label); ?></option>
+                        <?php } ?>
+                    </select>
+                </label>
+                <label class="sebu-property-template__field">
                     <span class="sebu-property-template__label">지역 <span class="sebu-property-template__req" aria-hidden="true">*</span></span>
-                    <input type="text" class="sebu-property-template__input" data-property-field="region" maxlength="120" placeholder="예) 세부시티, IT Park, 아얄라 근처">
+                    <input type="text" class="sebu-property-template__input" data-property-field="region" id="estate_region_field" maxlength="120" value="<?php echo htmlspecialchars($estate_region, ENT_QUOTES, 'UTF-8'); ?>" placeholder="예) 세부시티, IT Park, 아얄라 근처">
                 </label>
                 <label class="sebu-property-template__field">
                     <span class="sebu-property-template__label">매물명 / 건물명</span>
@@ -140,6 +190,10 @@ $sebu_furnishing_types = array(
         </fieldset>
     </div>
 
+    <input type="hidden" name="wr_1" id="wr_1" value="<?php echo htmlspecialchars($estate_region, ENT_QUOTES, 'UTF-8'); ?>">
+    <input type="hidden" name="wr_2" id="wr_2" value="<?php echo htmlspecialchars($estate_deal_status, ENT_QUOTES, 'UTF-8'); ?>">
+    <input type="hidden" name="estate_template_json" id="estate_template_json" value="<?php echo htmlspecialchars($estate_template_json, ENT_QUOTES, 'UTF-8'); ?>">
+
     <p class="sebu-property-template__error" id="sebuPropertyTemplateError" role="alert" hidden>필수 정보를 입력해주세요.</p>
 
     <div class="sebu-property-template__actions">
@@ -147,3 +201,6 @@ $sebu_furnishing_types = array(
         <button type="button" class="sebu-property-template__btn sebu-property-template__btn--ghost" id="sebuPropertyTemplateReset">입력내용 초기화</button>
     </div>
 </section>
+<?php if ($estate_template_values) { ?>
+<script>window.__SEBU_ESTATE_TEMPLATE_INITIAL__ = <?php echo json_encode($estate_template_values, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;</script>
+<?php } ?>

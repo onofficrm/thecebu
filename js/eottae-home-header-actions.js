@@ -333,10 +333,6 @@
   }
 
   function findAdroomInsertAfter(scope) {
-    var free = scope.querySelector('[data-eottae-home-free-nav="1"], [data-eottae-home-free-menu="1"]');
-    if (free) {
-      return free;
-    }
     return findFreeInsertAfter(scope) || findNavLinkByLabel(scope, '커뮤니티');
   }
 
@@ -567,9 +563,14 @@
     hideBoardMenuLinks(['massage'], ['마사지', '마사지·스파']);
   }
 
+  function hideCommunityHubMenuLinks() {
+    hideBoardMenuLinks(['free', 'people'], ['자유게시판', '사람찾기']);
+  }
+
   function mount() {
     hideRentcarMenuLinks();
     hideMassageMenuLinks();
+    hideCommunityHubMenuLinks();
 
     var data = cfg();
     if (!data) {
@@ -582,12 +583,11 @@
     mountCalendarInMobileMenu(data);
     mountColumnNav(data);
     mountColumnInMobileMenu(data);
-    mountFreeNav(data);
-    mountFreeInMobileMenu(data);
     mountAdroomNav(data);
     mountAdroomInMobileMenu(data);
     hideRentcarMenuLinks();
     hideMassageMenuLinks();
+    hideCommunityHubMenuLinks();
     replaceTourNavWithGolfJoin(data);
   }
 
