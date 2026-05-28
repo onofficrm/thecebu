@@ -3,14 +3,26 @@ if (!defined('_GNUBOARD_')) exit;
 
 include_once(G5_LIB_PATH.'/eottae.lib.php');
 include_once(G5_LIB_PATH.'/eottae-job-template.lib.php');
+include_once(G5_LIB_PATH.'/eottae-property-template.lib.php');
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
 
 $is_job_board_write = function_exists('eottae_is_job_board') && eottae_is_job_board($bo_table);
+$is_estate_board_write = function_exists('eottae_is_estate_board') && eottae_is_estate_board($bo_table);
 $community_tabs = eottae_community_category_tabs($board);
 $write_category = $sca !== '' ? $sca : (isset($write['ca_name']) ? get_text($write['ca_name']) : '');
 $job_list_url = function_exists('eottae_board_list_url')
     ? eottae_board_list_url(eottae_job_board_table())
     : G5_BBS_URL.'/board.php?bo_table='.eottae_job_board_table();
+$estate_list_url = function_exists('eottae_board_list_url')
+    ? eottae_board_list_url(eottae_estate_board_table())
+    : G5_BBS_URL.'/board.php?bo_table='.eottae_estate_board_table();
+if ($is_job_board_write) {
+    $write_list_url = $job_list_url;
+} elseif ($is_estate_board_write) {
+    $write_list_url = $estate_list_url;
+} else {
+    $write_list_url = eottae_community_list_url($sca ? array('sca' => $sca) : array());
+}
 
 $snippet_prefill_id = 0;
 if ($w !== 'u' && !empty($is_member) && function_exists('eottae_is_business_member') && eottae_is_business_member($member)) {
@@ -33,11 +45,25 @@ $file_count = eottae_community_write_photo_count($board, $file_count);
 <div class="community-write-page board-wrap board-wrap--eottae-community" id="bo_w" style="width:<?php echo $width; ?>">
 
     <header class="community-write-page__header">
-        <a href="<?php echo $is_job_board_write ? get_text($job_list_url) : eottae_community_list_url($sca ? array('sca' => $sca) : array()); ?>" class="community-write-page__back">← 목록으로</a>
-        <h1 class="community-write-page__title"><?php echo $w === 'u' ? ($is_job_board_write ? '구인구직 글 수정' : '글 수정') : ($is_job_board_write ? '구인구직 글쓰기' : '글쓰기'); ?></h1>
-        <p class="community-write-page__desc"><?php echo $is_job_board_write
-            ? '모집 정보를 정확히 작성해 주세요. 허위·과장 채용 공고는 안내 없이 삭제될 수 있습니다.'
-            : '세부 생활 정보를 공유해 주세요. 타인을 비방하거나 욕설, 광고성 글은 안내 없이 삭제될 수 있습니다.'; ?></p>
+        <a href="<?php echo get_text($write_list_url); ?>" class="community-write-page__back">← 목록으로</a>
+        <h1 class="community-write-page__title"><?php
+            if ($is_job_board_write) {
+                echo $w === 'u' ? '구인구직 글 수정' : '구인구직 글쓰기';
+            } elseif ($is_estate_board_write) {
+                echo $w === 'u' ? '부동산 글 수정' : '부동산 글쓰기';
+            } else {
+                echo $w === 'u' ? '글 수정' : '글쓰기';
+            }
+        ?></h1>
+        <p class="community-write-page__desc"><?php
+            if ($is_job_board_write) {
+                echo '모집 정보를 정확히 작성해 주세요. 허위·과장 채용 공고는 안내 없이 삭제될 수 있습니다.';
+            } elseif ($is_estate_board_write) {
+                echo '매물 정보를 정확히 작성해 주세요. 허위·과장 매물 정보는 안내 없이 삭제될 수 있습니다.';
+            } else {
+                echo '세부 생활 정보를 공유해 주세요. 타인을 비방하거나 욕설, 광고성 글은 안내 없이 삭제될 수 있습니다.';
+            }
+        ?></p>
     </header>
 
     <form name="fwrite" id="fwrite" class="community-write-page__form" action="<?php echo $action_url; ?>" onsubmit="return fwrite_submit(this);" method="post" enctype="multipart/form-data">
@@ -68,17 +94,22 @@ $file_count = eottae_community_write_photo_count($board, $file_count);
 
     <div class="community-write-page__field">
         <label for="wr_subject">제목</label>
-        <input type="text" name="wr_subject" id="wr_subject" value="<?php echo $subject; ?>" required maxlength="255" placeholder="<?php echo $is_job_board_write ? '템플릿 자동작성 후 수정할 수 있습니다' : '제목을 입력하세요'; ?>" class="community-write-page__input">
+        <input type="text" name="wr_subject" id="wr_subject" value="<?php echo $subject; ?>" required maxlength="255" placeholder="<?php echo ($is_job_board_write || $is_estate_board_write) ? '템플릿 자동작성 후 수정할 수 있습니다' : '제목을 입력하세요'; ?>" class="community-write-page__input">
     </div>
 
     <?php if ($is_job_board_write) {
         include G5_PATH.'/components/eottae/job-write-template.php';
     } ?>
+    <?php if ($is_estate_board_write) {
+        include G5_PATH.'/components/eottae/property-write-template.php';
+    } ?>
 
     <?php
-    $eottae_editor_placeholder = $is_job_board_write
-        ? '템플릿 자동작성을 사용하거나 직접 본문을 작성해 주세요'
-        : '세부 생활 정보, 꿀팁, 질문 등을 자유롭게 작성해 주세요';
+    if ($is_job_board_write || $is_estate_board_write) {
+        $eottae_editor_placeholder = '템플릿 자동작성을 사용하거나 직접 본문을 작성해 주세요';
+    } else {
+        $eottae_editor_placeholder = '세부 생활 정보, 꿀팁, 질문 등을 자유롭게 작성해 주세요';
+    }
     include G5_PATH.'/components/eottae/board-write-editor.php';
     ?>
 
@@ -112,7 +143,7 @@ $file_count = eottae_community_write_photo_count($board, $file_count);
     <?php } ?>
 
     <div class="community-write-page__actions">
-        <a href="<?php echo $is_job_board_write ? get_text($job_list_url) : eottae_community_list_url(); ?>" class="community-write-page__cancel">취소</a>
+        <a href="<?php echo get_text($write_list_url); ?>" class="community-write-page__cancel">취소</a>
         <button type="submit" id="btn_submit" class="community-write-page__submit">등록하기</button>
     </div>
     </form>

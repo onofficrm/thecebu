@@ -1,0 +1,203 @@
+/**
+ * 부동산 게시판 글쓰기 템플릿 (bo_table=estate)
+ */
+.sebu-property-template {
+  margin: 0 0 20px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid #dbeafe;
+  background: #f8fbff;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+}
+
+.sebu-property-template__head {
+  margin-bottom: 14px;
+}
+
+.sebu-property-template__title {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.sebu-property-template__desc {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.sebu-property-template__body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sebu-property-template__group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.sebu-property-template__legend {
+  display: block;
+  width: 100%;
+  margin: 0 0 10px;
+  padding: 0;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #1d4ed8;
+  letter-spacing: -0.01em;
+}
+
+.sebu-property-template__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.sebu-property-template__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.sebu-property-template__field--full {
+  grid-column: 1 / -1;
+}
+
+.sebu-property-template__label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.sebu-property-template__req {
+  color: #dc2626;
+  font-weight: 800;
+}
+
+.sebu-property-template__input,
+.sebu-property-template__select,
+.sebu-property-template__textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+  color: #0f172a;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sebu-property-template__textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.sebu-property-template__input:focus,
+.sebu-property-template__select:focus,
+.sebu-property-template__textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.sebu-property-template__privacy {
+  margin: 10px 0 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.sebu-property-template__error {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.sebu-property-template__error[hidden] {
+  display: none !important;
+}
+
+.sebu-property-template__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.sebu-property-template__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 46px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.sebu-property-template__btn--primary {
+  background: #3b82f6;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+.sebu-property-template__btn--primary:hover {
+  background: #2563eb;
+}
+
+.sebu-property-template__btn--ghost {
+  background: #fff;
+  border-color: #e2e8f0;
+  color: #475569;
+}
+
+.sebu-property-template__btn--ghost:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+@media (min-width: 768px) {
+  .sebu-property-template {
+    padding: 20px;
+  }
+
+  .sebu-property-template__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 16px;
+  }
+
+  .sebu-property-template__actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .sebu-property-template__btn {
+    width: auto;
+    min-width: 200px;
+  }
+
+  .sebu-property-template__btn--primary {
+    flex: 1 1 auto;
+  }
+}
