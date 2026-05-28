@@ -221,20 +221,22 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
                 $estate_deal_status = eottae_estate_deal_status_from_row($item);
                 $estate_deal_meta = eottae_estate_deal_status_meta($estate_deal_status);
                 $estate_deal_label = $estate_deal_meta['label'];
-                $estate_thumb_html = eottae_estate_render_list_thumb($item, $post_thumb);
+                if (!$is_community_hub_all_list) {
+                    $estate_thumb_html = eottae_estate_render_list_thumb($item, $post_thumb);
+                }
             }
             if ($is_job_board_list) {
                 $job_recruit_status = eottae_job_recruit_status_from_row($item);
                 $job_recruit_meta = eottae_job_recruit_status_meta($job_recruit_status);
                 $job_recruit_label = $job_recruit_meta['label'];
-                $job_thumb_html = eottae_job_render_list_thumb($item, $post_thumb);
+                if (!$is_community_hub_all_list) {
+                    $job_thumb_html = eottae_job_render_list_thumb($item, $post_thumb);
+                }
             }
             $snippet = eottae_community_snippet(isset($item['wr_content']) ? $item['wr_content'] : '');
-            $thumb = ($is_estate_board_list || $is_job_board_list) ? '' : eottae_community_list_thumb(
-                $item_bo_table,
-                (int) $item['wr_id'],
-                isset($item['wr_content']) ? $item['wr_content'] : ''
-            );
+            $thumb = ($is_community_hub_all_list || (!$is_estate_board_list && !$is_job_board_list))
+                ? $post_thumb
+                : '';
             $comment_num = isset($item['wr_comment']) ? (int) $item['wr_comment'] : 0;
             $hit_num = isset($item['wr_hit']) ? (int) $item['wr_hit'] : 0;
             $good_num = isset($item['wr_good']) ? (int) $item['wr_good'] : 0;
@@ -250,13 +252,13 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
             if ($is_ai_post) {
                 $item_class .= ' community-post--ai is-talk-ai-message';
             }
-            if ($is_estate_board_list) {
+            if ($is_estate_board_list && !$is_community_hub_all_list) {
                 $item_class .= ' community-post--estate';
                 if ($estate_thumb_html !== '') {
                     $item_class .= ' community-post--has-thumb';
                 }
             }
-            if ($is_job_board_list) {
+            if ($is_job_board_list && !$is_community_hub_all_list) {
                 $item_class .= ' community-post--job';
                 if ($job_thumb_html !== '') {
                     $item_class .= ' community-post--has-thumb';
