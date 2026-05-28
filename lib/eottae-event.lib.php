@@ -630,16 +630,21 @@ if (!function_exists('eottae_event_ensure_board_permissions')) {
      */
     function eottae_event_ensure_board_permissions()
     {
-        static $done = false;
+        if (!function_exists('eottae_event_board_table')) {
+            return;
+        }
 
+        if (function_exists('eottae_community_hub_ensure_board_permissions')) {
+            eottae_community_hub_ensure_board_permissions(eottae_event_board_table());
+
+            return;
+        }
+
+        static $done = false;
         if ($done) {
             return;
         }
         $done = true;
-
-        if (!function_exists('eottae_event_board_table')) {
-            return;
-        }
 
         global $g5, $board;
 

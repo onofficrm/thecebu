@@ -200,14 +200,54 @@ if (!function_exists('eottae_adroom_write_url')) {
     }
 }
 
-if (!function_exists('eottae_adroom_can_write')) {
-    function eottae_adroom_can_write($member = null, $is_super = false)
+if (!function_exists('eottae_adroom_write_eligibility')) {
+    /**
+     * 광고 등록 버튼·안내 노출 판단
+     *
+     * @param array<string, mixed>|null $member
+     * @param array<string, mixed>|null $board
+     * @return array{can_write:bool,is_biz:bool,has_board_write:bool,mb_level:int,bo_write_level:int,biz_level:int}
+     */
+    function eottae_adroom_write_eligibility($member = null, $board = null, $is_member = false, $is_super = false)
     {
-        if ($is_super) {
-            return true;
+        $biz_level = defined('EOTTae_BUSINESS_LEVEL') ? (int) EOTTae_BUSINESS_LEVEL : 5;
+        if (!is_array($board) || empty($board['bo_table'])) {
+            if (function_exists('get_board_db')) {
+                $board = get_board_db(eottae_adroom_board_table(), true);
+            } else {
+                $board = array();
+            }
         }
+        $bo_write_level = isset($board['bo_write_level']) ? (int) $board['bo_write_level'] : $biz_level;
+        $mb_level = ($is_member && is_array($member)) ? (int) ($member['mb_level'] ?? 0) : 0;
+        $is_biz = $is_member && function_exists('eottae_is_business_member') && eottae_is_business_member($member);
+        $has_board_write = $is_super || ($is_member && $mb_level >= $bo_write_level);
+        $can_write = $is_super || ($is_biz && $has_board_write);
 
-        return function_exists('eottae_is_business_member') && eottae_is_business_member($member);
+        return array(
+            'can_write'        => $can_write,
+            'is_biz'           => $is_biz,
+            'has_board_write'  => $has_board_write,
+            'mb_level'         => $mb_level,
+            'bo_write_level'   => $bo_write_level,
+            'biz_level'        => $biz_level,
+        );
+    }
+}
+
+if (!function_exists('eottae_adroom_can_write')) {
+    function eottae_adroom_can_write($member = null, $is_super = false, $board = null)
+    {
+        global $is_member;
+
+        $elig = eottae_adroom_write_eligibility(
+            is_array($member) ? $member : null,
+            is_array($board) ? $board : null,
+            !empty($is_member) || (is_array($member) && !empty($member['mb_id'])),
+            $is_super
+        );
+
+        return !empty($elig['can_write']);
     }
 }
 
@@ -847,15 +887,16 @@ if (!function_exists('eottae_adroom_render_write_guide')) {
      */
     function eottae_adroom_render_write_guide($member, $board, $is_member, $is_super, $write_href, $can_write_ad)
     {
-        if ($write_href && $can_write_ad) {
+        if ($can_write_ad) {
             return '';
         }
 
-        $biz_level = defined('EOTTae_BUSINESS_LEVEL') ? (int) EOTTae_BUSINESS_LEVEL : 5;
-        $bo_write_level = isset($board['bo_write_level']) ? (int) $board['bo_write_level'] : $biz_level;
-        $mb_level = ($is_member && is_array($member)) ? (int) ($member['mb_level'] ?? 0) : 0;
-        $is_biz = $is_member && function_exists('eottae_is_business_member') && eottae_is_business_member($member);
-        $has_board_write = $is_super || ($is_member && $mb_level >= $bo_write_level);
+        $elig = eottae_adroom_write_eligibility($member, $board, $is_member, $is_super);
+        $biz_level = (int) $elig['biz_level'];
+        $bo_write_level = (int) $elig['bo_write_level'];
+        $mb_level = (int) $elig['mb_level'];
+        $is_biz = !empty($elig['is_biz']);
+        $has_board_write = !empty($elig['has_board_write']);
         $mb_role = ($is_member && is_array($member) && isset($member['mb_1'])) ? (string) $member['mb_1'] : '';
         $role_business = $mb_role === 'business';
 
@@ -868,7 +909,7 @@ if (!function_exists('eottae_adroom_render_write_guide')) {
 
         ob_start();
         ?>
-        <aside class="adroom-write-guide" aria-labelledby="adroom-write-guide-title">
+        <aside class="adroom-write-guide" id="adroom-write-guide" aria-labelledby="adroom-write-guide-title" tabindex="-1">
             <div class="adroom-write-guide__banner">
                 <span class="adroom-write-guide__badge">안내</span>
                 <h2 class="adroom-write-guide__title" id="adroom-write-guide-title">광고 등록 안내</h2>

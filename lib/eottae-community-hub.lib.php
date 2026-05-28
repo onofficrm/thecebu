@@ -637,6 +637,73 @@ if (!function_exists('eottae_community_hub_ensure_board_skin')) {
     }
 }
 
+if (!function_exists('eottae_community_hub_ensure_board_permissions')) {
+    /**
+     * 허브 게시판 글쓰기·댓글 권한 — 일반 회원(레벨 2) 작성 가능 (bo_write_level 5 등 레거시 보정)
+     *
+     * @param string $bo_table 빈 값이면 허브 5개 게시판 모두 점검
+     */
+    function eottae_community_hub_ensure_board_permissions($bo_table = '')
+    {
+        static $done = array();
+
+        global $g5, $board;
+
+        if (empty($g5['board_table'])) {
+            return;
+        }
+
+        $targets = array();
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+        if ($bo_table !== '' && eottae_is_community_hub_board($bo_table)) {
+            $targets[] = $bo_table;
+        } else {
+            $targets = eottae_community_hub_board_tables();
+        }
+
+        $updated_current = false;
+
+        foreach ($targets as $tbl) {
+            if (isset($done[$tbl])) {
+                continue;
+            }
+            $done[$tbl] = true;
+
+            $row = sql_fetch("
+                SELECT bo_write_level, bo_reply_level
+                FROM {$g5['board_table']}
+                WHERE bo_table = '".sql_escape_string($tbl)."'
+            ");
+            if (!$row) {
+                continue;
+            }
+
+            $write_level = (int) ($row['bo_write_level'] ?? 2);
+            $reply_level = (int) ($row['bo_reply_level'] ?? 2);
+            if ($write_level <= 2 && $reply_level <= 2) {
+                continue;
+            }
+
+            sql_query("
+                UPDATE {$g5['board_table']} SET
+                    bo_write_level = 2,
+                    bo_reply_level = 2
+                WHERE bo_table = '".sql_escape_string($tbl)."'
+            ", false);
+
+            if (is_array($board) && isset($board['bo_table']) && (string) $board['bo_table'] === $tbl) {
+                $board['bo_write_level'] = 2;
+                $board['bo_reply_level'] = 2;
+                $updated_current = true;
+            }
+        }
+
+        if ($updated_current && function_exists('run_event')) {
+            run_event('cache_delete', 'board');
+        }
+    }
+}
+
 if (!function_exists('eottae_community_hub_write_href')) {
     /**
      * 허브 게시판 글쓰기 URL (해당 bo_table 권한 기준)
@@ -684,11 +751,7 @@ if (!function_exists('eottae_community_hub_prepare_list_context')) {
         }
 
         eottae_community_hub_apply_runtime($bo_table);
-
-        if (function_exists('eottae_event_ensure_board_permissions') && function_exists('eottae_is_event_board')
-            && eottae_is_event_board($bo_table)) {
-            eottae_event_ensure_board_permissions();
-        }
+        eottae_community_hub_ensure_board_permissions($bo_table);
 
         $fresh = eottae_community_hub_get_board($bo_table);
         if (is_array($fresh) && !empty($fresh['bo_table'])) {
@@ -714,11 +777,7 @@ if (!function_exists('eottae_community_hub_apply_runtime')) {
         }
 
         eottae_community_hub_ensure_board_skin($bo_table);
-
-        if (function_exists('eottae_event_ensure_board_permissions') && function_exists('eottae_is_event_board')
-            && eottae_is_event_board($bo_table)) {
-            eottae_event_ensure_board_permissions();
-        }
+        eottae_community_hub_ensure_board_permissions($bo_table);
 
         if (function_exists('eottae_ensure_free_board_skin') && function_exists('eottae_free_board_table')
             && $bo_table === eottae_free_board_table()) {

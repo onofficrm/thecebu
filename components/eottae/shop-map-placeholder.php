@@ -56,9 +56,6 @@ $map_use_embed = !$map_has_key && $map_embed_url !== '';
     <div class="shop-map-panel__canvas" id="shopMapPlaceholder">
         <?php if ($map_has_key) { ?>
         <div class="shop-map-panel__map" id="shopMapCanvas" role="application" aria-label="업체 지도"></div>
-        <?php if (empty($markers)) { ?>
-        <p class="shop-map-panel__placeholder shop-map-panel__placeholder--hint">지도에 표시할 업체 좌표를 준비 중입니다. 주소 또는 대표지역이 있는 업체는 자동 보정됩니다.</p>
-        <?php } ?>
         <?php } elseif ($map_use_embed) { ?>
         <iframe
             class="shop-map-panel__embed"

@@ -65,12 +65,22 @@ if ($is_job_board_list) {
         );
     }
 }
+$eottae_list_thumb_css = G5_PATH.'/css/eottae-list-thumb.css';
+if (is_file($eottae_list_thumb_css)) {
+    add_stylesheet(
+        '<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-list-thumb.css?ver='.(int) filemtime($eottae_list_thumb_css).'">',
+        101
+    );
+}
 $is_talkroom_board = function_exists('eottae_talkroom_board_table') && $bo_table === eottae_talkroom_board_table();
 if ($is_talkroom_board) {
     include_once G5_PATH.'/components/eottae/talk-ai-message-ui.php';
 }
 if (function_exists('eottae_community_hub_prepare_list_context') && eottae_is_community_hub_board($bo_table)) {
     eottae_community_hub_prepare_list_context($bo_table);
+}
+if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) && function_exists('eottae_community_hub_write_href')) {
+    $write_href = eottae_community_hub_write_href($bo_table);
 }
 ?>
 

@@ -13,10 +13,17 @@ $adroom_tabs = eottae_adroom_category_tabs($board);
 $list_base = function_exists('eottae_adroom_list_url') ? eottae_adroom_list_url() : get_pretty_url($bo_table);
 $hero = eottae_adroom_board_hero($board, $sca);
 $today_count = function_exists('eottae_community_today_count') ? eottae_community_today_count($bo_table) : 0;
-$can_write_ad = function_exists('eottae_adroom_can_write') && eottae_adroom_can_write($member ?? null, $is_admin === 'super');
+$adroom_elig = function_exists('eottae_adroom_write_eligibility')
+    ? eottae_adroom_write_eligibility($member ?? array(), $board, !empty($is_member), $is_admin === 'super')
+    : array('can_write' => false);
+$can_write_ad = !empty($adroom_elig['can_write']);
 $adroom_write_guide = function_exists('eottae_adroom_render_write_guide')
     ? eottae_adroom_render_write_guide($member ?? array(), $board, !empty($is_member), $is_admin === 'super', $write_href, $can_write_ad)
     : '';
+$adroom_show_guide_btn = $adroom_write_guide !== '';
+if ($adroom_show_guide_btn) {
+    add_javascript('<script src="'.G5_JS_URL.'/eottae-adroom-list.js?ver='.(@filemtime(G5_JS_PATH.'/eottae-adroom-list.js') ?: '1').'"></script>', 10);
+}
 ?>
 
 <div class="adroom-page board-wrap board-wrap--eottae-adroom" id="bo_list" style="width:<?php echo $width; ?>">
@@ -35,6 +42,8 @@ $adroom_write_guide = function_exists('eottae_adroom_render_write_guide')
             </p>
             <?php if ($write_href && $can_write_ad) { ?>
             <a href="<?php echo $write_href; ?>" class="adroom-hero__write">광고 등록</a>
+            <?php } elseif ($adroom_show_guide_btn) { ?>
+            <button type="button" class="adroom-hero__write adroom-hero__write--guide" data-adroom-show-write-guide aria-controls="adroom-write-guide">광고 등록</button>
             <?php } elseif (!$is_member) { ?>
             <a href="<?php echo G5_BBS_URL; ?>/login.php?url=<?php echo urlencode(eottae_adroom_list_url()); ?>" class="adroom-hero__write adroom-hero__write--muted">업체 로그인 후 등록</a>
             <?php } ?>
