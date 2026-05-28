@@ -68,6 +68,7 @@ if (!function_exists('eottae_gnb_nav_menu')) {
         $people_table = defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people';
         $event_table = defined('EOTTae_EVENT_TABLE') ? EOTTae_EVENT_TABLE : 'event';
         $report_table = defined('EOTTae_REPORT_TABLE') ? EOTTae_REPORT_TABLE : 'report';
+        $news_list_url = function_exists('eottae_news_list_url') ? eottae_news_list_url() : eottae_board_list_url('news');
         $market_table = defined('EOTTae_MARKET_TABLE') ? EOTTae_MARKET_TABLE : 'market';
         $job_table = defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job';
         $estate_table = defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate';
@@ -119,6 +120,7 @@ if (!function_exists('eottae_gnb_nav_menu')) {
                 'label'    => '커뮤니티',
                 'href'     => eottae_community_list_url(),
                 'children' => array(
+                    array('key' => 'community_news', 'label' => '필리핀뉴스', 'href' => $news_list_url),
                     array('key' => 'community_life', 'label' => '생활정보', 'href' => eottae_board_list_url($community_table)),
                     array('key' => 'community_free', 'label' => '자유게시판', 'href' => eottae_board_list_url($free_table)),
                     array('key' => 'community_review', 'label' => '업체리뷰', 'href' => eottae_board_list_url($review_table)),
@@ -259,6 +261,7 @@ if (!function_exists('eottae_home_gnb_mobile_menu_payload')) {
                         continue;
                     }
                     $children[] = array(
+                        'key'   => $child_key,
                         'label' => eottae_gnb_nav_item_label($child['label'] ?? ''),
                         'href'  => eottae_gnb_nav_item_href($child),
                     );
@@ -266,6 +269,7 @@ if (!function_exists('eottae_home_gnb_mobile_menu_payload')) {
             }
 
             $items[] = array(
+                'key'      => $key,
                 'label'    => eottae_gnb_nav_item_label($item['label'] ?? ''),
                 'href'     => eottae_gnb_nav_item_href($item),
                 'children' => $children,

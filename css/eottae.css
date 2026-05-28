@@ -781,6 +781,35 @@ img[data-eottae-logo] {
   text-align: center !important;
 }
 
+/* 홈(빌더) — 서브페이지와 동일 GNB(주입) */
+#root header [data-eottae-home-gnb-nav="1"] {
+  display: none !important;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 1024px) {
+  #root header [data-eottae-home-gnb-nav="1"] {
+    display: flex !important;
+  }
+
+  #root header [data-eottae-home-legacy-nav-hidden="1"] {
+    display: none !important;
+  }
+}
+
+#root header.eottae-gnb-header .eottae-gnb-header__mega-panel[data-eottae-home-mega="1"] {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  #root header.eottae-gnb-header .eottae-gnb-header__shell:hover .eottae-gnb-header__mega-panel[data-eottae-home-mega="1"],
+  #root header.eottae-gnb-header .eottae-gnb-header__shell:has([data-mega-key]:hover) .eottae-gnb-header__mega-panel[data-eottae-home-mega="1"] {
+    display: block;
+  }
+}
+
 /* 홈(빌더) — 전체메뉴 햄버거 */
 #root header .eottae-gnb-header__menu-btn[data-eottae-home-menu-btn="1"] {
   display: inline-flex !important;

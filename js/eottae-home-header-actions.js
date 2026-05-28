@@ -111,6 +111,299 @@
       + '<div class="site-header__overlay eottae-gnb-header__overlay eottae-home-mobile-overlay" data-eottae-home-mobile-overlay="1" aria-hidden="true"></div>';
   }
 
+  function renderDesktopMegaPanel(items) {
+    if (!items || !items.length) {
+      return '';
+    }
+
+    var cols = '';
+    var i;
+    var j;
+    var item;
+    var child;
+
+    for (i = 0; i < items.length; i += 1) {
+      item = items[i];
+      if (!item || !item.children || !item.children.length) {
+        continue;
+      }
+
+      cols += ''
+        + '<div class="eottae-gnb-header__mega-col"'
+        + (item.key ? ' data-mega-key="' + esc(item.key) + '"' : '')
+        + '>'
+        + '<a href="' + esc(item.href || '#') + '" class="eottae-gnb-header__mega-col-title">'
+        + esc(item.label || '')
+        + '</a>'
+        + '<ul class="eottae-gnb-header__mega-list">';
+
+      for (j = 0; j < item.children.length; j += 1) {
+        child = item.children[j];
+        if (!child || !child.label) {
+          continue;
+        }
+        cols += ''
+          + '<li><a href="' + esc(child.href || '#') + '" class="eottae-gnb-header__mega-link">'
+          + esc(child.label)
+          + '</a></li>';
+      }
+
+      cols += '</ul></div>';
+    }
+
+    if (!cols) {
+      return '';
+    }
+
+    return ''
+      + '<div class="eottae-gnb-header__mega-panel" id="eottaeGnbMegaPanel" data-eottae-gnb-mega data-eottae-home-mega="1"'
+      + ' aria-label="전체 서브메뉴" aria-hidden="true">'
+      + '<div class="eottae-gnb-header__mega-inner">' + cols + '</div>'
+      + '</div>';
+  }
+
+  function ensureHomeGnbShell(header) {
+    header.classList.add('eottae-gnb-header');
+
+    var shell = header.querySelector('[data-eottae-gnb-shell]');
+    if (shell) {
+      return shell;
+    }
+
+    shell = document.createElement('div');
+    shell.className = 'eottae-gnb-header__shell';
+    shell.setAttribute('data-eottae-gnb-shell', '1');
+
+    var desktopHead = document.createElement('div');
+    desktopHead.className = 'eottae-gnb-header__desktop-head';
+    desktopHead.setAttribute('data-eottae-gnb-desktop-head', '1');
+
+    while (header.firstChild) {
+      desktopHead.appendChild(header.firstChild);
+    }
+
+    shell.appendChild(desktopHead);
+    header.appendChild(shell);
+
+    return shell;
+  }
+
+  function tagHomeNavMegaKeys(header, items) {
+    if (!header || !items || !items.length) {
+      return;
+    }
+
+    var labelToKey = {};
+    var i;
+
+    for (i = 0; i < items.length; i += 1) {
+      if (!items[i] || !items[i].key) {
+        continue;
+      }
+      labelToKey[normalizeNavLabel(items[i].label)] = items[i].key;
+    }
+
+    var links = header.querySelectorAll('a[href]');
+    for (i = 0; i < links.length; i += 1) {
+      var link = links[i];
+      var key = labelToKey[normalizeNavLabel(link.textContent)];
+      if (!key) {
+        continue;
+      }
+
+      link.setAttribute('data-mega-key', key);
+      var hasChildren = false;
+      var k;
+      for (k = 0; k < items.length; k += 1) {
+        if (items[k] && items[k].key === key && items[k].children && items[k].children.length) {
+          hasChildren = true;
+          break;
+        }
+      }
+      if (hasChildren) {
+        link.classList.add('eottae-gnb-header__nav-link--parent');
+        link.setAttribute('aria-haspopup', 'true');
+      }
+    }
+  }
+
+  function findLegacyBuilderNavContainer(header) {
+    if (!header) {
+      return null;
+    }
+
+    var containers = header.querySelectorAll('nav, div');
+    var i;
+    var j;
+
+    for (i = 0; i < containers.length; i += 1) {
+      var container = containers[i];
+      if (container.getAttribute('data-eottae-home-gnb-nav') === '1') {
+        continue;
+      }
+
+      var links = container.querySelectorAll('a[href]');
+      var hasLodging = false;
+      var hasFood = false;
+      var primaryCount = 0;
+
+      for (j = 0; j < links.length; j += 1) {
+        var label = normalizeNavLabel(links[j].textContent);
+        if (label === '숙소') {
+          hasLodging = true;
+        }
+        if (label === '맛집') {
+          hasFood = true;
+        }
+        if (
+          label === '홈'
+          || label.indexOf('내주변') !== -1
+          || label.indexOf('커뮤니티') !== -1
+          || label.indexOf('생활지도') !== -1
+          || label === '골프조인'
+          || label === '컬럼'
+        ) {
+          primaryCount += 1;
+        }
+      }
+
+      if (hasLodging && hasFood && links.length >= 5) {
+        return container;
+      }
+
+      if (hasLodging && hasFood && primaryCount === 0) {
+        return container;
+      }
+    }
+
+    return null;
+  }
+
+  function renderDesktopNavLinks(items) {
+    if (!items || !items.length) {
+      return '';
+    }
+
+    var html = '';
+    var i;
+    var item;
+    var hasChildren;
+
+    for (i = 0; i < items.length; i += 1) {
+      item = items[i];
+      if (!item || !item.label) {
+        continue;
+      }
+
+      hasChildren = !!(item.children && item.children.length);
+      html += ''
+        + '<a href="' + esc(item.href || '#') + '"'
+        + ' class="eottae-gnb-header__nav-link'
+        + (hasChildren ? ' eottae-gnb-header__nav-link--parent' : '')
+        + '"'
+        + (item.key ? ' data-mega-key="' + esc(item.key) + '"' : '')
+        + (hasChildren ? ' aria-haspopup="true"' : '')
+        + '>'
+        + esc(item.label);
+      if (hasChildren) {
+        html += '<span class="eottae-gnb-header__nav-caret" aria-hidden="true"></span>';
+      }
+      html += '</a>';
+    }
+
+    return html;
+  }
+
+  function replaceHomePrimaryNav(data) {
+    if (!data || !data.mobile_menu || !data.mobile_menu.items || !data.mobile_menu.items.length) {
+      return;
+    }
+
+    var header = document.querySelector('header');
+    if (!header) {
+      return;
+    }
+
+    var shell = ensureHomeGnbShell(header);
+    var desktopHead = shell.querySelector('.eottae-gnb-header__desktop-head') || shell;
+    var legacyNav = findLegacyBuilderNavContainer(header);
+    var nav = header.querySelector('[data-eottae-home-gnb-nav="1"]');
+
+    if (!nav) {
+      nav = document.createElement('nav');
+      nav.className = 'eottae-gnb-header__nav';
+      nav.setAttribute('aria-label', '메인메뉴');
+      nav.setAttribute('data-eottae-gnb-nav', '1');
+      nav.setAttribute('data-eottae-home-gnb-nav', '1');
+      nav.innerHTML = renderDesktopNavLinks(data.mobile_menu.items);
+
+      if (legacyNav && legacyNav.parentNode) {
+        legacyNav.parentNode.insertBefore(nav, legacyNav);
+      } else {
+        var logo = header.querySelector('a[href="/"]');
+        if (logo && logo.parentNode) {
+          logo.parentNode.appendChild(nav);
+        } else {
+          desktopHead.insertBefore(nav, desktopHead.firstChild);
+        }
+      }
+    } else {
+      nav.innerHTML = renderDesktopNavLinks(data.mobile_menu.items);
+    }
+
+    if (legacyNav) {
+      legacyNav.setAttribute('data-eottae-home-legacy-nav-hidden', '1');
+      legacyNav.style.display = 'none';
+    }
+
+    header.setAttribute('data-eottae-home-gnb-injected', '1');
+    tagHomeNavMegaKeys(header, data.mobile_menu.items);
+    mountDesktopMegaPanel(data);
+  }
+
+  function mountDesktopMegaPanel(data) {
+    if (!data || !data.mobile_menu || !data.mobile_menu.items || !data.mobile_menu.items.length) {
+      return;
+    }
+
+    var header = document.querySelector('header');
+    if (!header || header.querySelector('[data-eottae-home-mega="1"]')) {
+      return;
+    }
+
+    var items = data.mobile_menu.items;
+    var shell = ensureHomeGnbShell(header);
+    tagHomeNavMegaKeys(header, items);
+
+    var megaHtml = renderDesktopMegaPanel(items);
+    if (!megaHtml) {
+      return;
+    }
+
+    shell.insertAdjacentHTML('beforeend', megaHtml);
+  }
+
+  function findHeaderMenuButtonHost(header, actions) {
+    if (actions && actions !== header) {
+      return actions;
+    }
+
+    var shopWrite = findShopWriteLink(header);
+    if (shopWrite && shopWrite.parentNode) {
+      return shopWrite.parentNode;
+    }
+
+    var candidates = header.querySelectorAll('div, nav');
+    var i;
+    for (i = 0; i < candidates.length; i += 1) {
+      if (candidates[i].querySelector('a[href]')) {
+        return candidates[i];
+      }
+    }
+
+    return header;
+  }
+
   function initHomeMobileMenuToggle(openBtn, menu, overlay, closeBtn) {
     if (!openBtn || !menu || openBtn.getAttribute('data-eottae-menu-toggle-bound') === '1') {
       return;
@@ -170,9 +463,7 @@
     }
 
     var actions = findHeaderActionsRow(header);
-    if (!actions) {
-      return;
-    }
+    var buttonHost = findHeaderMenuButtonHost(header, actions);
 
     var openBtn = header.querySelector('[data-eottae-home-menu-btn="1"]');
     if (!openBtn) {
@@ -189,10 +480,10 @@
         + '</svg>';
 
       var shopWrite = findShopWriteLink(header);
-      if (shopWrite && shopWrite.parentNode === actions) {
-        actions.insertBefore(openBtn, shopWrite);
+      if (shopWrite && shopWrite.parentNode === buttonHost) {
+        buttonHost.insertBefore(openBtn, shopWrite);
       } else {
-        actions.appendChild(openBtn);
+        buttonHost.appendChild(openBtn);
       }
     }
 
@@ -786,6 +1077,7 @@
     }
 
     replaceTourNavWithGolfJoin(data);
+    replaceHomePrimaryNav(data);
     mountHomeMobileMenu(data);
     mountDesktop(data);
     mountMobile(data);
@@ -814,6 +1106,7 @@
 
     if (typeof global.eottaeHomeAfterReactReady === 'function') {
       global.eottaeHomeAfterReactReady(schedule);
+      global.setTimeout(schedule, 4000);
       return;
     }
 

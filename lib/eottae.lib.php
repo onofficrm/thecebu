@@ -1168,6 +1168,10 @@ if (!function_exists('eottae_builder_inject_home_header_actions_script')) {
         }
 
         $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-header-actions.js' : '/js/eottae-home-header-actions.js';
+        $js_path = G5_PATH.'/js/eottae-home-header-actions.js';
+        if (is_file($js_path)) {
+            $js .= '?ver='.(int) filemtime($js_path);
+        }
 
         return '<script>window.__EOTTae_HOME_HEADER_ACTIONS__='.$payload_json.';</script>'
             .'<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
@@ -1240,6 +1244,10 @@ if (!function_exists('eottae_builder_inject_home_react_ready_script')) {
     function eottae_builder_inject_home_react_ready_script()
     {
         $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-react-ready.js' : '/js/eottae-home-react-ready.js';
+        $js_path = G5_PATH.'/js/eottae-home-react-ready.js';
+        if (is_file($js_path)) {
+            $js .= '?ver='.(int) filemtime($js_path);
+        }
 
         return '<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
     }
@@ -5652,6 +5660,29 @@ if (!function_exists('eottae_free_list_url')) {
     }
 }
 
+if (!function_exists('eottae_news_board_table')) {
+    function eottae_news_board_table()
+    {
+        return defined('EOTTae_NEWS_TABLE') ? EOTTae_NEWS_TABLE : 'news';
+    }
+}
+
+if (!function_exists('eottae_news_list_url')) {
+    /**
+     * 필리핀뉴스 목록 (bo_table=news, 짧은주소 /news/)
+     */
+    function eottae_news_list_url($params = array())
+    {
+        $table = eottae_news_board_table();
+
+        if (empty($params) && function_exists('get_pretty_url')) {
+            return get_pretty_url($table);
+        }
+
+        return eottae_board_list_url($table, $params);
+    }
+}
+
 if (!function_exists('eottae_community_free_list_url')) {
     /** @deprecated eottae_free_list_url() 사용 */
     function eottae_community_free_list_url($params = array())
@@ -6001,6 +6032,7 @@ if (!function_exists('eottae_gnb_link_is_active')) {
         $people_table = defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people';
         $event_table = defined('EOTTae_EVENT_TABLE') ? EOTTae_EVENT_TABLE : 'event';
         $report_table = defined('EOTTae_REPORT_TABLE') ? EOTTae_REPORT_TABLE : 'report';
+        $news_table = function_exists('eottae_news_board_table') ? eottae_news_board_table() : 'news';
         $market_table = defined('EOTTae_MARKET_TABLE') ? EOTTae_MARKET_TABLE : 'market';
         $job_table = defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job';
         $estate_table = defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate';
@@ -6051,6 +6083,8 @@ if (!function_exists('eottae_gnb_link_is_active')) {
                 return ($is_map && $map_type === 'estate') || $bo === $estate_table;
             case 'community':
                 return $is_hub_board;
+            case 'community_news':
+                return $bo === $news_table || (bool) preg_match('#/news(?:/|\?|$)#', $uri);
             case 'community_life':
                 return $bo === $community_table;
             case 'community_free':

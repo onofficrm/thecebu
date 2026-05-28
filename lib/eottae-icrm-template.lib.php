@@ -130,6 +130,19 @@ if (!function_exists('eottae_icrm_html_purifier_config')) {
             return;
         }
 
+        if (method_exists($config, 'isFinalized') && $config->isFinalized()) {
+            return;
+        }
+
+        /*
+         * getHTMLDefinition(true)는 설정을 finalization 상태로 만들 수 있으므로,
+         * directive 변경은 반드시 정의 객체를 요청하기 전에 끝낸다.
+         */
+        if (method_exists($config, 'set')) {
+            $config->set('CSS.Trusted', true);
+            $config->set('HTML.Trusted', true);
+        }
+
         $def = $config->getHTMLDefinition(true);
         if (!$def) {
             return;
@@ -160,9 +173,6 @@ if (!function_exists('eottae_icrm_html_purifier_config')) {
                 $def->addAttribute($el, $attr, 'Text');
             }
         }
-
-        $config->set('CSS.Trusted', true);
-        $config->set('HTML.Trusted', true);
     }
 }
 

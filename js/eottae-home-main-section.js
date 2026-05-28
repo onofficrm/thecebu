@@ -499,6 +499,72 @@
     return true;
   }
 
+  function resolveCommunitySectionRoot(heading) {
+    var root = document.getElementById('root') || document;
+    var node = heading.parentElement;
+    var depth = 0;
+    var candidate = null;
+
+    while (node && node !== root && depth < 12) {
+      if (node.querySelector('header')) {
+        break;
+      }
+
+      if (!isUnsafeHomeRemovalTarget(node, heading)) {
+        candidate = node;
+      }
+
+      node = node.parentElement;
+      depth += 1;
+    }
+
+    return candidate;
+  }
+
+  function findHeadingWithMarker(markers) {
+    var root = document.getElementById('root') || document;
+    var headings = root.querySelectorAll('h2, h3');
+    var i;
+    var m;
+    var text;
+
+    for (m = 0; m < markers.length; m += 1) {
+      for (i = 0; i < headings.length; i += 1) {
+        text = normalizeText(headings[i].textContent);
+        if (text.indexOf(markers[m]) !== -1) {
+          return headings[i];
+        }
+      }
+    }
+
+    return null;
+  }
+
+  function findLegacyBoardsBlock() {
+    var root = document.getElementById('root') || document;
+    var hCommunity = findHeadingWithMarker(['커뮤니티최신글']);
+    var hLife = findHeadingWithMarker(['세부생활정보']);
+    var anchor = hCommunity || hLife;
+
+    if (!anchor) {
+      return null;
+    }
+
+    var node = anchor.parentElement;
+    var depth = 0;
+    var match = null;
+
+    while (node && node !== root && depth < 14) {
+      if ((!hLife || node.contains(hLife)) && !isUnsafeHomeRemovalTarget(node, anchor)) {
+        match = node;
+      }
+      node = node.parentElement;
+      depth += 1;
+    }
+
+    return match || resolveCommunitySectionRoot(anchor);
+  }
+
   function findCommunitySection() {
     var root = document.getElementById('root') || document;
     var mount = root.querySelector('[data-eottae-home-community-mount="1"]');
@@ -506,38 +572,53 @@
       return mount;
     }
 
-    var headings = root.querySelectorAll('h2');
+    var mounted = root.querySelector('[data-eottae-home-main-mounted="1"]');
+    if (mounted) {
+      return mounted.closest('[data-eottae-home-main-host]') || mounted.parentElement;
+    }
+
+    var legacyBlock = findLegacyBoardsBlock();
+    if (legacyBlock) {
+      return legacyBlock;
+    }
+
+    var markers = [
+      '오늘의세부커뮤니티',
+      '세부최신소식',
+      '커뮤니티최신글',
+      '세부생활정보',
+      '공개세부톡방',
+      '오늘의세부톡',
+    ];
+    var headings = root.querySelectorAll('h2, h3');
     var i;
+    var m;
     var text;
-    var heading;
-    var node;
-    var depth;
-    var candidate;
+    var section;
+
+    for (m = 0; m < markers.length; m += 1) {
+      for (i = 0; i < headings.length; i += 1) {
+        text = normalizeText(headings[i].textContent);
+        if (text.indexOf(markers[m]) === -1) {
+          continue;
+        }
+
+        section = resolveCommunitySectionRoot(headings[i]);
+        if (section) {
+          return section;
+        }
+      }
+    }
 
     for (i = 0; i < headings.length; i += 1) {
       text = normalizeText(headings[i].textContent);
-      if (text.indexOf('오늘의세부커뮤니티') !== -1) {
-        heading = headings[i];
-        node = heading.parentElement;
-        depth = 0;
-        candidate = null;
+      if (!headingMatchesPopularSection(text)) {
+        continue;
+      }
 
-        while (node && node !== root && depth < 10) {
-          if (node.querySelector('header')) {
-            break;
-          }
-
-          if (!isUnsafeHomeRemovalTarget(node, heading)) {
-            candidate = node;
-          }
-
-          node = node.parentElement;
-          depth += 1;
-        }
-
-        if (candidate) {
-          return candidate;
-        }
+      section = findLegacySectionContainer(headings[i]);
+      if (section && section.parentNode && !isUnsafeHomeRemovalTarget(section.parentNode, headings[i])) {
+        return section.parentNode;
       }
     }
 
@@ -546,14 +627,28 @@
 
   function findBuilderPopularHotSection() {
     var root = document.getElementById('root') || document;
-    var headings = root.querySelectorAll('h2');
+    var headings = root.querySelectorAll('h2, h3');
     var i;
     var text;
 
     for (i = 0; i < headings.length; i += 1) {
       text = normalizeText(headings[i].textContent);
-      if (text.indexOf('전체실시간') !== -1 || text.indexOf('실시간인기글') !== -1) {
-        return findLegacySectionContainer(headings[i]);
+      if (
+        text.indexOf('전체실시간') !== -1
+        || text.indexOf('실시간인기글') !== -1
+        || text.indexOf('커뮤니티인기글') !== -1
+        || text.indexOf('실시간추천글') !== -1
+        || (text.indexOf('추천글') !== -1 && text.indexOf('댓글') !== -1)
+      ) {
+        var scoped = findLegacySectionContainer(headings[i]);
+        if (scoped) {
+          return scoped;
+        }
+
+        scoped = resolveCommunitySectionRoot(headings[i]);
+        if (scoped && nodeHasLegacyPopularGrid(scoped)) {
+          return scoped;
+        }
       }
     }
 
@@ -1126,9 +1221,17 @@
 
   var mountDone = false;
 
+  function needsRemount() {
+    return mountDone && !document.querySelector('[data-eottae-home-main-mounted="1"]');
+  }
+
   function mount() {
-    if (mountDone) {
+    if (mountDone && !needsRemount()) {
       return true;
+    }
+
+    if (needsRemount()) {
+      mountDone = false;
     }
 
     var data = cfg();
@@ -1176,12 +1279,18 @@
   var popularMountObserver = null;
 
   function scheduleMount(retryCount) {
-    if (mountDone) {
+    if (mountDone && !needsRemount()) {
       return;
+    }
+
+    var data = cfg();
+    if (data && data.popular) {
+      mountPopularHot(data.popular || {}, findCommunitySection());
     }
 
     if (mount()) {
       watchLegacyHomeSectionsRemoval();
+      global.setTimeout(watchLegacyHomeSectionsRemoval, 600);
       if (popularMountObserver) {
         popularMountObserver.disconnect();
         popularMountObserver = null;
@@ -1189,8 +1298,10 @@
       return;
     }
 
+    watchLegacyHomeSectionsRemoval();
+
     var tries = typeof retryCount === 'number' ? retryCount : 0;
-    if (tries < 24) {
+    if (tries < 40) {
       global.setTimeout(function () {
         scheduleMount(tries + 1);
       }, 300);
@@ -1218,7 +1329,7 @@
         popularMountObserver.disconnect();
         popularMountObserver = null;
       }
-    }, 20000);
+    }, 60000);
   }
 
   function init() {
@@ -1228,6 +1339,7 @@
 
     if (typeof global.eottaeHomeAfterReactReady === 'function') {
       global.eottaeHomeAfterReactReady(run);
+      global.setTimeout(run, 4000);
     } else {
       global.setTimeout(run, 1500);
     }

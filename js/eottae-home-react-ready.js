@@ -8,6 +8,10 @@
   var ready = false;
   var polling = false;
 
+  function normalizeText(value) {
+    return String(value || '').replace(/\s+/g, '').trim();
+  }
+
   function isReady() {
     var root = document.getElementById('root');
     if (!root || (root.innerHTML || '').length < 500) {
@@ -18,6 +22,46 @@
     var i;
     for (i = 0; i < headings.length; i += 1) {
       if ((headings[i].textContent || '').indexOf('세부어때') !== -1) {
+        return true;
+      }
+    }
+
+    var header = root.querySelector('header');
+    if (header) {
+      var navLinks = header.querySelectorAll('a[href]');
+      var hasHome = false;
+      var hasPrimary = false;
+
+      for (i = 0; i < navLinks.length; i += 1) {
+        var label = normalizeText(navLinks[i].textContent);
+        if (label === '홈') {
+          hasHome = true;
+        }
+        if (
+          label.indexOf('내주변') !== -1
+          || label.indexOf('커뮤니티') !== -1
+          || label.indexOf('생활지도') !== -1
+          || label === 'MY'
+        ) {
+          hasPrimary = true;
+        }
+      }
+
+      if (hasHome && hasPrimary) {
+        return true;
+      }
+    }
+
+    var h2s = root.querySelectorAll('h2, h3');
+    for (i = 0; i < h2s.length; i += 1) {
+      var text = normalizeText(h2s[i].textContent);
+      if (
+        text.indexOf('커뮤니티') !== -1
+        || text.indexOf('실시간') !== -1
+        || text.indexOf('인기글') !== -1
+        || text.indexOf('세부생활') !== -1
+        || text.indexOf('세부최신') !== -1
+      ) {
         return true;
       }
     }
@@ -68,6 +112,9 @@
       tries += 1;
       if (tries >= 100) {
         polling = false;
+        if (queue.length) {
+          flush();
+        }
         return;
       }
 
