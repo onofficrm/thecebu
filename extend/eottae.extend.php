@@ -38,6 +38,7 @@ include_once G5_LIB_PATH.'/eottae-calendar-report.lib.php';
 include_once G5_LIB_PATH.'/eottae-briefing.lib.php';
 include_once G5_LIB_PATH.'/eottae-location.lib.php';
 include_once G5_LIB_PATH.'/eottae-market.lib.php';
+include_once G5_LIB_PATH.'/eottae-report.lib.php';
 include_once G5_LIB_PATH.'/eottae-challenge.lib.php';
 include_once G5_LIB_PATH.'/eottae-challenge-likes.lib.php';
 include_once G5_LIB_PATH.'/eottae-challenge-report.lib.php';
@@ -83,6 +84,12 @@ if (function_exists('eottae_column_ensure_schema')) {
 }
 if (function_exists('eottae_adroom_ensure_schema')) {
     eottae_adroom_ensure_schema();
+}
+if (function_exists('eottae_report_ensure_schema')) {
+    eottae_report_ensure_schema();
+}
+if (function_exists('eottae_market_ensure_schema')) {
+    eottae_market_ensure_schema();
 }
 if (function_exists('eottae_member_growth_ensure_schema')) {
     eottae_member_growth_ensure_schema();

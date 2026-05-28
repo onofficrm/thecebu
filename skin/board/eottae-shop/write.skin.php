@@ -160,7 +160,10 @@ $eottae_ai_hint = $eottae_ai_enabled
         <div class="eottae-field">
             <label for="wr_3">주소</label>
             <input type="text" name="wr_3" id="wr_3" value="<?php echo $v['wr_3']; ?>" placeholder="영문·한글 주소 (예: Talamban, Cebu City)">
-            <button type="button" class="btn btn--ghost shop-register-page__geocode-btn" id="shopGeocodeBtn">주소 확인 · 지역·좌표 설정</button>
+            <div class="shop-register-page__location-actions">
+                <button type="button" class="btn btn--ghost shop-register-page__geocode-btn" id="shopGeocodeBtn">주소 확인 · 지역·좌표 설정</button>
+                <button type="button" class="btn btn--ghost shop-register-page__geocode-btn shop-register-page__current-btn" id="shopCurrentLocationBtn">현재위치 등록</button>
+            </div>
             <p class="eottae-field__hint" id="shopRegionDisplay" aria-live="polite"><?php echo $shop_region_label !== '' ? '대표 지역: '.get_text($shop_region_label) : '주소 입력 후 자동으로 대표 지역이 설정됩니다.'; ?></p>
             <p class="eottae-field__hint" id="shopGeocodeStatus" aria-live="polite"></p>
         </div>

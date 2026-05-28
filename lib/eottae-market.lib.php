@@ -348,3 +348,95 @@ if (!function_exists('eottae_market_load_assets')) {
         }
     }
 }
+
+if (!function_exists('eottae_market_board_def')) {
+    function eottae_market_board_def()
+    {
+        return array(
+            'bo_table'            => eottae_market_board_table(),
+            'bo_subject'          => '중고장터',
+            'bo_skin'             => 'eottae-market',
+            'bo_mobile_skin'      => 'eottae-market',
+            'gr_id'               => 'community',
+            'bo_read_level'       => 1,
+            'bo_write_level'      => 2,
+            'bo_comment_level'    => 2,
+            'bo_use_category'     => 0,
+            'bo_category_list'    => '',
+            'bo_upload_count'     => 8,
+            'bo_use_dhtml_editor' => 0,
+            'bo_order'            => 19,
+            'bo_1_subj'           => '가격',
+            'bo_2_subj'           => '거래상태',
+            'bo_3_subj'           => '자동분류 지역',
+            'bo_4_subj'           => '상세위치',
+            'bo_5_subj'           => '위도',
+            'bo_6_subj'           => '경도',
+            'bo_7_subj'           => '연락방법',
+            'bo_8_subj'           => '가격제안 가능 여부',
+            'bo_9_subj'           => '지도표시 여부',
+            'bo_10_subj'          => '예비',
+        );
+    }
+}
+
+if (!function_exists('eottae_market_ensure_board')) {
+    function eottae_market_ensure_board()
+    {
+        $install_lib = G5_PATH.'/setup/tools/eottae-install.lib.php';
+        if (!is_file($install_lib)) {
+            return array('ok' => false, 'message' => 'install helper missing');
+        }
+
+        include_once $install_lib;
+        if (!function_exists('eottae_install_board_exists') || !function_exists('eottae_install_create_board')) {
+            return array('ok' => false, 'message' => 'install helper incomplete');
+        }
+
+        $bo_table = eottae_market_board_table();
+        if (eottae_install_board_exists($bo_table)) {
+            return array('ok' => true, 'action' => 'skip');
+        }
+
+        if (function_exists('eottae_install_ensure_group')) {
+            eottae_install_ensure_group('community', '커뮤니티');
+        }
+
+        return eottae_install_create_board(eottae_market_board_def());
+    }
+}
+
+if (!function_exists('eottae_market_sync_board_settings')) {
+    function eottae_market_sync_board_settings()
+    {
+        global $g5;
+
+        $bo_table = eottae_market_board_table();
+        sql_query("
+            UPDATE {$g5['board_table']} SET
+                bo_skin = 'eottae-market',
+                bo_mobile_skin = 'eottae-market',
+                bo_use_category = 0,
+                bo_use_dhtml_editor = 0,
+                bo_upload_count = 8
+            WHERE bo_table = '".sql_escape_string($bo_table)."'
+            LIMIT 1
+        ", false);
+    }
+}
+
+if (!function_exists('eottae_market_ensure_schema')) {
+    function eottae_market_ensure_schema()
+    {
+        static $done = false;
+        if ($done) {
+            return true;
+        }
+
+        eottae_market_ensure_board();
+        eottae_market_sync_board_settings();
+        $done = true;
+
+        return true;
+    }
+}

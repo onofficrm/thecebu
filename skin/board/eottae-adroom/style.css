@@ -104,6 +104,55 @@
     outline-offset: 2px;
 }
 
+.adroom-promo-notice {
+    margin: 0 0 20px;
+    padding: 16px 18px;
+    border: 1px solid #fcd34d;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    box-shadow: 0 8px 24px rgba(180, 83, 9, 0.08);
+}
+
+.adroom-promo-notice__badge {
+    display: inline-block;
+    margin: 0 0 8px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #b45309;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+.adroom-promo-notice__title {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.45;
+    color: #78350f;
+}
+
+.adroom-promo-notice__desc {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.65;
+    color: #92400e;
+}
+
+.adroom-shop-picker__optional {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 6px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 11px;
+    font-weight: 800;
+    vertical-align: middle;
+}
+
 /* write guide: see eottae.css (global load) — skin overrides below */
 .board-wrap--eottae-adroom .adroom-write-guide__cta {
     min-width: 140px;

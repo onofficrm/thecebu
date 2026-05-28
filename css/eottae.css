@@ -1570,8 +1570,15 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.12), var(--shop-list-shadow);
 }
 
-.shop-register-page__geocode-btn {
+.shop-register-page__location-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   margin-top: 8px;
+}
+
+.shop-register-page__location-actions .shop-register-page__geocode-btn {
+  margin-top: 0;
 }
 
 .shop-list-card__thumb-wrap {

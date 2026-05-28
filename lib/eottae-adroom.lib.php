@@ -200,13 +200,88 @@ if (!function_exists('eottae_adroom_write_url')) {
     }
 }
 
+if (!function_exists('eottae_adroom_promotion_active')) {
+    /**
+     * 세부어때 광고방 프로모션 — 해당 연도 8월 31일 23:59:59 까지
+     */
+    function eottae_adroom_promotion_active()
+    {
+        $year = defined('G5_TIME_YMD') ? substr(G5_TIME_YMD, 0, 4) : date('Y');
+        $end = $year.'-08-31 23:59:59';
+        $now = defined('G5_TIME_YMDHIS') ? G5_TIME_YMDHIS : date('Y-m-d H:i:s');
+
+        return $now <= $end;
+    }
+}
+
+if (!function_exists('eottae_adroom_promotion_end_label')) {
+    function eottae_adroom_promotion_end_label()
+    {
+        $year = defined('G5_TIME_YMD') ? substr(G5_TIME_YMD, 0, 4) : date('Y');
+
+        return $year.'년 8월 31일';
+    }
+}
+
+if (!function_exists('eottae_adroom_apply_promotion_write_level')) {
+    /**
+     * 글쓰기·수정 시 게시판 등급 제한 완화 (write.php / write_update.php)
+     */
+    function eottae_adroom_apply_promotion_write_level(&$board)
+    {
+        if (!is_array($board) || empty($board['bo_table']) || !eottae_adroom_is_board($board['bo_table'])) {
+            return;
+        }
+        if (!eottae_adroom_promotion_active()) {
+            return;
+        }
+
+        $board['bo_write_level'] = 1;
+    }
+}
+
+if (!function_exists('eottae_adroom_list_write_href')) {
+    function eottae_adroom_list_write_href($write_href, $is_member = false)
+    {
+        if ($write_href !== '') {
+            return $write_href;
+        }
+        if ($is_member && eottae_adroom_promotion_active()) {
+            return eottae_adroom_write_url();
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('eottae_adroom_render_promotion_notice')) {
+    function eottae_adroom_render_promotion_notice()
+    {
+        if (!eottae_adroom_promotion_active()) {
+            return '';
+        }
+
+        $end_label = eottae_adroom_promotion_end_label();
+        ob_start();
+        ?>
+        <aside class="adroom-promo-notice" role="note" aria-label="광고방 프로모션 안내">
+            <p class="adroom-promo-notice__badge">세부어때 프로모션</p>
+            <h2 class="adroom-promo-notice__title"><?php echo get_text($end_label); ?>까지 등급 제한 없이 광고 등록</h2>
+            <p class="adroom-promo-notice__desc">로그인한 회원이라면 누구나 홍보·이벤트·할인 정보를 올릴 수 있습니다. 업체 연동은 선택 사항이며, 프로모션 종료 후에는 사업자 회원·글쓰기 등급 조건이 다시 적용됩니다.</p>
+        </aside>
+        <?php
+
+        return (string) ob_get_clean();
+    }
+}
+
 if (!function_exists('eottae_adroom_write_eligibility')) {
     /**
      * 광고 등록 버튼·안내 노출 판단
      *
      * @param array<string, mixed>|null $member
      * @param array<string, mixed>|null $board
-     * @return array{can_write:bool,is_biz:bool,has_board_write:bool,mb_level:int,bo_write_level:int,biz_level:int}
+     * @return array{can_write:bool,is_biz:bool,has_board_write:bool,mb_level:int,bo_write_level:int,biz_level:int,promotion?:bool}
      */
     function eottae_adroom_write_eligibility($member = null, $board = null, $is_member = false, $is_super = false)
     {
@@ -222,6 +297,20 @@ if (!function_exists('eottae_adroom_write_eligibility')) {
         $mb_level = ($is_member && is_array($member)) ? (int) ($member['mb_level'] ?? 0) : 0;
         $is_biz = $is_member && function_exists('eottae_is_business_member') && eottae_is_business_member($member);
         $has_board_write = $is_super || ($is_member && $mb_level >= $bo_write_level);
+        $promotion = eottae_adroom_promotion_active();
+
+        if ($promotion && ($is_super || $is_member)) {
+            return array(
+                'can_write'        => true,
+                'is_biz'           => $is_biz,
+                'has_board_write'  => true,
+                'mb_level'         => $mb_level,
+                'bo_write_level'   => $bo_write_level,
+                'biz_level'        => $biz_level,
+                'promotion'        => true,
+            );
+        }
+
         $can_write = $is_super || ($is_biz && $has_board_write);
 
         return array(
@@ -231,6 +320,7 @@ if (!function_exists('eottae_adroom_write_eligibility')) {
             'mb_level'         => $mb_level,
             'bo_write_level'   => $bo_write_level,
             'biz_level'        => $biz_level,
+            'promotion'        => false,
         );
     }
 }
@@ -741,13 +831,19 @@ if (!function_exists('eottae_adroom_validate_write')) {
             return array('ok' => false, 'message' => '로그인이 필요합니다.');
         }
 
-        if (!$is_super && !eottae_adroom_can_write(null, false)) {
+        $promotion = eottae_adroom_promotion_active();
+
+        if (!$promotion && !$is_super && !eottae_adroom_can_write(null, false)) {
             return array('ok' => false, 'message' => '업체 회원만 광고를 등록할 수 있습니다.');
         }
 
         $shop_bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $shop_bo_table);
         $shop_wr_id = (int) $shop_wr_id;
         if ($shop_bo_table === '' || $shop_wr_id < 1) {
+            if ($promotion) {
+                return array('ok' => true, 'message' => '');
+            }
+
             return array('ok' => false, 'message' => '연동할 업체를 선택해 주세요.');
         }
 
@@ -756,7 +852,13 @@ if (!function_exists('eottae_adroom_validate_write')) {
             return array('ok' => false, 'message' => '업체 정보를 찾을 수 없습니다.');
         }
 
-        if (!$is_super && function_exists('eottae_business_owns_shop')) {
+        if (!$promotion && !$is_super && function_exists('eottae_business_owns_shop')) {
+            if (!eottae_business_owns_shop($mb_id, $shop_wr_id, $shop_bo_table)) {
+                return array('ok' => false, 'message' => '본인 업체만 연동할 수 있습니다.');
+            }
+        }
+
+        if ($promotion && !$is_super && function_exists('eottae_business_owns_shop')) {
             if (!eottae_business_owns_shop($mb_id, $shop_wr_id, $shop_bo_table)) {
                 return array('ok' => false, 'message' => '본인 업체만 연동할 수 있습니다.');
             }
@@ -797,9 +899,15 @@ if (!function_exists('eottae_adroom_on_write_after')) {
 if (!function_exists('eottae_adroom_on_bbs_write')) {
     function eottae_adroom_on_bbs_write($board, $wr_id, $w)
     {
-        global $member, $is_admin;
+        global $member, $is_admin, $is_member;
 
         if (empty($board['bo_table']) || !eottae_adroom_is_board($board['bo_table'])) {
+            return;
+        }
+
+        if (eottae_adroom_promotion_active() && !empty($is_member)) {
+            eottae_adroom_apply_promotion_write_level($board);
+
             return;
         }
 
@@ -813,10 +921,14 @@ if (!function_exists('eottae_adroom_on_bbs_write')) {
 if (!function_exists('eottae_adroom_on_write_update_before')) {
     function eottae_adroom_on_write_update_before($board, $wr_id, $w, $qstr)
     {
-        global $member, $is_admin;
+        global $member, $is_admin, $is_member;
 
         if (empty($board['bo_table']) || !eottae_adroom_is_board($board['bo_table'])) {
             return;
+        }
+
+        if (eottae_adroom_promotion_active() && !empty($is_member)) {
+            eottae_adroom_apply_promotion_write_level($board);
         }
 
         $shop_bo = isset($_POST['eottae_adroom_shop_bo_table'])
@@ -851,11 +963,15 @@ if (!function_exists('eottae_adroom_board_hero')) {
     function eottae_adroom_board_hero($board, $sca = '')
     {
         $sca = get_text((string) $sca);
+        $desc = '세부 업체 회원이 홍보·이벤트·할인 정보를 올리는 공간입니다. 글과 함께 내 업체 지도·연락처가 연동됩니다.';
+        if (eottae_adroom_promotion_active()) {
+            $desc = eottae_adroom_promotion_end_label().'까지 세부어때 프로모션 기간입니다. 로그인한 회원이라면 등급 제한 없이 광고를 등록할 수 있습니다.';
+        }
 
         return array(
             'kicker' => 'Business · Ad Room',
             'title'  => $sca !== '' ? $sca : '광고방',
-            'desc'   => '세부 업체 회원이 홍보·이벤트·할인 정보를 올리는 공간입니다. 글과 함께 내 업체 지도·연락처가 연동됩니다.',
+            'desc'   => $desc,
             'image'  => '',
         );
     }
@@ -887,7 +1003,7 @@ if (!function_exists('eottae_adroom_render_write_guide')) {
      */
     function eottae_adroom_render_write_guide($member, $board, $is_member, $is_super, $write_href, $can_write_ad)
     {
-        if ($can_write_ad) {
+        if ($can_write_ad || (eottae_adroom_promotion_active() && $is_member)) {
             return '';
         }
 

@@ -1,24 +1,55 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" role="img" aria-label="D½XÀ JDÄ Á ª@ t|0| ð” ">
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" role="img" aria-label="Casual writing at a cafe is enough for columnist">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id="c04bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#fafaf9"/>
-      <stop offset=".58" stop-color="#f5f4f0"/>
+      <stop offset=".55" stop-color="#f5f4f0"/>
       <stop offset="1" stop-color="#e6f0ef"/>
     </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#1c1917" flood-opacity=".12"/>
+    <filter id="c04sh" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#1c1917" flood-opacity=".13"/>
     </filter>
   </defs>
-  <rect width="640" height="480" fill="url(#bg)"/>
-  <circle cx="122" cy="95" r="92" fill="#fef3c7" opacity=".76"/>
-  <path d="M0 362c100-42 166-12 256-45 80-30 130-74 222-43 56 19 101 35 162 16v190H0z" fill="#d6ebe8" opacity=".76"/>
-  <g filter="url(#shadow)">
-    <rect x="156" y="78" width="330" height="318" rx="28" fill="#fff"/>
-    <path d="M204 130h230M204 168h180M204 206h230M204 244h142" stroke="#d6d3d1" stroke-width="11" stroke-linecap="round"/>
-    <path d="M220 322c51-60 112-92 184-96" fill="none" stroke="#b45309" stroke-width="8" stroke-linecap="round"/>
-    <path d="M376 212l48 28-74 92-43 12 16-42z" fill="#0f4c5c"/>
-    <path d="M424 240l24 14-74 92-24-14z" fill="#fef3c7"/>
-    <path d="M307 344l43-12-28-30z" fill="#b45309"/>
+  <rect width="640" height="480" fill="url(#c04bg)"/>
+  <circle cx="108" cy="96" r="82" fill="#fef3c7" opacity=".78"/>
+  <path d="M0 368c100-30 180-16 260-44 92-30 148-80 240-62 78 16 118 54 140 34v184H0z" fill="#d6ebe8" opacity=".72"/>
+  <!-- cafe table -->
+  <g transform="translate(88 248)" filter="url(#c04sh)">
+    <ellipse cx="200" cy="148" rx="200" ry="28" fill="#0f4c5c" opacity=".08"/>
+    <rect x="0" y="0" width="400" height="24" rx="12" fill="#d6d3d1"/>
+    <rect x="40" y="-8" width="320" height="16" rx="8" fill="#a8a29e" opacity=".35"/>
   </g>
-  <path d="M112 408h416" stroke="#0f4c5c" stroke-width="9" stroke-linecap="round" opacity=".16"/>
+  <!-- laptop -->
+  <g transform="translate(196 168)" filter="url(#c04sh)">
+    <path d="M0 88h240l-20 36H20z" fill="#cbd5e1"/>
+    <rect x="20" y="0" width="200" height="120" rx="12" fill="#1c1917"/>
+    <rect x="32" y="14" width="176" height="92" rx="8" fill="#fff"/>
+    <path d="M48 36h120M48 56h96M48 76h72" stroke="#d6d3d1" stroke-width="8" stroke-linecap="round"/>
+    <path d="M48 92h48" stroke="#0f4c5c" stroke-width="8" stroke-linecap="round" opacity=".35"/>
+    <circle cx="188" cy="28" r="14" fill="#22c55e"/>
+    <path d="M182 28l4 4 8-10" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <!-- coffee -->
+  <g transform="translate(448 196)" filter="url(#c04sh)">
+    <rect x="0" y="24" width="56" height="64" rx="10" fill="#fff" stroke="#e7e5e4" stroke-width="2"/>
+    <path d="M8 24h40c0-16-8-24-20-24s-20 8-20 24z" fill="#b45309" opacity=".35"/>
+    <path d="M56 48h16c8 0 12 6 12 14s-4 14-12 14" fill="none" stroke="#d6d3d1" stroke-width="4"/>
+  </g>
+  <!-- relaxed writer -->
+  <g transform="translate(108 72)" filter="url(#c04sh)">
+    <circle cx="120" cy="72" r="52" fill="#f5d0a8"/>
+    <path d="M72 72c0-30 20-52 48-52s48 22 48 52" fill="#0f4c5c"/>
+    <path d="M96 78c0 6 8 10 12 10s12-4 12-10" fill="none" stroke="#b45309" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="104" cy="68" r="4" fill="#1c1917"/>
+    <circle cx="136" cy="68" r="4" fill="#1c1917"/>
+    <path d="M68 200c16-48 40-72 52-72s36 24 52 72" fill="#d6ebe8"/>
+    <path d="M52 160l-24 12M188 160l24 12" stroke="#0f4c5c" stroke-width="12" stroke-linecap="round"/>
+  </g>
+  <!-- reassurance bubble -->
+  <g transform="translate(368 48)" filter="url(#c04sh)">
+    <rect x="0" y="0" width="220" height="88" rx="22" fill="#fff" stroke="#e7e5e4" stroke-width="2"/>
+    <path d="M28 88l-10 28 36-28z" fill="#fff" stroke="#e7e5e4" stroke-width="2"/>
+    <text x="110" y="38" text-anchor="middle" font-family="Noto Serif KR, serif" font-size="15" font-weight="700" fill="#0f4c5c">My real story</text>
+    <text x="110" y="62" text-anchor="middle" font-family="Noto Serif KR, serif" font-size="15" font-weight="700" fill="#0f4c5c">is enough</text>
+    <text x="110" y="82" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" fill="#78716c">No pro writing needed</text>
+  </g>
 </svg>

@@ -9,21 +9,27 @@ if (!function_exists('eottae_adroom_render_shop_picker')) {
      * @param string $selected_bo
      * @param int $selected_wr_id
      */
-    function eottae_adroom_render_shop_picker(array $shops, $selected_bo = '', $selected_wr_id = 0)
+    function eottae_adroom_render_shop_picker(array $shops, $selected_bo = '', $selected_wr_id = 0, $shop_required = true)
     {
         $selected_bo = preg_replace('/[^a-z0-9_]/', '', (string) $selected_bo);
         $selected_wr_id = (int) $selected_wr_id;
         $selected_key = $selected_bo !== '' && $selected_wr_id > 0 ? $selected_bo.':'.$selected_wr_id : '';
+        $shop_required = (bool) $shop_required;
+        $promo_active = function_exists('eottae_adroom_promotion_active') && eottae_adroom_promotion_active();
 
         ob_start();
         ?>
         <section class="adroom-shop-picker" id="adroom-shop-picker">
-            <h3 class="adroom-shop-picker__title">연동 업체 <span class="adroom-required">*</span></h3>
-            <p class="adroom-shop-picker__desc">광고와 함께 노출할 내 업체를 선택하세요. 업체명·지역·주소로 검색할 수 있습니다.</p>
+            <h3 class="adroom-shop-picker__title">연동 업체<?php if ($shop_required) { ?> <span class="adroom-required">*</span><?php } else { ?> <span class="adroom-shop-picker__optional">선택</span><?php } ?></h3>
+            <p class="adroom-shop-picker__desc"><?php echo $promo_active ? '업체를 연동하면 지도·주소가 함께 노출됩니다. 업체가 없어도 광고만 먼저 등록할 수 있습니다.' : '광고와 함께 노출할 내 업체를 선택하세요. 업체명·지역·주소로 검색할 수 있습니다.'; ?></p>
 
             <?php if (empty($shops)) { ?>
             <div class="adroom-shop-picker__empty">
+                <?php if ($promo_active) { ?>
+                <p>등록된 업체가 없어도 광고 등록은 가능합니다. 업체를 연동하면 지도·연락처가 함께 표시됩니다.</p>
+                <?php } else { ?>
                 <p>등록된 업체가 없습니다. 먼저 업체를 등록한 뒤 광고를 작성해 주세요.</p>
+                <?php } ?>
                 <a href="<?php echo G5_BBS_URL; ?>/write.php?bo_table=<?php echo defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop'; ?>" class="adroom-btn adroom-btn--primary">업체 등록하기</a>
             </div>
             <?php } else { ?>

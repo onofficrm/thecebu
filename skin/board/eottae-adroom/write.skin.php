@@ -40,6 +40,9 @@ $member_coupons = array();
 if (!empty($member['mb_id'])) {
     $member_coupons = eottae_adroom_member_coupon_options($member['mb_id']);
 }
+$adroom_promo_active = function_exists('eottae_adroom_promotion_active') && eottae_adroom_promotion_active();
+$adroom_shop_required = !$adroom_promo_active;
+$adroom_promo_notice = function_exists('eottae_adroom_render_promotion_notice') ? eottae_adroom_render_promotion_notice() : '';
 ?>
 
 <div class="adroom-write board-wrap board-wrap--eottae-adroom" id="bo_w" style="width:<?php echo $width; ?>">
@@ -47,8 +50,10 @@ if (!empty($member['mb_id'])) {
     <header class="adroom-write__header">
         <a href="<?php echo $list_url; ?>" class="adroom-write__back">← 광고방 목록</a>
         <h1 class="adroom-write__title"><?php echo $w === 'u' ? '광고 수정' : '광고 등록'; ?></h1>
-        <p class="adroom-write__desc">홍보·이벤트·할인 정보를 작성하고, 노출할 업체를 선택하세요. 업체 지도·주소가 글과 함께 연동됩니다.</p>
+        <p class="adroom-write__desc"><?php echo $adroom_promo_active ? '프로모션 기간에는 등급 제한 없이 광고를 등록할 수 있습니다. 업체 연동은 선택 사항입니다.' : '홍보·이벤트·할인 정보를 작성하고, 노출할 업체를 선택하세요. 업체 지도·주소가 글과 함께 연동됩니다.'; ?></p>
     </header>
+
+    <?php echo $adroom_promo_notice; ?>
 
     <form name="fwrite" id="fwrite" class="adroom-write__form" action="<?php echo $action_url; ?>" onsubmit="return fwrite_submit(this);" method="post" enctype="multipart/form-data">
     <input type="hidden" name="uid" value="<?php echo get_uniqid(); ?>">
@@ -59,7 +64,7 @@ if (!empty($member['mb_id'])) {
     <input type="hidden" name="page" value="<?php echo $page; ?>">
     <?php include G5_PATH.'/components/eottae/board-write-options.php'; ?>
 
-    <?php echo eottae_adroom_render_shop_picker($member_shops, $selected_bo, $selected_wr_id); ?>
+    <?php echo eottae_adroom_render_shop_picker($member_shops, $selected_bo, $selected_wr_id, $adroom_shop_required); ?>
 
     <?php echo eottae_adroom_render_coupon_picker($member_coupons, $selected_cp_id); ?>
 
@@ -119,9 +124,10 @@ if (!empty($member['mb_id'])) {
 function fwrite_submit(f) {
     <?php echo $editor_js; ?>
 
+    var shopRequired = <?php echo $adroom_shop_required ? 'true' : 'false'; ?>;
     var bo = document.getElementById('eottae_adroom_shop_bo_table');
     var wr = document.getElementById('eottae_adroom_shop_wr_id');
-    if (bo && wr && (!bo.value || !parseInt(wr.value, 10))) {
+    if (shopRequired && bo && wr && (!bo.value || !parseInt(wr.value, 10))) {
         alert('연동할 업체를 선택해 주세요.');
         return false;
     }

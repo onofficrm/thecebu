@@ -891,3 +891,95 @@ if (!function_exists('eottae_report_list_filter_tabs')) {
         return $tabs;
     }
 }
+
+if (!function_exists('eottae_report_board_def')) {
+    function eottae_report_board_def()
+    {
+        return array(
+            'bo_table'            => eottae_report_board_table(),
+            'bo_subject'          => '세부 제보함',
+            'bo_skin'             => 'eottae-community',
+            'bo_mobile_skin'      => 'eottae-community',
+            'gr_id'               => 'community',
+            'bo_read_level'       => 1,
+            'bo_write_level'      => 2,
+            'bo_comment_level'    => 2,
+            'bo_use_category'     => 0,
+            'bo_category_list'    => '',
+            'bo_upload_count'     => 5,
+            'bo_use_dhtml_editor' => 0,
+            'bo_order'            => 18,
+            'bo_1_subj'           => '제보 유형',
+            'bo_2_subj'           => '지역',
+            'bo_3_subj'           => '익명 여부',
+            'bo_4_subj'           => '연락 가능 여부',
+            'bo_5_subj'           => '연락처',
+            'bo_6_subj'           => '관련 업체명',
+            'bo_7_subj'           => '관련 링크',
+            'bo_8_subj'           => '제보 상태',
+            'bo_9_subj'           => '관리자 메모',
+            'bo_10_subj'          => '공개 전환 예비',
+        );
+    }
+}
+
+if (!function_exists('eottae_report_ensure_board')) {
+    function eottae_report_ensure_board()
+    {
+        $install_lib = G5_PATH.'/setup/tools/eottae-install.lib.php';
+        if (!is_file($install_lib)) {
+            return array('ok' => false, 'message' => 'install helper missing');
+        }
+
+        include_once $install_lib;
+        if (!function_exists('eottae_install_board_exists') || !function_exists('eottae_install_create_board')) {
+            return array('ok' => false, 'message' => 'install helper incomplete');
+        }
+
+        $bo_table = eottae_report_board_table();
+        if (eottae_install_board_exists($bo_table)) {
+            return array('ok' => true, 'action' => 'skip');
+        }
+
+        if (function_exists('eottae_install_ensure_group')) {
+            eottae_install_ensure_group('community', '커뮤니티');
+        }
+
+        return eottae_install_create_board(eottae_report_board_def());
+    }
+}
+
+if (!function_exists('eottae_report_sync_board_settings')) {
+    function eottae_report_sync_board_settings()
+    {
+        global $g5;
+
+        $bo_table = eottae_report_board_table();
+        sql_query("
+            UPDATE {$g5['board_table']} SET
+                bo_skin = 'eottae-community',
+                bo_mobile_skin = 'eottae-community',
+                bo_use_category = 0,
+                bo_use_dhtml_editor = 0,
+                bo_upload_count = 5
+            WHERE bo_table = '".sql_escape_string($bo_table)."'
+            LIMIT 1
+        ", false);
+    }
+}
+
+if (!function_exists('eottae_report_ensure_schema')) {
+    function eottae_report_ensure_schema()
+    {
+        static $done = false;
+        if ($done) {
+            return true;
+        }
+
+        eottae_report_ensure_board();
+        eottae_report_sync_board_settings();
+        $done = true;
+
+        return true;
+    }
+}

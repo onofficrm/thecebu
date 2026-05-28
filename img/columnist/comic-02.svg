@@ -1,34 +1,59 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" role="img" aria-label="i´Ä 8€ Ý\ ô| ¬X” ¥t">
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" role="img" aria-label="Person overwhelmed by scattered Cebu life tips">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id="c02bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#fafaf9"/>
-      <stop offset=".55" stop-color="#f5f4f0"/>
+      <stop offset=".5" stop-color="#f5f4f0"/>
       <stop offset="1" stop-color="#e9f1ef"/>
     </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#1c1917" flood-opacity=".12"/>
+    <filter id="c02sh" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#1c1917" flood-opacity=".13"/>
     </filter>
   </defs>
-  <rect width="640" height="480" fill="url(#bg)"/>
-  <circle cx="104" cy="96" r="86" fill="#fef3c7" opacity=".8"/>
-  <path d="M0 338c78-36 153-24 222-55 88-40 155-40 238 7 62 35 112 44 180 17v173H0z" fill="#d6ebe8" opacity=".72"/>
-  <g filter="url(#shadow)">
-    <rect x="130" y="96" width="382" height="282" rx="28" fill="#fff"/>
-    <rect x="164" y="132" width="314" height="34" rx="17" fill="#0f4c5c" opacity=".12"/>
-    <g transform="translate(174 204)">
-      <rect width="92" height="86" rx="18" fill="#fff7ed" stroke="#fed7aa"/>
-      <circle cx="46" cy="33" r="18" fill="#b45309" opacity=".18"/>
-      <path d="M32 60h28" stroke="#b45309" stroke-width="6" stroke-linecap="round"/>
+  <rect width="640" height="480" fill="url(#c02bg)"/>
+  <circle cx="520" cy="72" r="70" fill="#fef3c7" opacity=".75"/>
+  <path d="M0 350c80-28 150-14 220-40 90-30 150-76 250-54 88 20 130 52 170 28v196H0z" fill="#d6ebe8" opacity=".7"/>
+  <!-- floating tip cards -->
+  <g filter="url(#c02sh)">
+    <g transform="translate(56 72) rotate(-8 60 50)">
+      <rect width="120" height="100" rx="18" fill="#fff7ed" stroke="#fed7aa" stroke-width="3"/>
+      <circle cx="60" cy="38" r="20" fill="#b45309" opacity=".2"/>
+      <path d="M48 58h24M44 38c4-12 12-18 16-18s12 6 16 18" fill="none" stroke="#b45309" stroke-width="5" stroke-linecap="round"/>
+      <text x="60" y="82" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="13" font-weight="700" fill="#b45309">Food</text>
     </g>
-    <g transform="translate(274 188)">
-      <rect width="92" height="86" rx="18" fill="#f0f9ff" stroke="#bae6fd"/>
-      <path d="M29 61h34M31 31h30M46 22v50" stroke="#0f4c5c" stroke-width="6" stroke-linecap="round"/>
+    <g transform="translate(468 88) rotate(10 60 50)">
+      <rect width="120" height="100" rx="18" fill="#f0f9ff" stroke="#bae6fd" stroke-width="3"/>
+      <path d="M42 62h36M60 28v48M48 40h24" stroke="#0f4c5c" stroke-width="5" stroke-linecap="round"/>
+      <text x="60" y="82" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="13" font-weight="700" fill="#0f4c5c">Clinic</text>
     </g>
-    <g transform="translate(374 208)">
-      <rect width="92" height="86" rx="18" fill="#fefce8" stroke="#fcd34d"/>
-      <path d="M30 64l18-38 17 38M38 49h21" stroke="#b45309" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <g transform="translate(498 248) rotate(6 60 50)">
+      <rect width="120" height="100" rx="18" fill="#fefce8" stroke="#fcd34d" stroke-width="3"/>
+      <path d="M38 64l22-42 20 42M48 50h32" stroke="#b45309" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="60" y="82" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="13" font-weight="700" fill="#b45309">Home</text>
     </g>
-    <path d="M198 328h244" stroke="#d6d3d1" stroke-width="10" stroke-linecap="round"/>
+    <g transform="translate(72 268) rotate(-5 60 50)">
+      <rect width="120" height="100" rx="18" fill="#fff" stroke="#e7e5e4" stroke-width="3"/>
+      <rect x="22" y="24" width="76" height="10" rx="5" fill="#d6d3d1"/>
+      <rect x="22" y="44" width="56" height="8" rx="4" fill="#d6d3d1"/>
+      <rect x="22" y="60" width="64" height="8" rx="4" fill="#d6d3d1"/>
+      <text x="60" y="86" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="12" font-weight="600" fill="#78716c">Memo</text>
+    </g>
   </g>
-  <path d="M112 396c42 10 84 10 126 0" stroke="#0f4c5c" stroke-width="8" stroke-linecap="round" opacity=".25"/>
+  <!-- desk + character -->
+  <g transform="translate(168 118)" filter="url(#c02sh)">
+    <rect x="0" y="168" width="304" height="22" rx="11" fill="#0f4c5c" opacity=".12"/>
+    <rect x="24" y="120" width="256" height="68" rx="16" fill="#fff"/>
+    <rect x="48" y="142" width="208" height="12" rx="6" fill="#e7e5e4"/>
+    <circle cx="152" cy="52" r="46" fill="#f5d0a8"/>
+    <path d="M108 52c0-26 18-46 44-46s44 20 44 46" fill="#44403c"/>
+    <circle cx="136" cy="48" r="5" fill="#1c1917"/>
+    <circle cx="168" cy="48" r="5" fill="#1c1917"/>
+    <path d="M140 72c6-6 18-6 24 0" fill="none" stroke="#78716c" stroke-width="4" stroke-linecap="round"/>
+    <path d="M108 188c12-40 30-60 44-60s32 20 44 60" fill="#0f4c5c"/>
+    <path d="M88 150l-20 18M216 150l20 18" stroke="#0f4c5c" stroke-width="10" stroke-linecap="round"/>
+  </g>
+  <!-- big question -->
+  <g transform="translate(248 24)" filter="url(#c02sh)">
+    <circle cx="72" cy="72" r="72" fill="#0f4c5c"/>
+    <text x="72" y="98" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="72" font-weight="800" fill="#fef3c7">?</text>
+  </g>
 </svg>

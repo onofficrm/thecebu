@@ -1269,6 +1269,41 @@
     return shopDetectRegionFromText(parts.join(' '));
   }
 
+  function shopDetectRegionFromCoords(lat, lng) {
+    lat = parseFloat(lat);
+    lng = parseFloat(lng);
+    if (!isFinite(lat) || !isFinite(lng)) return '';
+    if (lat >= 10.25 && lat <= 10.38 && lng >= 123.92 && lng <= 124.05) return '막탄';
+    if (lat >= 10.25 && lat <= 10.35 && lng >= 123.93 && lng <= 124.04) return '라푸라푸';
+    if (lat >= 10.30 && lat <= 10.40 && lng >= 123.90 && lng <= 123.97) return '만다우에';
+    if (lat >= 10.24 && lat <= 10.36 && lng >= 123.78 && lng <= 123.90) return '세부시티';
+    return '';
+  }
+
+  function shopReverseGeocode(lat, lng) {
+    return new Promise(function (resolve) {
+      if (!window.google || !google.maps || !google.maps.Geocoder) {
+        resolve({ ok: false, status: 'MAPS_NOT_READY' });
+        return;
+      }
+      var geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ location: { lat: lat, lng: lng } }, function (results, status) {
+        if (status !== 'OK' || !results || !results[0] || !results[0].geometry) {
+          resolve({ ok: false, status: status || 'ZERO_RESULTS' });
+          return;
+        }
+        var loc = results[0].geometry.location;
+        resolve({
+          ok: true,
+          lat: loc.lat(),
+          lng: loc.lng(),
+          address: results[0].formatted_address || '',
+          region: shopDetectRegionFromGeocodeResult(results[0])
+        });
+      });
+    });
+  }
+
   function shopGeocodeErrorMessage(data) {
     var status = data && data.status ? data.status : '';
     if (status === 'REQUEST_DENIED') {
@@ -1339,7 +1374,8 @@
 
   function initShopGeocode() {
     var btn = qs('#shopGeocodeBtn');
-    if (!btn) return;
+    var currentBtn = qs('#shopCurrentLocationBtn');
+    if (!btn && !currentBtn) return;
 
     var addressInput = qs('#wr_3');
     var latInput = qs('#wr_9');
@@ -1349,6 +1385,25 @@
     var status = qs('#shopGeocodeStatus');
     var geocodeTimer = null;
     var lastGeocodedAddress = '';
+
+    function openCoordDetails() {
+      var details = qs('.shop-register-page__advanced');
+      if (details) details.open = true;
+    }
+
+    function applyCurrentLocation(lat, lng, address, region) {
+      var data = {
+        lat: lat,
+        lng: lng,
+        region: region || shopDetectRegionFromText(address || '') || shopDetectRegionFromCoords(lat, lng)
+      };
+      if (addressInput && address) {
+        addressInput.value = address;
+        lastGeocodedAddress = address;
+      }
+      shopApplyGeocodeResult(data, latInput, lngInput, regionInput, regionDisplay, status);
+      openCoordDetails();
+    }
 
     function runGeocode(trigger) {
       var address = addressInput ? addressInput.value.trim() : '';
@@ -1362,12 +1417,14 @@
         return;
       }
 
-      btn.disabled = true;
+      if (btn) btn.disabled = true;
+      if (currentBtn) currentBtn.disabled = true;
       if (status) status.textContent = '주소를 확인하는 중…';
 
       shopRunGeocode(address)
         .then(function (data) {
-          btn.disabled = false;
+          if (btn) btn.disabled = false;
+          if (currentBtn) currentBtn.disabled = false;
           if (!data.ok) {
             if (shopApplyRegionFromAddress(address, regionInput, regionDisplay, status)) {
               if (latInput && !latInput.value) latInput.value = '';
@@ -1381,16 +1438,59 @@
           shopApplyGeocodeResult(data, latInput, lngInput, regionInput, regionDisplay, status);
         })
         .catch(function () {
-          btn.disabled = false;
+          if (btn) btn.disabled = false;
+          if (currentBtn) currentBtn.disabled = false;
           if (status) status.textContent = '요청에 실패했습니다.';
         });
     }
 
-    btn.addEventListener('click', function () {
-      runGeocode('manual');
-    });
+    if (btn) {
+      btn.addEventListener('click', function () {
+        runGeocode('manual');
+      });
+    }
 
-    if (addressInput) {
+    if (currentBtn) {
+      currentBtn.addEventListener('click', function () {
+        if (!navigator.geolocation) {
+          alert('이 브라우저에서는 현재위치를 사용할 수 없습니다.');
+          return;
+        }
+        currentBtn.disabled = true;
+        if (btn) btn.disabled = true;
+        if (status) status.textContent = '현재위치를 확인하는 중…';
+
+        navigator.geolocation.getCurrentPosition(function (pos) {
+          var lat = pos.coords.latitude;
+          var lng = pos.coords.longitude;
+
+          function finish() {
+            currentBtn.disabled = false;
+            if (btn) btn.disabled = false;
+          }
+
+          shopReverseGeocode(lat, lng).then(function (data) {
+            if (data.ok) {
+              applyCurrentLocation(data.lat, data.lng, data.address, data.region);
+              finish();
+              return;
+            }
+            applyCurrentLocation(lat, lng, '', shopDetectRegionFromCoords(lat, lng));
+            if (status) {
+              status.textContent = data.status === 'MAPS_NOT_READY'
+                ? '현재위치 좌표가 저장되었습니다. 지도 로드 후 주소를 다시 확인할 수 있습니다.'
+                : '현재위치 좌표가 저장되었습니다. 주소·지역은 직접 확인해 주세요.';
+            }
+            finish();
+          });
+        }, function () {
+          finish();
+          if (status) status.textContent = '현재위치 권한이 거부되었습니다. 주소 검색 또는 지도 선택을 이용해 주세요.';
+        }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+      });
+    }
+
+    if (addressInput && btn) {
       addressInput.addEventListener('blur', function () {
         if (addressInput.value.trim().length < 8) {
           return;
@@ -1406,7 +1506,7 @@
     document.addEventListener('eottae:shop-maps-ready', onMapsReady);
 
     function onMapsReady() {
-      if (addressInput && addressInput.value.trim().length >= 8 && !lastGeocodedAddress) {
+      if (btn && addressInput && addressInput.value.trim().length >= 8 && !lastGeocodedAddress) {
         runGeocode('auto');
       }
     }

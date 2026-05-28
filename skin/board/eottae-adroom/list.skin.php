@@ -17,6 +17,13 @@ $adroom_elig = function_exists('eottae_adroom_write_eligibility')
     ? eottae_adroom_write_eligibility($member ?? array(), $board, !empty($is_member), $is_admin === 'super')
     : array('can_write' => false);
 $can_write_ad = !empty($adroom_elig['can_write']);
+if (function_exists('eottae_adroom_list_write_href')) {
+    $write_href = eottae_adroom_list_write_href($write_href, !empty($is_member));
+    if ($write_href !== '' && !empty($is_member)) {
+        $can_write_ad = true;
+    }
+}
+$adroom_promo_notice = function_exists('eottae_adroom_render_promotion_notice') ? eottae_adroom_render_promotion_notice() : '';
 $adroom_write_guide = function_exists('eottae_adroom_render_write_guide')
     ? eottae_adroom_render_write_guide($member ?? array(), $board, !empty($is_member), $is_admin === 'super', $write_href, $can_write_ad)
     : '';
@@ -45,10 +52,12 @@ if ($adroom_show_guide_btn) {
             <?php } elseif ($adroom_show_guide_btn) { ?>
             <button type="button" class="adroom-hero__write adroom-hero__write--guide" data-adroom-show-write-guide aria-controls="adroom-write-guide">광고 등록</button>
             <?php } elseif (!$is_member) { ?>
-            <a href="<?php echo G5_BBS_URL; ?>/login.php?url=<?php echo urlencode(eottae_adroom_list_url()); ?>" class="adroom-hero__write adroom-hero__write--muted">업체 로그인 후 등록</a>
+            <a href="<?php echo G5_BBS_URL; ?>/login.php?url=<?php echo urlencode(eottae_adroom_list_url()); ?>" class="adroom-hero__write adroom-hero__write--muted">로그인 후 광고 등록</a>
             <?php } ?>
         </div>
     </section>
+
+    <?php echo $adroom_promo_notice; ?>
 
     <?php echo $adroom_write_guide; ?>
 
