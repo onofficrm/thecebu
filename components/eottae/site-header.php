@@ -83,6 +83,8 @@ foreach ($eottae_gnb_links as $link) {
                 </div>
             </div>
 
+            <?php eottae_gnb_render_desktop_mega_panel($eottae_gnb_menu_items); ?>
+
             <div id="siteMobileNav" class="eottae-gnb-header__mobile site-header__mobile-nav" aria-hidden="true">
                 <nav class="eottae-gnb-header__mobile-nav">
                     <?php eottae_gnb_render_nav_items($eottae_gnb_menu_items, 'mobile'); ?>
