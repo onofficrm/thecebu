@@ -493,9 +493,7 @@
       + '</article>';
   }
 
-  function renderTalkRoomsColumn(talkRooms) {
-    var listUrl = (talkRooms && talkRooms.list_url) ? talkRooms.list_url : talkListUrl();
-    var rooms = talkRooms && talkRooms.rooms ? talkRooms.rooms.slice(0, 5) : [];
+  function renderTalkRoomsMobileCarousel(rooms) {
     var slidesHtml = '';
     var dotsHtml = '';
     var i;
@@ -510,20 +508,73 @@
         + '></button>';
     }
 
+    return ''
+      + '<div class="sebu-talkrooms-col__mobile" data-eottae-talkrooms-carousel="1">'
+      + '<div class="sebu-talkrooms-col__viewport">'
+      + '<div class="sebu-talkrooms-col__track" data-slide-count="' + esc(String(rooms.length)) + '">' + slidesHtml + '</div>'
+      + '</div>'
+      + '<div class="sebu-talkrooms-col__controls">'
+      + '<button type="button" class="sebu-talkrooms-col__nav sebu-talkrooms-col__nav--prev" aria-label="이전 톡방">‹</button>'
+      + '<div class="sebu-talkrooms-col__dots" role="tablist" aria-label="톡방 슬라이드">' + dotsHtml + '</div>'
+      + '<button type="button" class="sebu-talkrooms-col__nav sebu-talkrooms-col__nav--next" aria-label="다음 톡방">›</button>'
+      + '</div>'
+      + '</div>';
+  }
+
+  function renderTalkRoomItem(room) {
+    if (!room || !room.enter_href) {
+      return '';
+    }
+
+    var stats = [];
+    if (room.member_count != null) {
+      stats.push('참여 ' + formatCount(room.member_count));
+    }
+    if (room.post_count != null) {
+      stats.push('글 ' + formatCount(room.post_count));
+    }
+
+    var meta = stats.length ? stats.join(' · ') : '';
+    if (room.updated_label) {
+      meta = meta ? room.updated_label + ' · ' + meta : room.updated_label;
+    }
+
+    return ''
+      + '<li class="sebu-talkrooms-col__item">'
+      + '<a href="' + esc(room.enter_href) + '" class="sebu-talkrooms-col__link">'
+      + '<span class="sebu-talkrooms-col__emoji" aria-hidden="true">' + esc(room.emoji || '💬') + '</span>'
+      + '<span class="sebu-talkrooms-col__body">'
+      + '<span class="sebu-talkrooms-col__head">'
+      + (room.category ? '<span class="sebu-talkrooms-col__category">' + esc(room.category) + '</span>' : '')
+      + '<strong class="sebu-talkrooms-col__name">' + esc(room.room_name || '세부톡방') + '</strong>'
+      + '</span>'
+      + (meta ? '<span class="sebu-talkrooms-col__meta">' + esc(meta) + '</span>' : '')
+      + '</span>'
+      + '<span class="sebu-talkrooms-col__enter">입장</span>'
+      + '</a>'
+      + '</li>';
+  }
+
+  function renderTalkRoomsColumn(talkRooms) {
+    var listUrl = (talkRooms && talkRooms.list_url) ? talkRooms.list_url : talkListUrl();
+    var rooms = talkRooms && talkRooms.rooms ? talkRooms.rooms.slice(0, 5) : [];
+    var listHtml = '';
+    var i;
+
+    for (i = 0; i < rooms.length; i += 1) {
+      listHtml += renderTalkRoomItem(rooms[i]);
+    }
+
     var bodyHtml = rooms.length
       ? ''
-        + '<div class="sebu-talkrooms-col__viewport">'
-        + '<div class="sebu-talkrooms-col__track" data-slide-count="' + esc(String(rooms.length)) + '">' + slidesHtml + '</div>'
+        + '<div class="sebu-talkrooms-col__desktop">'
+        + '<ul class="sebu-talkrooms-col__list">' + listHtml + '</ul>'
         + '</div>'
-        + '<div class="sebu-talkrooms-col__controls">'
-        + '<button type="button" class="sebu-talkrooms-col__nav sebu-talkrooms-col__nav--prev" aria-label="이전 톡방">‹</button>'
-        + '<div class="sebu-talkrooms-col__dots" role="tablist" aria-label="톡방 슬라이드">' + dotsHtml + '</div>'
-        + '<button type="button" class="sebu-talkrooms-col__nav sebu-talkrooms-col__nav--next" aria-label="다음 톡방">›</button>'
-        + '</div>'
+        + renderTalkRoomsMobileCarousel(rooms)
       : '<p class="sebu-community-col__empty">표시할 공개 톡방이 없습니다.</p>';
 
     return ''
-      + '<article class="sebu-community-col sebu-community-col--talkrooms" data-eottae-talkrooms-carousel="1" aria-label="공개 세부톡방">'
+      + '<article class="sebu-community-col sebu-community-col--talkrooms" aria-label="공개 세부톡방">'
       + '<header class="sebu-community-col__head">'
       + '<h3 class="sebu-community-col__title">'
       + '<span class="sebu-community-col__accent sebu-community-col__accent--sky" aria-hidden="true"></span>'
@@ -765,5 +816,4 @@
   }
 
   global.initEottaeHomeMainSection = init;
-  global.initEottaeHomeTalkRoomsCarousel = initTalkRoomsCarousels;
 }(window));
