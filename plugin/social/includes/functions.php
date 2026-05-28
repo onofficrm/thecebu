@@ -999,6 +999,13 @@ function social_service_check($provider){
     global $config;
 
     if( $config['cf_social_servicelist'] && option_array_checked($provider, $config['cf_social_servicelist']) ) {
+        if ($provider === 'google') {
+            $client_id = isset($config['cf_google_clientid']) ? trim((string) $config['cf_google_clientid']) : '';
+            $client_secret = isset($config['cf_google_secret']) ? trim((string) $config['cf_google_secret']) : '';
+            if ($client_id === '' || $client_secret === '') {
+                return false;
+            }
+        }
         return true;
     }
     

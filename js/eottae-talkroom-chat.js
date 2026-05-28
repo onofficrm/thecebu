@@ -443,13 +443,30 @@
   }
 
   function bindMobileChatLayout(section) {
-    if (!section || !global.matchMedia || !global.matchMedia('(max-width: 767px)').matches) {
+    if (!section || !global.matchMedia) {
       return;
     }
 
     var page = section.closest('.talk-room-detail-page--chat');
     var drawer = page ? page.querySelector('.talk-room-detail__drawer') : null;
     var mq = global.matchMedia('(max-width: 767px)');
+    var FAB_OFFSET = 56;
+    var layoutScheduled = false;
+
+    function detectFabOffset() {
+      var fab =
+        document.querySelector('[class*="chatbot"]') ||
+        document.querySelector('.onoff-chatbot') ||
+        document.querySelector('[id*="chatbot" i]');
+      if (!fab || !fab.getBoundingClientRect) {
+        return FAB_OFFSET;
+      }
+      var rect = fab.getBoundingClientRect();
+      if (rect.height < 20 || rect.bottom < global.innerHeight * 0.5) {
+        return FAB_OFFSET;
+      }
+      return Math.max(FAB_OFFSET, Math.ceil(rect.height + 12));
+    }
 
     function setDrawerOpenState() {
       if (!drawer) {
@@ -458,31 +475,24 @@
       document.body.classList.toggle('talk-room-drawer-open', !!drawer.open);
     }
 
-    function measureTopChrome() {
-      if (!page) {
-        return 0;
+    function clearMobileChatLayout() {
+      section.style.removeProperty('--talkroom-chat-height');
+      section.style.removeProperty('height');
+      section.style.removeProperty('max-height');
+      section.style.removeProperty('min-height');
+      document.documentElement.style.removeProperty('--talkroom-chat-top');
+      document.documentElement.style.removeProperty('--talkroom-chat-fab-offset');
+      document.body.classList.remove('talk-room-drawer-open');
+      var inner = section.querySelector('.public-group-chat__inner');
+      if (inner) {
+        inner.style.removeProperty('height');
+        inner.style.removeProperty('max-height');
       }
-
-      var top = 0;
-      var back = page.querySelector('.mypage-subpage__back');
-      var flash = page.querySelector('.talk-room-detail__flash');
-      if (back) {
-        top += back.offsetHeight;
-      }
-      if (flash) {
-        top += flash.offsetHeight;
-      }
-      if (drawer) {
-        top += drawer.offsetHeight;
-      }
-      return top;
     }
 
     function updateChatHeight() {
       if (!mq.matches) {
-        section.style.removeProperty('--talkroom-chat-height');
-        section.style.removeProperty('min-height');
-        document.body.classList.remove('talk-room-drawer-open');
+        clearMobileChatLayout();
         return;
       }
 
@@ -491,10 +501,21 @@
       var viewportH = global.visualViewport ? global.visualViewport.height : global.innerHeight;
       var header = document.getElementById('hd');
       var chatTop = section.getBoundingClientRect().top;
-      var available = Math.max(280, Math.floor(viewportH - chatTop - 8));
+      var fabOffset = detectFabOffset();
+      var available = Math.max(240, Math.floor(viewportH - chatTop - fabOffset - 4));
+
+      document.documentElement.style.setProperty('--talkroom-chat-fab-offset', fabOffset + 'px');
       section.style.setProperty('--talkroom-chat-height', available + 'px');
-      section.style.minHeight = available + 'px';
-      document.documentElement.style.setProperty('--talkroom-chat-top', measureTopChrome() + 'px');
+      section.style.height = available + 'px';
+      section.style.maxHeight = available + 'px';
+      section.style.minHeight = '0';
+
+      var inner = section.querySelector('.public-group-chat__inner');
+      if (inner) {
+        inner.style.height = '100%';
+        inner.style.maxHeight = '100%';
+      }
+
       if (header && header.getBoundingClientRect) {
         document.documentElement.style.setProperty(
           '--eottae-header-h',
@@ -503,37 +524,57 @@
       }
     }
 
-    updateChatHeight();
+    function scheduleLayoutUpdate() {
+      if (layoutScheduled) {
+        return;
+      }
+      layoutScheduled = true;
+      global.requestAnimationFrame(function () {
+        layoutScheduled = false;
+        updateChatHeight();
+      });
+    }
+
+    scheduleLayoutUpdate();
+    global.setTimeout(scheduleLayoutUpdate, 80);
+    global.setTimeout(function () {
+      scheduleLayoutUpdate();
+      scrollMessagesToEnd();
+    }, 320);
 
     if (drawer) {
       drawer.addEventListener('toggle', function () {
         setDrawerOpenState();
-        global.setTimeout(updateChatHeight, 0);
-        global.setTimeout(updateChatHeight, 180);
+        scheduleLayoutUpdate();
+        global.setTimeout(scheduleLayoutUpdate, 180);
       });
     }
 
     if (global.visualViewport) {
-      global.visualViewport.addEventListener('resize', updateChatHeight);
-      global.visualViewport.addEventListener('scroll', updateChatHeight);
+      global.visualViewport.addEventListener('resize', scheduleLayoutUpdate);
+      global.visualViewport.addEventListener('scroll', scheduleLayoutUpdate);
     }
 
-    global.addEventListener('resize', updateChatHeight);
+    mq.addEventListener('change', scheduleLayoutUpdate);
+    global.addEventListener('resize', scheduleLayoutUpdate);
     global.addEventListener('orientationchange', function () {
-      global.setTimeout(updateChatHeight, 120);
+      global.setTimeout(scheduleLayoutUpdate, 120);
     });
 
     if (global.ResizeObserver && page) {
-      var ro = new global.ResizeObserver(function () {
-        updateChatHeight();
-      });
+      var ro = new global.ResizeObserver(scheduleLayoutUpdate);
       var back = page.querySelector('.mypage-subpage__back');
+      var flash = page.querySelector('.talk-room-detail__flash');
       if (back) {
         ro.observe(back);
+      }
+      if (flash) {
+        ro.observe(flash);
       }
       if (drawer) {
         ro.observe(drawer);
       }
+      ro.observe(section);
     }
   }
 

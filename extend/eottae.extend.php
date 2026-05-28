@@ -11,6 +11,7 @@ include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
 include_once G5_LIB_PATH.'/eottae-ad.lib.php';
 include_once G5_LIB_PATH.'/eottae-shop-seo.lib.php';
 include_once G5_LIB_PATH.'/eottae-board-seo.lib.php';
+include_once G5_LIB_PATH.'/eottae-job-template.lib.php';
 include_once G5_LIB_PATH.'/eottae-icrm.lib.php';
 include_once G5_LIB_PATH.'/eottae-board-editor.lib.php';
 include_once G5_LIB_PATH.'/eottae-business-snippet.lib.php';
@@ -1509,7 +1510,39 @@ if (!function_exists('eottae_adroom_on_board_head')) {
 }
 add_event('board_head_before', 'eottae_adroom_on_board_head', 7, 3);
 
+if (!function_exists('eottae_google_oauth_remove_from_servicelist')) {
+    function eottae_google_oauth_remove_from_servicelist()
+    {
+        global $config;
+
+        $config['cf_google_clientid'] = '';
+        $config['cf_google_secret'] = '';
+
+        $services = array_filter(array_map('trim', explode(',', (string) ($config['cf_social_servicelist'] ?? ''))));
+        $services = array_values(array_filter($services, static function ($s) {
+            return $s !== 'google';
+        }));
+        $config['cf_social_servicelist'] = implode(',', $services);
+    }
+}
+
+if (!function_exists('eottae_google_oauth_configured')) {
+    function eottae_google_oauth_configured()
+    {
+        global $config;
+
+        $client_id = isset($config['cf_google_clientid']) ? trim((string) $config['cf_google_clientid']) : '';
+        $client_secret = isset($config['cf_google_secret']) ? trim((string) $config['cf_google_secret']) : '';
+
+        return $client_id !== '' && $client_secret !== '';
+    }
+}
+
 if (!function_exists('eottae_apply_google_oauth_config')) {
+    /**
+     * Google OAuth — _site.config.local.php / data/eottae-secrets.local.php 우선.
+     * 파일에 키가 없으면 DB에 남은 잘못된 cf_google_* 로 invalid_client 가 나지 않도록 비활성화.
+     */
     function eottae_apply_google_oauth_config()
     {
         global $config;
@@ -1526,6 +1559,7 @@ if (!function_exists('eottae_apply_google_oauth_config')) {
         $client_secret = g5site_cfg('google_oauth_client_secret', '');
 
         if ($client_id === '' || $client_secret === '') {
+            eottae_google_oauth_remove_from_servicelist();
             return;
         }
 
@@ -1533,7 +1567,7 @@ if (!function_exists('eottae_apply_google_oauth_config')) {
         $config['cf_google_clientid'] = $client_id;
         $config['cf_google_secret'] = $client_secret;
 
-        $services = array_filter(array_map('trim', explode(',', (string) $config['cf_social_servicelist'])));
+        $services = array_filter(array_map('trim', explode(',', (string) ($config['cf_social_servicelist'] ?? ''))));
         if (!in_array('google', $services, true)) {
             $services[] = 'google';
             $config['cf_social_servicelist'] = implode(',', $services);

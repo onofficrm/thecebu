@@ -13,10 +13,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Inject deploy secrets (크론 키만 — API 키는 FTP _site.config.local.php 수동 관리)
+      - name: Inject deploy secrets (크론·Google OAuth — 나머지 API 키는 FTP 수동)
         env:
           TALKROOM_MAINTENANCE_KEY: ${{ secrets.TALKROOM_MAINTENANCE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
         run: |
           mkdir -p _deploy_secrets/data
           echo "HAS_DEPLOY_SECRETS=0" >> "$GITHUB_ENV"
@@ -34,7 +36,20 @@ jobs:
             '
             echo "HAS_MAINTENANCE_KEY=1" >> "$GITHUB_ENV"
           fi
-          if [ -f _deploy_secrets/data/eottae-maintenance.local.php ]; then
+          if [ -n "$GOOGLE_OAUTH_CLIENT_ID" ] && [ -n "$GOOGLE_OAUTH_CLIENT_SECRET" ]; then
+            export GOOGLE_OAUTH_CLIENT_ID GOOGLE_OAUTH_CLIENT_SECRET
+            php -r '
+              $id = getenv("GOOGLE_OAUTH_CLIENT_ID");
+              $secret = getenv("GOOGLE_OAUTH_CLIENT_SECRET");
+              $body = "<?php\nif (!defined(\"_GNUBOARD_\")) exit;\n\n"
+                  . "\$eottae_oauth_override = array(\n"
+                  . "    \"google_oauth_client_id\" => ".var_export($id, true).",\n"
+                  . "    \"google_oauth_client_secret\" => ".var_export($secret, true).",\n"
+                  . ");\n";
+              file_put_contents("_deploy_secrets/data/eottae-google-oauth.local.php", $body);
+            '
+          fi
+          if [ -f _deploy_secrets/data/eottae-maintenance.local.php ] || [ -f _deploy_secrets/data/eottae-google-oauth.local.php ]; then
             echo "HAS_DEPLOY_SECRETS=1" >> "$GITHUB_ENV"
           fi
 

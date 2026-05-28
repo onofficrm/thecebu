@@ -2437,7 +2437,7 @@ body.talkroom-ui .talk-room-detail-page--chat {
   display: flex;
   flex-direction: column;
   max-width: 640px;
-  min-height: calc(100dvh - var(--eottae-header-h, 64px) - 24px);
+  min-height: 0;
   padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
 }
@@ -2555,7 +2555,7 @@ body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .public-group-chat
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  min-height: 420px;
+  min-height: 0;
 }
 
 body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .public-group-chat__head {
@@ -2574,7 +2574,7 @@ body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .public-group-chat
 body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .talk-room-chat__messages,
 body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .public-group-chat__messages {
   flex: 1 1 auto;
-  min-height: 200px;
+  min-height: 0;
   max-height: none;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -2683,27 +2683,62 @@ body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .public-group-chat
 
 /* ── 모바일 단톡방 상세 — 채팅 UI (카톡 톤 + 여백) ── */
 @media (max-width: 767px) {
+  html.talk-room-chat-page {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body.talkroom-ui.talk-room-chat-active {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
   body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) .mobile-bottom-nav--global {
     display: none !important;
+  }
+
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #hd {
+    flex: 0 0 auto;
   }
 
   body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #wrapper,
   body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #container_wr,
   body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #container {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
     min-width: 0;
+    min-height: 0;
     max-width: 100%;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    overflow: hidden;
+  }
+
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #container {
+    flex: 1 1 auto;
+    padding-bottom: 0;
   }
 
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat {
     display: flex;
     flex-direction: column;
+    flex: 1 1 auto;
     gap: 8px;
     width: 100%;
     max-width: none;
     margin: 0 auto;
-    padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
     box-sizing: border-box;
-    min-height: calc(100dvh - var(--eottae-header-h, 56px) - 16px);
+    min-height: 0;
+    max-height: none;
+    height: auto;
+    overflow: hidden;
   }
 
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .mypage-subpage__back {
@@ -2730,13 +2765,24 @@ body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .public-group-chat
     margin: 0;
   }
 
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-detail__drawer[open] .talk-room-detail__drawer-body {
+    max-height: min(42svh, 300px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
-    min-height: min(560px, calc(100dvh - var(--eottae-header-h, 56px) - 140px));
+    min-height: 0;
     width: 100%;
+    max-width: 100%;
     margin: 0;
+    height: var(--talkroom-chat-height, auto);
+    max-height: var(--talkroom-chat-height, none);
+    overflow: hidden;
   }
 
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__head {
@@ -2764,14 +2810,21 @@ body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .public-group-chat
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__messages,
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .talk-room-chat__messages {
     flex: 1 1 auto;
-    min-height: 200px;
+    min-height: 0;
     max-height: none;
+    overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     touch-action: pan-y;
     padding: 12px 10px 8px;
     background: var(--kakao-chat-bg, #bacee0);
+  }
+
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__empty {
+    margin: 0;
+    padding: 28px 16px;
+    text-align: center;
   }
 
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat.public-group-chat--kakao .public-group-chat__message {
@@ -2794,6 +2847,15 @@ body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .public-group-chat
     flex: 0 0 auto;
     padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
     background: var(--kakao-composer-bg, #fff);
+    position: relative;
+    z-index: 2;
+  }
+
+  /* 온오프 상담 챗봇 FAB과 겹치지 않도록 */
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__composer,
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__composer--login,
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__composer--disabled {
+    margin-bottom: var(--talkroom-chat-fab-offset, 0px);
   }
 
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__composer--login,

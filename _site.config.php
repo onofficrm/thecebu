@@ -131,6 +131,24 @@ if (is_file($eottae_secrets_file) && is_readable($eottae_secrets_file)) {
     }
 }
 
+/* Google OAuth — 배포 시 data/eottae-google-oauth.local.php (GitHub Actions·FTP, AI 키 파일과 분리) */
+$eottae_oauth_file = (defined('G5_DATA_PATH') ? G5_DATA_PATH : G5_PATH.'/data').'/eottae-google-oauth.local.php';
+if (is_file($eottae_oauth_file) && is_readable($eottae_oauth_file)) {
+    $eottae_oauth_override = null;
+    include $eottae_oauth_file;
+    if (isset($eottae_oauth_override) && is_array($eottae_oauth_override)) {
+        foreach ($eottae_oauth_override as $ok => $ov) {
+            if ($ov === null || $ov === '') {
+                continue;
+            }
+            if (is_string($ov) && trim($ov) === '') {
+                continue;
+            }
+            $site_config[$ok] = $ov;
+        }
+    }
+}
+
 /**
  * 설정값 조회 (없거나 비어 있으면 $default)
  *

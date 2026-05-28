@@ -25,7 +25,11 @@ $eottae_secrets_override = array(
     'ai_generate_model'         => 'gpt-4o-mini',
     'ai_generate_image_model'   => 'gpt-image-1',
 
-    /* Google 로그인 (선택) */
+    /*
+     * Google 로그인 (선택) — Google Cloud Console OAuth 클라이언트
+     * 승인된 리디렉션 URI 예:
+     *   https://thecebu.co.kr/plugin/social/?hauth.done=google
+     */
     'google_oauth_client_id'     => '',
     'google_oauth_client_secret' => '',
 

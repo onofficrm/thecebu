@@ -82,6 +82,9 @@ if (!function_exists('eottae_render_social_auth')) {
 
         $items = array();
         foreach ($providers as $provider => $meta) {
+            if ($provider === 'google' && function_exists('eottae_google_oauth_configured') && !eottae_google_oauth_configured()) {
+                continue;
+            }
             if (!social_service_check($provider)) {
                 continue;
             }

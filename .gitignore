@@ -2,6 +2,7 @@
 **/._*
 data/dbconfig.local.php
 data/eottae-secrets.local.php
+data/eottae-google-oauth.local.php
 _site.config.local.php
 _BUILDER_INPUT/
 dist/

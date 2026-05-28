@@ -21,7 +21,10 @@ $site_config_override = array(
     'ai_generate_model'   => 'gpt-4o-mini',
     'ai_generate_image_model' => 'gpt-image-1',
 
-    /* Google 로그인 (선택) */
+    /*
+     * Google 로그인 (선택) — Console 승인 리디렉션 URI:
+     * https://도메인/plugin/social/?hauth.done=google
+     */
     'google_oauth_client_id' => '',
     'google_oauth_client_secret' => '',
 );

@@ -475,6 +475,7 @@
 @media (min-width: 1024px) {
   .sebu-community-popular__grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
   }
 }
 
@@ -501,13 +502,14 @@
 
 /* ── 홈 — 커뮤니티 인기글 3열: 공개 세부톡방 슬라이드 ── */
 .sebu-community-col--talkrooms {
-  min-height: 100%;
+  --sebu-talkrooms-viewport-h: 148px;
   display: flex;
   flex-direction: column;
 }
 
 .sebu-talkrooms-col__viewport {
-  flex: 1 1 auto;
+  flex: 0 0 var(--sebu-talkrooms-viewport-h);
+  height: var(--sebu-talkrooms-viewport-h);
   overflow: hidden;
   min-height: 0;
 }
@@ -523,25 +525,29 @@
   flex: 0 0 100%;
   width: 100%;
   min-width: 100%;
+  height: 100%;
 }
 
 .sebu-talkrooms-col__link {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  min-height: 196px;
-  padding: 12px 12px 10px;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 0;
+  padding: 10px 12px;
   border-radius: 14px;
-  border: 1px solid #e8f4fc;
-  background: linear-gradient(160deg, #f0f9ff 0%, #ffffff 72%);
+  border: 1px solid #f0d800;
+  background: #fee500;
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .sebu-talkrooms-col__link:hover {
-  border-color: #bae6fd;
-  box-shadow: 0 6px 18px rgba(14, 165, 233, 0.1);
+  border-color: #e5c700;
+  background: #ffe94a;
+  box-shadow: 0 4px 14px rgba(25, 25, 25, 0.1);
 }
 
 .sebu-talkrooms-col__emoji {
@@ -549,19 +555,19 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: #fff;
-  border: 1px solid #dbeafe;
-  font-size: 1.35rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 1.2rem;
   line-height: 1;
 }
 
 .sebu-talkrooms-col__body {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
   flex: 1 1 auto;
 }
@@ -603,23 +609,23 @@
 }
 
 .sebu-talkrooms-col__link:hover .sebu-talkrooms-col__name {
-  color: #0284c7;
+  color: #191919;
 }
 
 .sebu-talkrooms-col__desc {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  font-size: 0.76rem;
-  line-height: 1.45;
-  color: #64748b;
+  font-size: 0.74rem;
+  line-height: 1.35;
+  color: rgba(25, 25, 25, 0.72);
 }
 
 .sebu-talkrooms-col__stats {
-  font-size: 0.69rem;
+  font-size: 0.68rem;
   font-weight: 600;
-  color: #94a3b8;
+  color: rgba(25, 25, 25, 0.55);
 }
 
 .sebu-talkrooms-col__enter {
@@ -628,12 +634,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 28px;
+  min-height: 26px;
   padding: 0 10px;
   border-radius: 999px;
-  background: #0ea5e9;
-  color: #fff;
-  font-size: 0.68rem;
+  background: #191919;
+  color: #fee500;
+  font-size: 0.67rem;
   font-weight: 800;
   white-space: nowrap;
 }
@@ -643,8 +649,9 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-top: 12px;
-  padding-top: 10px;
+  flex: 0 0 auto;
+  margin-top: 10px;
+  padding-top: 8px;
   border-top: 1px solid #f1f5f9;
 }
 
@@ -665,9 +672,9 @@
 }
 
 .sebu-talkrooms-col__nav:hover {
-  border-color: #7dd3fc;
-  color: #0284c7;
-  background: #f0f9ff;
+  border-color: #e5c700;
+  color: #191919;
+  background: #fff9c4;
 }
 
 .sebu-talkrooms-col__dots {
@@ -689,16 +696,15 @@
 
 .sebu-talkrooms-col__dot.is-active {
   width: 18px;
-  background: #0ea5e9;
+  background: #191919;
 }
 
 @media (max-width: 767px) {
-  .sebu-talkrooms-col__link {
-    min-height: 152px;
+  .sebu-community-col--talkrooms {
+    --sebu-talkrooms-viewport-h: 132px;
   }
 
   .sebu-talkrooms-col__enter {
-    align-self: flex-start;
-    margin-top: 4px;
+    align-self: center;
   }
 }
