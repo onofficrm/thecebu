@@ -11,6 +11,20 @@ if (function_exists('eottae_property_template_load_assets')) {
     eottae_property_template_load_assets();
 }
 
+if (!function_exists('onoff_map_get_config') && is_file(G5_PATH.'/components/maps/map-config.php')) {
+    include_once G5_PATH.'/components/maps/map-config.php';
+}
+$eottae_estate_map_cfg = function_exists('onoff_map_get_config')
+    ? onoff_map_get_config()
+    : array('default_lat' => 10.313, 'default_lng' => 123.9174, 'default_zoom' => 14, 'api_key' => '');
+$eottae_estate_maps_has_key = trim((string) ($eottae_estate_map_cfg['api_key'] ?? '')) !== '';
+if ($eottae_estate_maps_has_key && function_exists('eottae_enqueue_google_maps')) {
+    eottae_enqueue_google_maps();
+}
+$estate_address_val = eottae_estate_template_field_value('address', $estate_template_values);
+$estate_lat_val = eottae_estate_template_field_value('lat', $estate_template_values);
+$estate_lng_val = eottae_estate_template_field_value('lng', $estate_template_values);
+
 if (!function_exists('eottae_estate_deal_status_from_row') && is_file(G5_LIB_PATH.'/eottae-estate.lib.php')) {
     include_once G5_LIB_PATH.'/eottae-estate.lib.php';
 }
@@ -130,6 +144,45 @@ $sebu_furnishing_types = array(
             </div>
         </fieldset>
 
+        <fieldset class="sebu-property-template__group sebu-property-template__group--location">
+            <legend class="sebu-property-template__legend">매물 위치</legend>
+            <p class="sebu-property-template__map-desc">업체 등록과 같이 주소를 확인하고 지도에서 위치를 지정하면 상세 페이지에 지도가 표시됩니다.</p>
+            <div class="sebu-property-template__grid">
+                <label class="sebu-property-template__field sebu-property-template__field--full">
+                    <span class="sebu-property-template__label">주소</span>
+                    <input type="text" class="sebu-property-template__input" data-property-field="address" id="estate_address" maxlength="255" value="<?php echo htmlspecialchars($estate_address_val, ENT_QUOTES, 'UTF-8'); ?>" placeholder="예) Talamban, Cebu City 또는 건물명·동명">
+                </label>
+            </div>
+            <div class="sebu-property-template__map-actions">
+                <button type="button" class="sebu-property-template__btn sebu-property-template__btn--ghost" id="estateGeocodeBtn">주소 확인 · 좌표 설정</button>
+                <p class="sebu-property-template__map-status" id="estateGeocodeStatus" aria-live="polite"></p>
+            </div>
+            <details class="sebu-property-template__map-details" open>
+                <summary>지도에서 위치 지정</summary>
+                <div class="sebu-property-template__grid sebu-property-template__grid--coords">
+                    <label class="sebu-property-template__field">
+                        <span class="sebu-property-template__label">위도</span>
+                        <input type="text" class="sebu-property-template__input" data-property-field="lat" id="estate_lat" maxlength="32" value="<?php echo htmlspecialchars($estate_lat_val, ENT_QUOTES, 'UTF-8'); ?>" placeholder="10.3157">
+                    </label>
+                    <label class="sebu-property-template__field">
+                        <span class="sebu-property-template__label">경도</span>
+                        <input type="text" class="sebu-property-template__input" data-property-field="lng" id="estate_lng" maxlength="32" value="<?php echo htmlspecialchars($estate_lng_val, ENT_QUOTES, 'UTF-8'); ?>" placeholder="123.8854">
+                    </label>
+                </div>
+                <div id="estateCoordMapWrap" class="sebu-property-template__coord-map-wrap">
+                    <?php if ($eottae_estate_maps_has_key) { ?>
+                    <p class="sebu-property-template__map-hint">지도를 클릭하거나 핀을 드래그해 매물 위치를 지정하세요.</p>
+                    <div id="estateCoordMap" class="sebu-property-template__coord-map" role="application" aria-label="매물 위치 지도"
+                        data-default-lat="<?php echo htmlspecialchars((string) ($eottae_estate_map_cfg['default_lat'] ?? '10.313'), ENT_QUOTES, 'UTF-8'); ?>"
+                        data-default-lng="<?php echo htmlspecialchars((string) ($eottae_estate_map_cfg['default_lng'] ?? '123.9174'), ENT_QUOTES, 'UTF-8'); ?>"
+                        data-default-zoom="<?php echo (int) ($eottae_estate_map_cfg['default_zoom'] ?? 14); ?>"></div>
+                    <?php } else { ?>
+                    <p class="sebu-property-template__map-hint">지도는 <code>google_maps_api_key</code> 설정 후 사용할 수 있습니다.</p>
+                    <?php } ?>
+                </div>
+            </details>
+        </fieldset>
+
         <fieldset class="sebu-property-template__group">
             <legend class="sebu-property-template__legend">매물정보</legend>
             <div class="sebu-property-template__grid">
@@ -192,6 +245,9 @@ $sebu_furnishing_types = array(
 
     <input type="hidden" name="wr_1" id="wr_1" value="<?php echo htmlspecialchars($estate_region, ENT_QUOTES, 'UTF-8'); ?>">
     <input type="hidden" name="wr_2" id="wr_2" value="<?php echo htmlspecialchars($estate_deal_status, ENT_QUOTES, 'UTF-8'); ?>">
+    <input type="hidden" name="wr_4" id="wr_4" value="<?php echo htmlspecialchars($estate_address_val, ENT_QUOTES, 'UTF-8'); ?>">
+    <input type="hidden" name="wr_5" id="wr_5" value="<?php echo htmlspecialchars($estate_lat_val, ENT_QUOTES, 'UTF-8'); ?>">
+    <input type="hidden" name="wr_6" id="wr_6" value="<?php echo htmlspecialchars($estate_lng_val, ENT_QUOTES, 'UTF-8'); ?>">
     <input type="hidden" name="estate_template_json" id="estate_template_json" value="<?php echo htmlspecialchars($estate_template_json, ENT_QUOTES, 'UTF-8'); ?>">
 
     <p class="sebu-property-template__error" id="sebuPropertyTemplateError" role="alert" hidden>필수 정보를 입력해주세요.</p>

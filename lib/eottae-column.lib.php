@@ -2080,7 +2080,11 @@ if (!function_exists('eottae_column_list_applications')) {
         $items = array();
         while ($row = sql_fetch_array($result)) {
             $row['status_label'] = eottae_column_application_status_label($row['status'] ?? '');
-            $row['area_label'] = eottae_column_area_label($row['area'] ?? '');
+            $area_label = eottae_column_area_label($row['area'] ?? '');
+            if ($area_label === '' && function_exists('eottae_columnist_recruit_interest_label')) {
+                $area_label = eottae_columnist_recruit_interest_label($row['area'] ?? '');
+            }
+            $row['area_label'] = $area_label;
             $row['has_profile_image'] = trim((string) ($row['profile_image'] ?? '')) !== '';
             $row['profile_image_url'] = $row['has_profile_image']
                 ? eottae_column_profile_image_url($row['profile_image'] ?? '')

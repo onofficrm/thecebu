@@ -213,12 +213,24 @@
   function syncEstateMetaFields(data) {
     var wr1 = document.getElementById('wr_1');
     var wr2 = document.getElementById('wr_2');
+    var wr4 = document.getElementById('wr_4');
+    var wr5 = document.getElementById('wr_5');
+    var wr6 = document.getElementById('wr_6');
     if (wr1) {
       wr1.value = (data && data.region) ? data.region : '';
     }
     if (wr2) {
       var status = (data && data.estate_deal_status) ? data.estate_deal_status : 'trading';
       wr2.value = status === 'completed' ? 'completed' : 'trading';
+    }
+    if (wr4) {
+      wr4.value = (data && data.address) ? data.address : '';
+    }
+    if (wr5) {
+      wr5.value = (data && data.lat) ? data.lat : '';
+    }
+    if (wr6) {
+      wr6.value = (data && data.lng) ? data.lng : '';
     }
     syncEstateTemplateJson(data);
   }

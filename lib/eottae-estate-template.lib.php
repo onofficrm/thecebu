@@ -59,6 +59,7 @@ if (!function_exists('eottae_estate_template_normalize_data')) {
             'property_type', 'deal_type', 'region', 'building_name', 'price', 'estate_deal_status',
             'rooms', 'bathrooms', 'furnishing', 'move_in',
             'description', 'nearby', 'contact', 'kakao_id', 'extra',
+            'address', 'lat', 'lng',
         );
 
         $out = array();
@@ -172,6 +173,15 @@ if (!function_exists('eottae_estate_template_merge_row_meta')) {
                 include_once G5_LIB_PATH.'/eottae-estate.lib.php';
             }
             $data['estate_deal_status'] = eottae_estate_normalize_deal_status($row['wr_2']);
+        }
+        if ($data['address'] === '' && !empty($row['wr_4'])) {
+            $data['address'] = trim(strip_tags((string) $row['wr_4']));
+        }
+        if ($data['lat'] === '' && !empty($row['wr_5'])) {
+            $data['lat'] = trim((string) $row['wr_5']);
+        }
+        if ($data['lng'] === '' && !empty($row['wr_6'])) {
+            $data['lng'] = trim((string) $row['wr_6']);
         }
 
         return $data;
@@ -500,6 +510,17 @@ if (!function_exists('eottae_estate_template_build_body')) {
             $lines[] = '';
         }
 
+        if ($data['address'] !== '' || ($data['lat'] !== '' && $data['lng'] !== '')) {
+            $lines[] = '[위치]';
+            if ($data['address'] !== '') {
+                $lines[] = '주소: '.$data['address'];
+            }
+            if ($data['lat'] !== '' && $data['lng'] !== '') {
+                $lines[] = '좌표: '.$data['lat'].', '.$data['lng'];
+            }
+            $lines[] = '';
+        }
+
         $contact = array_filter(array(
             '연락처: '.$data['contact'],
             '카카오톡 ID: '.$data['kakao_id'],
@@ -582,6 +603,9 @@ if (!function_exists('eottae_estate_template_apply_to_post')) {
         $_POST['wr_3'] = eottae_estate_template_encode_json($data);
         $_POST['wr_1'] = $data['region'];
         $_POST['wr_2'] = $data['estate_deal_status'];
+        $_POST['wr_4'] = $data['address'];
+        $_POST['wr_5'] = $data['lat'];
+        $_POST['wr_6'] = $data['lng'];
 
         $body = eottae_estate_template_build_body($data);
         $content_plain = trim(strip_tags((string) ($_POST['wr_content'] ?? '')));
@@ -611,6 +635,15 @@ if (!function_exists('eottae_estate_template_view_rows')) {
         eottae_estate_template_push_row($basic, '가격', $data['price']);
         if ($basic) {
             $sections[] = array('section' => '매물정보', 'rows' => $basic);
+        }
+
+        $location = array();
+        eottae_estate_template_push_row($location, '주소', $data['address']);
+        if ($data['lat'] !== '' && $data['lng'] !== '') {
+            eottae_estate_template_push_row($location, '좌표', $data['lat'].', '.$data['lng']);
+        }
+        if ($location) {
+            $sections[] = array('section' => '위치', 'rows' => $location);
         }
 
         $detail = array();

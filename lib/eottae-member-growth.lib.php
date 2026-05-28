@@ -557,18 +557,67 @@ if (!function_exists('eottae_member_growth_recalc_all_levels')) {
     }
 }
 
+if (!function_exists('eottae_member_growth_fallback_level')) {
+    /**
+     * DB 미설치·등급 미시드 시에도 사이드바 등급 배지가 비지 않도록 하는 기본 등급
+     *
+     * @return array<string, mixed>
+     */
+    function eottae_member_growth_fallback_level()
+    {
+        return array(
+            'level_id'          => 0,
+            'level_name'        => '새싹회원',
+            'level_description' => '가입 직후 기본 등급',
+            'min_score'         => 0,
+            'icon'              => '🌱',
+            'color'             => 'default',
+            'sort_order'        => 0,
+            'is_active'         => 1,
+        );
+    }
+}
+
+if (!function_exists('eottae_member_growth_resolve_level')) {
+    /**
+     * @param array<string, mixed>|null $level
+     * @return array<string, mixed>
+     */
+    function eottae_member_growth_resolve_level($level)
+    {
+        if (is_array($level) && !empty($level['level_name'])) {
+            return $level;
+        }
+
+        $lowest = eottae_member_growth_get_lowest_level();
+        if (is_array($lowest) && !empty($lowest['level_name'])) {
+            return $lowest;
+        }
+
+        return eottae_member_growth_fallback_level();
+    }
+}
+
 if (!function_exists('eottae_member_growth_get_level')) {
     function eottae_member_growth_get_level($level_id)
     {
         $level_id = (int) $level_id;
         if ($level_id < 1) {
-            return null;
+            return eottae_member_growth_get_lowest_level();
         }
 
         $table = eottae_member_growth_levels_table();
+        if (!eottae_member_growth_table_exists($table)) {
+            return eottae_member_growth_fallback_level();
+        }
+
         $row = sql_fetch(" SELECT * FROM `{$table}` WHERE level_id = '{$level_id}' AND is_active = 1 LIMIT 1 ", false);
 
-        return is_array($row) && !empty($row['level_id']) ? $row : null;
+        if (is_array($row) && !empty($row['level_id'])) {
+            return $row;
+        }
+
+        return eottae_member_growth_get_lowest_level();
     }
 }
 
@@ -576,16 +625,20 @@ if (!function_exists('eottae_member_growth_get_lowest_level')) {
     function eottae_member_growth_get_lowest_level()
     {
         static $cached = null;
-        if (is_array($cached)) {
+        static $resolved = false;
+        if ($resolved) {
             return $cached;
         }
+        $resolved = true;
 
         $table = eottae_member_growth_levels_table();
         if (!eottae_member_growth_table_exists($table)) {
-            return null;
+            $cached = eottae_member_growth_fallback_level();
+
+            return $cached;
         }
 
-        $cached = sql_fetch("
+        $row = sql_fetch("
             SELECT *
             FROM `{$table}`
             WHERE is_active = 1
@@ -593,7 +646,9 @@ if (!function_exists('eottae_member_growth_get_lowest_level')) {
             LIMIT 1
         ", false);
 
-        return is_array($cached) && !empty($cached['level_id']) ? $cached : null;
+        $cached = is_array($row) && !empty($row['level_id']) ? $row : eottae_member_growth_fallback_level();
+
+        return $cached;
     }
 }
 
@@ -663,7 +718,7 @@ if (!function_exists('eottae_member_growth_get_login_display_profile')) {
                     'next_level'  => null,
                 );
             }
-            $profile['level'] = eottae_member_growth_super_admin_level();
+            $profile['level'] = eottae_member_growth_resolve_level(eottae_member_growth_super_admin_level());
             $profile['main_badge'] = null;
 
             return $profile;
@@ -671,15 +726,64 @@ if (!function_exists('eottae_member_growth_get_login_display_profile')) {
 
         $profile = eottae_member_growth_get_profile($mb_id);
         if (!is_array($profile)) {
-            return null;
+            $profile = array(
+                'mb_id'       => $mb_id,
+                'total_score' => 0,
+                'main_badge'  => null,
+                'next_level'  => null,
+            );
         }
 
-        if (empty($profile['level']['level_name'])) {
-            $profile['level'] = eottae_member_growth_get_lowest_level();
-        }
+        $profile['level'] = eottae_member_growth_resolve_level($profile['level'] ?? null);
         $profile['main_badge'] = null;
 
         return $profile;
+    }
+}
+
+if (!function_exists('eottae_member_growth_login_badge_html')) {
+    /**
+     * 사이드바·로그인 박스용 활동 등급 배지 HTML
+     *
+     * @param array<string, mixed>|null $member
+     */
+    function eottae_member_growth_login_badge_html($member = null)
+    {
+        if ($member === null) {
+            global $member;
+        }
+        if (!is_array($member) || empty($member['mb_id'])) {
+            return '';
+        }
+
+        if (!function_exists('eottae_member_growth_render_profile_badge_icon')
+            && is_file(G5_PATH.'/components/eottae/member-growth-display.php')) {
+            include_once G5_PATH.'/components/eottae/member-growth-display.php';
+        }
+        if (!function_exists('eottae_member_growth_render_profile_badge_icon')) {
+            return '';
+        }
+
+        $profile = null;
+        if (function_exists('eottae_member_growth_get_login_display_profile')) {
+            $profile = eottae_member_growth_get_login_display_profile($member);
+        }
+        if (!is_array($profile) && function_exists('eottae_member_growth_get_profile')) {
+            $profile = eottae_member_growth_get_profile($member['mb_id']);
+        }
+        if (!is_array($profile)) {
+            $profile = array(
+                'mb_id'      => $member['mb_id'],
+                'main_badge' => null,
+                'level'      => eottae_member_growth_resolve_level(null),
+            );
+        }
+
+        $profile['level'] = eottae_member_growth_resolve_level($profile['level'] ?? null);
+
+        return eottae_member_growth_render_profile_badge_icon($profile, array(
+            'prefer_level' => true,
+        ));
     }
 }
 
@@ -861,10 +965,9 @@ if (!function_exists('eottae_member_growth_get_profile')) {
         $scores_table = eottae_member_growth_scores_table();
         $row = sql_fetch(" SELECT * FROM `{$scores_table}` WHERE mb_id = '".sql_escape_string($mb_id)."' ", false);
 
-        $level = eottae_member_growth_get_level((int) ($row['current_level_id'] ?? 0));
-        if (!$level) {
-            $level = eottae_member_growth_get_lowest_level();
-        }
+        $level = eottae_member_growth_resolve_level(
+            eottae_member_growth_get_level((int) ($row['current_level_id'] ?? 0))
+        );
 
         $main_badge = eottae_member_growth_get_main_badge($mb_id);
         $next = eottae_member_growth_next_level((int) ($row['total_score'] ?? 0));

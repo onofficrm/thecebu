@@ -236,3 +236,126 @@ if (!function_exists('eottae_estate_set_deal_status')) {
         );
     }
 }
+
+if (!function_exists('eottae_estate_location_from_row')) {
+    /**
+     * @param array<string, mixed> $row
+     * @return array{address:string, lat:string, lng:string}
+     */
+    function eottae_estate_location_from_row($row)
+    {
+        $address = '';
+        $lat = '';
+        $lng = '';
+
+        if (is_array($row)) {
+            $address = trim(strip_tags((string) ($row['wr_4'] ?? '')));
+            $lat = trim((string) ($row['wr_5'] ?? ''));
+            $lng = trim((string) ($row['wr_6'] ?? ''));
+        }
+
+        if (!function_exists('eottae_estate_template_from_row')) {
+            include_once G5_LIB_PATH.'/eottae-estate-template.lib.php';
+        }
+        if (function_exists('eottae_estate_template_from_row')) {
+            $data = eottae_estate_template_from_row($row);
+            if (is_array($data)) {
+                if ($address === '' && !empty($data['address'])) {
+                    $address = trim((string) $data['address']);
+                }
+                if ($lat === '' && !empty($data['lat'])) {
+                    $lat = trim((string) $data['lat']);
+                }
+                if ($lng === '' && !empty($data['lng'])) {
+                    $lng = trim((string) $data['lng']);
+                }
+            }
+        }
+
+        return array(
+            'address' => $address,
+            'lat'     => $lat,
+            'lng'     => $lng,
+        );
+    }
+}
+
+if (!function_exists('eottae_estate_has_map_location')) {
+    function eottae_estate_has_map_location($row)
+    {
+        $loc = eottae_estate_location_from_row(is_array($row) ? $row : array());
+
+        return $loc['lat'] !== '' && $loc['lng'] !== ''
+            && is_numeric($loc['lat']) && is_numeric($loc['lng']);
+    }
+}
+
+if (!function_exists('eottae_estate_list_card_data')) {
+    /**
+     * @param array<string, mixed> $item
+     * @return array<string, mixed>
+     */
+    function eottae_estate_list_card_data($item, $bo_table = '')
+    {
+        if (!function_exists('eottae_estate_template_from_row')) {
+            include_once G5_LIB_PATH.'/eottae-estate-template.lib.php';
+        }
+
+        $item_bo_table = $bo_table !== '' ? $bo_table : (defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate');
+        $template = function_exists('eottae_estate_template_from_row')
+            ? eottae_estate_template_from_row($item)
+            : null;
+        $template = is_array($template) ? $template : array();
+
+        $post_thumb = '';
+        if (function_exists('eottae_community_list_thumb')) {
+            $post_thumb = eottae_community_list_thumb(
+                $item_bo_table,
+                (int) ($item['wr_id'] ?? 0),
+                isset($item['wr_content']) ? $item['wr_content'] : ''
+            );
+        }
+
+        $deal_status = eottae_estate_deal_status_from_row($item);
+        $deal_meta = eottae_estate_deal_status_meta($deal_status);
+
+        $property_label = function_exists('eottae_estate_template_label')
+            ? eottae_estate_template_label('property_type', $template['property_type'] ?? '')
+            : '';
+        $deal_type_label = function_exists('eottae_estate_template_label')
+            ? eottae_estate_template_label('deal_type', $template['deal_type'] ?? '')
+            : '';
+
+        $region = trim((string) ($template['region'] ?? ($item['wr_1'] ?? '')));
+        $price = trim((string) ($template['price'] ?? ''));
+        $building = trim((string) ($template['building_name'] ?? ''));
+        $rooms = trim((string) ($template['rooms'] ?? ''));
+
+        $title = strip_tags((string) ($item['subject'] ?? ''));
+        if ($building !== '' && mb_stripos($title, $building) === false) {
+            $title = $building;
+        }
+
+        $subtitle_parts = array_filter(array($region, $deal_type_label, $property_label));
+        $meta_parts = array_filter(array($rooms !== '' ? $rooms : '', $template['furnishing'] ?? ''));
+
+        return array(
+            'href'            => (string) ($item['href'] ?? '#'),
+            'title'           => $title,
+            'price'           => $price,
+            'subtitle'        => implode(' · ', $subtitle_parts),
+            'meta'            => implode(' · ', $meta_parts),
+            'thumb_url'       => $post_thumb,
+            'use_profile'     => ($post_thumb === ''),
+            'author'          => strip_tags((string) ($item['name'] ?? '')),
+            'mb_id'           => (string) ($item['mb_id'] ?? ''),
+            'deal_status'     => $deal_status,
+            'deal_label'      => $deal_meta['label'],
+            'deal_class'      => $deal_meta['class'],
+            'time_label'      => function_exists('eottae_community_relative_time')
+                ? eottae_community_relative_time($item['wr_datetime'] ?? '')
+                : '',
+            'has_map'         => eottae_estate_has_map_location($item),
+        );
+    }
+}

@@ -1550,6 +1550,244 @@
     if (lngInput) lngInput.addEventListener('change', syncFromInputs);
   }
 
+  function initEstateGeocode() {
+    var btn = qs('#estateGeocodeBtn');
+    if (!btn) return;
+
+    var addressInput = qs('#estate_address');
+    var latInput = qs('#estate_lat');
+    var lngInput = qs('#estate_lng');
+    var regionInput = qs('#estate_region_field');
+    var status = qs('#estateGeocodeStatus');
+    var geocodeTimer = null;
+    var lastGeocodedAddress = '';
+
+    function dispatchFieldChange(el) {
+      if (!el) return;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    function runGeocode(trigger) {
+      var address = addressInput ? addressInput.value.trim() : '';
+      if (!address) {
+        if (trigger === 'manual') {
+          alert('주소를 입력해 주세요.');
+        }
+        return;
+      }
+      if (trigger === 'auto' && address === lastGeocodedAddress) {
+        return;
+      }
+
+      btn.disabled = true;
+      if (status) status.textContent = '주소를 확인하는 중…';
+
+      shopRunGeocode(address)
+        .then(function (data) {
+          btn.disabled = false;
+          if (!data.ok) {
+            if (status) status.textContent = shopGeocodeErrorMessage(data);
+            return;
+          }
+          lastGeocodedAddress = address;
+          if (latInput) latInput.value = data.lat;
+          if (lngInput) lngInput.value = data.lng;
+          if (regionInput && data.region && !regionInput.value.trim()) {
+            regionInput.value = data.region;
+            dispatchFieldChange(regionInput);
+          }
+          dispatchFieldChange(latInput);
+          dispatchFieldChange(lngInput);
+          dispatchFieldChange(addressInput);
+          if (status) {
+            status.textContent = data.region
+              ? '좌표와 지역이 설정되었습니다.'
+              : '좌표가 설정되었습니다.';
+          }
+          document.dispatchEvent(new CustomEvent('eottae:shop-coords-updated', {
+            detail: { lat: data.lat, lng: data.lng, source: 'estate-geocode' }
+          }));
+        })
+        .catch(function () {
+          btn.disabled = false;
+          if (status) status.textContent = '요청에 실패했습니다.';
+        });
+    }
+
+    btn.addEventListener('click', function () {
+      runGeocode('manual');
+    });
+
+    if (addressInput) {
+      addressInput.addEventListener('blur', function () {
+        if (addressInput.value.trim().length < 8) {
+          return;
+        }
+        clearTimeout(geocodeTimer);
+        geocodeTimer = setTimeout(function () {
+          runGeocode('auto');
+        }, 400);
+      });
+    }
+
+    document.addEventListener('eottae:geocoder-ready', function () {
+      if (addressInput && addressInput.value.trim().length >= 8 && !lastGeocodedAddress) {
+        runGeocode('auto');
+      }
+    });
+  }
+
+  function initEstateCoordinatePicker() {
+    var mapEl = qs('#estateCoordMap');
+    var details = qs('.sebu-property-template__map-details');
+    if (!mapEl || !details) return;
+
+    var latInput = qs('#estate_lat');
+    var lngInput = qs('#estate_lng');
+    var status = qs('#estateGeocodeStatus');
+    var map = null;
+    var marker = null;
+    var initialized = false;
+
+    function parseCoord(input, fallback) {
+      var n = parseFloat(input && input.value ? input.value : '');
+      return isFinite(n) ? n : fallback;
+    }
+
+    function getDefaultCenter() {
+      return {
+        lat: parseFloat(mapEl.getAttribute('data-default-lat')) || 10.313,
+        lng: parseFloat(mapEl.getAttribute('data-default-lng')) || 123.9174
+      };
+    }
+
+    function getDefaultZoom() {
+      var z = parseInt(mapEl.getAttribute('data-default-zoom'), 10);
+      return isFinite(z) ? z : 14;
+    }
+
+    function formatCoord(value) {
+      return Number(value).toFixed(7);
+    }
+
+    function dispatchFieldChange(el) {
+      if (!el) return;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    function updateInputs(lat, lng, message) {
+      if (latInput) latInput.value = formatCoord(lat);
+      if (lngInput) lngInput.value = formatCoord(lng);
+      dispatchFieldChange(latInput);
+      dispatchFieldChange(lngInput);
+      if (status && message) status.textContent = message;
+    }
+
+    function setMarkerPosition(latLng) {
+      if (!marker) {
+        marker = new google.maps.Marker({
+          map: map,
+          position: latLng,
+          draggable: true
+        });
+        marker.addListener('dragend', function () {
+          var pos = marker.getPosition();
+          updateInputs(pos.lat(), pos.lng(), '지도에서 위치를 선택했습니다.');
+        });
+      } else {
+        marker.setPosition(latLng);
+        marker.setMap(map);
+      }
+    }
+
+    function initMap() {
+      if (initialized || !window.google || !google.maps) return;
+      initialized = true;
+
+      var fallback = getDefaultCenter();
+      var lat = parseCoord(latInput, fallback.lat);
+      var lng = parseCoord(lngInput, fallback.lng);
+      var hasCoords = latInput && latInput.value.trim() !== '' && lngInput && lngInput.value.trim() !== '';
+      var center = hasCoords ? { lat: lat, lng: lng } : fallback;
+
+      map = new google.maps.Map(mapEl, {
+        center: center,
+        zoom: hasCoords ? 16 : getDefaultZoom(),
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+        zoomControl: true
+      });
+
+      if (hasCoords) {
+        setMarkerPosition(center);
+      }
+
+      map.addListener('click', function (event) {
+        setMarkerPosition(event.latLng);
+        updateInputs(event.latLng.lat(), event.latLng.lng(), '지도에서 위치를 선택했습니다.');
+      });
+    }
+
+    function refreshMapSize() {
+      if (!map) return;
+      google.maps.event.trigger(map, 'resize');
+      if (marker && marker.getPosition()) {
+        map.panTo(marker.getPosition());
+      } else {
+        map.panTo(map.getCenter());
+      }
+    }
+
+    function ensureMap() {
+      if (window.google && google.maps) {
+        initMap();
+        window.setTimeout(refreshMapSize, 120);
+      }
+    }
+
+    function syncFromInputs() {
+      if (!map || !initialized) return;
+      var lat = parseCoord(latInput, NaN);
+      var lng = parseCoord(lngInput, NaN);
+      if (!isFinite(lat) || !isFinite(lng)) return;
+      var pos = { lat: lat, lng: lng };
+      setMarkerPosition(pos);
+      map.setCenter(pos);
+      map.setZoom(16);
+    }
+
+    details.addEventListener('toggle', function () {
+      if (details.open) {
+        ensureMap();
+      }
+    });
+
+    document.addEventListener('eottae:geocoder-ready', function () {
+      if (details.open) ensureMap();
+    });
+
+    document.addEventListener('eottae:shop-coords-updated', function (event) {
+      if (!event.detail || event.detail.lat == null || event.detail.lng == null) return;
+      if (details.open) ensureMap();
+      if (!map || !initialized) return;
+      var pos = { lat: Number(event.detail.lat), lng: Number(event.detail.lng) };
+      if (!isFinite(pos.lat) || !isFinite(pos.lng)) return;
+      setMarkerPosition(pos);
+      map.setCenter(pos);
+      map.setZoom(16);
+    });
+
+    if (latInput) latInput.addEventListener('change', syncFromInputs);
+    if (lngInput) lngInput.addEventListener('change', syncFromInputs);
+
+    if (details.open) {
+      ensureMap();
+    }
+  }
+
   function initAdCarousel() {
     var root = qs('[data-ad-carousel]');
     if (!root) return;
@@ -2167,6 +2405,8 @@
     initShopRegisterWizard();
     initShopGeocode();
     initShopCoordinatePicker();
+    initEstateGeocode();
+    initEstateCoordinatePicker();
     initMemberType();
     initTalkApplyForm();
     initReviewWriteForms();

@@ -230,6 +230,26 @@ if ($is_ai_post) {
         if ($is_estate_board_view && is_array($estate_template_data)) {
             include G5_PATH.'/components/eottae/estate-view-detail.php';
         }
+
+        if ($is_estate_board_view && function_exists('eottae_estate_has_map_location') && eottae_estate_has_map_location($view)) {
+            $estate_loc = eottae_estate_location_from_row($view);
+            $estate_map_name = get_text($view['wr_subject']);
+            if (!empty($estate_template_data['building_name'])) {
+                $estate_map_name = get_text($estate_template_data['building_name']);
+            }
+            $shop_map = array(
+                'address' => $estate_loc['address'],
+                'lat'     => $estate_loc['lat'],
+                'lng'     => $estate_loc['lng'],
+                'name'    => $estate_map_name,
+            );
+            if (function_exists('eottae_enqueue_google_maps')) {
+                eottae_enqueue_google_maps();
+            }
+            echo '<div class="community-view-page__estate-map">';
+            include G5_PATH.'/components/eottae/shop-detail-map.php';
+            echo '</div>';
+        }
         } ?>
 
         <?php if ($is_job_board_view && !empty($view['mb_id'])) {

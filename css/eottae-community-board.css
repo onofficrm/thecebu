@@ -7,6 +7,12 @@
   --eottae-list-thumb-radius: 14px;
 }
 
+/* 커뮤니티 허브 전체 — 통합 목록(한 줄 카드)만 사용 */
+#bo_list.board-wrap--eottae-community .community-list--hub-all {
+  display: block;
+  padding: 0;
+}
+
 @media (max-width: 768px) {
   #bo_list.board-wrap--eottae-community {
     --eottae-list-thumb-size: 88px;
@@ -14,7 +20,7 @@
   }
 }
 #bo_list.board-wrap--eottae-community .community-post__link {
-  display: block;
+  display: block !important;
   padding: 16px 24px 16px 18px;
   text-decoration: none;
   color: inherit;
@@ -61,6 +67,10 @@
   position: relative;
   padding: 0;
   aspect-ratio: 1 / 1;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: start;
+  justify-self: start;
 }
 
 #bo_list.board-wrap--eottae-community .estate-profile-thumb__media,
@@ -162,6 +172,46 @@
   color: #94a3b8;
 }
 
+/* 구인구직·부동산 — 본문+작성자를 한 열에 묶어 자유게시판처럼 정돈 */
+#bo_list.board-wrap--eottae-community .community-post--job .community-post__body,
+#bo_list.board-wrap--eottae-community .community-post--estate .community-post__body {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 4px;
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  align-self: start;
+}
+
+#bo_list.board-wrap--eottae-community .community-post--job .community-post__text,
+#bo_list.board-wrap--eottae-community .community-post--estate .community-post__text,
+#bo_list.board-wrap--eottae-community .community-post--job .community-post__meta,
+#bo_list.board-wrap--eottae-community .community-post--estate .community-post__meta {
+  grid-column: auto;
+  grid-row: auto;
+}
+
+#bo_list.board-wrap--eottae-community .community-post--job .community-post__cols,
+#bo_list.board-wrap--eottae-community .community-post--estate .community-post__cols {
+  grid-template-rows: auto;
+  row-gap: 0;
+  align-items: start;
+}
+
+#bo_list.board-wrap--eottae-community .community-post--job .community-post__thumb,
+#bo_list.board-wrap--eottae-community .community-post--estate .community-post__thumb {
+  grid-row: 1;
+  align-self: start;
+}
+
+#bo_list.board-wrap--eottae-community .community-post--job .community-post__aside,
+#bo_list.board-wrap--eottae-community .community-post--estate .community-post__aside {
+  grid-row: 1;
+  align-self: center;
+}
+
 #bo_list.board-wrap--eottae-community .community-post__foot {
   display: none !important;
 }
@@ -212,6 +262,7 @@
 
 @media (max-width: 768px) {
   #bo_list.board-wrap--eottae-community .community-post__link {
+    display: block !important;
     padding: 14px 18px 14px 14px;
   }
 

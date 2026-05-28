@@ -43,6 +43,7 @@ g5_page_start(eottae_column_menu_label());
             <?php } elseif ($is_member) { ?>
             <a href="<?php echo eottae_column_apply_url(); ?>" class="sebu-column-btn sebu-column-btn--outline">칼럼니스트 신청</a>
             <?php } ?>
+            <a href="<?php echo eottae_columnist_recruit_url(); ?>" class="sebu-column-btn sebu-column-btn--ghost">컬럼리스트 모집</a>
         </div>
     </header>
 

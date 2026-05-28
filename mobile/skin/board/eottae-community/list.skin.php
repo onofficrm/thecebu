@@ -55,6 +55,13 @@ if ($is_estate_board_list) {
             100
         );
     }
+    $estate_list_css = G5_PATH.'/css/eottae-estate-list.css';
+    if (is_file($estate_list_css)) {
+        add_stylesheet(
+            '<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-estate-list.css?ver='.(int) filemtime($estate_list_css).'">',
+            102
+        );
+    }
 }
 if ($is_job_board_list) {
     $job_board_css = G5_PATH.'/css/eottae-job-board.css';
@@ -75,6 +82,9 @@ if (is_file($eottae_list_thumb_css)) {
 $is_talkroom_board = function_exists('eottae_talkroom_board_table') && $bo_table === eottae_talkroom_board_table();
 if ($is_talkroom_board) {
     include_once G5_PATH.'/components/eottae/talk-ai-message-ui.php';
+}
+if ($is_community_hub_all_list && function_exists('eottae_community_hub_load_all_list_assets')) {
+    eottae_community_hub_load_all_list_assets();
 }
 if (function_exists('eottae_community_hub_prepare_list_context') && eottae_is_community_hub_board($bo_table)) {
     eottae_community_hub_prepare_list_context($bo_table);
@@ -164,7 +174,7 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
     <input type="hidden" name="sod" value="<?php echo $sod ?>">
     <input type="hidden" name="page" value="<?php echo $page ?>">
 
-    <div class="community-list<?php echo $is_event_board_list ? ' community-list--event' : ''; ?>">
+    <div class="community-list<?php echo $is_community_hub_all_list ? ' community-list--hub-all' : ''; ?><?php echo !$is_community_hub_all_list && $is_event_board_list ? ' community-list--event' : ''; ?><?php echo !$is_community_hub_all_list && $is_estate_board_list ? ' community-list--estate' : ''; ?>">
         <?php
         if (function_exists('eottae_member_growth_prefetch_members')) {
             include_once G5_PATH.'/components/eottae/member-growth-display.php';
@@ -252,7 +262,9 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
                     $item_class .= ' community-post--has-thumb';
                 }
             }
-            if ($is_event_board_list) {
+            if ($is_community_hub_all_list) {
+                include G5_PATH.'/skin/board/eottae-community/list-item.inc.php';
+            } elseif ($is_event_board_list) {
                 $event_status = eottae_event_status_from_row($item);
                 $event_type = eottae_event_normalize_type($item['wr_1'] ?? 'other');
                 $event_display_name = get_text($item['wr_3'] ?? '');
@@ -260,6 +272,8 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
                 $event_period_label = eottae_event_period_label_from_row($item);
                 $event_shop = eottae_event_shop_from_row($item);
                 include G5_PATH.'/skin/board/eottae-community/list-event-card.inc.php';
+            } elseif ($is_estate_board_list) {
+                include G5_PATH.'/skin/board/eottae-community/list-estate-card.inc.php';
             } else {
                 include G5_PATH.'/skin/board/eottae-community/list-item.inc.php';
             }

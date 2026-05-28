@@ -34,24 +34,13 @@ if ($is_member && is_array($member)) {
     if (!empty($member['mb_id']) && function_exists('eottae_member_profile_image_url')) {
         $eottae_profile_photo_url = eottae_member_profile_image_url($member['mb_id']);
     }
-    $eottae_growth_profile = array();
     $eottae_profile_badge_html = '';
     if (!empty($member['mb_id'])) {
-        if (is_file(G5_LIB_PATH.'/eottae-member-growth.lib.php')) {
+        if (!function_exists('eottae_member_growth_login_badge_html') && is_file(G5_LIB_PATH.'/eottae-member-growth.lib.php')) {
             include_once G5_LIB_PATH.'/eottae-member-growth.lib.php';
         }
-        if (is_file(G5_PATH.'/components/eottae/member-growth-display.php')) {
-            include_once G5_PATH.'/components/eottae/member-growth-display.php';
-        }
-        if (function_exists('eottae_member_growth_get_login_display_profile')) {
-            $eottae_growth_profile = eottae_member_growth_get_login_display_profile($member);
-        } elseif (function_exists('eottae_member_growth_get_profile')) {
-            $eottae_growth_profile = eottae_member_growth_get_profile($member['mb_id']);
-        }
-        if (function_exists('eottae_member_growth_render_profile_badge_icon') && is_array($eottae_growth_profile)) {
-            $eottae_profile_badge_html = eottae_member_growth_render_profile_badge_icon($eottae_growth_profile, array(
-                'prefer_level' => true,
-            ));
+        if (function_exists('eottae_member_growth_login_badge_html')) {
+            $eottae_profile_badge_html = eottae_member_growth_login_badge_html($member);
         }
     }
 }
@@ -72,9 +61,11 @@ if ($is_member && is_array($member)) {
                 <p class="community-login-box__welcome"><strong><?php echo $eottae_member_nick; ?></strong>님</p>
                 <p class="community-login-box__type"><?php echo $eottae_member_type; ?></p>
             </div>
+            <?php if ($eottae_profile_badge_html !== '') { ?>
             <div class="community-login-box__profile-badge" aria-label="활동 등급">
                 <?php echo $eottae_profile_badge_html; ?>
             </div>
+            <?php } ?>
         </div>
 
         <div class="community-login-box__stats">

@@ -41,6 +41,7 @@ include_once G5_LIB_PATH.'/eottae-challenge-likes.lib.php';
 include_once G5_LIB_PATH.'/eottae-challenge-report.lib.php';
 include_once G5_LIB_PATH.'/eottae-golf-join.lib.php';
 include_once G5_LIB_PATH.'/eottae-column.lib.php';
+include_once G5_LIB_PATH.'/eottae-columnist-recruit.lib.php';
 include_once G5_LIB_PATH.'/eottae-column-likes.lib.php';
 include_once G5_LIB_PATH.'/eottae-column-bookmarks.lib.php';
 include_once G5_LIB_PATH.'/eottae-column-report.lib.php';
@@ -1236,6 +1237,36 @@ if (!function_exists('eottae_load_shop_board_map_assets')) {
     }
 }
 add_event('board_head_before', 'eottae_load_shop_board_map_assets', 6);
+
+if (!function_exists('eottae_load_estate_board_map_assets')) {
+    function eottae_load_estate_board_map_assets()
+    {
+        global $board;
+
+        if (empty($board['bo_table']) || !function_exists('eottae_is_estate_board') || !eottae_is_estate_board($board['bo_table'])) {
+            return;
+        }
+
+        $wr_id = isset($_GET['wr_id']) ? (int) $_GET['wr_id'] : 0;
+        if ($wr_id < 1) {
+            return;
+        }
+
+        if (!function_exists('eottae_enqueue_google_maps')) {
+            return;
+        }
+
+        global $g5;
+        $write_table = $g5['write_prefix'].$board['bo_table'];
+        $write = sql_fetch(" SELECT wr_id, wr_4, wr_5, wr_6, wr_3 FROM `{$write_table}` WHERE wr_id = '{$wr_id}' AND wr_is_comment = 0 LIMIT 1 ");
+        if (!$write || !function_exists('eottae_estate_has_map_location') || !eottae_estate_has_map_location($write)) {
+            return;
+        }
+
+        eottae_enqueue_google_maps();
+    }
+}
+add_event('board_head_before', 'eottae_load_estate_board_map_assets', 7);
 
 if (function_exists('eottae_shop_apply_segment_board_context')) {
     eottae_shop_apply_segment_board_context();

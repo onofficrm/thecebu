@@ -531,6 +531,41 @@ if (!function_exists('eottae_community_hub_tabs')) {
     }
 }
 
+if (!function_exists('eottae_community_hub_load_all_list_assets')) {
+    /**
+     * 커뮤니티 허브 전체(hub=all) — 통합 목록에 필요한 부가 스타일
+     * (단일 게시판 전용 카드 CSS는 bo_table 기준으로만 로드되므로 여기서 보강)
+     */
+    function eottae_community_hub_load_all_list_assets()
+    {
+        static $loaded = false;
+        if ($loaded) {
+            return;
+        }
+        $loaded = true;
+
+        $assets = array(
+            G5_PATH.'/css/eottae-estate-board.css',
+            G5_PATH.'/css/eottae-estate-list.css',
+            G5_PATH.'/css/eottae-job-board.css',
+        );
+        foreach ($assets as $path) {
+            if (!is_file($path)) {
+                continue;
+            }
+            $name = basename($path, '.css');
+            add_stylesheet(
+                '<link rel="stylesheet" href="'.G5_CSS_URL.'/'.$name.'.css?ver='.(int) filemtime($path).'">',
+                100
+            );
+        }
+
+        if (function_exists('eottae_event_board_load_assets')) {
+            eottae_event_board_load_assets();
+        }
+    }
+}
+
 if (!function_exists('eottae_community_hub_hero')) {
     function eottae_community_hub_hero($board, $sca = '')
     {

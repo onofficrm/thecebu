@@ -1,0 +1,204 @@
+/**
+ * 부동산 목록 — 에어비앤비 스타일 카드 그리드
+ */
+
+/* CSS 미로드 시 프로필·매물 이미지가 본문 전체로 늘어나는 것 방지 */
+.estate-list-card__media {
+  max-width: 100%;
+}
+
+.estate-list-card__img {
+  max-width: 100%;
+  height: auto;
+}
+
+.estate-list-card__media .estate-list-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+#bo_list.board-wrap--eottae-community .community-list--estate {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  padding: 8px 12px 24px;
+}
+
+@media (min-width: 640px) {
+  #bo_list.board-wrap--eottae-community .community-list--estate {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    padding: 12px 16px 28px;
+  }
+}
+
+@media (min-width: 1024px) {
+  #bo_list.board-wrap--eottae-community .community-list--estate {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+#bo_list.board-wrap--eottae-community .community-list--estate .estate-list-card {
+  margin: 0;
+  border-bottom: none;
+}
+
+.estate-list-card__link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.estate-list-card__link:hover {
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+  transform: translateY(-2px);
+}
+
+.estate-list-card--completed .estate-list-card__link {
+  opacity: 0.92;
+}
+
+.estate-list-card__media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: linear-gradient(145deg, #ecfeff, #e0f2fe);
+  overflow: hidden;
+}
+
+.estate-list-card__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.estate-list-card__img--profile {
+  object-fit: cover;
+  filter: saturate(0.95);
+}
+
+.estate-list-card__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 3rem;
+  font-weight: 800;
+  color: #0e7490;
+  background: linear-gradient(145deg, #ecfeff, #cffafe);
+}
+
+.estate-list-card__deal {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+}
+
+.estate-list-card__deal.estate-deal-badge--trading {
+  background: rgba(14, 165, 233, 0.92);
+}
+
+.estate-list-card__deal.estate-deal-badge--completed {
+  background: rgba(100, 116, 139, 0.92);
+}
+
+.estate-list-card__map-pin {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+}
+
+.estate-list-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px 16px;
+  min-width: 0;
+}
+
+.estate-list-card__price {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.estate-list-card__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #334155;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.estate-list-card__subtitle {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.estate-list-card__meta {
+  margin: 0;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.estate-list-card__foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid #f1f5f9;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.estate-list-card__author {
+  font-weight: 600;
+  color: #64748b;
+}
+
+.estate-list-card__time::before {
+  content: '·';
+  margin-right: 8px;
+  color: #cbd5e1;
+}
+
+#bo_list.board-wrap--eottae-community .community-list--estate .community-list__empty {
+  grid-column: 1 / -1;
+}

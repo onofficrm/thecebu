@@ -1308,6 +1308,9 @@ if (!function_exists('eottae_builder_inject_site_footer_script')) {
             'coupon_guide_url'          => G5_URL.'/page/eottae-coupon-guide.php',
             'business_coupon_guide_url' => G5_URL.'/page/eottae-business-coupon-guide.php',
             'challenge_guide_url'       => G5_URL.'/page/eottae-challenge-guide.php',
+            'columnist_recruit_url'     => function_exists('eottae_columnist_recruit_url')
+                ? eottae_columnist_recruit_url()
+                : G5_URL.'/columnist/',
             'member_growth_guide_url'   => function_exists('eottae_member_growth_guide_url')
                 ? eottae_member_growth_guide_url()
                 : G5_URL.'/page/eottae-member-growth-guide.php',
