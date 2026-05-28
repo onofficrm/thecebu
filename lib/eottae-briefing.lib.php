@@ -214,6 +214,7 @@ if (!function_exists('eottae_briefing_talkroom_active_rooms_today')) {
             WHERE w.wr_datetime >= '{$today}'
               AND {$visible}
               AND r.status IN ({$status_in})
+              AND r.visibility = 'public'
             GROUP BY r.room_id, r.room_name, r.emoji, r.category
             ORDER BY activity DESC, r.room_id DESC
             LIMIT {$limit}

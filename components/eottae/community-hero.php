@@ -44,6 +44,10 @@ $community_hero_search_placeholder = isset($community_hero_search_placeholder)
             <form class="community-hero__search community-search" name="fsearch" method="get" action="<?php echo G5_BBS_URL; ?>/board.php">
                 <input type="hidden" name="bo_table" value="<?php echo $bo_table; ?>">
                 <?php
+                $hero_hub_all = !empty($is_community_hub_all_list)
+                    || (function_exists('eottae_community_hub_is_all_view') && !empty($bo_table) && eottae_community_hub_is_all_view($bo_table));
+                if ($hero_hub_all) { ?><input type="hidden" name="hub" value="all"><?php } ?>
+                <?php
                 $hero_hide_sca = !empty($is_community_hub_list)
                     || (function_exists('eottae_is_community_hub_board') && !empty($bo_table) && eottae_is_community_hub_board($bo_table));
                 if (!$hero_hide_sca && !empty($sca)) { ?><input type="hidden" name="sca" value="<?php echo get_text($sca); ?>"><?php } ?>

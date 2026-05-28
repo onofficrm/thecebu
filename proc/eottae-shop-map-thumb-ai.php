@@ -49,6 +49,11 @@ $payload = array(
     'n' => 1,
 );
 
+if (function_exists('eottae_ai_release_session_lock')) {
+    eottae_ai_release_session_lock();
+}
+@set_time_limit(75);
+
 $ch = curl_init('https://api.openai.com/v1/images/generations');
 curl_setopt_array($ch, array(
     CURLOPT_RETURNTRANSFER => true,
@@ -58,6 +63,7 @@ curl_setopt_array($ch, array(
         'Authorization: Bearer '.$api_key,
     ),
     CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
+    CURLOPT_CONNECTTIMEOUT => 10,
     CURLOPT_TIMEOUT => 60,
 ));
 

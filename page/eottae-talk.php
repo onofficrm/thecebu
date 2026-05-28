@@ -2,10 +2,13 @@
 include_once(dirname(__FILE__).'/_init.php');
 include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
 
-$list = eottae_talkroom_list_public(array(
+$list = eottae_talkroom_list_browsable(array(
     'page'  => isset($_GET['page']) ? (int) $_GET['page'] : 1,
     'limit' => 50,
-));
+),
+    !empty($member['mb_id']) ? (string) $member['mb_id'] : '',
+    ($is_admin === 'super')
+);
 $rooms = eottae_talkroom_apply_card_viewer_context(
     $list['rows'],
     !empty($member['mb_id']) ? (string) $member['mb_id'] : '',

@@ -15,9 +15,35 @@ if (!function_exists('eottae_icrm_content_has_template')) {
         }
 
         return (bool) preg_match(
-            '/\bicrm-template\b|data-icrm-template|data-design-template|data-icrm-generated/i',
+            '/\bicrm-template\b|\bicrm-(?:section|content|cta|facility(?:-grid|-card)?)\b|data-icrm(?:-template|-generated)?|data-design-template/i',
             $html
         );
+    }
+}
+
+if (!function_exists('eottae_icrm_content_is_rich_html')) {
+    /**
+     * iCRM 마커 없이 저장된 HTML 템플릿( style + 구조화 markup ) 감지
+     */
+    function eottae_icrm_content_is_rich_html($html)
+    {
+        $html = trim((string) $html);
+        if ($html === '' || strpos($html, '<') === false) {
+            return false;
+        }
+
+        if (stripos($html, '<style') === false) {
+            return false;
+        }
+
+        return (bool) preg_match('/<(div|section|article)\b/i', $html);
+    }
+}
+
+if (!function_exists('eottae_icrm_content_should_preserve_html')) {
+    function eottae_icrm_content_should_preserve_html($html)
+    {
+        return eottae_icrm_content_has_template($html) || eottae_icrm_content_is_rich_html($html);
     }
 }
 
@@ -27,7 +53,25 @@ if (!function_exists('eottae_icrm_content_needs_html')) {
      */
     function eottae_icrm_content_needs_html($content)
     {
-        return eottae_icrm_content_has_template($content);
+        return eottae_icrm_content_should_preserve_html($content);
+    }
+}
+
+if (!function_exists('eottae_icrm_html_purifier_result')) {
+    /**
+     * HTMLPurifier 인스턴스 캐시(일반/관리자)와 무관하게 iCRM 템플릿 HTML 유지
+     *
+     * @param string $purified
+     * @param object $purifier
+     * @param string $html
+     */
+    function eottae_icrm_html_purifier_result($purified, $purifier, $html)
+    {
+        if (!eottae_icrm_content_should_preserve_html($html)) {
+            return $purified;
+        }
+
+        return (string) $html;
     }
 }
 
@@ -65,7 +109,7 @@ if (!function_exists('eottae_icrm_maybe_enqueue_template_styles')) {
             return;
         }
 
-        if (eottae_icrm_content_has_template($write_row['wr_content'])) {
+        if (eottae_icrm_content_should_preserve_html($write_row['wr_content'])) {
             eottae_icrm_enqueue_template_styles();
         }
     }
@@ -78,7 +122,7 @@ if (!function_exists('eottae_icrm_html_purifier_config')) {
     function eottae_icrm_html_purifier_config($config, $args)
     {
         $html = isset($args['html']) ? (string) $args['html'] : '';
-        if (!eottae_icrm_content_has_template($html)) {
+        if (!eottae_icrm_content_should_preserve_html($html)) {
             return;
         }
 
@@ -104,7 +148,55 @@ if (!function_exists('eottae_icrm_html_purifier_config')) {
             }
         }
 
+        $property_attrs = array(
+            'data-property-field',
+            'data-event-field',
+            'data-estate-template-json',
+            'data-template-json',
+            'data-icrm-data',
+        );
+        foreach ($elements as $el) {
+            foreach ($property_attrs as $attr) {
+                $def->addAttribute($el, $attr, 'Text');
+            }
+        }
+
         $config->set('CSS.Trusted', true);
         $config->set('HTML.Trusted', true);
+    }
+}
+
+if (!function_exists('eottae_icrm_extract_embedded_json')) {
+    /**
+     * iCRM·부동산 글쓰기 HTML에 숨겨 둔 JSON 페이로드 추출
+     *
+     * @return string|null raw JSON string
+     */
+    function eottae_icrm_extract_embedded_json($html)
+    {
+        $html = (string) $html;
+        if ($html === '') {
+            return null;
+        }
+
+        $patterns = array(
+            '/<script[^>]+type=["\']application\/json["\'][^>]*>(.*?)<\/script>/is',
+            '/<input[^>]+(?:id|name)=["\']estate_template_json["\'][^>]+value=["\']([^"\']+)["\']/i',
+            '/<input[^>]+value=["\']([^"\']+)["\'][^>]+(?:id|name)=["\']estate_template_json["\']/i',
+            '/data-(?:estate-template-json|template-json|icrm-data)=["\']([^"\']+)["\']/i',
+            '/<!--\s*estate-template-json\s*:\s*(\{.*?\})\s*-->/is',
+        );
+
+        foreach ($patterns as $pattern) {
+            if (!preg_match($pattern, $html, $m)) {
+                continue;
+            }
+            $raw = html_entity_decode(trim($m[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            if ($raw !== '' && $raw[0] === '{') {
+                return $raw;
+            }
+        }
+
+        return null;
     }
 }

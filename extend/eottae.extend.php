@@ -414,6 +414,25 @@ if (!function_exists('eottae_icrm_on_board_view')) {
             eottae_icrm_maybe_enqueue_template_styles($write_row);
         }
 
+        if (function_exists('eottae_is_estate_board') && eottae_is_estate_board($board['bo_table'])) {
+            if (!function_exists('eottae_estate_template_sync_wr3_from_row')) {
+                include_once G5_LIB_PATH.'/eottae-estate-template.lib.php';
+            }
+            if (function_exists('eottae_estate_template_sync_wr3_from_row')) {
+                eottae_estate_template_sync_wr3_from_row($board['bo_table'], $wr_id);
+                $write_row = get_write(get_write_table_name($board['bo_table']), $wr_id, true);
+            }
+        }
+
+        if (function_exists('eottae_is_event_board') && eottae_is_event_board($board['bo_table'])) {
+            if (!function_exists('eottae_event_sync_fields_from_row')) {
+                include_once G5_LIB_PATH.'/eottae-event.lib.php';
+            }
+            if (function_exists('eottae_event_sync_fields_from_row')) {
+                eottae_event_sync_fields_from_row($board['bo_table'], $wr_id);
+            }
+        }
+
         if (!function_exists('eottae_icrm_ensure_wr_seo_title')) {
             return;
         }
@@ -432,6 +451,7 @@ if (!function_exists('eottae_icrm_on_board_view')) {
 add_event('board_head_before', 'eottae_icrm_on_board_view', 8, 3);
 
 add_event('html_purifier_config', 'eottae_icrm_html_purifier_config', 10, 2);
+add_replace('html_purifier_result', 'eottae_icrm_html_purifier_result', 10, 3);
 
 if (!function_exists('eottae_on_shop_delete')) {
     function eottae_on_shop_delete($write, $board)
@@ -609,9 +629,16 @@ if (eottae_should_load_assets()) {
         }
     }
     add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae.css">', 20);
-    add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-member-growth.css">', 21);
-    add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-member-growth-social.css">', 22);
-    add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-kakao-chat.css">', 22);
+    $eottae_list_thumb_css = G5_PATH.'/css/eottae-list-thumb.css';
+    if (is_file($eottae_list_thumb_css)) {
+        add_stylesheet(
+            '<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-list-thumb.css?ver='.(int) filemtime($eottae_list_thumb_css).'">',
+            21
+        );
+    }
+    add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-member-growth.css">', 22);
+    add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-member-growth-social.css">', 23);
+    add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-kakao-chat.css">', 23);
     $eottae_ai_cfg = function_exists('eottae_ai_generate_bootstrap_config')
         ? eottae_ai_generate_bootstrap_config()
         : array('enabled' => false, 'api_key' => '');
@@ -1079,6 +1106,18 @@ if (!function_exists('eottae_community_on_board_head')) {
     }
 }
 add_event('board_head_before', 'eottae_community_on_board_head', 5, 3);
+
+if (!function_exists('eottae_community_hub_on_board_head')) {
+    function eottae_community_hub_on_board_head($board, $write, $wr_id)
+    {
+        if (!function_exists('eottae_community_hub_redirect_legacy_list')) {
+            return;
+        }
+
+        eottae_community_hub_redirect_legacy_list($board, $write, $wr_id);
+    }
+}
+add_event('board_head_before', 'eottae_community_hub_on_board_head', 4, 3);
 
 if (isset($board) && is_array($board) && isset($board['bo_skin'])) {
     $skin = (string) $board['bo_skin'];
@@ -1581,6 +1620,42 @@ if (!function_exists('eottae_on_estate_write_before')) {
     }
 }
 add_event('write_update_before', 'eottae_on_estate_write_before', 14, 4);
+
+if (!function_exists('eottae_estate_on_write_update_after')) {
+    function eottae_estate_on_write_update_after($board, $wr_id, $w, $qstr, $redirect_url)
+    {
+        if (empty($board['bo_table']) || !function_exists('eottae_is_estate_board') || !eottae_is_estate_board($board['bo_table'])) {
+            return;
+        }
+
+        if (!function_exists('eottae_estate_template_sync_wr3_from_row')) {
+            include_once G5_LIB_PATH.'/eottae-estate-template.lib.php';
+        }
+
+        if (function_exists('eottae_estate_template_sync_wr3_from_row')) {
+            eottae_estate_template_sync_wr3_from_row($board['bo_table'], (int) $wr_id);
+        }
+    }
+}
+add_event('write_update_after', 'eottae_estate_on_write_update_after', 13, 5);
+
+if (!function_exists('eottae_event_on_write_update_after')) {
+    function eottae_event_on_write_update_after($board, $wr_id, $w, $qstr, $redirect_url)
+    {
+        if (empty($board['bo_table']) || !function_exists('eottae_is_event_board') || !eottae_is_event_board($board['bo_table'])) {
+            return;
+        }
+
+        if (!function_exists('eottae_event_sync_fields_from_row')) {
+            include_once G5_LIB_PATH.'/eottae-event.lib.php';
+        }
+
+        if (function_exists('eottae_event_sync_fields_from_row')) {
+            eottae_event_sync_fields_from_row($board['bo_table'], (int) $wr_id);
+        }
+    }
+}
+add_event('write_update_after', 'eottae_event_on_write_update_after', 13, 5);
 
 if (!function_exists('eottae_on_job_write_before')) {
     function eottae_on_job_write_before($board, $wr_id, $w, $qstr)

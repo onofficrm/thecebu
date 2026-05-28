@@ -2,41 +2,32 @@
 /**
  * 사업자 회원 — 홍보 게시글 문구 AI 생성
  */
-include_once dirname(__DIR__).'/common.php';
+require_once dirname(__FILE__).'/_eottae_json_bootstrap.php';
+
 include_once G5_LIB_PATH.'/eottae.lib.php';
 include_once G5_LIB_PATH.'/eottae-ai-generate.lib.php';
 include_once G5_LIB_PATH.'/eottae-business-snippet.lib.php';
 
-header('Content-Type: application/json; charset=utf-8');
-
 if (empty($is_member) || empty($member['mb_id'])) {
-    echo json_encode(array('success' => false, 'message' => '로그인 후 이용해 주세요.'), JSON_UNESCAPED_UNICODE);
-    exit;
+    eottae_json_send(array('success' => false, 'message' => '로그인 후 이용해 주세요.'));
 }
 
 if (!function_exists('eottae_is_business_member') || !eottae_is_business_member($member)) {
-    echo json_encode(array('success' => false, 'message' => '사업자 회원만 이용할 수 있습니다.'), JSON_UNESCAPED_UNICODE);
-    exit;
+    eottae_json_send(array('success' => false, 'message' => '사업자 회원만 이용할 수 있습니다.'));
 }
 
 $write_bo_table = isset($_POST['bo_table']) ? preg_replace('/[^a-z0-9_]/i', '', (string) $_POST['bo_table']) : '';
 $write_ca_name = isset($_POST['ca_name']) ? trim((string) $_POST['ca_name']) : '';
 if ($write_bo_table !== '' || $write_ca_name !== '') {
     if (!eottae_business_snippet_write_allowed($write_bo_table, $write_ca_name)) {
-        echo json_encode(array(
+        eottae_json_send(array(
             'success' => false,
             'message' => '홍보 문구는 분류가 광고판인 글에서만 이용할 수 있습니다.',
-        ), JSON_UNESCAPED_UNICODE);
-        exit;
+        ));
     }
 }
 
-if (!function_exists('g5site_cfg') && is_file(G5_PATH.'/_site.config.php')) {
-    include_once G5_PATH.'/_site.config.php';
-}
-
 $ai_cfg = eottae_ai_generate_require_ready();
-$api_key = $ai_cfg['api_key'];
 $model = $ai_cfg['model'];
 
 $topic = isset($_POST['topic']) ? trim(strip_tags((string) $_POST['topic'])) : '';
@@ -96,39 +87,20 @@ $payload = array(
     'response_format' => array('type' => 'json_object'),
 );
 
-$ch = curl_init('https://api.openai.com/v1/chat/completions');
-curl_setopt_array($ch, array(
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_POST => true,
-    CURLOPT_HTTPHEADER => array(
-        'Content-Type: application/json',
-        'Authorization: Bearer '.$api_key,
-    ),
-    CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
-    CURLOPT_TIMEOUT => 30,
-));
+$completion = eottae_ai_openai_chat_completion($payload, array('timeout' => 45, 'connect_timeout' => 10));
+$generated = eottae_ai_openai_parse_json_content($completion);
 
-$raw = curl_exec($ch);
-$curl_error = curl_error($ch);
-$http_code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-curl_close($ch);
-
-if ($raw === false || $raw === '' || $http_code < 200 || $http_code >= 300) {
-    echo json_encode(array(
+if (!is_array($generated)) {
+    eottae_json_send(array(
         'success' => false,
         'message' => function_exists('eottae_ai_generate_openai_error_message')
-            ? eottae_ai_generate_openai_error_message($http_code, $raw, $curl_error)
+            ? eottae_ai_generate_openai_error_message(
+                (int) ($completion['http_code'] ?? 0),
+                $completion['raw'] ?? '',
+                $completion['error'] ?? ''
+            )
             : 'AI 홍보 문구 생성에 실패했습니다.',
-    ), JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-$decoded = json_decode($raw, true);
-$content = isset($decoded['choices'][0]['message']['content']) ? trim((string) $decoded['choices'][0]['message']['content']) : '';
-$generated = json_decode($content, true);
-if (!is_array($generated)) {
-    echo json_encode(array('success' => false, 'message' => 'AI 응답을 해석하지 못했습니다.'), JSON_UNESCAPED_UNICODE);
-    exit;
+    ));
 }
 
 $result = array(
@@ -137,4 +109,4 @@ $result = array(
     'wr_content' => isset($generated['wr_content']) ? trim((string) $generated['wr_content']) : '',
 );
 
-echo json_encode(array('success' => true, 'data' => $result), JSON_UNESCAPED_UNICODE);
+eottae_json_send(array('success' => true, 'data' => $result));

@@ -2987,10 +2987,39 @@ if (!function_exists('eottae_community_relative_time')) {
     }
 }
 
+if (!function_exists('eottae_community_plain_text')) {
+    /**
+     * HTML 본문 → 목록·미리보기용 순수 텍스트 (iCRM style/script 블록 포함)
+     */
+    function eottae_community_plain_text($content)
+    {
+        $content = (string) $content;
+        if ($content === '') {
+            return '';
+        }
+
+        $content = preg_replace('@<script\b[^>]*>.*?</script>@is', '', $content);
+        $content = preg_replace('@<style\b[^>]*>.*?</style>@is', '', $content);
+        $content = preg_replace('@<noscript\b[^>]*>.*?</noscript>@is', '', $content);
+        $content = preg_replace('/<!--.*?-->/s', '', $content);
+        $content = preg_replace('/<\s*\/\s*(p|div|section|article|li|h[1-6]|blockquote|tr)\s*>/i', ' ', $content);
+        $content = preg_replace('/<\s*br\s*\/?>/i', ' ', $content);
+
+        if (function_exists('html_entity_decode')) {
+            $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        }
+
+        $text = strip_tags($content);
+        $text = trim(preg_replace('/\s+/u', ' ', $text));
+
+        return $text;
+    }
+}
+
 if (!function_exists('eottae_community_snippet')) {
     function eottae_community_snippet($content, $len = 110)
     {
-        $text = trim(preg_replace('/\s+/', ' ', strip_tags((string) $content)));
+        $text = eottae_community_plain_text($content);
         if ($text === '') {
             return '';
         }
@@ -5610,6 +5639,16 @@ if (!function_exists('eottae_community_free_list_url')) {
 if (!function_exists('eottae_community_list_url')) {
     function eottae_community_list_url($params = array())
     {
+        if (function_exists('eottae_community_hub_all_url')
+            && (!isset($params['bo_table']) || $params['bo_table'] === '' || $params['bo_table'] === eottae_community_board_table())
+        ) {
+            if (isset($params['bo_table'])) {
+                unset($params['bo_table']);
+            }
+
+            return eottae_community_hub_all_url($params);
+        }
+
         $table = '';
         if (isset($params['bo_table'])) {
             $table = (string) $params['bo_table'];

@@ -1,7 +1,18 @@
 /**
  * eottae-community 목록 — 한 행 3열 (썸네일 | 제목·본문 | 통계)
- * .community-post__cols: grid — 썸네일은 제목+본문 1행 높이에 맞춤
+ * 썸네일: 104×104px 정사각형 (모바일 88px) — eottae-list-thumb.css 와 동일
  */
+#bo_list.board-wrap--eottae-community {
+  --eottae-list-thumb-size: 104px;
+  --eottae-list-thumb-radius: 14px;
+}
+
+@media (max-width: 768px) {
+  #bo_list.board-wrap--eottae-community {
+    --eottae-list-thumb-size: 88px;
+    --eottae-list-thumb-radius: 12px;
+  }
+}
 #bo_list.board-wrap--eottae-community .community-post__link {
   display: block;
   padding: 16px 24px 16px 18px;
@@ -23,12 +34,14 @@
 #bo_list.board-wrap--eottae-community .community-post__thumb {
   grid-column: 1;
   grid-row: 1;
-  width: 104px;
-  height: 100%;
-  min-height: 76px;
+  width: var(--eottae-list-thumb-size, 104px);
+  height: var(--eottae-list-thumb-size, 104px);
+  min-height: var(--eottae-list-thumb-size, 104px);
+  max-height: var(--eottae-list-thumb-size, 104px);
   margin: 0;
-  align-self: stretch;
-  border-radius: 14px;
+  align-self: start;
+  flex: 0 0 var(--eottae-list-thumb-size, 104px);
+  border-radius: var(--eottae-list-thumb-radius, 14px);
   overflow: hidden;
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
@@ -170,9 +183,12 @@
   }
 
   #bo_list.board-wrap--eottae-community .community-post__thumb {
-    width: 88px;
-    min-height: 68px;
-    border-radius: 12px;
+    width: var(--eottae-list-thumb-size, 88px);
+    height: var(--eottae-list-thumb-size, 88px);
+    min-height: var(--eottae-list-thumb-size, 88px);
+    max-height: var(--eottae-list-thumb-size, 88px);
+    flex-basis: var(--eottae-list-thumb-size, 88px);
+    border-radius: var(--eottae-list-thumb-radius, 12px);
   }
 
   #bo_list.board-wrap--eottae-community .community-post__aside {

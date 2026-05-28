@@ -352,4 +352,27 @@ if (function_exists('eottae_is_shop_board') && eottae_is_shop_board($bo_table)) 
     $eottae_shop_list_ready = true;
 }
 
+if (!$eottae_shop_list_ready && function_exists('eottae_community_hub_apply_merged_list')) {
+    include_once G5_LIB_PATH.'/eottae-community-hub.lib.php';
+    $eottae_hub_merged = eottae_community_hub_apply_merged_list($bo_table, $board, $board_skin_url, array(
+        'page' => $page,
+        'sst'  => isset($sst) ? $sst : '',
+        'sod'  => isset($sod) ? $sod : '',
+        'stx'  => isset($stx) ? $stx : '',
+        'sfl'  => isset($sfl) ? $sfl : '',
+        'sop'  => isset($sop) ? $sop : '',
+        'qstr' => isset($qstr) ? $qstr : '',
+    ));
+    if (is_array($eottae_hub_merged)) {
+        $list = $eottae_hub_merged['list'];
+        $total_count = (int) $eottae_hub_merged['total_count'];
+        $total_page = (int) $eottae_hub_merged['total_page'];
+        $write_pages = (string) $eottae_hub_merged['write_pages'];
+        if (isset($eottae_hub_merged['today_count'])) {
+            $eottae_community_hub_today_count = (int) $eottae_hub_merged['today_count'];
+        }
+        $eottae_community_hub_list_ready = true;
+    }
+}
+
 include_once($board_skin_path.'/list.skin.php');

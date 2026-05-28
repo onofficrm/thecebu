@@ -20,10 +20,19 @@ if (is_file($community_board_css)) {
 }
 
 $is_community_hub_list = function_exists('eottae_is_community_hub_board') && eottae_is_community_hub_board($bo_table);
+$is_community_hub_all_list = $is_community_hub_list
+    && function_exists('eottae_community_hub_is_all_view')
+    && eottae_community_hub_is_all_view($bo_table);
 $community_tabs = $is_community_hub_list
     ? eottae_community_hub_tabs($bo_table)
     : eottae_community_category_tabs($board);
-$today_count = eottae_community_today_count($bo_table);
+if ($is_community_hub_all_list) {
+    $today_count = isset($eottae_community_hub_today_count)
+        ? (int) $eottae_community_hub_today_count
+        : (function_exists('eottae_community_hub_today_count') ? eottae_community_hub_today_count() : 0);
+} else {
+    $today_count = eottae_community_today_count($bo_table);
+}
 $sort_options = eottae_community_sort_options(isset($sst) ? $sst : '', isset($sod) ? $sod : 'desc');
 $region_options = eottae_community_region_options();
 $current_region = isset($_GET['region']) ? trim($_GET['region']) : '';
@@ -60,6 +69,9 @@ $is_talkroom_board = function_exists('eottae_talkroom_board_table') && $bo_table
 if ($is_talkroom_board) {
     include_once G5_PATH.'/components/eottae/talk-ai-message-ui.php';
 }
+if (function_exists('eottae_community_hub_prepare_list_context') && eottae_is_community_hub_board($bo_table)) {
+    eottae_community_hub_prepare_list_context($bo_table);
+}
 ?>
 
 <div class="community-page board-wrap board-wrap--eottae-community" id="bo_list" style="width:<?php echo $width; ?>">
@@ -68,7 +80,9 @@ if ($is_talkroom_board) {
 <main class="community-page__main">
 
     <?php
-    if ($is_community_hub_list) {
+    if ($is_community_hub_all_list) {
+        $community_hero_search_placeholder = '커뮤니티 전체에서 검색해보세요';
+    } elseif ($is_community_hub_list) {
         $hub_def = eottae_community_hub_board_def($bo_table);
         $hub_label = !empty($hub_def['label']) ? get_text($hub_def['label']) : '게시판';
         $community_hero_search_placeholder = $hub_label.'에서 검색해보세요';
@@ -103,6 +117,7 @@ if ($is_talkroom_board) {
         <div class="community-toolbar__filters">
             <form class="community-filter" method="get" action="<?php echo G5_BBS_URL; ?>/board.php">
                 <input type="hidden" name="bo_table" value="<?php echo $bo_table; ?>">
+                <?php if ($is_community_hub_all_list) { ?><input type="hidden" name="hub" value="all"><?php } ?>
                 <?php if (!$is_community_hub_list && $sca) { ?><input type="hidden" name="sca" value="<?php echo get_text($sca); ?>"><?php } ?>
                 <?php if (!empty($stx)) { ?><input type="hidden" name="stx" value="<?php echo get_text($stx); ?>"><input type="hidden" name="sfl" value="wr_subject||wr_content"><?php } ?>
                 <label class="sound_only" for="community_region">구역</label>
@@ -115,6 +130,7 @@ if ($is_talkroom_board) {
             </form>
             <form class="community-filter" method="get" action="<?php echo G5_BBS_URL; ?>/board.php">
                 <input type="hidden" name="bo_table" value="<?php echo $bo_table; ?>">
+                <?php if ($is_community_hub_all_list) { ?><input type="hidden" name="hub" value="all"><?php } ?>
                 <?php if (!$is_community_hub_list && $sca) { ?><input type="hidden" name="sca" value="<?php echo get_text($sca); ?>"><?php } ?>
                 <?php if (!empty($stx)) { ?><input type="hidden" name="stx" value="<?php echo get_text($stx); ?>"><input type="hidden" name="sfl" value="wr_subject||wr_content"><?php } ?>
                 <label class="sound_only" for="community_sort">정렬</label>
@@ -130,6 +146,7 @@ if ($is_talkroom_board) {
 
     <form name="fboardlist" id="fboardlist" action="<?php echo G5_BBS_URL; ?>/board_list_update.php" method="post">
     <input type="hidden" name="bo_table" value="<?php echo $bo_table ?>">
+    <?php if ($is_community_hub_all_list) { ?><input type="hidden" name="hub" value="all"><?php } ?>
     <input type="hidden" name="sfl" value="<?php echo $sfl ?>">
     <input type="hidden" name="stx" value="<?php echo $stx ?>">
     <?php if (!$is_community_hub_list) { ?><input type="hidden" name="sca" value="<?php echo $sca ?>"><?php } ?>
@@ -154,12 +171,21 @@ if ($is_talkroom_board) {
         }
         for ($i = 0; $i < count($list); $i++) {
             $item = $list[$i];
+            $item_bo_table = $bo_table;
+            if ($is_community_hub_all_list && !empty($item['hub_bo_table'])) {
+                $item_bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $item['hub_bo_table']);
+            }
             $ca_name = isset($item['ca_name']) ? get_text($item['ca_name']) : '';
-            if ($is_community_hub_list) {
+            if ($is_community_hub_all_list && $item_bo_table !== '' && function_exists('eottae_community_hub_board_label')) {
+                $ca_name = eottae_community_hub_board_label($item_bo_table);
+            } elseif ($is_community_hub_list) {
                 $ca_name = '';
             }
             $is_notice = !empty($item['is_notice']) || (!$is_community_hub_list && $ca_name === '공지');
             $region = isset($item['wr_1']) ? get_text($item['wr_1']) : '';
+            $is_event_board_list = function_exists('eottae_is_event_board') && eottae_is_event_board($item_bo_table);
+            $is_estate_board_list = function_exists('eottae_is_estate_board') && eottae_is_estate_board($item_bo_table);
+            $is_job_board_list = function_exists('eottae_is_job_board') && eottae_is_job_board($item_bo_table);
             $estate_deal_status = '';
             $estate_deal_label = '';
             $estate_thumb_html = '';
@@ -167,7 +193,7 @@ if ($is_talkroom_board) {
             $job_recruit_label = '';
             $job_thumb_html = '';
             $post_thumb = eottae_community_list_thumb(
-                $bo_table,
+                $item_bo_table,
                 (int) $item['wr_id'],
                 isset($item['wr_content']) ? $item['wr_content'] : ''
             );
@@ -185,7 +211,7 @@ if ($is_talkroom_board) {
             }
             $snippet = eottae_community_snippet(isset($item['wr_content']) ? $item['wr_content'] : '');
             $thumb = ($is_estate_board_list || $is_job_board_list) ? '' : eottae_community_list_thumb(
-                $bo_table,
+                $item_bo_table,
                 (int) $item['wr_id'],
                 isset($item['wr_content']) ? $item['wr_content'] : ''
             );

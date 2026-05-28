@@ -11,6 +11,10 @@ if (empty($is_member)) {
     eottae_json_send(array('success' => false, 'message' => '로그인 후 이용해 주세요.'));
 }
 
+if (function_exists('eottae_ai_release_session_lock')) {
+    eottae_ai_release_session_lock();
+}
+
 $input = eottae_talkroom_apply_ai_parse_input($_POST);
 
 if ($input['room_name'] === '' && $input['topic_hint'] === '' && $input['category'] === '') {

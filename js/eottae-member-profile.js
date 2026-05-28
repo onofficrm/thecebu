@@ -37,6 +37,7 @@
       img.hidden = false;
       initial.hidden = true;
       preview.classList.add('has-image');
+      setPickLabel(root, true);
       var del = qs('[data-profile-delete-checkbox]', root);
       if (del) {
         del.checked = false;
@@ -48,6 +49,7 @@
     img.hidden = true;
     initial.hidden = false;
     preview.classList.remove('has-image');
+    setPickLabel(root, false);
   }
 
   function syncInitial(root) {
@@ -58,6 +60,20 @@
     }
     var nick = (nickInput.value || '').trim();
     initial.textContent = nick ? nick.charAt(0) : '?';
+  }
+
+  function setFilename(root, text) {
+    var el = qs('[data-profile-filename]', root);
+    if (el) {
+      el.textContent = text || '선택된 사진이 없습니다.';
+    }
+  }
+
+  function setPickLabel(root, hasImage) {
+    var el = qs('[data-profile-pick-label]', root);
+    if (el) {
+      el.textContent = hasImage ? '사진 변경' : '사진 선택';
+    }
   }
 
   function bindProfileField(root) {
@@ -82,14 +98,17 @@
         if (!fileInput.files || !fileInput.files[0]) {
           if (!aiTmpInput || !aiTmpInput.value) {
             updatePreview(root, '');
+            setFilename(root, '선택된 사진이 없습니다.');
           }
           return;
         }
+        var file = fileInput.files[0];
+        setFilename(root, file.name);
         var reader = new FileReader();
         reader.onload = function (ev) {
           updatePreview(root, ev.target && ev.target.result ? ev.target.result : '');
         };
-        reader.readAsDataURL(fileInput.files[0]);
+        reader.readAsDataURL(file);
       });
     }
 
@@ -113,6 +132,7 @@
             aiTmpInput.value = '';
           }
           updatePreview(root, '');
+          setFilename(root, '선택된 사진이 없습니다.');
           setStatus(root, '', false);
         }
       });
@@ -169,6 +189,7 @@
             aiTmpInput.value = json.data.tmp || '';
           }
           updatePreview(root, json.data.url || '');
+          setFilename(root, 'AI 프로필 미리보기 (저장 시 반영)');
           setStatus(root, 'AI 프로필이 적용되었습니다. 저장하면 반영됩니다.', false);
         })
         .catch(function (err) {

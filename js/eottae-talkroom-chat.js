@@ -184,12 +184,38 @@
       return '';
     }
 
+    var avatar = global.EottaePublicChatManage && global.EottaePublicChatManage.avatarHtml
+      ? global.EottaePublicChatManage.avatarHtml(message)
+      : '';
+
+    if (!avatar && !message.is_mine) {
+      var authorName = message.author_display || message.author || '익명';
+      var profileUrl = message.profile_url || '';
+      var imageUrl = message.profile_image_url || '';
+      var initial = message.profile_initial || String(authorName).charAt(0) || '?';
+      var inner = imageUrl
+        ? '<img src="' + esc(imageUrl) + '" alt="" class="public-group-chat__avatar-img" width="38" height="38" loading="lazy" decoding="async">'
+        : '<span class="public-group-chat__avatar-initial" aria-hidden="true">' + esc(initial) + '</span>';
+      if (message.is_ai) {
+        avatar = '<span class="public-group-chat__avatar public-group-chat__avatar--ai" aria-hidden="true">'
+          + '<span class="public-group-chat__avatar-emoji">🤖</span></span>';
+      } else if (profileUrl) {
+        avatar = '<a href="' + esc(profileUrl) + '" class="public-group-chat__avatar" title="'
+          + esc(authorName) + ' 회원정보 보기">' + inner + '</a>';
+      } else {
+        avatar = '<span class="public-group-chat__avatar public-group-chat__avatar--static" aria-hidden="true">' + inner + '</span>';
+      }
+    }
+
     var classes = ['public-group-chat__message'];
     if (message.is_mine) {
       classes.push('public-group-chat__message--mine');
     }
     if (message.is_ai) {
       classes.push('public-group-chat__message--ai', 'is-talk-ai-message');
+    }
+    if (!message.is_mine) {
+      classes.push('public-group-chat__message--peer');
     }
 
     var author = message.is_ai
@@ -222,6 +248,8 @@
     return ''
       + '<article class="' + classes.join(' ') + '" data-wr-id="' + esc(message.wr_id) + '">'
       + '<div class="public-group-chat__message-inner">'
+      + avatar
+      + '<div class="public-group-chat__message-body">'
       + meta
       + '<div class="public-group-chat__bubble-row">'
       + timeBefore
@@ -230,6 +258,7 @@
       + actionHtml
       + '</div>'
       + timeAfter
+      + '</div>'
       + '</div>'
       + '</div>'
       + '</article>';

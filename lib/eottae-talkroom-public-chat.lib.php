@@ -393,6 +393,13 @@ if (!function_exists('eottae_talkroom_public_group_format_message')) {
             }
         }
 
+        if (!function_exists('eottae_public_group_chat_attach_profile_fields')) {
+            include_once G5_PATH.'/components/eottae/public-group-chat-message.php';
+        }
+        if (function_exists('eottae_public_group_chat_attach_profile_fields')) {
+            $post_row = eottae_public_group_chat_attach_profile_fields($post_row);
+        }
+
         if (strpos((string) ($post_row['text'] ?? ''), "\n\n1.") !== false) {
             $parts = preg_split("/\n\n(?=\d+\.)/u", (string) $post_row['text'], 2);
             if (is_array($parts) && count($parts) === 2) {

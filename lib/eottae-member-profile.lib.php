@@ -329,38 +329,46 @@ if (!function_exists('eottae_render_member_profile_photo_field')) {
         $proc_url = G5_URL.'/proc/eottae-member-profile-ai.php';
         $token = function_exists('get_session') ? (string) get_session('ss_token') : '';
 
+        $file_label = $has_image ? '사진 변경' : '사진 선택';
+
         ob_start();
         ?>
-        <div class="eottae-member-profile-field" data-eottae-member-profile="1"
+        <div class="eottae-member-profile-field eottae-field" data-eottae-member-profile="1"
             data-proc-url="<?php echo htmlspecialchars($proc_url, ENT_QUOTES, 'UTF-8'); ?>"
             data-token="<?php echo htmlspecialchars($token, ENT_QUOTES, 'UTF-8'); ?>"
-            data-ai-enabled="<?php echo $ai_enabled ? '1' : '0'; ?>">
-            <div class="eottae-member-profile-field__label-row">
-                <label class="eottae-member-profile-field__label" for="reg_mb_img">프로필 사진 <span class="eottae-member-profile-field__optional">(선택)</span></label>
-            </div>
+            data-ai-enabled="<?php echo $ai_enabled ? '1' : '0'; ?>"
+            data-has-existing="<?php echo $has_image ? '1' : '0'; ?>">
+            <span class="eottae-member-profile-field__label" id="eottae-member-profile-label">프로필 사진 <span class="eottae-member-profile-field__optional">(선택)</span></span>
 
-            <div class="eottae-member-profile-field__body">
-                <div class="eottae-member-profile-field__preview<?php echo $has_image ? ' has-image' : ''; ?>" data-profile-preview>
+            <div class="eottae-member-profile-field__card">
+                <div class="eottae-member-profile-field__preview<?php echo $has_image ? ' has-image' : ''; ?>" data-profile-preview aria-labelledby="eottae-member-profile-label">
                     <img src="<?php echo $has_image ? get_text($img_url) : ''; ?>" alt="" class="eottae-member-profile-field__preview-img" data-profile-preview-img<?php echo $has_image ? '' : ' hidden'; ?>>
-                    <span class="eottae-member-profile-field__preview-initial" data-profile-preview-initial<?php echo $has_image ? ' hidden' : ''; ?>><?php echo htmlspecialchars($initial, ENT_QUOTES, 'UTF-8'); ?></span>
+                    <span class="eottae-member-profile-field__preview-initial" data-profile-preview-initial<?php echo $has_image ? ' hidden' : ''; ?>"><?php echo htmlspecialchars($initial, ENT_QUOTES, 'UTF-8'); ?></span>
                 </div>
 
-                <div class="eottae-member-profile-field__controls">
+                <div class="eottae-member-profile-field__upload">
                     <input type="file" name="mb_img" id="reg_mb_img" class="eottae-member-profile-field__file" accept="image/jpeg,image/png,image/gif,image/webp" data-profile-file-input>
                     <input type="hidden" name="eottae_mb_img_ai" value="" data-profile-ai-tmp>
+
+                    <label class="eottae-member-profile-field__pick" for="reg_mb_img">
+                        <span class="eottae-member-profile-field__pick-btn" data-profile-pick-label><?php echo get_text($file_label); ?></span>
+                    </label>
+                    <p class="eottae-member-profile-field__filename" data-profile-filename><?php echo $has_image ? '등록된 프로필 사진이 있습니다.' : '선택된 사진이 없습니다.'; ?></p>
                     <p class="eottae-member-profile-field__hint">jpg, png, gif · <?php echo number_format($max_w); ?>×<?php echo number_format($max_h); ?>px 권장 · <?php echo number_format($max_kb); ?>KB 이하</p>
 
-                    <?php if ($ai_enabled) { ?>
-                    <button type="button" class="eottae-member-profile-field__ai-btn" data-profile-ai-generate>AI 프로필 만들기</button>
-                    <p class="eottae-member-profile-field__ai-status" data-profile-ai-status hidden></p>
-                    <?php } ?>
+                    <div class="eottae-member-profile-field__actions">
+                        <?php if ($ai_enabled) { ?>
+                        <button type="button" class="eottae-member-profile-field__ai-btn" data-profile-ai-generate>AI 프로필 만들기</button>
+                        <?php } ?>
+                        <?php if ($w === 'u' && $has_image) { ?>
+                        <label class="eottae-member-profile-field__delete">
+                            <input type="checkbox" name="del_mb_img" value="1" id="del_mb_img" data-profile-delete-checkbox>
+                            <span>삭제</span>
+                        </label>
+                        <?php } ?>
+                    </div>
 
-                    <?php if ($w === 'u' && $has_image) { ?>
-                    <label class="eottae-member-profile-field__delete">
-                        <input type="checkbox" name="del_mb_img" value="1" id="del_mb_img" data-profile-delete-checkbox>
-                        프로필 사진 삭제
-                    </label>
-                    <?php } ?>
+                    <p class="eottae-member-profile-field__ai-status" data-profile-ai-status hidden></p>
                 </div>
             </div>
         </div>

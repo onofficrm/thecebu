@@ -411,7 +411,7 @@ if (!function_exists('eottae_install_get_board_defs')) {
                 'bo_mobile_skin'   => 'eottae-community',
                 'gr_id'            => 'community',
                 'bo_read_level'    => 1,
-                'bo_write_level'   => 5,
+                'bo_write_level'   => 2,
                 'bo_comment_level' => 2,
                 'bo_use_category'  => 0,
                 'bo_upload_count'  => 3,

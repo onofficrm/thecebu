@@ -1325,14 +1325,55 @@ if (!function_exists('eottae_talkroom_apply_card_viewer_context')) {
     }
 }
 
-if (!function_exists('eottae_talkroom_list_public')) {
+if (!function_exists('eottae_talkroom_list_visibility_sql')) {
     /**
-     * 승인·운영 중인 톡방 목록
+     * 톡방 목록 노출 조건 — 공개 방 + (비공개 시) 가입 회원·최고관리자만
      *
-     * @param array<string, mixed> $options
+     * @param string $alias rooms 테이블 별칭
+     */
+    function eottae_talkroom_list_visibility_sql($alias = 'r', $mb_id = '', $is_super_admin = false)
+    {
+        $alias = preg_replace('/[^a-z]/', '', (string) $alias);
+        if ($alias === '') {
+            $alias = 'r';
+        }
+
+        if ($is_super_admin) {
+            return '1=1';
+        }
+
+        $mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $mb_id);
+        if ($mb_id === '') {
+            return "{$alias}.visibility = 'public'";
+        }
+
+        $tables = eottae_talkroom_table_names();
+        if (!eottae_talkroom_table_exists($tables['members'])) {
+            return "{$alias}.visibility = 'public'";
+        }
+
+        $escaped_mb_id = sql_escape_string($mb_id);
+
+        return "(
+            {$alias}.visibility = 'public'
+            OR {$alias}.room_id IN (
+                SELECT tm.room_id
+                FROM `{$tables['members']}` tm
+                WHERE tm.mb_id = '{$escaped_mb_id}'
+                  AND tm.status = 'active'
+            )
+        )";
+    }
+}
+
+if (!function_exists('eottae_talkroom_list_operating')) {
+    /**
+     * 승인·운영 중인 톡방 목록 (공개/비공개 노출 규칙 적용)
+     *
+     * @param array<string, mixed> $options limit, page, order, mb_id, is_super_admin
      * @return array{total:int, rows:array<int, array<string, mixed>>}
      */
-    function eottae_talkroom_list_public(array $options = array())
+    function eottae_talkroom_list_operating(array $options = array())
     {
         $tables = eottae_talkroom_table_names();
         if (!eottae_talkroom_table_exists($tables['rooms'])) {
@@ -1343,6 +1384,9 @@ if (!function_exists('eottae_talkroom_list_public')) {
         $page = isset($options['page']) ? max(1, (int) $options['page']) : 1;
         $offset = ($page - 1) * $limit;
         $order = isset($options['order']) ? trim((string) $options['order']) : 'updated';
+        $mb_id = isset($options['mb_id']) ? (string) $options['mb_id'] : '';
+        $is_super_admin = !empty($options['is_super_admin']);
+        $visibility_sql = eottae_talkroom_list_visibility_sql('r', $mb_id, $is_super_admin);
 
         $statuses = eottae_talkroom_public_statuses();
         $status_sql = array();
@@ -1353,8 +1397,9 @@ if (!function_exists('eottae_talkroom_list_public')) {
 
         $count_row = sql_fetch("
             SELECT COUNT(*) AS cnt
-            FROM `{$tables['rooms']}`
-            WHERE status IN ({$status_in})
+            FROM `{$tables['rooms']}` r
+            WHERE r.status IN ({$status_in})
+              AND ({$visibility_sql})
         ", false);
         $total = (int) ($count_row['cnt'] ?? 0);
         if ($total < 1) {
@@ -1383,6 +1428,7 @@ if (!function_exists('eottae_talkroom_list_public')) {
             FROM `{$tables['rooms']}` r
             LEFT JOIN `{$member_table}` m ON m.mb_id = r.owner_mb_id
             WHERE r.status IN ({$status_in})
+              AND ({$visibility_sql})
             ORDER BY {$order_sql}
             LIMIT {$offset}, {$limit}
         ", false);
@@ -1418,6 +1464,37 @@ if (!function_exists('eottae_talkroom_list_public')) {
     }
 }
 
+if (!function_exists('eottae_talkroom_list_public')) {
+    /**
+     * 승인·운영 중인 공개 톡방만 (홈 배너·캐러셀용)
+     *
+     * @param array<string, mixed> $options
+     * @return array{total:int, rows:array<int, array<string, mixed>>}
+     */
+    function eottae_talkroom_list_public(array $options = array())
+    {
+        unset($options['mb_id'], $options['is_super_admin']);
+
+        return eottae_talkroom_list_operating($options);
+    }
+}
+
+if (!function_exists('eottae_talkroom_list_browsable')) {
+    /**
+     * 세부톡 목록 — 공개 톡방 + 본인 가입 비공개 톡방 (+ 최고관리자는 전체 비공개)
+     *
+     * @param array<string, mixed> $options
+     * @return array{total:int, rows:array<int, array<string, mixed>>}
+     */
+    function eottae_talkroom_list_browsable(array $options = array(), $mb_id = '', $is_super_admin = false)
+    {
+        $options['mb_id'] = $mb_id;
+        $options['is_super_admin'] = $is_super_admin;
+
+        return eottae_talkroom_list_operating($options);
+    }
+}
+
 if (!function_exists('eottae_talkroom_list_public_cards')) {
     /**
      * 승인·운영 중인 공개 톡방 카드 목록 (홈·API용)
@@ -1428,8 +1505,11 @@ if (!function_exists('eottae_talkroom_list_public_cards')) {
     function eottae_talkroom_list_public_cards(array $options = array())
     {
         $result = eottae_talkroom_list_public($options);
+        $rows = isset($result['rows']) && is_array($result['rows']) ? $result['rows'] : array();
 
-        return isset($result['rows']) && is_array($result['rows']) ? $result['rows'] : array();
+        return array_values(array_filter($rows, function ($room) {
+            return ($room['visibility'] ?? 'public') === 'public';
+        }));
     }
 }
 

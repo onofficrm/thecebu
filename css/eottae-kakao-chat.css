@@ -140,9 +140,64 @@
 
 .public-group-chat--kakao .public-group-chat__message-inner {
   display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  max-width: 88%;
+  gap: 8px;
+}
+
+.public-group-chat--kakao .public-group-chat__message-body {
+  display: flex;
   flex-direction: column;
-  max-width: 82%;
+  min-width: 0;
+  flex: 1 1 auto;
   gap: 4px;
+}
+
+.public-group-chat--kakao .public-group-chat__avatar {
+  flex: 0 0 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin-top: 2px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #e2e8f0;
+  color: #334155;
+  text-decoration: none;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.public-group-chat--kakao a.public-group-chat__avatar:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+}
+
+.public-group-chat--kakao .public-group-chat__avatar-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.public-group-chat--kakao .public-group-chat__avatar-initial,
+.public-group-chat--kakao .public-group-chat__avatar-emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.public-group-chat--kakao .public-group-chat__avatar--ai {
+  background: linear-gradient(145deg, #e0f2fe, #bae6fd);
+  color: #0369a1;
 }
 
 .public-group-chat--kakao .public-group-chat__message--mine {
@@ -151,6 +206,12 @@
 }
 
 .public-group-chat--kakao .public-group-chat__message--mine .public-group-chat__message-inner {
+  flex-direction: column;
+  align-items: flex-end;
+  max-width: 82%;
+}
+
+.public-group-chat--kakao .public-group-chat__message--mine .public-group-chat__message-body {
   align-items: flex-end;
 }
 

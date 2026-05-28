@@ -3415,10 +3415,10 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
 }
 
 .community-post__thumb {
-  flex: 0 0 88px;
-  width: 88px;
-  height: 88px;
-  border-radius: 14px;
+  flex: 0 0 var(--eottae-list-thumb-size, 104px);
+  width: var(--eottae-list-thumb-size, 104px);
+  height: var(--eottae-list-thumb-size, 104px);
+  border-radius: var(--eottae-list-thumb-radius, 14px);
   overflow: hidden;
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
@@ -4130,10 +4130,10 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   }
 
   .community-post__thumb {
-    flex: 0 0 80px;
-    width: 80px;
-    height: 80px;
-    border-radius: 12px;
+    flex: 0 0 var(--eottae-list-thumb-size, 88px);
+    width: var(--eottae-list-thumb-size, 88px);
+    height: var(--eottae-list-thumb-size, 88px);
+    border-radius: var(--eottae-list-thumb-radius, 12px);
   }
 
   .community-post__title {

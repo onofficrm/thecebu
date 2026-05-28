@@ -225,29 +225,14 @@ if (!function_exists('eottae_talkroom_apply_ai_generate_via_api')) {
             'response_format' => array('type' => 'json_object'),
         );
 
-        $ch = curl_init('https://api.openai.com/v1/chat/completions');
-        curl_setopt_array($ch, array(
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_HTTPHEADER => array(
-                'Content-Type: application/json',
-                'Authorization: Bearer '.$api_key,
-            ),
-            CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
-            CURLOPT_TIMEOUT => 30,
-        ));
-
-        $raw = curl_exec($ch);
-        $http_code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($raw === false || $raw === '' || $http_code < 200 || $http_code >= 300) {
+        if (!function_exists('eottae_ai_openai_chat_completion')) {
             return null;
         }
 
-        $decoded = json_decode($raw, true);
-        $content = isset($decoded['choices'][0]['message']['content']) ? trim((string) $decoded['choices'][0]['message']['content']) : '';
-        $generated = json_decode($content, true);
+        $completion = eottae_ai_openai_chat_completion($payload, array('timeout' => 45, 'connect_timeout' => 10));
+        $generated = function_exists('eottae_ai_openai_parse_json_content')
+            ? eottae_ai_openai_parse_json_content($completion)
+            : null;
         if (!is_array($generated)) {
             return null;
         }

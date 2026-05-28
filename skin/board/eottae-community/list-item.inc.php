@@ -79,7 +79,7 @@ $has_badges = $is_ai_post || $is_notice || $ca_name !== '' || $region !== '' || 
                         <h2 class="community-post__title<?php echo $is_ai_post ? ' talk-ai-msg__title' : ''; ?>"><?php echo $item['subject']; ?></h2>
                     </div>
                     <?php if ($snippet !== '') { ?>
-                    <p class="community-post__excerpt"><?php echo $snippet; ?></p>
+                    <p class="community-post__excerpt"><?php echo htmlspecialchars($snippet, ENT_QUOTES, 'UTF-8'); ?></p>
                     <?php } ?>
                 </div>
                 <div class="community-post__meta">

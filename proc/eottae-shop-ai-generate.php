@@ -11,7 +11,6 @@ if (empty($is_member)) {
 }
 
 $ai_cfg = eottae_ai_generate_require_ready();
-$api_key = $ai_cfg['api_key'];
 $model = $ai_cfg['model'];
 
 $bo_table = isset($_POST['bo_table']) ? preg_replace('/[^a-z0-9_]/i', '', (string) $_POST['bo_table']) : '';
@@ -90,49 +89,20 @@ $payload = array(
     'response_format' => array('type' => 'json_object'),
 );
 
-if (!function_exists('curl_init')) {
-    eottae_json_send(array('success' => false, 'message' => '서버 PHP cURL 확장이 필요합니다.'));
-}
+$completion = eottae_ai_openai_chat_completion($payload, array('timeout' => 45, 'connect_timeout' => 10));
+$generated = eottae_ai_openai_parse_json_content($completion);
 
-@set_time_limit(60);
-
-// 긴 OpenAI 호출 동안 세션 잠금을 유지하면 같은 브라우저의 다른 요청이 막혀 응답이 지연될 수 있음
-if (function_exists('session_status') && session_status() === PHP_SESSION_ACTIVE) {
-    session_write_close();
-}
-
-$ch = curl_init('https://api.openai.com/v1/chat/completions');
-curl_setopt_array($ch, array(
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_POST => true,
-    CURLOPT_HTTPHEADER => array(
-        'Content-Type: application/json',
-        'Authorization: Bearer '.$api_key,
-    ),
-    CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
-    CURLOPT_CONNECTTIMEOUT => 10,
-    CURLOPT_TIMEOUT => 45,
-));
-
-$raw = curl_exec($ch);
-$curl_error = curl_error($ch);
-$http_code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-curl_close($ch);
-
-if ($raw === false || $raw === '' || $http_code < 200 || $http_code >= 300) {
+if (!is_array($generated)) {
     eottae_json_send(array(
         'success' => false,
         'message' => function_exists('eottae_ai_generate_openai_error_message')
-            ? eottae_ai_generate_openai_error_message($http_code, $raw, $curl_error)
-            : 'AI 자동생성 요청에 실패했습니다.',
+            ? eottae_ai_generate_openai_error_message(
+                (int) ($completion['http_code'] ?? 0),
+                $completion['raw'] ?? '',
+                $completion['error'] ?? ''
+            )
+            : 'AI 응답을 해석하지 못했습니다.',
     ));
-}
-
-$decoded = json_decode($raw, true);
-$content = isset($decoded['choices'][0]['message']['content']) ? trim((string) $decoded['choices'][0]['message']['content']) : '';
-$generated = json_decode($content, true);
-if (!is_array($generated)) {
-    eottae_json_send(array('success' => false, 'message' => 'AI 응답을 해석하지 못했습니다.'));
 }
 
 $result = array(

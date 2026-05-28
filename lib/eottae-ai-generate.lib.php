@@ -149,3 +149,130 @@ if (!function_exists('eottae_ai_generate_openai_error_message')) {
         return 'AI 자동생성 요청에 실패했습니다.'.($http_code > 0 ? ' (HTTP '.$http_code.')' : '');
     }
 }
+
+if (!function_exists('eottae_ai_release_session_lock')) {
+    /**
+     * OpenAI 등 장시간 외부 API 호출 전 세션 잠금 해제 (동일 브라우저 요청 정체 방지)
+     */
+    function eottae_ai_release_session_lock()
+    {
+        if (function_exists('session_status') && session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+    }
+}
+
+if (!function_exists('eottae_ai_openai_chat_completion')) {
+    /**
+     * OpenAI Chat Completions — 공통 cURL (타임아웃·세션 잠금 해제)
+     *
+     * @param array<string, mixed> $payload chat/completions body (model, messages, …)
+     * @param array<string, mixed> $options timeout(int), connect_timeout(int)
+     * @return array{ok:bool,content:string,http_code:int,error:string,raw:string,model:string}
+     */
+    function eottae_ai_openai_chat_completion(array $payload, array $options = array())
+    {
+        $cfg = eottae_ai_generate_bootstrap_config();
+        $api_key = isset($cfg['api_key']) ? (string) $cfg['api_key'] : '';
+        $model = isset($payload['model']) ? trim((string) $payload['model']) : '';
+        if ($model === '') {
+            $model = isset($cfg['model']) ? (string) $cfg['model'] : 'gpt-4o-mini';
+        }
+        if ($model === '') {
+            $model = 'gpt-4o-mini';
+        }
+        $payload['model'] = $model;
+
+        if ($api_key === '' || !function_exists('curl_init')) {
+            return array(
+                'ok'         => false,
+                'content'    => '',
+                'http_code'  => 0,
+                'error'      => $api_key === '' ? 'no_api_key' : 'no_curl',
+                'raw'        => '',
+                'model'      => $model,
+            );
+        }
+
+        $timeout = max(15, min(90, (int) ($options['timeout'] ?? 45)));
+        $connect_timeout = max(5, min(30, (int) ($options['connect_timeout'] ?? 10)));
+
+        eottae_ai_release_session_lock();
+        @set_time_limit($timeout + 20);
+
+        $ch = curl_init('https://api.openai.com/v1/chat/completions');
+        curl_setopt_array($ch, array(
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_HTTPHEADER     => array(
+                'Content-Type: application/json',
+                'Authorization: Bearer '.$api_key,
+            ),
+            CURLOPT_POSTFIELDS     => json_encode($payload, JSON_UNESCAPED_UNICODE),
+            CURLOPT_CONNECTTIMEOUT => $connect_timeout,
+            CURLOPT_TIMEOUT        => $timeout,
+        ));
+
+        $raw = curl_exec($ch);
+        $curl_error = curl_error($ch);
+        $http_code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($raw === false || $raw === '') {
+            return array(
+                'ok'         => false,
+                'content'    => '',
+                'http_code'  => $http_code,
+                'error'      => $curl_error !== '' ? $curl_error : 'empty_response',
+                'raw'        => '',
+                'model'      => $model,
+            );
+        }
+
+        $decoded = json_decode($raw, true);
+        if ($http_code < 200 || $http_code >= 300) {
+            $err = 'http_'.$http_code;
+            if (is_array($decoded) && isset($decoded['error']['message'])) {
+                $err = trim((string) $decoded['error']['message']);
+            }
+
+            return array(
+                'ok'         => false,
+                'content'    => '',
+                'http_code'  => $http_code,
+                'error'      => $err,
+                'raw'        => (string) $raw,
+                'model'      => $model,
+            );
+        }
+
+        $content = isset($decoded['choices'][0]['message']['content'])
+            ? trim((string) $decoded['choices'][0]['message']['content'])
+            : '';
+
+        return array(
+            'ok'         => $content !== '',
+            'content'    => $content,
+            'http_code'  => $http_code,
+            'error'      => $content !== '' ? '' : 'empty_content',
+            'raw'        => (string) $raw,
+            'model'      => $model,
+        );
+    }
+}
+
+if (!function_exists('eottae_ai_openai_parse_json_content')) {
+    /**
+     * @return array<string, mixed>|null
+     */
+    function eottae_ai_openai_parse_json_content(array $completion)
+    {
+        if (empty($completion['ok']) || empty($completion['content'])) {
+            return null;
+        }
+
+        $generated = json_decode((string) $completion['content'], true);
+
+        return is_array($generated) ? $generated : null;
+    }
+}

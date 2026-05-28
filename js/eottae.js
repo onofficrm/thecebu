@@ -59,6 +59,49 @@
     });
   }
 
+  function aiFetchJson(url, options, timeoutMs) {
+    return fetchWithTimeout(url, options, timeoutMs || 50000)
+      .then(function (res) {
+        if (!res.ok) {
+          throw new Error('서버 오류입니다. (HTTP ' + res.status + ')');
+        }
+        return parseJsonResponse(res);
+      })
+      .then(function (json) {
+        if (!json || !json.success) {
+          throw new Error((json && json.message) || 'AI 요청에 실패했습니다.');
+        }
+        return json;
+      });
+  }
+
+  function aiAbortErrorMessage(err) {
+    if (err && err.name === 'AbortError') {
+      return 'AI 요청 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.';
+    }
+    return (err && err.message) || 'AI 요청에 실패했습니다.';
+  }
+
+  function rememberAiBtnLabels(buttons) {
+    buttons.forEach(function (b) {
+      if (!b.getAttribute('data-ai-original-label')) {
+        b.setAttribute('data-ai-original-label', getAiBtnDefaultLabel(b));
+      }
+    });
+  }
+
+  function resetAiButtons(buttons) {
+    buttons.forEach(function (b) {
+      setAiBtnLoading(b, false);
+      var original = b.getAttribute('data-ai-original-label');
+      if (b.classList.contains('eottae-ai-btn')) {
+        setAiBtnLabel(b, original || getAiBtnDefaultLabel(b));
+      } else if (original) {
+        b.textContent = original;
+      }
+    });
+  }
+
   function eottaeProcPath(file) {
     var base = global.__EOTTae__ && global.__EOTTae__.procBase ? String(global.__EOTTae__.procBase) : '';
     if (base) {
@@ -572,36 +615,22 @@
         }
       }
 
-      fetchWithTimeout(eottaeProcPath('eottae-shop-ai-generate.php'), {
+      aiFetchJson(eottaeProcPath('eottae-shop-ai-generate.php'), {
         method: 'POST',
         credentials: 'same-origin',
         body: payload
       }, 50000)
-        .then(function (res) {
-          if (!res.ok) {
-            throw new Error('서버 오류입니다. (HTTP ' + res.status + ')');
-          }
-          return parseJsonResponse(res);
-        })
         .then(function (json) {
-          if (!json || !json.success) {
-            throw new Error((json && json.message) || 'AI 자동생성에 실패했습니다.');
-          }
-          return json.data || {};
-        })
-        .then(function (data) {
           resetShopAiButtons();
           try {
-            applyShopAiData(data);
+            applyShopAiData(json.data || {});
           } catch (fillErr) {
             var fillMessage = (fillErr && fillErr.message) || '생성된 문구를 화면에 넣지 못했습니다.';
             shopSetAiStatus(root, fillMessage, true);
             alert(fillMessage);
           }
         }, function (err) {
-          var message = err && err.name === 'AbortError'
-            ? 'AI 요청 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.'
-            : (err.message || 'AI 자동생성에 실패했습니다.');
+          var message = aiAbortErrorMessage(err);
           shopSetAiStatus(root, message, true);
           alert(message);
           resetShopAiButtons();
@@ -753,38 +782,32 @@
         }
 
         var loadingLabel = mode === 'all' ? 'AI 작성 중…' : '작성 중…';
+        rememberAiBtnLabels(buttons);
         buttons.forEach(function (b) {
           setAiBtnLoading(b, true);
           if (b.classList.contains('eottae-ai-btn')) {
             setAiBtnLabel(b, loadingLabel);
+          } else {
+            b.textContent = loadingLabel;
           }
         });
         talkApplySetAiStatus(form, 'AI가 신청서 내용을 작성 중입니다...', false);
 
-        fetch(eottaeProcPath('eottae-talkroom-apply-ai.php'), {
+        aiFetchJson(eottaeProcPath('eottae-talkroom-apply-ai.php'), {
           method: 'POST',
           credentials: 'same-origin',
           body: buildFormData(mode)
-        })
-          .then(function (res) { return parseJsonResponse(res); })
+        }, 50000)
           .then(function (json) {
-            if (!json || !json.success) {
-              throw new Error((json && json.message) || 'AI 자동작성에 실패했습니다.');
-            }
             talkApplyApplyAiData(form, json.data || {}, mode);
             var sourceLabel = json.source === 'api' ? 'AI' : '기본 템플릿';
             talkApplySetAiStatus(form, sourceLabel + '로 내용을 입력했습니다. 제출 전 내용을 확인해 주세요.', false);
           })
           .catch(function (err) {
-            talkApplySetAiStatus(form, err.message || 'AI 자동작성에 실패했습니다.', true);
+            talkApplySetAiStatus(form, aiAbortErrorMessage(err), true);
           })
           .finally(function () {
-            buttons.forEach(function (b) {
-              setAiBtnLoading(b, false);
-              if (b.classList.contains('eottae-ai-btn')) {
-                setAiBtnLabel(b, 'AI로 전체 자동 작성');
-              }
-            });
+            resetAiButtons(buttons);
           });
       });
     });
@@ -830,16 +853,12 @@
         status.classList.remove('is-error');
       }
 
-      fetch(eottaeProcPath('eottae-shop-map-thumb-ai.php'), {
+      aiFetchJson(eottaeProcPath('eottae-shop-map-thumb-ai.php'), {
         method: 'POST',
         credentials: 'same-origin',
         body: form
-      })
-        .then(function (res) { return parseJsonResponse(res); })
+      }, 70000)
         .then(function (json) {
-          if (!json || !json.success) {
-            throw new Error((json && json.message) || 'AI 썸네일 생성에 실패했습니다.');
-          }
           var data = json.data || {};
           if (tmpInput) tmpInput.value = data.tmp || '';
           if (fileInput) fileInput.value = '';
@@ -852,7 +871,7 @@
         })
         .catch(function (err) {
           if (status) {
-            status.textContent = err.message || 'AI 썸네일 생성에 실패했습니다.';
+            status.textContent = aiAbortErrorMessage(err);
             status.classList.add('is-error');
           }
         })
@@ -1782,12 +1801,12 @@
       var fd = new FormData();
       fd.append('topic', topic);
       appendWriteContext(fd);
-      return fetch(eottaeProcPath('eottae-business-snippet-ai.php'), { method: 'POST', body: fd, credentials: 'same-origin' })
-        .then(function (res) { return parseJsonResponse(res); })
+      return aiFetchJson(eottaeProcPath('eottae-business-snippet-ai.php'), {
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin'
+      }, 50000)
         .then(function (json) {
-          if (!json || !json.success) {
-            throw new Error((json && json.message) || 'AI 생성에 실패했습니다.');
-          }
           return json.data || {};
         })
         .finally(function () {
@@ -2021,19 +2040,19 @@
         setStatus('AI가 홍보 문구를 작성 중입니다...', false);
         var fd = new FormData();
         fd.append('topic', topic);
-        fetch(eottaeProcPath('eottae-business-snippet-ai.php'), { method: 'POST', body: fd, credentials: 'same-origin' })
-          .then(function (res) { return parseJsonResponse(res); })
+        aiFetchJson(eottaeProcPath('eottae-business-snippet-ai.php'), {
+          method: 'POST',
+          body: fd,
+          credentials: 'same-origin'
+        }, 50000)
           .then(function (json) {
-            if (!json || !json.success) {
-              throw new Error((json && json.message) || 'AI 생성에 실패했습니다.');
-            }
             var data = json.data || {};
             fillForm(data);
             if (idInput) idInput.value = '0';
             setStatus('AI 문구를 생성했습니다. 확인 후 저장해 주세요.', false);
           })
           .catch(function (err) {
-            setStatus(err.message, true);
+            setStatus(aiAbortErrorMessage(err), true);
           })
           .finally(function () {
             aiBtn.disabled = false;

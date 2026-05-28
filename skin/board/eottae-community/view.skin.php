@@ -49,6 +49,17 @@ if ($is_event_board_view) {
     if (function_exists('eottae_event_board_load_assets')) {
         eottae_event_board_load_assets();
     }
+    if (function_exists('eottae_event_sync_fields_from_row')) {
+        eottae_event_sync_fields_from_row($bo_table, (int) $view['wr_id']);
+        $event_write_table = get_write_table_name($bo_table);
+        $event_refreshed = get_write($event_write_table, (int) $view['wr_id'], true);
+        if (is_array($event_refreshed) && !empty($event_refreshed['wr_id'])) {
+            $view = array_merge($view, $event_refreshed);
+        }
+    }
+    if (function_exists('eottae_event_enrich_row_from_content')) {
+        $view = eottae_event_enrich_row_from_content($view);
+    }
     $event_status = eottae_event_status_from_row($view);
     $event_type = eottae_event_normalize_type($view['wr_1'] ?? 'other');
     $event_display_name = get_text($view['wr_3'] ?? '');
@@ -280,16 +291,24 @@ if ($is_ai_post) {
         } ?>
 
         <?php
+        $is_icrm_view_body = function_exists('eottae_icrm_content_should_preserve_html')
+            && eottae_icrm_content_should_preserve_html($view['wr_content'] ?? '');
         $view_body_plain = trim(strip_tags((string) ($view['content'] ?? '')));
         $job_hide_plain_body = $is_job_board_view && is_array($job_template_data)
-            && strpos($view_body_plain, '[구인정보]') !== false;
+            && strpos($view_body_plain, '[구인정보]') !== false
+            && !$is_icrm_view_body;
         $estate_hide_plain_body = $is_estate_board_view && is_array($estate_template_data)
-            && strpos($view_body_plain, '[부동산 매물정보]') !== false;
-        $event_hide_plain_body = $is_event_board_view && function_exists('eottae_event_view_should_hide_body')
-            && eottae_event_view_should_hide_body($view);
+            && (
+                strpos($view_body_plain, '[부동산 매물정보]') !== false
+                || $is_icrm_view_body
+            );
+        $event_hide_plain_body = $is_event_board_view && (
+            (function_exists('eottae_event_view_should_hide_body') && eottae_event_view_should_hide_body($view))
+            || ($is_icrm_view_body && function_exists('eottae_event_row_has_panel_data') && eottae_event_row_has_panel_data($view))
+        );
         $hide_plain_body = $job_hide_plain_body || $estate_hide_plain_body || $event_hide_plain_body;
         ?>
-        <section class="community-view-page__body talk-ai-msg__body<?php echo $is_ai_post ? ' talk-ai-msg__body--ai' : ''; ?><?php echo $hide_plain_body ? ' community-view-page__body--template' : ''; ?>" id="bo_v_con"<?php echo $hide_plain_body ? ' hidden' : ''; ?>>
+        <section class="community-view-page__body talk-ai-msg__body<?php echo $is_ai_post ? ' talk-ai-msg__body--ai' : ''; ?><?php echo $hide_plain_body ? ' community-view-page__body--template' : ''; ?><?php echo $is_icrm_view_body ? ' community-view-page__body--icrm' : ''; ?>" id="bo_v_con"<?php echo $hide_plain_body ? ' hidden' : ''; ?>>
             <?php echo get_view_thumbnail($view['content']); ?>
         </section>
     </article>

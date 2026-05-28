@@ -623,3 +623,292 @@ if (!function_exists('eottae_event_apply_write_post')) {
         }
     }
 }
+
+if (!function_exists('eottae_event_ensure_board_permissions')) {
+    /**
+     * 이벤트 게시판 쓰기 권한 — 커뮤니티 허브와 동일하게 회원(레벨 2) 허용
+     */
+    function eottae_event_ensure_board_permissions()
+    {
+        static $done = false;
+
+        if ($done) {
+            return;
+        }
+        $done = true;
+
+        if (!function_exists('eottae_event_board_table')) {
+            return;
+        }
+
+        global $g5, $board;
+
+        $bo_table = eottae_event_board_table();
+        if (empty($g5['board_table'])) {
+            return;
+        }
+
+        $row = sql_fetch("
+            SELECT bo_write_level, bo_reply_level
+            FROM {$g5['board_table']}
+            WHERE bo_table = '".sql_escape_string($bo_table)."'
+        ");
+        if (!$row) {
+            return;
+        }
+
+        $write_level = (int) ($row['bo_write_level'] ?? 2);
+        if ($write_level <= 2) {
+            return;
+        }
+
+        sql_query("
+            UPDATE {$g5['board_table']} SET
+                bo_write_level = 2,
+                bo_reply_level = 2
+            WHERE bo_table = '".sql_escape_string($bo_table)."'
+        ", false);
+
+        if (function_exists('run_event')) {
+            run_event('cache_delete', 'board');
+        }
+
+        if (is_array($board) && isset($board['bo_table']) && $board['bo_table'] === $bo_table) {
+            $board['bo_write_level'] = 2;
+            $board['bo_reply_level'] = 2;
+        }
+    }
+}
+
+if (!function_exists('eottae_event_icrm_label_map')) {
+    function eottae_event_icrm_label_map()
+    {
+        return array(
+            '이벤트 종류'           => 'wr_1',
+            '이벤트/프로모션 종류'  => 'wr_1',
+            '업체명 또는 작성자명'  => 'wr_3',
+            '업체/작성자'           => 'wr_3',
+            '업체명'                => 'wr_3',
+            '작성자'                => 'wr_3',
+            '혜택 요약'             => 'wr_7',
+            '혜택'                  => 'wr_7',
+            '문의 방법'             => 'wr_8',
+            '문의'                  => 'wr_8',
+            '시작일'                => 'wr_5',
+            '종료일'                => 'wr_6',
+            '이벤트 기간'           => '_period',
+        );
+    }
+}
+
+if (!function_exists('eottae_event_resolve_type_from_text')) {
+    function eottae_event_resolve_type_from_text($text)
+    {
+        $text = trim((string) $text);
+        if ($text === '') {
+            return '';
+        }
+
+        foreach (eottae_event_types() as $code => $label) {
+            if ($text === $label || $text === $code) {
+                return $code;
+            }
+        }
+
+        return eottae_event_normalize_type($text);
+    }
+}
+
+if (!function_exists('eottae_event_parse_icrm_blocks')) {
+    function eottae_event_parse_icrm_blocks($html, array &$fields)
+    {
+        $label_map = eottae_event_icrm_label_map();
+        $blocks = array();
+
+        if (preg_match_all('/<div[^>]*\bicrm-(?:section|facility-card)\b[^>]*>(.*?)<\/div>/is', (string) $html, $sections)) {
+            $blocks = $sections[1];
+        }
+
+        foreach ($blocks as $block) {
+            if (!preg_match('/<strong[^>]*>\s*(.*?)\s*<\/strong>/is', $block, $label_match)) {
+                continue;
+            }
+
+            $label = trim(strip_tags($label_match[1]));
+            if ($label === '' || !isset($label_map[$label])) {
+                continue;
+            }
+
+            $field = $label_map[$label];
+            $value_html = preg_replace('/<strong[^>]*>.*?<\/strong>/is', '', $block, 1);
+            $value = trim(strip_tags((string) $value_html));
+
+            if ($field === '_period') {
+                if (preg_match('/(\d{4}-\d{2}-\d{2})/', $value, $m)) {
+                    if (empty($fields['wr_5'])) {
+                        $fields['wr_5'] = $m[1];
+                    }
+                }
+                if (preg_match_all('/(\d{4}-\d{2}-\d{2})/', $value, $dates) && count($dates[1]) > 1) {
+                    $fields['wr_6'] = $dates[1][count($dates[1]) - 1];
+                    $fields['wr_4'] = 'period';
+                } elseif (stripos($value, '기간 없음') !== false) {
+                    $fields['wr_4'] = 'none';
+                }
+
+                continue;
+            }
+
+            if ($field === 'wr_1') {
+                $value = eottae_event_resolve_type_from_text($value);
+            } elseif ($field === 'wr_5' || $field === 'wr_6') {
+                $value = eottae_event_normalize_date($value);
+            }
+
+            if ($value !== '') {
+                $fields[$field] = $value;
+            }
+        }
+    }
+}
+
+if (!function_exists('eottae_event_parse_icrm_html')) {
+    /**
+     * iCRM HTML 본문에서 이벤트 확장필드 추출
+     *
+     * @return array<string, string>
+     */
+    function eottae_event_parse_icrm_html($html)
+    {
+        $html = (string) $html;
+        if ($html === '' || strpos($html, '<') === false) {
+            return array();
+        }
+
+        $fields = array();
+
+        if (!function_exists('eottae_icrm_extract_embedded_json')) {
+            include_once G5_LIB_PATH.'/eottae-icrm-template.lib.php';
+        }
+
+        $embedded = function_exists('eottae_icrm_extract_embedded_json')
+            ? eottae_icrm_extract_embedded_json($html)
+            : null;
+        if ($embedded !== null) {
+            $data = json_decode($embedded, true);
+            if (is_array($data)) {
+                foreach (array('wr_1', 'wr_2', 'wr_3', 'wr_4', 'wr_5', 'wr_6', 'wr_7', 'wr_8') as $key) {
+                    if (!empty($data[$key])) {
+                        $fields[$key] = trim((string) $data[$key]);
+                    }
+                }
+            }
+        }
+
+        $is_icrm = function_exists('eottae_icrm_content_should_preserve_html')
+            && eottae_icrm_content_should_preserve_html($html);
+        if ($is_icrm) {
+            eottae_event_parse_icrm_blocks($html, $fields);
+        }
+
+        if (preg_match_all('/data-event-field=["\'](wr_[0-9]+)["\'][^>]*\bvalue=["\']([^"\']*)["\']/i', $html, $m, PREG_SET_ORDER)) {
+            foreach ($m as $match) {
+                $fields[$match[1]] = html_entity_decode($match[2], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            }
+        }
+
+        if (!empty($fields['wr_1'])) {
+            $fields['wr_1'] = eottae_event_resolve_type_from_text($fields['wr_1']);
+        }
+        if (!empty($fields['wr_4'])) {
+            $fields['wr_4'] = eottae_event_normalize_period_mode($fields['wr_4']);
+        }
+        if (!empty($fields['wr_5'])) {
+            $fields['wr_5'] = eottae_event_normalize_date($fields['wr_5']);
+        }
+        if (!empty($fields['wr_6'])) {
+            $fields['wr_6'] = eottae_event_normalize_date($fields['wr_6']);
+        }
+
+        return $fields;
+    }
+}
+
+if (!function_exists('eottae_event_row_has_panel_data')) {
+    function eottae_event_row_has_panel_data(array $row)
+    {
+        return trim(strip_tags((string) ($row['wr_3'] ?? ''))) !== ''
+            || trim(strip_tags((string) ($row['wr_7'] ?? ''))) !== ''
+            || trim(strip_tags((string) ($row['wr_8'] ?? ''))) !== '';
+    }
+}
+
+if (!function_exists('eottae_event_enrich_row_from_content')) {
+    function eottae_event_enrich_row_from_content($row)
+    {
+        if (!is_array($row)) {
+            return $row;
+        }
+
+        $parsed = eottae_event_parse_icrm_html($row['wr_content'] ?? '');
+        if (!$parsed) {
+            return $row;
+        }
+
+        foreach ($parsed as $key => $value) {
+            if (!isset($row[$key]) || trim(strip_tags((string) $row[$key])) === '') {
+                $row[$key] = $value;
+            }
+        }
+
+        return $row;
+    }
+}
+
+if (!function_exists('eottae_event_sync_fields_from_row')) {
+    /**
+     * wr_* 비어 있을 때 iCRM HTML에서 확장필드 백필
+     */
+    function eottae_event_sync_fields_from_row($bo_table, $wr_id)
+    {
+        if (!function_exists('eottae_is_event_board') || !eottae_is_event_board($bo_table)) {
+            return;
+        }
+
+        $wr_id = (int) $wr_id;
+        if ($wr_id < 1) {
+            return;
+        }
+
+        global $g5;
+
+        $write_table = $g5['write_prefix'].$bo_table;
+        $write = get_write($write_table, $wr_id, true);
+        if (empty($write['wr_id'])) {
+            return;
+        }
+
+        $parsed = eottae_event_parse_icrm_html($write['wr_content'] ?? '');
+        if (!$parsed) {
+            return;
+        }
+
+        $sets = array();
+        foreach ($parsed as $key => $value) {
+            if (!preg_match('/^wr_[0-9]+$/', $key)) {
+                continue;
+            }
+            if (trim(strip_tags((string) ($write[$key] ?? ''))) !== '') {
+                continue;
+            }
+            $sets[] = "`{$key}` = '".sql_real_escape_string($value)."'";
+        }
+
+        if (!$sets) {
+            return;
+        }
+
+        sql_query(' UPDATE `'.$write_table.'` SET '.implode(', ', $sets).' WHERE wr_id = \''.$wr_id.'\' ');
+        get_write($write_table, $wr_id, false);
+    }
+}

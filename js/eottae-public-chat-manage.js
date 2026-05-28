@@ -85,6 +85,32 @@
     return '';
   }
 
+  function avatarHtml(message) {
+    if (!message || message.is_mine) {
+      return '';
+    }
+
+    if (message.is_ai || message.profile_avatar_kind === 'ai') {
+      return '<span class="public-group-chat__avatar public-group-chat__avatar--ai" aria-hidden="true">'
+        + '<span class="public-group-chat__avatar-emoji">🤖</span></span>';
+    }
+
+    var author = message.author_display || message.author || '익명';
+    var profileUrl = message.profile_url || '';
+    var imageUrl = message.profile_image_url || '';
+    var initial = message.profile_initial || String(author).charAt(0) || '?';
+    var inner = imageUrl
+      ? '<img src="' + esc(imageUrl) + '" alt="" class="public-group-chat__avatar-img" width="38" height="38" loading="lazy" decoding="async">'
+      : '<span class="public-group-chat__avatar-initial" aria-hidden="true">' + esc(initial) + '</span>';
+    var title = esc(author) + ' 회원정보 보기';
+
+    if (profileUrl) {
+      return '<a href="' + esc(profileUrl) + '" class="public-group-chat__avatar" title="' + title + '">' + inner + '</a>';
+    }
+
+    return '<span class="public-group-chat__avatar public-group-chat__avatar--static" aria-hidden="true">' + inner + '</span>';
+  }
+
   function messageHtml(message, section) {
     if (!message || !message.wr_id || !message.text) {
       return '';
@@ -96,6 +122,9 @@
     }
     if (message.is_ai) {
       classes.push('public-group-chat__message--ai', 'is-talk-ai-message');
+    }
+    if (!message.is_mine) {
+      classes.push('public-group-chat__message--peer');
     }
 
     var author = message.is_ai
@@ -125,10 +154,13 @@
       : '';
 
     var actionHtml = buildActionHtml(message);
+    var avatar = avatarHtml(message);
 
     return ''
       + '<article class="' + classes.join(' ') + '" data-wr-id="' + esc(message.wr_id) + '">'
       + '<div class="public-group-chat__message-inner">'
+      + avatar
+      + '<div class="public-group-chat__message-body">'
       + meta
       + '<div class="public-group-chat__bubble-row">'
       + timeBefore
@@ -137,6 +169,7 @@
       + actionHtml
       + '</div>'
       + timeAfter
+      + '</div>'
       + '</div>'
       + '</div>'
       + '</article>';
@@ -296,6 +329,7 @@
 
   global.EottaePublicChatManage = {
     canManageAi: canManageAi,
+    avatarHtml: avatarHtml,
     messageHtml: messageHtml,
     initSection: initSection,
     scan: scan,
