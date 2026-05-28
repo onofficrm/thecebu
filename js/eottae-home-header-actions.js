@@ -111,6 +111,50 @@
       + '<div class="site-header__overlay eottae-gnb-header__overlay eottae-home-mobile-overlay" data-eottae-home-mobile-overlay="1" aria-hidden="true"></div>';
   }
 
+  function renderHomeGnbShell(data) {
+    var menu = data && data.mobile_menu ? data.mobile_menu : {};
+    var authHtml = '';
+    var logoUrl = menu.logo_url || '';
+
+    if (menu.is_member) {
+      authHtml = ''
+        + '<a href="' + esc(menu.mypage_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop">MY</a>'
+        + '<a href="' + esc(menu.logout_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop">로그아웃</a>';
+    } else {
+      authHtml = ''
+        + '<a href="' + esc(menu.login_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop">로그인</a>'
+        + '<a href="' + esc(menu.register_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop">회원가입</a>';
+    }
+
+    return ''
+      + '<div class="eottae-gnb-header__shell" data-eottae-gnb-shell="1" data-eottae-home-gnb-shell="1">'
+      + '<div class="eottae-gnb-header__desktop-head" data-eottae-gnb-desktop-head="1">'
+      + '<div class="eottae-gnb-header__inner">'
+      + '<div class="eottae-gnb-header__left">'
+      + '<a href="' + esc(menu.home_url || '/') + '" class="eottae-gnb-header__logo">'
+      + (logoUrl
+        ? '<img src="' + esc(logoUrl) + '" alt="세부어때" class="eottae-gnb-header__logo-img">'
+        : '<span class="eottae-gnb-header__logo-text">세부어때</span>')
+      + '</a>'
+      + '<nav class="eottae-gnb-header__nav" aria-label="메인메뉴" data-eottae-gnb-nav="1" data-eottae-home-gnb-nav="1">'
+      + renderDesktopNavLinks(menu.items || [])
+      + '</nav>'
+      + '</div>'
+      + '<div class="eottae-gnb-header__actions">'
+      + authHtml
+      + (data && data.talk_url ? '<a href="' + esc(data.talk_url) + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--talk eottae-gnb-header__btn--desktop" data-eottae-home-talk-btn="1">' + esc(data.talk_label || '세부톡') + '</a>' : '')
+      + (data && data.calendar_url ? '<a href="' + esc(data.calendar_url) + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--calendar eottae-gnb-header__btn--desktop" data-eottae-home-calendar-btn="1">' + esc(data.calendar_label || '세부일정') + '</a>' : '')
+      + (menu.shop_write_url ? '<a href="' + esc(menu.shop_write_url) + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--register eottae-gnb-header__btn--desktop">업소등록</a>' : '')
+      + '<button type="button" class="eottae-gnb-header__icon-btn eottae-gnb-header__menu-btn site-header__menu-btn" data-eottae-home-menu-btn="1" aria-controls="siteMobileNav" aria-expanded="false" aria-label="메뉴 열기">'
+      + '<svg class="eottae-gnb-header__icon eottae-gnb-header__icon--menu" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>'
+      + '</button>'
+      + '</div>'
+      + '</div>'
+      + renderDesktopMegaPanel(menu.items || [])
+      + '</div>'
+      + '</div>';
+  }
+
   function renderDesktopMegaPanel(items) {
     if (!items || !items.length) {
       return '';
@@ -186,6 +230,31 @@
     header.appendChild(shell);
 
     return shell;
+  }
+
+  function rebuildHomeHeader(data) {
+    if (!data || !data.mobile_menu || !data.mobile_menu.items || !data.mobile_menu.items.length) {
+      return false;
+    }
+
+    var header = document.querySelector('header');
+    if (!header) {
+      return false;
+    }
+
+    if (header.getAttribute('data-eottae-home-header-rebuilt') !== '1') {
+      header.innerHTML = renderHomeGnbShell(data);
+      header.setAttribute('data-eottae-home-header-rebuilt', '1');
+    } else {
+      var nav = header.querySelector('[data-eottae-home-gnb-nav="1"]');
+      if (nav) {
+        nav.innerHTML = renderDesktopNavLinks(data.mobile_menu.items);
+      }
+    }
+
+    header.classList.add('eottae-gnb-header');
+    header.setAttribute('data-eottae-home-gnb-injected', '1');
+    return true;
   }
 
   function tagHomeNavMegaKeys(header, items) {
@@ -352,6 +421,10 @@
 
   function replaceHomePrimaryNav(data) {
     if (!data || !data.mobile_menu || !data.mobile_menu.items || !data.mobile_menu.items.length) {
+      return;
+    }
+
+    if (rebuildHomeHeader(data)) {
       return;
     }
 

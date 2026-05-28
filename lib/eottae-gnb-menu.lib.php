@@ -287,6 +287,9 @@ if (!function_exists('eottae_home_gnb_mobile_menu_payload')) {
             'logout_url'   => G5_BBS_URL.'/logout.php',
             'register_url' => function_exists('eottae_register_url') ? eottae_register_url() : G5_BBS_URL.'/register.php',
             'mypage_url'   => function_exists('eottae_mypage_url') ? eottae_mypage_url() : G5_URL.'/page/eottae-mypage.php',
+            'logo_url'     => function_exists('eottae_site_logo_url') ? eottae_site_logo_url('logo_path') : '',
+            'home_url'     => G5_URL.'/',
+            'shop_write_url' => function_exists('eottae_shop_write_url') ? eottae_shop_write_url() : G5_BBS_URL.'/write.php?bo_table='.eottae_shop_table(),
         );
     }
 }
