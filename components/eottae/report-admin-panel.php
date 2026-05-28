@@ -24,6 +24,15 @@ $report_convert_content = function_exists('eottae_report_build_convert_content')
     : strip_tags((string) ($view['wr_content'] ?? ''));
 $report_status_proc = G5_URL.'/proc/eottae-report-status.php';
 $report_convert_proc = G5_URL.'/proc/eottae-report-convert.php';
+$report_message_proc = function_exists('eottae_message_proc_url') ? eottae_message_proc_url() : G5_URL.'/proc/eottae-message.php';
+$report_message_token = '';
+if (is_file(G5_LIB_PATH.'/eottae-message.lib.php')) {
+    include_once G5_LIB_PATH.'/eottae-message.lib.php';
+    $report_message_token = function_exists('eottae_message_token') ? eottae_message_token() : '';
+}
+$report_author_mb_id = isset($view['mb_id']) ? trim((string) $view['mb_id']) : '';
+$report_can_message_author = $report_author_mb_id !== '' && $report_author_mb_id !== 'admin';
+$report_reply_default = '안녕하세요. 세부어때 운영진입니다.'."\n\n".'제보해주신 내용 확인 후 안내드립니다.'."\n\n";
 $report_csrf_token = get_token();
 
 if (function_exists('eottae_report_board_load_assets')) {
@@ -87,6 +96,26 @@ if (is_file($report_admin_js)) {
 
         <button type="submit" class="report-admin-form__submit" data-report-status-submit>상태 저장</button>
     </form>
+
+    <section class="report-admin-form report-admin-form--message">
+        <h3 class="report-admin-form__title">작성자에게 쪽지 답변</h3>
+        <?php if ($report_can_message_author && $report_message_token !== '') { ?>
+        <p class="report-admin-form__hint">제보 작성자에게 운영진 쪽지로 답변합니다. 내부 관리자 메모와 별도로 작성자에게 전달됩니다.</p>
+        <form method="post" action="<?php echo htmlspecialchars($report_message_proc, ENT_QUOTES, 'UTF-8'); ?>" data-report-message-form>
+            <input type="hidden" name="eottae_message_token" value="<?php echo get_text($report_message_token); ?>">
+            <input type="hidden" name="action" value="report_reply">
+            <input type="hidden" name="bo_table" value="<?php echo get_text($bo_table); ?>">
+            <input type="hidden" name="wr_id" value="<?php echo (int) $view['wr_id']; ?>">
+            <div class="report-admin-form__field">
+                <label for="report_message_body">답변 내용</label>
+                <textarea name="body" id="report_message_body" class="report-admin-form__textarea" rows="5" maxlength="3000" required><?php echo get_text($report_reply_default); ?></textarea>
+            </div>
+            <button type="submit" class="report-admin-form__submit report-admin-form__submit--message" data-report-message-submit>쪽지 답변 보내기</button>
+        </form>
+        <?php } else { ?>
+        <p class="report-admin-form__warn">회원 제보가 아니어서 쪽지 답변을 보낼 수 없습니다. 연락처가 있으면 별도로 연락해 주세요.</p>
+        <?php } ?>
+    </section>
 
     <section class="report-admin-form report-admin-form--convert" data-report-convert-panel>
         <h3 class="report-admin-form__title">게시글로 전환 준비</h3>

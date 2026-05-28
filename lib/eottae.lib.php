@@ -1493,6 +1493,18 @@ if (!function_exists('eottae_mypage_url')) {
     }
 }
 
+if (!function_exists('eottae_message_url')) {
+    function eottae_message_url($params = array())
+    {
+        $url = G5_URL.'/page/eottae-messages.php';
+        if (!empty($params)) {
+            $url .= '?'.http_build_query($params);
+        }
+
+        return $url;
+    }
+}
+
 if (!function_exists('eottae_mypage_talk_url')) {
     function eottae_mypage_talk_url()
     {
@@ -5322,6 +5334,15 @@ if (!function_exists('eottae_shop_category_url')) {
             return eottae_shop_list_url();
         }
 
+        if (!is_array($board) || empty($board['bo_category_list'])) {
+            if (function_exists('get_board_db')) {
+                $fetched = get_board_db(eottae_shop_table(), true);
+                if (is_array($fetched) && !empty($fetched['bo_category_list'])) {
+                    $board = $fetched;
+                }
+            }
+        }
+
         $board_cats = array();
         if (is_array($board) && !empty($board['bo_category_list'])) {
             $board_cats = array_filter(array_map('trim', explode('|', $board['bo_category_list'])));
@@ -6054,6 +6075,7 @@ if (!function_exists('eottae_gnb_link_is_active')) {
             case 'mypage_memo':
                 return strpos($uri, '/page/eottae-mypage') !== false
                     || strpos($uri, '/page/eottae-talk-applies') !== false
+                    || strpos($uri, '/page/eottae-messages') !== false
                     || strpos($uri, '/register_form.php') !== false
                     || strpos($uri, '/scrap.php') !== false
                     || strpos($uri, '/memo.php') !== false;

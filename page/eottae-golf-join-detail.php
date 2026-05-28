@@ -24,8 +24,14 @@ $owner_token = !empty($viewer['is_host']) ? eottae_golf_join_owner_token() : '';
 
 $list_url = eottae_golf_join_list_url();
 $chat_url = eottae_golf_join_chat_url($join_id);
+$message_url = function_exists('eottae_message_url')
+    ? eottae_message_url(array('golf_join' => $join_id))
+    : G5_URL.'/page/eottae-messages.php?golf_join='.(int) $join_id;
 $login_url = function_exists('eottae_login_url')
     ? eottae_login_url(eottae_golf_join_detail_url($join_id))
+    : G5_BBS_URL.'/login.php';
+$message_login_url = function_exists('eottae_login_url')
+    ? eottae_login_url($message_url)
     : G5_BBS_URL.'/login.php';
 $share_url = eottae_golf_join_detail_url($join_id);
 $share_title = get_text($post['golf_course_name'] ?? '골프조인');
@@ -224,13 +230,17 @@ g5_page_start('조인');
             <span class="golf-join-detail-bar__btn golf-join-detail-bar__btn--done">방장 관리 중</span>
             <?php } ?>
         <?php } elseif (!empty($viewer['show_chat'])) { ?>
+            <a href="<?php echo get_text($message_url); ?>#message-compose" class="golf-join-detail-bar__btn golf-join-detail-bar__btn--ghost">작성자 문의</a>
             <a href="<?php echo $chat_url; ?>" class="golf-join-detail-bar__btn golf-join-detail-bar__btn--primary">채팅하기</a>
         <?php } elseif (!empty($viewer['show_cancel_apply'])) { ?>
+            <a href="<?php echo get_text($message_url); ?>#message-compose" class="golf-join-detail-bar__btn golf-join-detail-bar__btn--ghost">작성자 문의</a>
             <button type="button" class="golf-join-detail-bar__btn golf-join-detail-bar__btn--ghost" id="golf-join-cancel-btn">신청 취소</button>
             <button type="button" class="golf-join-detail-bar__btn golf-join-detail-bar__btn--done" disabled>신청 완료</button>
         <?php } elseif (!empty($viewer['can_apply'])) { ?>
+            <a href="<?php echo get_text($message_url); ?>#message-compose" class="golf-join-detail-bar__btn golf-join-detail-bar__btn--ghost">작성자 문의</a>
             <button type="button" class="golf-join-detail-bar__btn golf-join-detail-bar__btn--primary" id="golf-join-apply-btn">조인 신청하기</button>
         <?php } elseif (empty($viewer['is_logged_in'])) { ?>
+            <a href="<?php echo get_text($message_login_url); ?>" class="golf-join-detail-bar__btn golf-join-detail-bar__btn--ghost">작성자 문의</a>
             <button type="button" class="golf-join-detail-bar__btn golf-join-detail-bar__btn--primary" id="golf-join-apply-guest-btn">조인 신청하기</button>
         <?php } else { ?>
             <button type="button" class="golf-join-detail-bar__btn" disabled>

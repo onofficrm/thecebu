@@ -4,7 +4,7 @@ if (!defined('_GNUBOARD_')) {
 }
 
 /**
- * 커뮤니티 허브 — 생활정보(community)·자유(free)·리뷰(review)·사람찾기(people)·이벤트(event)
+ * 커뮤니티 허브 — 생활정보(community)·자유(free)·리뷰(review)·사람찾기(people)·이벤트(event)·제보함(report)
  * 분류(ca_name) 대신 독립 게시판 + 공통 eottae-community 스킨 UI
  *
  * 기존 community 게시판 ca_name 데이터는 DB에 그대로 두고 화면에서만 분류 UI를 숨깁니다.
@@ -20,9 +20,10 @@ if (!defined('_GNUBOARD_')) {
  * | review     | 업체리뷰          | eottae-community    | 없음 | 업체 연동 리뷰(wr_1~5)와 공존 시 스킨·필드 확인 |
  * | people     | 사람찾기          | eottae-community    | 없음 | |
  * | event      | 이벤트/프로모션   | eottae-community    | 없음 | |
+ * | report     | 제보함            | eottae-community    | 없음 | wr_1~wr_9 제보 필드 |
  *
  * 권한(권장): 목록/읽기 1(비회원), 쓰기 2(회원) — 사이트 정책에 맞게 조정.
- * 메뉴: 환경설정 > 메뉴설정 — 상위 「커뮤니티」 하위에 위 5개 링크 (/bbs/board.php?bo_table=…)
+ * 메뉴: 환경설정 > 메뉴설정 — 상위 「커뮤니티」 하위에 위 6개 링크 (/bbs/board.php?bo_table=…)
  */
 
 if (!function_exists('eottae_community_hub_board_tables')) {
@@ -31,7 +32,9 @@ if (!function_exists('eottae_community_hub_board_tables')) {
      */
     function eottae_community_hub_board_tables()
     {
-        return array('community', 'free', 'review', 'people', 'event');
+        $report = function_exists('eottae_report_board_table') ? eottae_report_board_table() : 'report';
+
+        return array('community', 'free', 'review', 'people', 'event', $report);
     }
 }
 
@@ -81,6 +84,14 @@ if (!function_exists('eottae_community_hub_board_defs')) {
                 'title'    => '이벤트/프로모션',
                 'desc'     => '세부 지역 이벤트, 할인, 프로모션 정보를 공유하는 게시판입니다.',
                 'image'    => '1511795409834-ef04bbd61622',
+            ),
+            array(
+                'bo_table' => function_exists('eottae_report_board_table') ? eottae_report_board_table() : 'report',
+                'label'    => '제보함',
+                'kicker'   => '세부어때 제보함',
+                'title'    => '세부 제보함',
+                'desc'     => '세부에서 본 소식, 생활정보, 이벤트, 주의사항을 제보해주세요. 작은 제보가 세부 교민과 여행자에게 큰 도움이 됩니다.',
+                'image'    => '1518509562904-7fc873a70436',
             ),
         );
     }
@@ -580,7 +591,7 @@ if (!function_exists('eottae_community_hub_hero')) {
             return array(
                 'kicker' => '세부 커뮤니티',
                 'title'  => '세부 커뮤니티 전체',
-                'desc'   => '생활정보·자유게시판·업체리뷰·사람찾기·이벤트 글을 한곳에서 모아 봅니다.',
+                'desc'   => '생활정보·자유게시판·업체리뷰·사람찾기·이벤트·제보함 글을 한곳에서 모아 봅니다.',
                 'image'  => sprintf($cebu_img, '1518509562904-7fc873a70436'),
             );
         }

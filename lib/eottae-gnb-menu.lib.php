@@ -59,6 +59,8 @@ if (!function_exists('eottae_gnb_nav_menu')) {
      */
     function eottae_gnb_nav_menu()
     {
+        global $is_member, $member;
+
         $shop_table = eottae_shop_table();
         $community_table = eottae_community_board_table();
         $free_table = function_exists('eottae_free_board_table') ? eottae_free_board_table() : 'free';
@@ -82,6 +84,15 @@ if (!function_exists('eottae_gnb_nav_menu')) {
             ? eottae_column_apply_url()
             : G5_URL.'/page/eottae-column-apply.php';
         $mypage_url = function_exists('eottae_mypage_url') ? eottae_mypage_url() : G5_URL.'/page/eottae-mypage.php';
+        $message_url = function_exists('eottae_message_url') ? eottae_message_url() : G5_URL.'/page/eottae-messages.php';
+        $message_label = '쪽지';
+        if (!empty($is_member) && !empty($member['mb_id']) && is_file(G5_LIB_PATH.'/eottae-message.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-message.lib.php';
+            $message_unread_count = function_exists('eottae_message_unread_count') ? eottae_message_unread_count($member['mb_id']) : 0;
+            if ($message_unread_count > 0) {
+                $message_label .= ' ('.number_format($message_unread_count).')';
+            }
+        }
         $talk_applies_url = function_exists('eottae_talkroom_apply_status_url')
             ? eottae_talkroom_apply_status_url()
             : G5_URL.'/page/eottae-talk-applies.php';
@@ -165,10 +176,9 @@ if (!function_exists('eottae_gnb_nav_menu')) {
                 'children' => array(
                     array('key' => 'mypage_profile', 'label' => '내 프로필', 'href' => eottae_gnb_member_profile_url()),
                     array('key' => 'mypage_posts', 'label' => '내가 쓴 글', 'href' => eottae_gnb_member_posts_url()),
-                    array('key' => 'mypage_scrap', 'label' => '찜한 글', 'href' => G5_BBS_URL.'/scrap.php', 'login_required' => true),
                     array('key' => 'mypage_shop', 'label' => '내 업체', 'href' => $mypage_url, 'login_required' => true),
                     array('key' => 'mypage_applies', 'label' => '내 신청내역', 'href' => $talk_applies_url, 'login_required' => true),
-                    array('key' => 'mypage_memo', 'label' => '쪽지', 'href' => G5_BBS_URL.'/memo.php', 'login_required' => true),
+                    array('key' => 'mypage_memo', 'label' => $message_label, 'href' => $message_url, 'login_required' => true),
                 ),
             ),
         );

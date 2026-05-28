@@ -339,6 +339,10 @@
   background: #0369a1;
 }
 
+.report-admin-form__submit--message {
+  background: #0ea5e9;
+}
+
 .report-admin-form__ghost {
   margin-top: 0.35rem;
   padding: 0.35rem 0.65rem;

@@ -67,7 +67,7 @@ if ($cmp_referer_page === '' && defined('G5_URL')) {
                 <button type="submit" class="btn btn-primary cmp-consult-form__submit">문의 보내기</button>
             </div>
             <p class="cmp-consult-form__status" role="status" aria-live="polite" hidden></p>
-            <p class="cmp-consult-form__note">접수 내용은 문의 게시판에 저장되며, 설정된 관리자 이메일로 알림이 발송될 수 있습니다.</p>
+            <p class="cmp-consult-form__note">접수 내용은 문의 게시판에 저장되며, 설정된 관리자 이메일로 알림이 발송될 수 있습니다.<?php if (!empty($is_member) && function_exists('eottae_message_url')) { ?> 로그인 회원은 <a href="<?php echo eottae_message_url(array('to' => 'operator')); ?>#message-compose">운영진 쪽지</a>로도 문의할 수 있습니다.<?php } ?></p>
         </form>
     </div>
 </div>

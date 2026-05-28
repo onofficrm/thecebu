@@ -8,19 +8,21 @@ global $is_member, $member;
 $recruit_url = eottae_columnist_recruit_url();
 $column_list_url = eottae_column_list_url();
 $apply_member_url = eottae_column_apply_url();
-$proc_url = eottae_columnist_recruit_proc_url();
-$token = eottae_columnist_recruit_token();
 $img_base = eottae_columnist_recruit_img_base();
-$interests = eottae_columnist_recruit_interest_options();
 $submitted = isset($_GET['submitted']) && $_GET['submitted'] === '1';
 
 $is_columnist = $is_member && eottae_column_is_columnist($member['mb_id'] ?? '');
 $pending_application = $is_member ? eottae_column_get_latest_application($member['mb_id'] ?? '') : null;
 $has_pending = $pending_application && ($pending_application['status'] ?? '') === 'pending';
 
-$pen_name_default = '';
-if ($is_member) {
-    $pen_name_default = trim((string) ($member['mb_nick'] ?? $member['mb_name'] ?? ''));
+$apply_cta_url = $apply_member_url;
+$apply_cta_label = '컬럼리스트 신청하기';
+if ($is_columnist) {
+    $apply_cta_url = eottae_column_write_url();
+    $apply_cta_label = '컬럼 작성하기';
+} elseif ($has_pending) {
+    $apply_cta_url = eottae_column_mypage_url();
+    $apply_cta_label = '신청 상태 확인';
 }
 
 $page_title = '세부어때 컬럼리스트 모집 | 세부 생활정보를 함께 만들어갈 분을 찾습니다';
@@ -54,7 +56,7 @@ g5_page_start('컬럼리스트 모집');
             <h1 class="sebu-columnist-hero__title">세부의 이야기를 함께 만들어갈 컬럼리스트를 찾습니다</h1>
             <p class="sebu-columnist-hero__lead">맛집, 생활정보, 부동산, 교육, 취미, 사업 이야기까지.<br>당신이 알고 있는 세부 이야기가 누군가에게는 꼭 필요한 정보가 됩니다.</p>
             <div class="sebu-columnist-hero__actions">
-                <a href="#columnist-apply-form" class="sebu-columnist-btn sebu-columnist-btn--primary" data-scroll-to="columnist-apply-form">컬럼리스트 신청하기</a>
+                <a href="<?php echo $apply_cta_url; ?>" class="sebu-columnist-btn sebu-columnist-btn--primary"><?php echo get_text($apply_cta_label); ?></a>
                 <a href="#columnist-topics" class="sebu-columnist-btn sebu-columnist-btn--secondary" data-scroll-to="columnist-topics">어떤 글을 쓰면 좋을까요?</a>
             </div>
         </div>
@@ -260,87 +262,8 @@ g5_page_start('컬럼리스트 모집');
         <p>세부어때는 완벽한 글보다 진짜 도움이 되는 글을 원합니다.<br>멋진 문장보다 중요한 것은 <strong>경험</strong>입니다. 긴 글보다 중요한 것은 <strong>진심</strong>입니다.</p>
         <p style="margin-top:12px">세부를 좋아하는 마음, 세부 생활을 나누고 싶은 마음, 다른 사람에게 도움이 되고 싶은 마음이 있다면 충분합니다.</p>
         <p style="margin-top:20px">
-            <a href="#columnist-apply-form" class="sebu-columnist-btn sebu-columnist-btn--primary" data-scroll-to="columnist-apply-form">컬럼리스트 신청하기</a>
+            <a href="<?php echo $apply_cta_url; ?>" class="sebu-columnist-btn sebu-columnist-btn--primary"><?php echo get_text($apply_cta_label); ?></a>
         </p>
-    </section>
-
-    <section class="sebu-columnist-recruit__section" id="columnist-apply-form" aria-labelledby="columnist-form-title">
-        <h2 class="sebu-columnist-recruit__section-title" id="columnist-form-title">컬럼리스트 신청</h2>
-
-        <?php if ($is_columnist) { ?>
-        <div class="sebu-columnist-form-wrap">
-            <p class="sebu-columnist-recruit__section-lead">이미 컬럼리스트로 등록되어 있습니다. 컬럼 작성은 아래에서 시작해 보세요.</p>
-            <a href="<?php echo eottae_column_write_url(); ?>" class="sebu-columnist-btn sebu-columnist-btn--primary">컬럼 작성하기</a>
-        </div>
-        <?php } elseif ($has_pending) { ?>
-        <div class="sebu-columnist-form-wrap">
-            <p class="sebu-columnist-recruit__section-lead">검토 중인 신청이 있습니다. 결과는 마이페이지에서 확인할 수 있습니다.</p>
-            <a href="<?php echo eottae_column_mypage_url(); ?>" class="sebu-columnist-btn sebu-columnist-btn--primary">마이페이지로 이동</a>
-        </div>
-        <?php } else { ?>
-        <div class="sebu-columnist-form-wrap">
-            <?php if ($is_member) { ?>
-            <p class="sebu-columnist-form__hint" style="margin-top:0;margin-bottom:16px">
-                로그인 회원은 프로필 사진·SNS 링크까지 포함한 <a href="<?php echo $apply_member_url; ?>">정식 신청서</a>로도 신청할 수 있습니다.
-            </p>
-            <?php } ?>
-
-            <form class="sebu-columnist-form" method="post" action="<?php echo $proc_url; ?>" data-columnist-recruit-form novalidate>
-                <input type="hidden" name="eottae_columnist_recruit_token" value="<?php echo get_text($token); ?>">
-                <input type="hidden" name="referer" value="<?php echo get_text($recruit_url); ?>">
-
-                <div class="sebu-columnist-form__row">
-                    <label class="sebu-columnist-form__label" for="col_pen_name">이름 또는 닉네임 <span class="is-required">*</span></label>
-                    <input type="text" id="col_pen_name" name="pen_name" class="sebu-columnist-form__input" maxlength="80" required value="<?php echo get_text($pen_name_default); ?>">
-                </div>
-
-                <div class="sebu-columnist-form__row">
-                    <label class="sebu-columnist-form__label" for="col_phone">연락처</label>
-                    <input type="tel" id="col_phone" name="contact_phone" class="sebu-columnist-form__input" maxlength="30" placeholder="전화번호">
-                </div>
-
-                <div class="sebu-columnist-form__row">
-                    <label class="sebu-columnist-form__label" for="col_kakao">카카오톡 ID</label>
-                    <input type="text" id="col_kakao" name="contact_kakao" class="sebu-columnist-form__input" maxlength="80" placeholder="카카오톡 ID">
-                    <p class="sebu-columnist-form__hint">연락처 또는 카카오톡 ID 중 하나는 필수입니다.</p>
-                </div>
-
-                <div class="sebu-columnist-form__row">
-                    <label class="sebu-columnist-form__label" for="col_email">이메일</label>
-                    <input type="email" id="col_email" name="contact_email" class="sebu-columnist-form__input" maxlength="100" placeholder="example@email.com">
-                </div>
-
-                <div class="sebu-columnist-form__row">
-                    <label class="sebu-columnist-form__label" for="col_interest">관심 분야 <span class="is-required">*</span></label>
-                    <select id="col_interest" name="interest" class="sebu-columnist-form__select" required>
-                        <option value="">선택해 주세요</option>
-                        <?php foreach ($interests as $code => $label) { ?>
-                        <option value="<?php echo get_text($code); ?>"><?php echo get_text($label); ?></option>
-                        <?php } ?>
-                    </select>
-                </div>
-
-                <div class="sebu-columnist-form__row">
-                    <label class="sebu-columnist-form__label" for="col_topic">작성해보고 싶은 주제</label>
-                    <input type="text" id="col_topic" name="topic_idea" class="sebu-columnist-form__input" maxlength="200" placeholder="예: IT Park 맛집, 국제학교 생활">
-                </div>
-
-                <div class="sebu-columnist-form__row">
-                    <label class="sebu-columnist-form__label" for="col_channel">운영 중인 업체나 채널 링크</label>
-                    <input type="url" id="col_channel" name="channel_url" class="sebu-columnist-form__input" maxlength="255" placeholder="https://">
-                </div>
-
-                <div class="sebu-columnist-form__row">
-                    <label class="sebu-columnist-form__label" for="col_bio">간단한 자기소개 <span class="is-required">*</span></label>
-                    <textarea id="col_bio" name="bio" class="sebu-columnist-form__textarea" rows="4" maxlength="2000" required placeholder="세부에서 어떤 경험과 정보를 나눌 수 있는지 소개해 주세요."></textarea>
-                </div>
-
-                <p class="sebu-columnist-form__privacy">연락처, 이메일, 카카오톡 ID 등 개인정보가 포함될 수 있으니 제출 전 내용을 확인해 주세요. 접수된 정보는 컬럼리스트 검토 목적으로만 사용됩니다.</p>
-
-                <button type="submit" class="sebu-columnist-btn sebu-columnist-btn--primary">컬럼리스트 신청 제출하기</button>
-            </form>
-        </div>
-        <?php } ?>
     </section>
 
     <?php } ?>

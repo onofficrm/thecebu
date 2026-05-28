@@ -260,6 +260,190 @@
       + '</article>';
   }
 
+  function renderTodayOverview(latestNews) {
+    var today = latestNews && latestNews.today ? latestNews.today : {};
+    var metrics = [
+      { label: '오늘 새 글', value: today.posts || 0, tone: 'sky' },
+      { label: '댓글', value: today.comments || 0, tone: 'violet' },
+      { label: '새 소식', value: today.news || 0, tone: 'orange' },
+    ];
+    var html = '';
+    var i;
+
+    for (i = 0; i < metrics.length; i += 1) {
+      html += ''
+        + '<span class="sebu-news-today__item sebu-news-today__item--' + esc(metrics[i].tone) + '">'
+        + '<span class="sebu-news-today__label">' + esc(metrics[i].label) + '</span>'
+        + '<strong class="sebu-news-today__value">' + esc(formatCount(metrics[i].value)) + '</strong>'
+        + '</span>';
+    }
+
+    return ''
+      + '<div class="sebu-news-today" aria-label="오늘 세부 한눈에">'
+      + '<span class="sebu-news-today__eyebrow">오늘 세부 한눈에</span>'
+      + '<div class="sebu-news-today__items">' + html + '</div>'
+      + '</div>';
+  }
+
+  function renderNewsPost(post) {
+    if (!post || !post.title) {
+      return '';
+    }
+
+    var comments = Number(post.comments || 0);
+    var views = Number(post.views || 0);
+    var meta = [];
+    if (comments > 0) {
+      meta.push('댓글 ' + formatCount(comments));
+    }
+    if (views > 0) {
+      meta.push('조회 ' + formatCount(views));
+    }
+    if (post.time) {
+      meta.push(post.time);
+    }
+
+    return ''
+      + '<li class="sebu-news-item">'
+      + '<a href="' + esc(post.url || '#') + '" class="sebu-news-item__link">'
+      + '<span class="sebu-news-item__main">'
+      + '<span class="sebu-news-item__head">'
+      + (post.board ? '<span class="sebu-news-item__board">' + esc(post.board) + '</span>' : '')
+      + (post.is_new ? '<span class="sebu-news-item__badge sebu-news-item__badge--new">NEW</span>' : '')
+      + (post.is_hot ? '<span class="sebu-news-item__badge sebu-news-item__badge--hot">HOT</span>' : '')
+      + '</span>'
+      + '<strong class="sebu-news-item__title">' + esc(post.title) + '</strong>'
+      + (meta.length ? '<span class="sebu-news-item__meta">' + esc(meta.join(' · ')) + '</span>' : '')
+      + '</span>'
+      + '<span class="sebu-news-item__arrow" aria-hidden="true">›</span>'
+      + '</a>'
+      + '</li>';
+  }
+
+  function renderNewsPanel(tab, index) {
+    var posts = tab && tab.items ? tab.items : [];
+    var html = '';
+    var i;
+
+    for (i = 0; i < posts.length; i += 1) {
+      html += renderNewsPost(posts[i]);
+    }
+
+    if (!html) {
+      var cta = tab && tab.emptyCta ? tab.emptyCta : {};
+      html = ''
+        + '<div class="sebu-news-empty">'
+        + '<p class="sebu-news-empty__eyebrow">첫 소식을 기다리는 중</p>'
+        + '<strong class="sebu-news-empty__title">' + esc(cta.title || '아직 표시할 글이 없습니다.') + '</strong>'
+        + '<p class="sebu-news-empty__desc">' + esc(cta.desc || '새 글이 올라오면 홈 최신소식에 바로 노출됩니다.') + '</p>'
+        + '<div class="sebu-news-empty__actions">'
+        + '<a href="' + esc(cta.primaryUrl || tab.url || communityUrl()) + '" class="sebu-news-empty__btn sebu-news-empty__btn--primary">' + esc(cta.primaryText || '글쓰기') + '</a>'
+        + '<a href="' + esc(cta.listUrl || tab.url || communityUrl()) + '" class="sebu-news-empty__btn">' + esc(cta.listText || '목록 보기') + '</a>'
+        + '</div>'
+        + '</div>';
+    } else {
+      html = '<ul class="sebu-news-panel__list">' + html + '</ul>';
+    }
+
+    return ''
+      + '<div class="sebu-news-panel' + (index === 0 ? ' is-active' : '') + '"'
+      + ' data-news-panel="' + esc(tab.key || '') + '"'
+      + ' role="tabpanel"'
+      + ' aria-hidden="' + (index === 0 ? 'false' : 'true') + '">'
+      + html
+      + '<a href="' + esc(tab.url || communityUrl()) + '" class="sebu-news-panel__more">더보기</a>'
+      + '</div>';
+  }
+
+  function renderContributionBanner(banner) {
+    if (!banner || !banner.actions || !banner.actions.length) {
+      return '';
+    }
+
+    var actionsHtml = '';
+    var i;
+    for (i = 0; i < banner.actions.length; i += 1) {
+      actionsHtml += ''
+        + '<a href="' + esc(banner.actions[i].url || '#') + '" class="sebu-contribute-banner__btn sebu-contribute-banner__btn--' + esc(banner.actions[i].tone || 'default') + '">'
+        + esc(banner.actions[i].label || '등록하기')
+        + '</a>';
+    }
+
+    return ''
+      + '<aside class="sebu-contribute-banner" aria-label="생활정보 등록 안내">'
+      + '<div class="sebu-contribute-banner__copy">'
+      + '<p class="sebu-contribute-banner__eyebrow">' + esc(banner.eyebrow || '함께 채우는 세부 생활지도') + '</p>'
+      + '<strong class="sebu-contribute-banner__title">' + esc(banner.title || '') + '</strong>'
+      + '<p class="sebu-contribute-banner__desc">' + esc(banner.desc || '') + '</p>'
+      + '</div>'
+      + '<div class="sebu-contribute-banner__actions">' + actionsHtml + '</div>'
+      + '</aside>';
+  }
+
+  function renderLatestNewsColumn(latestNews) {
+    latestNews = latestNews || {};
+    var tabs = latestNews.tabs || [];
+    var tabsHtml = '';
+    var panelsHtml = '';
+    var i;
+
+    for (i = 0; i < tabs.length; i += 1) {
+      tabsHtml += ''
+        + '<button type="button" class="sebu-news-tabs__btn' + (i === 0 ? ' is-active' : '') + '"'
+        + ' data-news-tab="' + esc(tabs[i].key || '') + '"'
+        + ' aria-pressed="' + (i === 0 ? 'true' : 'false') + '">'
+        + esc(tabs[i].label || '')
+        + '</button>';
+      panelsHtml += renderNewsPanel(tabs[i], i);
+    }
+
+    return ''
+      + '<article class="sebu-community-col sebu-community-col--news" data-eottae-news-tabs="1">'
+      + '<header class="sebu-community-col__head sebu-community-col__head--news">'
+      + '<div>'
+      + '<p class="sebu-news-kicker">Local board now</p>'
+      + '<h3 class="sebu-community-col__title">'
+      + '<span class="sebu-community-col__accent sebu-community-col__accent--sky" aria-hidden="true"></span>'
+      + esc(latestNews.title || '세부 최신소식')
+      + '</h3>'
+      + '<p class="sebu-news-desc">' + esc(latestNews.desc || '세부의 새 글을 빠르게 확인하세요.') + '</p>'
+      + '</div>'
+      + '</header>'
+      + renderTodayOverview(latestNews)
+      + '<div class="sebu-news-tabs" role="tablist" aria-label="최신소식 분류">' + tabsHtml + '</div>'
+      + '<div class="sebu-news-panels">' + panelsHtml + '</div>'
+      + '</article>';
+  }
+
+  function bindLatestNewsTabs(root) {
+    if (!root || root.dataset.newsTabsBound === '1') {
+      return;
+    }
+
+    var buttons = root.querySelectorAll('[data-news-tab]');
+    var panels = root.querySelectorAll('[data-news-panel]');
+    if (!buttons.length || !panels.length) {
+      return;
+    }
+
+    root.dataset.newsTabsBound = '1';
+    buttons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        var key = button.getAttribute('data-news-tab') || '';
+        buttons.forEach(function (item) {
+          var active = item === button;
+          item.classList.toggle('is-active', active);
+          item.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        panels.forEach(function (panel) {
+          var active = (panel.getAttribute('data-news-panel') || '') === key;
+          panel.classList.toggle('is-active', active);
+          panel.setAttribute('aria-hidden', active ? 'false' : 'true');
+        });
+      });
+    });
+  }
+
   function formatCount(value) {
     var n = Number(value) || 0;
     return n.toLocaleString('ko-KR');
@@ -484,37 +668,14 @@
   }
 
   function renderPopularBlock(popular, talkRooms) {
-    var columns = [
-      {
-        label: '실시간 인기글',
-        accentClass: 'sebu-community-col__accent--orange',
-        posts: popular.latest || [],
-      },
-      {
-        label: '조회수 급상승',
-        accentClass: 'sebu-community-col__accent--rose',
-        posts: popular.hit || [],
-      },
-    ];
-
-    var colsHtml = '';
-    var i;
-    var moreUrl = communityUrl();
-
-    for (i = 0; i < columns.length; i += 1) {
-      colsHtml += renderPopularColumn({
-        label: columns[i].label,
-        accentClass: columns[i].accentClass,
-        posts: columns[i].posts,
-        moreUrl: moreUrl,
-      });
-    }
-
+    var data = cfg() || {};
+    var colsHtml = renderLatestNewsColumn(data.latest_news || {});
     colsHtml += renderTalkRoomsColumn(talkRooms || {});
 
     return ''
-      + '<section class="sebu-community-popular" data-eottae-home-popular="1" aria-label="커뮤니티 인기글">'
-      + '<h2 class="sebu-community-popular__title">커뮤니티 인기글</h2>'
+      + '<section class="sebu-community-popular" data-eottae-home-popular="1" aria-label="세부 최신소식">'
+      + '<h2 class="sebu-community-popular__title">오늘의 세부 커뮤니티</h2>'
+      + renderContributionBanner(data.contribution_banner || {})
       + '<div class="sebu-community-popular__grid">' + colsHtml + '</div>'
       + '</section>';
   }
@@ -555,6 +716,7 @@
     mountDone = true;
 
     initTalkRoomsCarousels(mountRoot);
+    bindLatestNewsTabs(mountRoot.querySelector('[data-eottae-news-tabs="1"]'));
 
     if (typeof global.eottaeCalendarInitEventModal === 'function') {
       global.eottaeCalendarInitEventModal();

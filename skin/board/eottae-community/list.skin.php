@@ -151,7 +151,7 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
         include G5_PATH.'/components/eottae/report-status-filter.php';
     } ?>
 
-    <?php if (!empty($community_tabs) && empty($is_report_board_list)) { ?>
+    <?php if (!empty($community_tabs) && (empty($is_report_board_list) || !empty($is_community_hub_list))) { ?>
     <nav class="community-tabs" aria-label="<?php echo $is_community_hub_list ? '커뮤니티 게시판' : '게시판 분류'; ?>">
         <?php foreach ($community_tabs as $tab) {
             if ($is_community_hub_list) {

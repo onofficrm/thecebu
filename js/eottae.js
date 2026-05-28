@@ -243,11 +243,39 @@
     }
   });
 
+  function messageComposeUrl(shopCode) {
+    var cfg = global.__EOTTae__ || {};
+    var base = cfg.messageUrl || '/page/eottae-messages.php';
+    if (!shopCode) {
+      return base + '#message-compose';
+    }
+    return base + '?shop=' + encodeURIComponent(shopCode) + '#message-compose';
+  }
+
+  function loginUrlFor(returnUrl) {
+    var cfg = global.__EOTTae__ || {};
+    var login = cfg.loginUrl || '/bbs/login.php';
+    if (!returnUrl) {
+      return login;
+    }
+    return login + (login.indexOf('?') >= 0 ? '&' : '?') + 'url=' + encodeURIComponent(returnUrl);
+  }
+
   document.addEventListener('click', function (e) {
     var inquiryBtn = e.target.closest('[data-inquiry-action="open"], .inquiry-button__btn--inquiry');
     if (inquiryBtn && inquiryBtn.tagName === 'BUTTON') {
       e.preventDefault();
       var code = inquiryBtn.getAttribute('data-inquiry-code') || '';
+      var ownerId = inquiryBtn.getAttribute('data-message-owner') || '';
+      var cfg = global.__EOTTae__ || {};
+      if (ownerId) {
+        if (cfg.isMember) {
+          window.location.href = messageComposeUrl(code);
+          return;
+        }
+        window.location.href = loginUrlFor(messageComposeUrl(code));
+        return;
+      }
       openInquiryModal(code);
       return;
     }

@@ -55,6 +55,8 @@ if (!function_exists('eottae_shop_card_html')) {
             eottae_render_inquiry_buttons('card', array(
                 'phone'         => $shop['phone'],
                 'inquiry_code'  => $shop['inquiry_code'],
+                'owner_mb_id'   => function_exists('eottae_shop_owner_mb_id_from_write') ? eottae_shop_owner_mb_id_from_write($row) : '',
+                'shop_name'     => $shop['name'],
                 'lat'           => $shop['lat'],
                 'lng'           => $shop['lng'],
                 'address'       => $shop['address'],
@@ -238,6 +240,8 @@ if (!function_exists('eottae_shop_list_card_html')) {
                 eottae_render_inquiry_buttons('list', array(
                     'phone'         => $shop['phone'],
                     'inquiry_code'  => $shop['inquiry_code'],
+                    'owner_mb_id'   => function_exists('eottae_shop_owner_mb_id_from_write') ? eottae_shop_owner_mb_id_from_write($row) : '',
+                    'shop_name'     => $shop['name'],
                     'lat'           => $shop['lat'],
                     'lng'           => $shop['lng'],
                     'address'       => $shop['address'],

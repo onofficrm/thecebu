@@ -28,10 +28,27 @@ if (!function_exists('eottae_inquiry_buttons_html')) {
         $lng          = isset($opts['lng']) ? trim((string) $opts['lng']) : '';
         $address      = isset($opts['address']) ? trim((string) $opts['address']) : '';
         $share_url    = isset($opts['share_url']) ? trim((string) $opts['share_url']) : '';
+        $owner_mb_id  = isset($opts['owner_mb_id']) ? trim((string) $opts['owner_mb_id']) : '';
+        $shop_name    = isset($opts['shop_name']) ? trim((string) $opts['shop_name']) : '';
+
+        if ($owner_mb_id === '' && $inquiry_code !== '') {
+            if (!function_exists('eottae_message_shop_owner_from_inquiry_code') && is_file(G5_LIB_PATH.'/eottae-message.lib.php')) {
+                include_once G5_LIB_PATH.'/eottae-message.lib.php';
+            }
+            if (function_exists('eottae_message_shop_owner_from_inquiry_code')) {
+                $owner_mb_id = eottae_message_shop_owner_from_inquiry_code($inquiry_code);
+            }
+        }
 
         $tel_href = eottae_tel_href($phone);
         $map_href = eottae_maps_directions_url($lat, $lng, $address);
         $inquiry_attr = $inquiry_code !== '' ? ' data-inquiry-code="'.htmlspecialchars($inquiry_code, ENT_QUOTES, 'UTF-8').'"' : '';
+        if ($owner_mb_id !== '') {
+            $inquiry_attr .= ' data-message-owner="'.htmlspecialchars($owner_mb_id, ENT_QUOTES, 'UTF-8').'"';
+        }
+        if ($shop_name !== '') {
+            $inquiry_attr .= ' data-shop-name="'.htmlspecialchars($shop_name, ENT_QUOTES, 'UTF-8').'"';
+        }
 
         ob_start();
 

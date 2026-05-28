@@ -662,6 +662,9 @@ if (eottae_should_load_assets()) {
             'procBase' => G5_URL.'/proc',
             'aiEnabled' => !empty($eottae_ai_cfg['enabled']) && !empty($eottae_ai_cfg['api_key']),
             'jsVersion' => $eottae_js_version,
+            'isMember' => !empty($is_member),
+            'messageUrl' => function_exists('eottae_message_url') ? eottae_message_url() : G5_URL.'/page/eottae-messages.php',
+            'loginUrl' => function_exists('eottae_login_url') ? eottae_login_url() : G5_BBS_URL.'/login.php',
         ), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT).';</script>',
         18
     );

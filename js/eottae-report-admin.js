@@ -101,6 +101,50 @@
     });
   }
 
+  function bindMessageForm(form) {
+    if (!form || form.dataset.bound === '1') {
+      return;
+    }
+    form.dataset.bound = '1';
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!global.confirm('제보 작성자에게 쪽지 답변을 보낼까요?')) {
+        return;
+      }
+
+      var btn = form.querySelector('[data-report-message-submit]');
+      if (btn) {
+        btn.disabled = true;
+      }
+
+      fetch(form.getAttribute('action'), {
+        method: 'POST',
+        credentials: 'same-origin',
+        body: new FormData(form),
+        headers: { Accept: 'application/json' },
+      })
+        .then(parseJson)
+        .then(function (data) {
+          if (!data || !data.success) {
+            throw new Error((data && data.message) || '쪽지 답변 발송에 실패했습니다.');
+          }
+          global.alert('쪽지 답변을 보냈습니다.');
+          if (data.redirect) {
+            global.location.href = data.redirect;
+            return;
+          }
+          global.location.reload();
+        })
+        .catch(function (err) {
+          global.alert(err && err.message ? err.message : '쪽지 답변 발송에 실패했습니다.');
+          if (btn) {
+            btn.disabled = false;
+          }
+        });
+    });
+  }
+
   function bindCopyButton(panel) {
     var btn = panel.querySelector('[data-report-copy-btn]');
     var textarea = panel.querySelector('[data-report-copy-content]');
@@ -131,6 +175,7 @@
       return;
     }
     bindStatusForm(panel.querySelector('[data-report-status-form]'));
+    bindMessageForm(panel.querySelector('[data-report-message-form]'));
     bindConvertForm(panel);
     bindCopyButton(panel);
   }

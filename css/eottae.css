@@ -1205,8 +1205,29 @@ body.eottae-page hr {
 }
 
 .mobile-bottom-nav--global .mobile-bottom-nav__icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 18px;
   line-height: 1;
+}
+
+.mobile-bottom-nav__badge {
+  position: absolute;
+  top: -8px;
+  right: -12px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 14px;
+  text-align: center;
 }
 
 /* ── Inquiry buttons ── */
@@ -5227,6 +5248,249 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
   font-weight: 700;
 }
 
+.mypage-dashboard .my-notification-hub {
+  margin-bottom: 16px;
+  padding: 18px 16px;
+  border-radius: var(--eottae-radius);
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 58%);
+  box-shadow: var(--eottae-shadow-sm);
+}
+
+.mypage-dashboard .my-notification-hub--active {
+  border-color: rgba(14, 165, 233, 0.35);
+  background: linear-gradient(145deg, #f0f9ff 0%, #fff 58%);
+}
+
+.mypage-dashboard .my-notification-hub__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.mypage-dashboard .my-notification-hub__eyebrow {
+  margin: 0 0 3px;
+  color: var(--eottae-primary-dark);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.mypage-dashboard .my-notification-hub__title {
+  margin: 0;
+  color: var(--eottae-text);
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.mypage-dashboard .my-notification-hub__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.mypage-dashboard .my-notification-hub__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mypage-dashboard .my-notification-hub__item {
+  display: grid;
+  gap: 5px;
+  padding: 12px 10px;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.88);
+  color: inherit;
+  text-decoration: none;
+}
+
+.mypage-dashboard .my-notification-hub__item.is-alert {
+  border-color: #bae6fd;
+  background: #f0f9ff;
+}
+
+.mypage-dashboard .my-notification-hub__item-label {
+  color: var(--eottae-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.mypage-dashboard .my-notification-hub__item-value {
+  color: var(--eottae-text);
+  font-size: 1.25rem;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.mypage-dashboard .my-notification-hub__item.is-alert .my-notification-hub__item-value {
+  color: #dc2626;
+}
+
+.mypage-dashboard .my-notification-hub__item-desc {
+  color: var(--eottae-muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.mypage-dashboard .my-notification-hub__latest {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 8px;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #dbeafe;
+  background: rgba(255, 255, 255, 0.86);
+  color: inherit;
+  text-decoration: none;
+}
+
+.mypage-dashboard .my-notification-hub__latest-board {
+  align-self: start;
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 2px 8px;
+}
+
+.mypage-dashboard .my-notification-hub__latest-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  color: var(--eottae-text);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.mypage-dashboard .my-notification-hub__latest-preview {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--eottae-muted);
+  font-size: 12px;
+}
+
+.mypage-dashboard .my-message-card {
+  margin-bottom: 16px;
+  padding: 18px 16px;
+  border-radius: var(--eottae-radius);
+  border: 1px solid #dbeafe;
+  background: linear-gradient(145deg, #eff6ff 0%, #fff 58%);
+  box-shadow: var(--eottae-shadow-sm);
+}
+
+.mypage-dashboard .my-message-card--active {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: linear-gradient(145deg, #fff1f2 0%, #fff 58%);
+}
+
+.mypage-dashboard .my-message-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.mypage-dashboard .my-message-card__eyebrow {
+  margin: 0 0 3px;
+  color: var(--eottae-primary-dark);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.mypage-dashboard .my-message-card__title {
+  margin: 0;
+  color: var(--eottae-text);
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.mypage-dashboard .my-message-card__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.mypage-dashboard .my-message-card__desc {
+  margin: 0 0 12px;
+  color: var(--eottae-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.mypage-dashboard .my-message-card__latest {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 8px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.82);
+  color: inherit;
+  text-decoration: none;
+}
+
+.mypage-dashboard .my-message-card__latest-name {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.mypage-dashboard .my-message-card__latest-context {
+  justify-self: start;
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 2px 8px;
+}
+
+.mypage-dashboard .my-message-card__latest-preview {
+  grid-column: 1 / -1;
+  color: var(--eottae-muted);
+  font-size: 12px;
+}
+
+.mypage-dashboard .my-message-card__link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.28);
+}
+
 .mypage-dashboard .my-talk-hub-card {
   margin-bottom: 16px;
   padding: 18px 16px;
@@ -5326,6 +5590,12 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
   color: #fff;
   background: linear-gradient(135deg, #0ea5e9, #0284c7);
   box-shadow: 0 4px 14px rgba(14, 165, 233, 0.28);
+}
+
+@media (max-width: 640px) {
+  .mypage-dashboard .my-notification-hub__grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .mypage-dashboard .my-talk-section--panel {

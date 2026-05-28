@@ -11,6 +11,8 @@ include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
 include_once G5_LIB_PATH.'/eottae-shop-owner.lib.php';
 include_once G5_LIB_PATH.'/eottae-briefing.lib.php';
 include_once G5_LIB_PATH.'/eottae-member-growth.lib.php';
+include_once G5_LIB_PATH.'/eottae-message.lib.php';
+include_once G5_LIB_PATH.'/eottae-notification.lib.php';
 include_once G5_PATH.'/components/eottae/member-growth-display.php';
 include_once G5_PATH.'/components/eottae/talk-admin-nav.php';
 include_once G5_PATH.'/components/eottae/public-ai-admin-nav.php';
@@ -49,6 +51,8 @@ $hub_new_comments = (int) ($my_talk_hub['new_comments'] ?? 0);
 $hub_notifications = (int) ($my_talk_hub['notifications'] ?? 0);
 $hub_owner_tasks = (int) ($my_talk_hub['owner_tasks'] ?? 0);
 $hub_activity_total = $hub_new_posts + $hub_new_comments + $hub_notifications + $hub_owner_tasks;
+$my_comment_summary = function_exists('eottae_mypage_my_comment_summary') ? eottae_mypage_my_comment_summary($member['mb_id']) : array('count' => 0, 'latest' => null);
+$my_comment_count = (int) ($my_comment_summary['count'] ?? 0);
 
 $challenge_summary = function_exists('eottae_challenge_my_summary') ? eottae_challenge_my_summary($member['mb_id']) : array();
 $challenge_label = '챌린지';
@@ -84,6 +88,20 @@ $inquiry_label = '문의';
 if ($inquiry_count > 0) {
     $inquiry_label .= ' ('.$inquiry_count.')';
 }
+$message_unread_count = function_exists('eottae_message_unread_count') ? eottae_message_unread_count($member['mb_id']) : 0;
+$message_summary = function_exists('eottae_message_mypage_summary')
+    ? eottae_message_mypage_summary($member['mb_id'])
+    : array(
+        'unread_count' => $message_unread_count,
+        'thread_count' => 0,
+        'latest' => null,
+        'summary_line' => $message_unread_count > 0 ? '읽지 않은 쪽지가 있습니다.' : '쪽지를 확인해 보세요.',
+    );
+$message_label = '쪽지';
+if ($message_unread_count > 0) {
+    $message_label .= ' ('.number_format($message_unread_count).')';
+}
+$notification_total = $message_unread_count + $my_comment_count + $hub_activity_total;
 $talk_label = '내 세부톡';
 if ($hub_activity_total > 0) {
     $talk_label .= ' ('.number_format($hub_activity_total).')';
@@ -96,6 +114,7 @@ $mypage_menu_groups[] = array(
         array('label' => $review_label, 'href' => G5_URL.'/page/eottae-my-reviews.php', 'tone' => 'default'),
         array('label' => $saved_label, 'href' => G5_URL.'/page/eottae-saved-shops.php', 'tone' => 'default'),
         array('label' => $inquiry_label, 'href' => G5_URL.'/page/eottae-inquiries.php', 'tone' => 'default'),
+        array('label' => $message_label, 'href' => eottae_message_url(), 'tone' => $message_unread_count > 0 ? 'talk' : 'default'),
         array('label' => '이벤트', 'href' => G5_URL.'/page/eottae-events.php', 'tone' => 'default'),
         array('label' => '내 활동', 'href' => G5_BBS_URL.'/board.php?bo_table='.EOTTae_COMMUNITY_TABLE, 'tone' => 'default'),
     ),
@@ -210,6 +229,44 @@ g5_page_start('마이페이지');
         </a>
     </section>
 
+    <section class="my-notification-hub<?php echo $notification_total > 0 ? ' my-notification-hub--active' : ''; ?>" aria-labelledby="my-notification-hub-title">
+        <div class="my-notification-hub__head">
+            <div>
+                <p class="my-notification-hub__eyebrow">알림 허브</p>
+                <h2 class="my-notification-hub__title" id="my-notification-hub-title">지금 확인할 활동</h2>
+            </div>
+            <?php if ($notification_total > 0) { ?>
+            <span class="my-notification-hub__badge"><?php echo number_format($notification_total); ?></span>
+            <?php } ?>
+        </div>
+        <div class="my-notification-hub__grid">
+            <a href="<?php echo eottae_message_url(); ?>" class="my-notification-hub__item<?php echo $message_unread_count > 0 ? ' is-alert' : ''; ?>">
+                <span class="my-notification-hub__item-label">새 쪽지</span>
+                <strong class="my-notification-hub__item-value"><?php echo number_format($message_unread_count); ?></strong>
+                <span class="my-notification-hub__item-desc"><?php echo $message_unread_count > 0 ? '답장이 필요한 쪽지가 있어요' : '새 쪽지가 없습니다'; ?></span>
+            </a>
+            <a href="<?php echo G5_BBS_URL; ?>/board.php?bo_table=<?php echo EOTTae_COMMUNITY_TABLE; ?>" class="my-notification-hub__item<?php echo $my_comment_count > 0 ? ' is-alert' : ''; ?>">
+                <span class="my-notification-hub__item-label">내 글 댓글</span>
+                <strong class="my-notification-hub__item-value"><?php echo number_format($my_comment_count); ?></strong>
+                <span class="my-notification-hub__item-desc">최근 30일 기준</span>
+            </a>
+            <a href="<?php echo $mypage_talk_url; ?>" class="my-notification-hub__item<?php echo $hub_activity_total > 0 ? ' is-alert' : ''; ?>">
+                <span class="my-notification-hub__item-label">세부톡 새 활동</span>
+                <strong class="my-notification-hub__item-value"><?php echo number_format($hub_activity_total); ?></strong>
+                <span class="my-notification-hub__item-desc"><?php echo $hub_room_count > 0 ? number_format($hub_room_count).'개 톡방 참여 중' : '참여한 톡방이 없습니다'; ?></span>
+            </a>
+        </div>
+        <?php if (!empty($my_comment_summary['latest'])) {
+            $latest_comment = $my_comment_summary['latest'];
+            ?>
+        <a href="<?php echo get_text($latest_comment['href']); ?>" class="my-notification-hub__latest">
+            <span class="my-notification-hub__latest-board"><?php echo get_text($latest_comment['board']); ?></span>
+            <strong class="my-notification-hub__latest-title"><?php echo get_text($latest_comment['title']); ?></strong>
+            <span class="my-notification-hub__latest-preview"><?php echo get_text($latest_comment['author']); ?>: <?php echo get_text($latest_comment['preview']); ?></span>
+        </a>
+        <?php } ?>
+    </section>
+
     <?php if ($is_biz) { ?>
     <section class="business-dashboard business-dashboard--top">
         <h2 class="business-dashboard__title">사업자 대시보드</h2>
@@ -249,6 +306,31 @@ g5_page_start('마이페이지');
     <?php } ?>
 
     <?php render_my_sebu_briefing(collect_my_sebu_briefing_data($member['mb_id'])); ?>
+
+    <section class="my-message-card<?php echo $message_unread_count > 0 ? ' my-message-card--active' : ''; ?>" aria-labelledby="my-message-card-title">
+        <div class="my-message-card__head">
+            <div>
+                <p class="my-message-card__eyebrow">쪽지함</p>
+                <h2 class="my-message-card__title" id="my-message-card-title">새 메시지 확인</h2>
+            </div>
+            <?php if ($message_unread_count > 0) { ?>
+            <span class="my-message-card__badge"><?php echo number_format($message_unread_count); ?></span>
+            <?php } ?>
+        </div>
+        <p class="my-message-card__desc"><?php echo get_text($message_summary['summary_line'] ?? '쪽지를 확인해 보세요.'); ?></p>
+        <?php if (!empty($message_summary['latest'])) {
+            $latest_message = $message_summary['latest'];
+            ?>
+        <a href="<?php echo get_text($latest_message['href'] ?? eottae_message_url()); ?>" class="my-message-card__latest">
+            <span class="my-message-card__latest-name"><?php echo get_text($latest_message['other_label'] ?? '회원'); ?></span>
+            <?php if (!empty($latest_message['context_label'])) { ?>
+            <span class="my-message-card__latest-context"><?php echo get_text($latest_message['context_label']); ?></span>
+            <?php } ?>
+            <span class="my-message-card__latest-preview"><?php echo $latest_message['last_body_preview'] ?? ''; ?></span>
+        </a>
+        <?php } ?>
+        <a href="<?php echo eottae_message_url(); ?>" class="my-message-card__link">쪽지함 열기</a>
+    </section>
 
     <section class="my-talk-hub-card<?php echo !empty($my_talk_hub['has_activity']) ? ' my-talk-hub-card--active' : ''; ?>" aria-labelledby="my-talk-hub-title">
         <div class="my-talk-hub-card__head">
