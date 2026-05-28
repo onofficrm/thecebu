@@ -36,6 +36,10 @@ if ($can_manage_public_ai) {
     add_javascript('<script src="'.G5_JS_URL.'/eottae-public-chat-manage.js" defer></script>', 25);
 }
 add_javascript('<script src="'.G5_JS_URL.'/eottae-talkroom-chat.js" defer></script>', 26);
+$chat_fs_js = G5_PATH.'/js/eottae-chat-fullscreen.js';
+if (is_file($chat_fs_js)) {
+    add_javascript('<script src="'.G5_JS_URL.'/eottae-chat-fullscreen.js?ver='.(int) filemtime($chat_fs_js).'" defer></script>', 27);
+}
 
 g5_page_start($room['room_name']);
 ?>

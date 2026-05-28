@@ -43,6 +43,10 @@ if (!function_exists('eottae_public_group_chat_html')) {
                         </div>
                     </div>
                     <div class="public-group-chat__head-actions">
+                        <button type="button" class="public-group-chat__fullscreen" data-public-chat-fullscreen aria-pressed="false" aria-label="전체화면으로 보기" hidden>
+                            <span class="public-group-chat__fullscreen-icon" aria-hidden="true">⛶</span>
+                            <span class="public-group-chat__fullscreen-label">전체화면</span>
+                        </button>
                         <?php if ((int) $payload['room_id'] > 0) { ?>
                         <span class="public-group-chat__live-badge" aria-hidden="true">LIVE</span>
                         <?php } ?>

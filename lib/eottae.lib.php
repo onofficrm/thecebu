@@ -1227,7 +1227,14 @@ if (!function_exists('eottae_builder_inject_home_public_chat_script')) {
             $js .= '?ver='.(int) filemtime($path);
         }
 
-        return '<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
+        $fs_js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-chat-fullscreen.js' : '/js/eottae-chat-fullscreen.js';
+        $fs_path = defined('G5_PATH') ? G5_PATH.'/js/eottae-chat-fullscreen.js' : '';
+        if ($fs_path !== '' && is_file($fs_path)) {
+            $fs_js .= '?ver='.(int) filemtime($fs_path);
+        }
+
+        return '<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>'
+            .'<script src="'.htmlspecialchars($fs_js, ENT_QUOTES, 'UTF-8').'" defer></script>';
     }
 }
 

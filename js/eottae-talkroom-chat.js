@@ -500,9 +500,14 @@
 
       var viewportH = global.visualViewport ? global.visualViewport.height : global.innerHeight;
       var header = document.getElementById('hd');
-      var chatTop = section.getBoundingClientRect().top;
       var fabOffset = detectFabOffset();
-      var available = Math.max(240, Math.floor(viewportH - chatTop - fabOffset - 4));
+      var available;
+      if (section.classList.contains('public-group-chat--fullscreen-active')) {
+        available = Math.max(280, Math.floor(viewportH - fabOffset));
+      } else {
+        var chatTop = section.getBoundingClientRect().top;
+        available = Math.max(240, Math.floor(viewportH - chatTop - fabOffset - 4));
+      }
 
       document.documentElement.style.setProperty('--talkroom-chat-fab-offset', fabOffset + 'px');
       section.style.setProperty('--talkroom-chat-height', available + 'px');
@@ -561,6 +566,10 @@
       global.setTimeout(scheduleLayoutUpdate, 120);
     });
 
+    global.addEventListener('eottae-public-chat-layout', function () {
+      scheduleLayoutUpdate();
+    });
+
     if (global.ResizeObserver && page) {
       var ro = new global.ResizeObserver(scheduleLayoutUpdate);
       var back = page.querySelector('.mypage-subpage__back');
@@ -611,6 +620,11 @@
     if (section) {
       bindSection(section);
       bindMobileChatLayout(section);
+      if (typeof global.bindEottaePublicChatFullscreen === 'function') {
+        global.bindEottaePublicChatFullscreen(section);
+      } else if (typeof global.initEottaeChatFullscreen === 'function') {
+        global.initEottaeChatFullscreen();
+      }
     }
   }
 

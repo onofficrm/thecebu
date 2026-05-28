@@ -2786,7 +2786,31 @@ body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .public-group-chat
   }
 
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__head {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    min-height: 44px;
+  }
+
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__desc,
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__ai-speak {
     display: none;
+  }
+
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__title {
+    font-size: 0.92rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__head-actions {
+    width: auto;
+    flex-shrink: 0;
+    margin-left: auto;
   }
 
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__inner {

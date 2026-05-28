@@ -558,3 +558,139 @@ body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat.public-group-chat-
     font-size: 0.7rem;
   }
 }
+
+/* ── 모바일 전체화면 채팅 ── */
+.public-group-chat__fullscreen {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 36px;
+  min-width: 36px;
+  padding: 0 10px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 999px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.public-group-chat__fullscreen-icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.public-group-chat__fullscreen[aria-pressed="true"] {
+  background: #0f172a;
+  border-color: #0f172a;
+  color: #fff;
+}
+
+@media (max-width: 767px) {
+  html.public-group-chat-fullscreen-open,
+  body.public-group-chat-fullscreen-open {
+    overflow: hidden !important;
+    height: 100%;
+    overscroll-behavior: none;
+  }
+
+  body.public-group-chat-fullscreen-open .mobile-bottom-nav--global,
+  body.public-group-chat-fullscreen-open .inquiry-button--mobile-bar,
+  body.public-group-chat-fullscreen-open .consult-modal-open ~ .inquiry-button--mobile-bar {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .public-group-chat.public-group-chat--fullscreen-active {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10060 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100dvh !important;
+    height: 100svh !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .public-group-chat--fullscreen-active .public-group-chat__inner {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    border-radius: 0 !important;
+    border: 0 !important;
+  }
+
+  .public-group-chat--fullscreen-active .public-group-chat__head {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    flex-shrink: 0;
+  }
+
+  .public-group-chat--fullscreen-active .public-group-chat__panel {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .public-group-chat--fullscreen-active .public-group-chat__messages {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+  }
+
+  .public-group-chat--fullscreen-active .public-group-chat__composer,
+  .public-group-chat--fullscreen-active .public-group-chat__composer--login,
+  .public-group-chat--fullscreen-active .public-group-chat__composer--disabled {
+    flex: 0 0 auto !important;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+    margin-bottom: 0 !important;
+  }
+
+  body.talk-room-chat-fullscreen #hd {
+    display: none !important;
+  }
+
+  body.talk-room-chat-fullscreen .talk-room-detail-page--chat {
+    padding: 0 !important;
+    gap: 0 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    max-height: none !important;
+  }
+
+  body.talk-room-chat-fullscreen .talk-room-detail-page--chat .mypage-subpage__back,
+  body.talk-room-chat-fullscreen .talk-room-detail-page--chat .talk-room-detail__drawer,
+  body.talk-room-chat-fullscreen .talk-room-detail-page--chat .talk-room-detail__flash {
+    display: none !important;
+  }
+
+  body.talk-room-chat-fullscreen .talk-room-detail-page--chat .talk-room-chat {
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    max-height: none !important;
+  }
+
+  #eottae-home-public-chat.public-group-chat--fullscreen-active {
+    --eottae-home-hero-chat-mobile-h: 100svh !important;
+    height: 100svh !important;
+    max-height: none !important;
+    min-height: 0 !important;
+  }
+}

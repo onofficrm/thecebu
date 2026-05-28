@@ -52,6 +52,10 @@ if (!function_exists('eottae_talkroom_chat_html')) {
                         </div>
                     </div>
                     <div class="public-group-chat__head-actions">
+                        <button type="button" class="public-group-chat__fullscreen" data-public-chat-fullscreen aria-pressed="false" aria-label="전체화면으로 보기" hidden>
+                            <span class="public-group-chat__fullscreen-icon" aria-hidden="true">⛶</span>
+                            <span class="public-group-chat__fullscreen-label">전체화면</span>
+                        </button>
                         <span class="public-group-chat__live-badge" aria-hidden="true">LIVE</span>
                         <?php if (!empty($payload['can_manage_ai'])) { ?>
                         <button type="button" class="public-group-chat__ai-speak" data-public-chat-ai-speak aria-label="AI 말걸기">🤖 AI 말걸기</button>

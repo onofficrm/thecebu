@@ -631,12 +631,24 @@
       var section = getSection();
       if (section) {
         bindSection(section);
+        if (typeof global.bindEottaePublicChatFullscreen === 'function') {
+          global.bindEottaePublicChatFullscreen(section);
+        } else if (typeof global.initEottaeChatFullscreen === 'function') {
+          global.initEottaeChatFullscreen();
+        }
         scheduleScrollMessagesToBottom(section);
       }
       return true;
     }
     return false;
   }
+
+  global.addEventListener('eottae-public-chat-layout', function (ev) {
+    var section = (ev && ev.detail && ev.detail.section) ? ev.detail.section : getSection();
+    if (section) {
+      scheduleScrollMessagesToBottom(section);
+    }
+  });
 
   function init() {
     var schedule = function () {
