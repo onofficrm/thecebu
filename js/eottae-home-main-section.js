@@ -186,7 +186,7 @@
     }
 
     return ''
-      + '<article class="sebu-cal-summary-day">'
+      + '<article class="sebu-cal-summary-day' + (day.events && day.events.length ? '' : ' is-empty') + '">'
       + '<header class="sebu-cal-summary-day__head">'
       + '<h3 class="sebu-cal-summary-day__label">' + esc(day.label || '') + ' ' + dateLabel + '</h3>'
       + '<span class="sebu-cal-summary-day__count">' + esc(String(day.count || 0)) + '건</span>'
@@ -373,7 +373,7 @@
   }
 
   function renderNewsPanel(tab, index) {
-    var posts = tab && tab.items ? tab.items : [];
+    var posts = tab && tab.items ? tab.items.slice(0, 5) : [];
     var html = '';
     var i;
 
