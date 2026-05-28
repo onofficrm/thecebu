@@ -1143,6 +1143,10 @@ if (!function_exists('eottae_builder_inject_home_map_categories_script')) {
 if (!function_exists('eottae_builder_inject_home_header_actions_script')) {
     function eottae_builder_inject_home_header_actions_script()
     {
+        if (!function_exists('eottae_home_gnb_mobile_menu_payload')) {
+            include_once G5_LIB_PATH.'/eottae-gnb-menu.lib.php';
+        }
+
         $payload = array(
             'talk_url'       => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk',
             'talk_label'     => '세부톡',
@@ -1154,6 +1158,9 @@ if (!function_exists('eottae_builder_inject_home_header_actions_script')) {
             'column_label'   => function_exists('eottae_column_menu_label') ? eottae_column_menu_label() : '컬럼',
             'adroom_url'     => function_exists('eottae_adroom_list_url') ? eottae_adroom_list_url() : G5_URL.'/ad-room/',
             'adroom_label'   => '광고방',
+            'mobile_menu'    => function_exists('eottae_home_gnb_mobile_menu_payload')
+                ? eottae_home_gnb_mobile_menu_payload()
+                : array(),
         );
         $payload_json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if ($payload_json === false) {

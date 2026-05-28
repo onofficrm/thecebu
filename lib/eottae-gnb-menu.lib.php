@@ -222,3 +222,67 @@ if (!function_exists('eottae_gnb_nav_item_href')) {
         return $href;
     }
 }
+
+if (!function_exists('eottae_home_gnb_mobile_menu_payload')) {
+    /**
+     * 홈(빌더) — 전체메뉴 드로어용 GNB 트리 JSON
+     *
+     * @return array<string, mixed>
+     */
+    function eottae_home_gnb_mobile_menu_payload()
+    {
+        if (!function_exists('eottae_gnb_nav_item_label') && is_file(G5_PATH.'/components/eottae/gnb-nav-items.php')) {
+            include_once G5_PATH.'/components/eottae/gnb-nav-items.php';
+        }
+
+        $skip_keys = array('community_free', 'people');
+        $items = array();
+
+        foreach (eottae_gnb_nav_menu() as $item) {
+            if (!is_array($item) || !empty($item['desktop_action'])) {
+                continue;
+            }
+
+            $key = isset($item['key']) ? (string) $item['key'] : '';
+            if ($key !== '' && in_array($key, $skip_keys, true)) {
+                continue;
+            }
+
+            $children = array();
+            if (!empty($item['children']) && is_array($item['children'])) {
+                foreach ($item['children'] as $child) {
+                    if (!is_array($child)) {
+                        continue;
+                    }
+                    $child_key = isset($child['key']) ? (string) $child['key'] : '';
+                    if ($child_key !== '' && in_array($child_key, $skip_keys, true)) {
+                        continue;
+                    }
+                    $children[] = array(
+                        'label' => eottae_gnb_nav_item_label($child['label'] ?? ''),
+                        'href'  => eottae_gnb_nav_item_href($child),
+                    );
+                }
+            }
+
+            $items[] = array(
+                'label'    => eottae_gnb_nav_item_label($item['label'] ?? ''),
+                'href'     => eottae_gnb_nav_item_href($item),
+                'children' => $children,
+            );
+        }
+
+        $auth = function_exists('eottae_auth_context') ? eottae_auth_context() : array('is_member' => false);
+        $is_member = !empty($auth['is_member']);
+
+        return array(
+            'title'        => '전체메뉴',
+            'items'        => $items,
+            'is_member'    => $is_member,
+            'login_url'    => function_exists('eottae_login_url') ? eottae_login_url(G5_URL.'/') : G5_BBS_URL.'/login.php',
+            'logout_url'   => G5_BBS_URL.'/logout.php',
+            'register_url' => function_exists('eottae_register_url') ? eottae_register_url() : G5_BBS_URL.'/register.php',
+            'mypage_url'   => function_exists('eottae_mypage_url') ? eottae_mypage_url() : G5_URL.'/page/eottae-mypage.php',
+        );
+    }
+}

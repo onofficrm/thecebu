@@ -8,6 +8,214 @@
     return global.__EOTTae_HOME_HEADER_ACTIONS__ || null;
   }
 
+  function esc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function findHeaderActionsRow(header) {
+    var shopWrite = findShopWriteLink(header);
+    if (shopWrite && shopWrite.parentNode) {
+      return shopWrite.parentNode;
+    }
+
+    var links = header.querySelectorAll('a[href]');
+    var i;
+    for (i = 0; i < links.length; i += 1) {
+      var label = (links[i].textContent || '').replace(/\s+/g, '');
+      if (label === 'MY' || label === '로그인' || label === '로그아웃') {
+        var row = links[i].parentElement;
+        if (row) {
+          return row;
+        }
+      }
+    }
+
+    return header;
+  }
+
+  function renderMobileMenuItems(items) {
+    if (!items || !items.length) {
+      return '';
+    }
+
+    var html = '';
+    var i;
+    var j;
+
+    for (i = 0; i < items.length; i += 1) {
+      var item = items[i];
+      if (!item || !item.label) {
+        continue;
+      }
+
+      if (item.children && item.children.length) {
+        html += ''
+          + '<details class="eottae-gnb-header__mobile-group">'
+          + '<summary class="eottae-gnb-header__mobile-link eottae-gnb-header__mobile-summary">'
+          + '<span>' + esc(item.label) + '</span>'
+          + '</summary>'
+          + '<div class="eottae-gnb-header__mobile-children">';
+        for (j = 0; j < item.children.length; j += 1) {
+          var child = item.children[j];
+          if (!child || !child.label) {
+            continue;
+          }
+          html += ''
+            + '<a href="' + esc(child.href || '#') + '" class="eottae-gnb-header__mobile-child-link">'
+            + esc(child.label)
+            + '</a>';
+        }
+        html += '</div></details>';
+      } else {
+        html += ''
+          + '<a href="' + esc(item.href || '#') + '" class="eottae-gnb-header__mobile-link">'
+          + esc(item.label)
+          + '</a>';
+      }
+    }
+
+    return html;
+  }
+
+  function renderMobileMenuShell(menuData) {
+    var data = menuData || {};
+    var authHtml = '';
+
+    if (data.is_member) {
+      authHtml = ''
+        + '<a href="' + esc(data.mypage_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost">MY</a>'
+        + '<a href="' + esc(data.logout_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost">로그아웃</a>';
+    } else {
+      authHtml = ''
+        + '<a href="' + esc(data.login_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost">로그인</a>'
+        + '<a href="' + esc(data.register_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost">회원가입</a>';
+    }
+
+    return ''
+      + '<div id="siteMobileNav" class="eottae-home-mobile-nav site-header__mobile-nav eottae-gnb-header__mobile" data-eottae-home-mobile-nav="1" aria-hidden="true">'
+      + '<div class="eottae-home-mobile-nav__head">'
+      + '<strong class="eottae-home-mobile-nav__title">' + esc(data.title || '전체메뉴') + '</strong>'
+      + '<button type="button" class="site-header__mobile-close eottae-home-mobile-nav__close" aria-label="메뉴 닫기">'
+      + '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+      + '</button>'
+      + '</div>'
+      + '<nav class="eottae-gnb-header__mobile-nav" aria-label="전체메뉴">'
+      + renderMobileMenuItems(data.items || [])
+      + '</nav>'
+      + '<div class="eottae-gnb-header__mobile-auth">' + authHtml + '</div>'
+      + '</div>'
+      + '<div class="site-header__overlay eottae-gnb-header__overlay eottae-home-mobile-overlay" data-eottae-home-mobile-overlay="1" aria-hidden="true"></div>';
+  }
+
+  function initHomeMobileMenuToggle(openBtn, menu, overlay, closeBtn) {
+    if (!openBtn || !menu || openBtn.getAttribute('data-eottae-menu-toggle-bound') === '1') {
+      return;
+    }
+
+    openBtn.setAttribute('data-eottae-menu-toggle-bound', '1');
+
+    function setOpen(open) {
+      var on = !!open;
+      menu.classList.toggle('is-open', on);
+      if (overlay) {
+        overlay.classList.toggle('is-open', on);
+      }
+      openBtn.setAttribute('aria-expanded', on ? 'true' : 'false');
+      openBtn.setAttribute('aria-label', on ? '메뉴 닫기' : '메뉴 열기');
+      menu.setAttribute('aria-hidden', on ? 'false' : 'true');
+      if (overlay) {
+        overlay.setAttribute('aria-hidden', on ? 'false' : 'true');
+      }
+      document.body.style.overflow = on ? 'hidden' : '';
+    }
+
+    openBtn.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      setOpen(!menu.classList.contains('is-open'));
+    });
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function (event) {
+        event.preventDefault();
+        setOpen(false);
+      });
+    }
+
+    if (overlay) {
+      overlay.addEventListener('click', function () {
+        setOpen(false);
+      });
+    }
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && menu.classList.contains('is-open')) {
+        setOpen(false);
+      }
+    });
+  }
+
+  function mountHomeMobileMenu(data) {
+    if (!data || !data.mobile_menu || !data.mobile_menu.items || !data.mobile_menu.items.length) {
+      return;
+    }
+
+    var header = document.querySelector('header');
+    if (!header) {
+      return;
+    }
+
+    var actions = findHeaderActionsRow(header);
+    if (!actions) {
+      return;
+    }
+
+    var openBtn = header.querySelector('[data-eottae-home-menu-btn="1"]');
+    if (!openBtn) {
+      openBtn = document.createElement('button');
+      openBtn.type = 'button';
+      openBtn.className = 'eottae-gnb-header__icon-btn eottae-gnb-header__menu-btn site-header__menu-btn';
+      openBtn.setAttribute('data-eottae-home-menu-btn', '1');
+      openBtn.setAttribute('aria-controls', 'siteMobileNav');
+      openBtn.setAttribute('aria-expanded', 'false');
+      openBtn.setAttribute('aria-label', '메뉴 열기');
+      openBtn.innerHTML = ''
+        + '<svg class="eottae-gnb-header__icon eottae-gnb-header__icon--menu" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">'
+        + '<path d="M4 6h16M4 12h16M4 18h16"/>'
+        + '</svg>';
+
+      var shopWrite = findShopWriteLink(header);
+      if (shopWrite && shopWrite.parentNode === actions) {
+        actions.insertBefore(openBtn, shopWrite);
+      } else {
+        actions.appendChild(openBtn);
+      }
+    }
+
+    var menu = document.getElementById('siteMobileNav');
+    var overlay = document.querySelector('[data-eottae-home-mobile-overlay="1"]');
+
+    if (!menu) {
+      var wrap = document.createElement('div');
+      wrap.setAttribute('data-eottae-home-mobile-shell', '1');
+      wrap.innerHTML = renderMobileMenuShell(data.mobile_menu);
+      document.body.appendChild(wrap);
+      menu = document.getElementById('siteMobileNav');
+      overlay = document.querySelector('[data-eottae-home-mobile-overlay="1"]');
+    }
+
+    if (!menu) {
+      return;
+    }
+
+    var closeBtn = menu.querySelector('.eottae-home-mobile-nav__close');
+    initHomeMobileMenuToggle(openBtn, menu, overlay, closeBtn);
+  }
+
   function isShopWriteLabel(text) {
     var label = (text || '').replace(/\s+/g, '');
     return label === '업소등록' || label === '업체등록';
@@ -578,6 +786,7 @@
     }
 
     replaceTourNavWithGolfJoin(data);
+    mountHomeMobileMenu(data);
     mountDesktop(data);
     mountMobile(data);
     mountCalendarInMobileMenu(data);

@@ -328,6 +328,43 @@
   letter-spacing: -0.02em;
 }
 
+.sebu-home-main-section--popular-hot {
+  margin-bottom: 4px;
+}
+
+.sebu-community-popular-hot {
+  display: grid;
+  gap: 14px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.sebu-community-popular-hot__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.sebu-community-popular-hot__emoji {
+  font-style: normal;
+}
+
+.sebu-community-popular__triple {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.sebu-home-legacy-hidden {
+  display: none !important;
+}
+
 .sebu-contribute-banner {
   position: relative;
   overflow: hidden;
@@ -1042,6 +1079,15 @@
     display: none;
   }
 
+  .sebu-community-popular-hot__title {
+    font-size: 1.18rem;
+  }
+
+  .sebu-community-popular__triple {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
   .sebu-community-popular__grid {
     grid-template-columns: minmax(0, 1.85fr) minmax(280px, 0.85fr);
     align-items: stretch;
@@ -1113,6 +1159,10 @@
     flex-direction: column;
   }
 
+  .sebu-community-col--talkrooms > .sebu-community-col__head {
+    flex: 0 0 auto;
+  }
+
   .sebu-talkrooms-col__desktop {
     display: flex;
     flex: 1 1 auto;
@@ -1122,21 +1172,40 @@
 
   .sebu-talkrooms-col__desktop .sebu-talkrooms-col__list {
     flex: 1 1 auto;
-    justify-content: space-between;
+    justify-content: stretch;
+    gap: 8px;
     min-height: 0;
   }
 
   .sebu-talkrooms-col__desktop .sebu-talkrooms-col__item {
     display: flex;
     flex: 1 1 0;
-    min-height: 48px;
-    max-height: 72px;
+    min-height: 56px;
   }
 
   .sebu-talkrooms-col__desktop .sebu-talkrooms-col__link {
     flex: 1 1 auto;
     width: 100%;
-    min-height: 48px;
+    min-height: 56px;
+    padding: 10px 12px;
+    align-items: center;
+  }
+
+  .sebu-talkrooms-col__desktop .sebu-talkrooms-col__emoji {
+    width: 42px;
+    height: 42px;
+    font-size: 1.28rem;
+  }
+
+  .sebu-talkrooms-col__desktop .sebu-talkrooms-col__body {
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .sebu-talkrooms-col__desktop .sebu-talkrooms-col__enter {
+    min-height: 32px;
+    padding: 0 12px;
+    font-size: 0.72rem;
   }
 
   .sebu-news-tabs {
@@ -1337,13 +1406,12 @@
 }
 
 @media (min-width: 1024px) {
-  .sebu-talkrooms-col__desktop .sebu-talkrooms-col__list {
-    gap: 5px;
+  .sebu-talkrooms-col__desktop .sebu-talkrooms-col__meta {
+    font-size: 0.72rem;
   }
 
-  .sebu-talkrooms-col__desktop .sebu-talkrooms-col__link {
-    min-height: 48px;
-    padding: 7px 10px;
+  .sebu-talkrooms-col__desktop .sebu-talkrooms-col__name {
+    font-size: 0.9rem;
   }
 }
 

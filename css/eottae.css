@@ -781,6 +781,103 @@ img[data-eottae-logo] {
   text-align: center !important;
 }
 
+/* 홈(빌더) — 전체메뉴 햄버거 */
+#root header .eottae-gnb-header__menu-btn[data-eottae-home-menu-btn="1"] {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+@media (min-width: 1024px) {
+  #root header .eottae-gnb-header__menu-btn[data-eottae-home-menu-btn="1"] {
+    display: none !important;
+  }
+}
+
+.eottae-home-mobile-nav {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 100060;
+  display: flex;
+  flex-direction: column;
+  width: min(320px, 92vw);
+  max-width: 100%;
+  height: 100%;
+  max-height: 100dvh;
+  padding: 0;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: -8px 0 32px rgba(15, 23, 42, 0.12);
+  transform: translate3d(100%, 0, 0);
+  transition: transform 0.24s ease;
+}
+
+.eottae-home-mobile-nav.is-open {
+  transform: translate3d(0, 0, 0);
+}
+
+.eottae-home-mobile-nav__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  flex-shrink: 0;
+}
+
+.eottae-home-mobile-nav__title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.eottae-home-mobile-nav__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.eottae-home-mobile-nav .eottae-gnb-header__mobile-nav {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 16px;
+}
+
+.eottae-home-mobile-nav .eottae-gnb-header__mobile-auth {
+  flex-shrink: 0;
+  display: grid;
+  gap: 8px;
+  padding: 12px 16px 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.eottae-home-mobile-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100050;
+  background: rgba(15, 23, 42, 0.45);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.eottae-home-mobile-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
 @media (max-width: 1023px) {
   .eottae-gnb-header .eottae-gnb-header__nav {
     display: none !important;
