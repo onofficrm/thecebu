@@ -245,6 +245,7 @@
       var links = container.querySelectorAll('a[href]');
       var hasLodging = false;
       var hasFood = false;
+      var legacyCount = 0;
       var primaryCount = 0;
 
       for (j = 0; j < links.length; j += 1) {
@@ -254,6 +255,21 @@
         }
         if (label === '맛집') {
           hasFood = true;
+        }
+        if (
+          label === '숙소'
+          || label === '맛집'
+          || label === '마사지'
+          || label === '가이드'
+          || label === '골프'
+          || label === '자유'
+          || label === '생활정보'
+          || label === '이벤트'
+          || label === '구인구직'
+          || label === '부동산'
+          || label === '광고방'
+        ) {
+          legacyCount += 1;
         }
         if (
           label === '홈'
@@ -274,9 +290,29 @@
       if (hasLodging && hasFood && primaryCount === 0) {
         return container;
       }
+
+      if (hasFood && legacyCount >= 3) {
+        return container;
+      }
+
+      if (legacyCount >= 4 && primaryCount <= 2) {
+        return container;
+      }
     }
 
     return null;
+  }
+
+  function hideLegacyBuilderNavs(header) {
+    var guard = 0;
+    var legacyNav = findLegacyBuilderNavContainer(header);
+
+    while (legacyNav && guard < 8) {
+      legacyNav.setAttribute('data-eottae-home-legacy-nav-hidden', '1');
+      legacyNav.style.setProperty('display', 'none', 'important');
+      guard += 1;
+      legacyNav = findLegacyBuilderNavContainer(header);
+    }
   }
 
   function renderDesktopNavLinks(items) {
@@ -351,10 +387,7 @@
       nav.innerHTML = renderDesktopNavLinks(data.mobile_menu.items);
     }
 
-    if (legacyNav) {
-      legacyNav.setAttribute('data-eottae-home-legacy-nav-hidden', '1');
-      legacyNav.style.display = 'none';
-    }
+    hideLegacyBuilderNavs(header);
 
     header.setAttribute('data-eottae-home-gnb-injected', '1');
     tagHomeNavMegaKeys(header, data.mobile_menu.items);
