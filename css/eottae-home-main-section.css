@@ -1,7 +1,7 @@
 /* 홈 — 이번 3일 세부 일정 + 커뮤니티 인기글 */
 .sebu-home-main-section {
   display: grid;
-  gap: 24px;
+  gap: 18px;
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -12,6 +12,60 @@
 .sebu-cal-summary {
   display: grid;
   gap: 16px;
+}
+
+.sebu-cal-summary--compact {
+  gap: 0;
+}
+
+.sebu-cal-compact {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(14, 165, 233, 0.12), transparent 36%),
+    linear-gradient(135deg, #fff 0%, #f8fbff 100%);
+  box-shadow: 0 18px 44px -36px rgba(15, 23, 42, 0.55);
+}
+
+.sebu-cal-compact__copy {
+  min-width: 0;
+}
+
+.sebu-cal-compact__eyebrow {
+  margin: 0 0 5px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: #0284c7;
+}
+
+.sebu-cal-compact__days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sebu-cal-compact__day {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.sebu-cal-compact__day strong {
+  color: #0f172a;
+  font-weight: 900;
 }
 
 .sebu-cal-summary__head {
@@ -249,7 +303,7 @@
 
 .sebu-community-popular {
   display: grid;
-  gap: 16px;
+  gap: 14px;
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -268,9 +322,9 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 18px;
-  border-radius: 22px;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 20px;
   border: 1px solid rgba(14, 165, 233, 0.18);
   background:
     radial-gradient(circle at 12% 0%, rgba(56, 189, 248, 0.24), transparent 34%),
@@ -367,7 +421,7 @@
 .sebu-community-col {
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 18px;
   border-radius: 20px;
   border: 1px solid #f1f5f9;
   background: #fff;
@@ -605,9 +659,9 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  margin-bottom: 14px;
-  padding: 12px;
-  border-radius: 18px;
+  margin-bottom: 12px;
+  padding: 10px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.78);
   border: 1px solid rgba(226, 232, 240, 0.8);
   box-shadow: 0 16px 40px -28px rgba(15, 23, 42, 0.45);
@@ -680,8 +734,8 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 40px;
-  padding: 10px 16px;
+  min-height: 34px;
+  padding: 8px 12px;
   border: 1px solid #e2e8f0;
   border-radius: 999px;
   background: #fff;
@@ -735,7 +789,7 @@
 .sebu-news-panel__list {
   list-style: none;
   display: grid;
-  gap: 10px;
+  gap: 8px;
   margin: 0;
   padding: 0;
 }
@@ -746,8 +800,8 @@
   justify-content: space-between;
   gap: 12px;
   min-width: 0;
-  padding: 12px 13px;
-  border-radius: 16px;
+  padding: 10px 12px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.86);
   border: 1px solid rgba(226, 232, 240, 0.78);
   color: inherit;
@@ -959,6 +1013,10 @@
 }
 
 @media (min-width: 768px) {
+  .sebu-cal-compact {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
   .sebu-cal-summary__head {
     flex-direction: row;
     align-items: flex-end;
@@ -974,9 +1032,9 @@
   }
 
   .sebu-community-popular__grid {
-    grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.95fr);
+    grid-template-columns: minmax(0, 1.85fr) minmax(280px, 0.85fr);
     align-items: stretch;
-    gap: 18px;
+    gap: 16px;
   }
 
   .sebu-contribute-banner {
@@ -993,8 +1051,16 @@
 
 @media (min-width: 1024px) {
   .sebu-community-popular__grid {
-    grid-template-columns: minmax(0, 1.75fr) minmax(300px, 0.88fr);
+    grid-template-columns: minmax(0, 2fr) minmax(300px, 0.82fr);
     align-items: stretch;
+  }
+
+  .sebu-cal-summary--compact {
+    margin-bottom: 2px;
+  }
+
+  .sebu-community-popular__title {
+    font-size: 1.18rem;
   }
 
   .sebu-community-col--news,
@@ -1064,7 +1130,7 @@
 
   .sebu-news-tabs {
     gap: 4px;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     padding: 4px;
     border: 1px solid #e2e8f0;
     border-radius: 14px;

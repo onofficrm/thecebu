@@ -232,11 +232,41 @@
   function renderCalendarBlock(calendar) {
     var daysHtml = '';
     var i;
+    var totalCount = 0;
     for (i = 0; i < (calendar.days || []).length; i += 1) {
+      totalCount += Number(calendar.days[i].count || 0);
       daysHtml += renderDayCard(calendar.days[i]);
     }
 
     var createHref = calendar.is_member ? calendar.create_url : calendar.login_url;
+    var hasTalkEvents = !!(calendar.talk_events && calendar.talk_events.length);
+    var summaryHtml = '';
+
+    if (totalCount < 1 && !hasTalkEvents) {
+      for (i = 0; i < (calendar.days || []).length; i += 1) {
+        summaryHtml += ''
+          + '<span class="sebu-cal-compact__day">'
+          + '<strong>' + esc(calendar.days[i].label || '') + '</strong>'
+          + '<span>일정 없음</span>'
+          + '</span>';
+      }
+
+      return ''
+        + '<section class="sebu-cal-summary sebu-cal-summary--compact" data-eottae-home-calendar="1">'
+        + '<div class="sebu-cal-compact">'
+        + '<div class="sebu-cal-compact__copy">'
+        + '<p class="sebu-cal-compact__eyebrow">세부 일정</p>'
+        + '<h2 class="sebu-cal-summary__title">' + esc(calendar.title || '이번 3일 세부 일정') + '</h2>'
+        + '<p class="sebu-cal-summary__desc">오늘·내일·모레 등록된 일정이 아직 없습니다.</p>'
+        + '</div>'
+        + '<div class="sebu-cal-compact__days" aria-label="이번 3일 일정 요약">' + summaryHtml + '</div>'
+        + '<div class="sebu-cal-summary__actions">'
+        + '<a href="' + esc(calendar.calendar_url || '/calendar/') + '" class="sebu-cal-summary__btn">캘린더 보기</a>'
+        + '<a href="' + esc(createHref || '/page/eottae-calendar-create.php') + '" class="sebu-cal-summary__btn sebu-cal-summary__btn--primary">일정 등록</a>'
+        + '</div>'
+        + '</div>'
+        + '</section>';
+    }
 
     return ''
       + '<section class="sebu-cal-summary" data-eottae-home-calendar="1">'
