@@ -109,6 +109,60 @@ if (!function_exists('eottae_member_growth_render_author_line')) {
     }
 }
 
+if (!function_exists('eottae_member_growth_render_profile_badge_icon')) {
+    /**
+     * 사이드바·프로필 카드용 — 뱃지(또는 등급) 아이콘만 표시
+     */
+    function eottae_member_growth_render_profile_badge_icon(array $profile, array $options = array())
+    {
+        $href = isset($options['href']) ? (string) $options['href'] : '';
+        if ($href === '' && function_exists('eottae_member_growth_mypage_url')) {
+            $href = eottae_member_growth_mypage_url();
+        }
+        if ($href === '' && function_exists('eottae_member_growth_badge_book_url')) {
+            $href = eottae_member_growth_badge_book_url();
+        }
+
+        $icon = '';
+        $label = '';
+        $color = 'default';
+
+        if (!empty($profile['main_badge']['badge_name'])) {
+            $badge = $profile['main_badge'];
+            $icon = trim((string) ($badge['badge_icon'] ?? ''));
+            if ($icon === '') {
+                $icon = '★';
+            }
+            $label = get_text($badge['badge_name']);
+            $color = (string) ($badge['badge_color'] ?? 'default');
+            $title = get_text($badge['badge_description'] ?? $label);
+        } elseif (!empty($profile['level']['level_name'])) {
+            $level = $profile['level'];
+            $icon = trim((string) ($level['icon'] ?? ''));
+            if ($icon === '') {
+                $icon = '◆';
+            }
+            $label = get_text($level['level_name']);
+            $color = (string) ($level['color'] ?? 'default');
+            $title = $label;
+        } else {
+            return '';
+        }
+
+        $class = 'community-login-box__badge-icon '.eottae_member_growth_badge_color_class($color);
+        $inner = '<span class="'.$class.'" title="'.get_text($title).'">'
+            .'<span class="community-login-box__badge-emoji" aria-hidden="true">'.htmlspecialchars($icon, ENT_QUOTES, 'UTF-8').'</span>'
+            .'<span class="sound_only">'.get_text($label).'</span>'
+            .'</span>';
+
+        if ($href !== '') {
+            return '<a href="'.get_text($href).'" class="community-login-box__badge-link">'.$inner.'</a>';
+        }
+
+        return $inner;
+    }
+}
+
 if (!function_exists('eottae_member_growth_author_badge_text')) {
     function eottae_member_growth_author_badge_text($mb_id)
     {

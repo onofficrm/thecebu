@@ -54,19 +54,7 @@
       + '<strong class="community-login-box__stat-value">할인·이벤트</strong>'
       + '</div>';
 
-    var hint = document.createElement('p');
-    hint.className = 'community-login-box__guides community-login-box__guides--guest';
-    hint.innerHTML = ''
-      + '<a href="' + esc(data.member_growth_guide_url || '/page/eottae-member-growth-guide.php') + '">활동 등급·뱃지</a>'
-      + '<span class="community-login-box__guides-sep" aria-hidden="true">·</span>'
-      + '<a href="' + esc(data.coupon_guide_url || '/page/eottae-coupon-guide.php') + '">쿠폰 사용 방법</a>';
-
     guestBox.insertBefore(stats, cta);
-    if (links) {
-      guestBox.insertBefore(hint, links);
-    } else {
-      guestBox.appendChild(hint);
-    }
 
     guestBox.setAttribute('data-eottae-guest-enriched', '1');
   }
