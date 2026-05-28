@@ -1,4 +1,4 @@
-(function () {
+(function (global) {
   'use strict';
 
   function qs(sel, ctx) {
@@ -534,6 +534,13 @@
     if (!form || !window.fetch) return;
 
   function runShopAiGenerate(btn) {
+      if (!shopAiEnabled(root)) {
+        var disabledMsg = 'AI 자동생성은 서버에 OpenAI API 키가 설정된 후 이용할 수 있습니다.';
+        shopSetAiStatus(root, disabledMsg, true);
+        alert(disabledMsg);
+        return;
+      }
+
       var subject = shopAiValue(root, '#wr_subject');
       if (!subject) {
         alert('1단계에서 업체명을 먼저 입력해 주세요.');
@@ -2924,4 +2931,4 @@
         });
     });
   }
-})();
+})(window);
