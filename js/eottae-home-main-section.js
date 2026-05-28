@@ -839,8 +839,7 @@
     var mountRoot = document.createElement('div');
     mountRoot.className = 'sebu-home-main-section';
     mountRoot.setAttribute('data-eottae-home-main-mounted', '1');
-    mountRoot.innerHTML = renderCalendarBlock(data.calendar)
-      + renderPopularBlock(data.popular || {}, data.talk_rooms || {});
+    mountRoot.innerHTML = renderPopularBlock(data.popular || {}, data.talk_rooms || {});
 
     while (section.firstChild) {
       section.removeChild(section.firstChild);
