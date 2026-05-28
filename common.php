@@ -659,7 +659,12 @@ if ($bo_table) {
         if (isset($wr_id) && $wr_id) {
             $write = get_write($write_table, $wr_id);
         } else if (isset($wr_seo_title) && $wr_seo_title) {
-            $write = get_content_by_field($write_table, 'bbs', 'wr_seo_title', generate_seo_title($wr_seo_title));
+            $wr_seo_lookup = trim(rawurldecode((string) $wr_seo_title), "/ \t\n\r\0\x0B");
+            $wr_seo_normalized = generate_seo_title($wr_seo_lookup);
+            $write = get_content_by_field($write_table, 'bbs', 'wr_seo_title', $wr_seo_normalized);
+            if (empty($write['wr_id']) && $wr_seo_lookup !== '' && $wr_seo_lookup !== $wr_seo_normalized) {
+                $write = get_content_by_field($write_table, 'bbs', 'wr_seo_title', $wr_seo_lookup);
+            }
             if (isset($write['wr_id'])) {
                 $wr_id = (int) $write['wr_id'];
             }
