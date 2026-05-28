@@ -328,6 +328,13 @@ if (!function_exists('eottae_install_get_board_defs')) {
                 'bo_order'         => 16,
             ),
             eottae_install_community_board_def('community', '커뮤니티', 10, '자유|정보|질문|후기'),
+            array_merge(
+                eottae_install_community_board_def('free', '자유게시판', 10, ''),
+                array(
+                    'bo_order'        => 17,
+                    'bo_use_category' => 0,
+                )
+            ),
             eottae_install_community_board_def('people', '사람찾기', 11, '실종|만남|동행|지인|기타'),
             eottae_install_community_board_def('job', '구인구직', 12, '구인|구직|알바|기타'),
             eottae_install_community_board_def('estate', '부동산', 13, '매매|전월세|양도|기타'),

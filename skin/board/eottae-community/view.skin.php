@@ -5,7 +5,11 @@ include_once(G5_LIB_PATH.'/eottae.lib.php');
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
 
 $view_category = isset($view['ca_name']) ? get_text($view['ca_name']) : '';
-$list_url = eottae_community_list_url($view_category !== '' ? array('sca' => $view_category) : array());
+if (function_exists('eottae_is_free_board') && eottae_is_free_board($bo_table)) {
+    $list_url = function_exists('eottae_free_list_url') ? eottae_free_list_url() : G5_BBS_URL.'/board.php?bo_table=free';
+} else {
+    $list_url = eottae_community_list_url($view_category !== '' ? array('sca' => $view_category) : array());
+}
 
 $is_talkroom_board = function_exists('eottae_talkroom_board_table') && $bo_table === eottae_talkroom_board_table();
 $is_ai_post = false;

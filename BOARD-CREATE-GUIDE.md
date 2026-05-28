@@ -53,7 +53,7 @@
 | `review` | 후기 | `basic-card` | 고객·수강 후기 | 전체(1) | 관리자(2~) |
 | `faq` | 자주 묻는 질문 | `faq-accordion` | FAQ, 비용·절차 | 전체(1) | 관리자(10) |
 | `inquiry` | 상담문의 | `landing-inquiry` | 문의 저장·상담 관리 | 관리자(10) | 비회원(1) |
-| `free` | 자유게시판 | `basic-clean` | 일반 게시판 | 정책에 따름 | 회원(2) 권장 |
+| `free` | 자유게시판 | `eottae-community` | 일반 게시판 | 정책에 따름 | 회원(2) 권장 |
 
 > 레벨 숫자는 그누보드 기본(1=비회원, 2=회원, 10=관리자 등). 프로젝트 정책에 맞게 조정하세요.
 
@@ -110,7 +110,7 @@
 - `_site.config.php` 문의 알림·`proc/inquiry-submit.php` 연동 확인 ([INQUIRY-FORM-GUIDE.md](INQUIRY-FORM-GUIDE.md))
 - 댓글 미사용 권장
 
-### 자유게시판 (`free` + `basic-clean`)
+### 자유게시판 (`free` + `eottae-community`)
 
 - 사이트 정책에 따라 회원 쓰기·비밀글·댓글 설정
 

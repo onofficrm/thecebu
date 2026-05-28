@@ -3428,11 +3428,28 @@ if (!function_exists('eottae_community_write_link_values')) {
 if (!function_exists('eottae_community_write_photo_count')) {
     function eottae_community_write_photo_count($board, $file_count = 0)
     {
-        if (!is_array($board) || empty($board['bo_table']) || !function_exists('eottae_is_community_board') || !eottae_is_community_board($board['bo_table'])) {
+        if (!is_array($board) || empty($board['bo_table'])) {
             return (int) $file_count;
         }
 
-        eottae_community_board_ensure_settings();
+        $bo_table = $board['bo_table'];
+        $uses_community_skin = false;
+
+        if (function_exists('eottae_is_community_board') && eottae_is_community_board($bo_table)) {
+            $uses_community_skin = true;
+            eottae_community_board_ensure_settings();
+        } elseif (function_exists('eottae_is_free_board') && eottae_is_free_board($bo_table)) {
+            $uses_community_skin = true;
+            if (function_exists('eottae_ensure_free_board_skin')) {
+                eottae_ensure_free_board_skin();
+            }
+        } elseif ((string) ($board['bo_skin'] ?? '') === 'eottae-community') {
+            $uses_community_skin = true;
+        }
+
+        if (!$uses_community_skin) {
+            return (int) $file_count;
+        }
 
         return max(eottae_community_photo_limit(), (int) $file_count, (int) ($board['bo_upload_count'] ?? 0));
     }
@@ -5499,6 +5516,12 @@ if (!function_exists('eottae_community_board_hero')) {
                 'title'  => '매매·전월세',
                 'desc'   => '세부 부동산 매매, 전·월세, 양도 정보를 나누는 게시판입니다.',
                 'image'  => sprintf($cebu_img, '1560518883-ce09059eeffa'),
+            ),
+            'free' => array(
+                'kicker' => '자유게시판',
+                'title'  => '자유',
+                'desc'   => '세부 교민·여행자가 가볍게 나누는 자유 주제 게시판입니다. 질문·정보·일상 이야기를 남겨 보세요.',
+                'image'  => sprintf($cebu_img, '1555881400-0d2f29490987'),
             ),
             'event' => array(
                 'kicker' => '이벤트',

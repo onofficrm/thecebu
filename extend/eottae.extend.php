@@ -13,6 +13,7 @@ include_once G5_LIB_PATH.'/eottae-shop-seo.lib.php';
 include_once G5_LIB_PATH.'/eottae-board-seo.lib.php';
 include_once G5_LIB_PATH.'/eottae-job-template.lib.php';
 include_once G5_LIB_PATH.'/eottae-property-template.lib.php';
+include_once G5_LIB_PATH.'/eottae-free-board.lib.php';
 include_once G5_LIB_PATH.'/eottae-icrm.lib.php';
 include_once G5_LIB_PATH.'/eottae-icrm-template.lib.php';
 include_once G5_LIB_PATH.'/eottae-board-editor.lib.php';
@@ -1611,3 +1612,7 @@ if (!function_exists('eottae_apply_google_oauth_config')) {
     }
 }
 eottae_apply_google_oauth_config();
+
+if (function_exists('eottae_apply_free_board_skin_runtime')) {
+    eottae_apply_free_board_skin_runtime();
+}

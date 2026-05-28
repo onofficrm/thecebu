@@ -155,7 +155,7 @@
     {
       "bo_table": "free",
       "title": "자유게시판",
-      "skin": "basic-clean",
+      "skin": "eottae-community",
       "read_level": 1,
       "write_level": 2,
       "use_category": false,

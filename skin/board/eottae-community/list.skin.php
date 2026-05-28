@@ -21,6 +21,7 @@ $region_options = eottae_community_region_options();
 $current_region = isset($_GET['region']) ? trim($_GET['region']) : '';
 $list_base = get_pretty_url($bo_table);
 $hero = eottae_community_board_hero($board, $sca);
+$is_free_board_list = function_exists('eottae_is_free_board') && eottae_is_free_board($bo_table);
 $is_talkroom_board = function_exists('eottae_talkroom_board_table') && $bo_table === eottae_talkroom_board_table();
 if ($is_talkroom_board) {
     include_once G5_PATH.'/components/eottae/talk-ai-message-ui.php';
@@ -32,7 +33,12 @@ if ($is_talkroom_board) {
 <div class="community-page__layout">
 <main class="community-page__main">
 
-    <?php include G5_PATH.'/components/eottae/community-hero.php'; ?>
+    <?php
+    $community_hero_search_placeholder = $is_free_board_list
+        ? '자유게시판에서 검색해보세요'
+        : '궁금한 세부 정보를 검색해보세요';
+    include G5_PATH.'/components/eottae/community-hero.php';
+    ?>
 
     <?php if ($is_category && !empty($community_tabs)) { ?>
     <nav class="community-tabs" aria-label="게시판 분류">

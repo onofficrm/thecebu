@@ -9,6 +9,9 @@ if (empty($hero) || !is_array($hero)) {
 
 $hero_image = !empty($hero['image']) ? $hero['image'] : '';
 $hero_stx = isset($stx) ? get_text(stripslashes($stx)) : '';
+$community_hero_search_placeholder = isset($community_hero_search_placeholder)
+    ? (string) $community_hero_search_placeholder
+    : '궁금한 세부 정보를 검색해보세요';
 ?>
 
 <section class="community-hero">
@@ -44,7 +47,7 @@ $hero_stx = isset($stx) ? get_text(stripslashes($stx)) : '';
                 <input type="hidden" name="sfl" value="wr_subject||wr_content">
                 <label class="sound_only" for="community_stx">검색어</label>
                 <span class="community-search__icon" aria-hidden="true">⌕</span>
-                <input type="search" id="community_stx" name="stx" value="<?php echo $hero_stx; ?>" placeholder="궁금한 세부 정보를 검색해보세요" class="community-search__input">
+                <input type="search" id="community_stx" name="stx" value="<?php echo $hero_stx; ?>" placeholder="<?php echo get_text($community_hero_search_placeholder); ?>" class="community-search__input">
                 <button type="submit" class="community-hero__search-btn">검색</button>
             </form>
         </div>

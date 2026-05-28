@@ -16,6 +16,7 @@ if (!function_exists('eottae_board_seo_life_tables')) {
             defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people',
             defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job',
             defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate',
+            function_exists('eottae_free_board_table') ? eottae_free_board_table() : 'free',
         ))));
     }
 }
