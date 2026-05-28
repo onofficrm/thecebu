@@ -180,8 +180,9 @@
 .sebu-columnist-hero__visual img {
   display: block;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
 }
 
 .sebu-columnist-hero__visual img.is-hidden {
@@ -277,15 +278,19 @@
 
 .sebu-columnist-comic__visual {
   position: relative;
-  aspect-ratio: 4 / 3;
-  background: var(--sebu-col-warm);
+  aspect-ratio: 1 / 1;
+  background: #fff;
 }
 
 .sebu-columnist-comic__image {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+}
+
+.sebu-columnist-comic__visual:not(.is-placeholder) + .sebu-columnist-comic__bubble {
+  display: none;
 }
 
 .sebu-columnist-comic__image.is-hidden {

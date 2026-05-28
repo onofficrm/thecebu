@@ -51,6 +51,7 @@ include_once G5_LIB_PATH.'/eottae-column-report.lib.php';
 include_once G5_LIB_PATH.'/eottae-adroom.lib.php';
 include_once G5_LIB_PATH.'/eottae-member-growth.lib.php';
 include_once G5_LIB_PATH.'/eottae-member-profile.lib.php';
+include_once G5_LIB_PATH.'/eottae-gnb-menu.lib.php';
 
 if (function_exists('eottae_secrets_load')) {
     eottae_secrets_load();

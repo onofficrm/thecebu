@@ -5840,8 +5840,8 @@ if (!function_exists('eottae_gnb_hidden_menu_keys')) {
      */
     function eottae_gnb_hidden_menu_keys()
     {
-        // 커뮤니티 허브 하위 게시판은 상위 「커뮤니티」·탭 네비로 통합 (중복 GNB 링크 숨김)
-        return array('massage', 'rentcar', 'community_free', 'people');
+        // GNB 서브메뉴로 통합 — 마사지·렌트카 등 레거시 단독 링크만 숨김
+        return array('massage', 'rentcar');
     }
 }
 
@@ -5871,7 +5871,7 @@ if (!function_exists('eottae_filter_menu_datas')) {
             }
         }
 
-        $hidden_labels = array('마사지', '마사지·스파', '렌트카', '자유게시판', '사람찾기');
+        $hidden_labels = array('마사지', '마사지·스파', '렌트카');
         $filtered = array();
 
         foreach ($menu_datas as $row) {
@@ -5914,36 +5914,17 @@ if (!function_exists('eottae_filter_menu_datas')) {
 if (!function_exists('eottae_gnb_nav_links')) {
     function eottae_gnb_nav_links()
     {
-        $links = array(
-            array('key' => 'home', 'label' => '홈', 'href' => G5_URL.'/'),
-            array('key' => 'shop', 'label' => '내주변', 'href' => eottae_board_list_url(eottae_shop_table())),
-            array('key' => 'food', 'label' => '맛집', 'href' => eottae_board_list_url(defined('EOTTae_FOOD_TABLE') ? EOTTae_FOOD_TABLE : 'food')),
-            array('key' => 'golf_join', 'label' => '골프조인', 'href' => function_exists('eottae_golf_join_list_url') ? eottae_golf_join_list_url() : G5_URL.'/golf-join/'),
-            array('key' => 'community', 'label' => '커뮤니티', 'href' => eottae_community_list_url()),
-            array('key' => 'report', 'label' => '제보함', 'href' => eottae_board_list_url(defined('EOTTae_REPORT_TABLE') ? EOTTae_REPORT_TABLE : 'report')),
-            array('key' => 'cebu_map', 'label' => '세부생활지도', 'href' => G5_URL.'/cebu-map/', 'emphasis' => 'accent'),
-            array('key' => 'market', 'label' => '중고장터', 'href' => eottae_board_list_url(defined('EOTTae_MARKET_TABLE') ? EOTTae_MARKET_TABLE : 'market')),
-            array('key' => 'job', 'label' => '구인구직', 'href' => eottae_board_list_url(defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job')),
-            array('key' => 'estate', 'label' => '부동산', 'href' => eottae_board_list_url(defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate')),
-            array('key' => 'column', 'label' => function_exists('eottae_column_menu_label') ? eottae_column_menu_label() : '컬럼', 'href' => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/'),
-            array('key' => 'adroom', 'label' => '광고방', 'href' => function_exists('eottae_adroom_list_url') ? eottae_adroom_list_url() : G5_URL.'/ad-room/'),
-            array('key' => 'gallery', 'label' => '갤러리', 'href' => eottae_board_list_url(defined('EOTTae_GALLERY_TABLE') ? EOTTae_GALLERY_TABLE : 'gallery')),
-            array('key' => 'youtube', 'label' => '유튜브', 'href' => eottae_board_list_url(defined('EOTTae_YOUTUBE_TABLE') ? EOTTae_YOUTUBE_TABLE : 'youtube')),
-            array('key' => 'talk', 'label' => '세부톡', 'href' => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk', 'desktop_action' => true),
-            array('key' => 'calendar', 'label' => '세부일정', 'href' => function_exists('eottae_calendar_list_url') ? eottae_calendar_list_url() : G5_URL.'/calendar/'),
-        );
-
-        $hidden = array_flip(eottae_gnb_hidden_menu_keys());
-        $out = array();
-        foreach ($links as $link) {
-            $key = isset($link['key']) ? (string) $link['key'] : '';
-            if ($key !== '' && isset($hidden[$key])) {
-                continue;
-            }
-            $out[] = $link;
+        if (!function_exists('eottae_gnb_nav_menu')) {
+            include_once G5_LIB_PATH.'/eottae-gnb-menu.lib.php';
         }
 
-        return $out;
+        $menu = eottae_gnb_nav_menu();
+        $action_links = array(
+            array('key' => 'talk', 'label' => '세부톡', 'href' => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk', 'desktop_action' => true),
+            array('key' => 'calendar', 'label' => '세부일정', 'href' => function_exists('eottae_calendar_list_url') ? eottae_calendar_list_url() : G5_URL.'/calendar/', 'desktop_action' => true),
+        );
+
+        return array_merge($menu, $action_links);
     }
 }
 
@@ -5982,18 +5963,28 @@ if (!function_exists('eottae_gnb_link_is_active')) {
     {
         $bo = isset($_GET['bo_table']) ? preg_replace('/[^a-z0-9_]/', '', $_GET['bo_table']) : '';
         $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
+        $sca = isset($_GET['sca']) ? trim((string) $_GET['sca']) : '';
+        $map_type = isset($_GET['type']) ? preg_replace('/[^a-z_]/', '', (string) $_GET['type']) : '';
 
-        $board_map = array(
-            'shop'      => eottae_shop_table(),
-            'food'      => defined('EOTTae_FOOD_TABLE') ? EOTTae_FOOD_TABLE : 'food',
-            'community' => eottae_community_board_table(),
-            'community_free' => eottae_free_board_table(),
-            'people'    => defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people',
-            'job'       => defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job',
-            'estate'    => defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate',
-            'gallery'   => defined('EOTTae_GALLERY_TABLE') ? EOTTae_GALLERY_TABLE : 'gallery',
-            'youtube'   => defined('EOTTae_YOUTUBE_TABLE') ? EOTTae_YOUTUBE_TABLE : 'youtube',
-        );
+        $shop_table = eottae_shop_table();
+        $community_table = eottae_community_board_table();
+        $free_table = function_exists('eottae_free_board_table') ? eottae_free_board_table() : 'free';
+        $review_table = defined('EOTTae_REVIEW_TABLE') ? EOTTae_REVIEW_TABLE : 'review';
+        $people_table = defined('EOTTae_PEOPLE_TABLE') ? EOTTae_PEOPLE_TABLE : 'people';
+        $event_table = defined('EOTTae_EVENT_TABLE') ? EOTTae_EVENT_TABLE : 'event';
+        $report_table = defined('EOTTae_REPORT_TABLE') ? EOTTae_REPORT_TABLE : 'report';
+        $market_table = defined('EOTTae_MARKET_TABLE') ? EOTTae_MARKET_TABLE : 'market';
+        $job_table = defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job';
+        $estate_table = defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate';
+        $gallery_table = defined('EOTTae_GALLERY_TABLE') ? EOTTae_GALLERY_TABLE : 'gallery';
+        $youtube_table = defined('EOTTae_YOUTUBE_TABLE') ? EOTTae_YOUTUBE_TABLE : 'youtube';
+        $food_table = defined('EOTTae_FOOD_TABLE') ? EOTTae_FOOD_TABLE : 'food';
+
+        $is_map = strpos($uri, '/cebu-map') !== false || strpos($uri, '/page/cebu-map.php') !== false;
+        $is_golf = strpos($uri, '/golf-join') !== false || strpos($uri, '/page/eottae-golf') !== false;
+        $is_column = strpos($uri, '/column') !== false || strpos($uri, '/page/eottae-column') !== false;
+        $is_columnist = strpos($uri, '/columnist') !== false;
+        $is_hub_board = function_exists('eottae_is_community_hub_board') && $bo !== '' && eottae_is_community_hub_board($bo);
 
         switch ($key) {
             case 'home':
@@ -6003,24 +5994,88 @@ if (!function_exists('eottae_gnb_link_is_active')) {
             case 'calendar':
                 return strpos($uri, '/calendar') !== false || strpos($uri, '/page/eottae-calendar') !== false;
             case 'column':
-                return strpos($uri, '/column') !== false || strpos($uri, '/page/eottae-column') !== false;
+            case 'column_all':
+                return $is_column && !$is_columnist;
+            case 'column_recruit':
+                return $is_columnist;
+            case 'column_apply':
+                return strpos($uri, 'eottae-column-apply') !== false;
             case 'golf_join':
-                return strpos($uri, '/golf-join') !== false || strpos($uri, '/page/eottae-golf') !== false;
+            case 'golf_join_create':
+            case 'golf_join_open':
+            case 'golf_join_closed':
+                return $is_golf;
+            case 'golf_join_course':
+                return $bo === $shop_table && $sca === '골프';
+            case 'media':
+            case 'media_gallery':
+                return $bo === $gallery_table;
+            case 'media_youtube':
+                return $bo === $youtube_table;
+            case 'cebu_map':
+            case 'cebu_map_all':
+                return $is_map && ($map_type === '' || $map_type === 'all');
+            case 'cebu_map_job':
+                return ($is_map && $map_type === 'job') || $bo === $job_table;
+            case 'cebu_map_market':
+                return ($is_map && $map_type === 'market') || $bo === $market_table;
+            case 'cebu_map_estate':
+                return ($is_map && $map_type === 'estate') || $bo === $estate_table;
+            case 'community':
+                return $is_hub_board;
+            case 'community_life':
+                return $bo === $community_table;
+            case 'community_free':
+                return $bo === $free_table;
+            case 'community_review':
+                return $bo === $review_table;
+            case 'community_people':
+                return $bo === $people_table;
+            case 'community_event':
+                return $bo === $event_table;
+            case 'community_report':
+                return $bo === $report_table;
+            case 'shop':
+                return $bo === $shop_table;
+            case 'shop_food':
+                return ($bo === $shop_table && $sca === '맛집') || $bo === $food_table;
+            case 'shop_all':
+                return $bo === $shop_table && $sca === '';
+            case 'shop_hospital':
+                return $bo === $shop_table && $sca === '병원';
+            case 'shop_convenience':
+                return $bo === $shop_table && $sca === '마트';
+            case 'mypage':
+            case 'mypage_profile':
+            case 'mypage_posts':
+            case 'mypage_scrap':
+            case 'mypage_shop':
+            case 'mypage_applies':
+            case 'mypage_memo':
+                return strpos($uri, '/page/eottae-mypage') !== false
+                    || strpos($uri, '/page/eottae-talk-applies') !== false
+                    || strpos($uri, '/register_form.php') !== false
+                    || strpos($uri, '/scrap.php') !== false
+                    || strpos($uri, '/memo.php') !== false;
+            case 'food':
+                return $bo === $food_table;
             case 'adroom':
                 return strpos($uri, '/ad-room') !== false
                     || $bo === (defined('EOTTae_ADROOM_TABLE') ? EOTTae_ADROOM_TABLE : 'adroom');
-            case 'cebu_map':
-                return strpos($uri, '/cebu-map') !== false || strpos($uri, '/page/cebu-map.php') !== false;
-            case 'community':
-                if (function_exists('eottae_is_community_hub_board') && $bo !== '' && eottae_is_community_hub_board($bo)) {
-                    return true;
-                }
-
-                return $bo === eottae_community_board_table();
-            case 'mypage':
-                return strpos($uri, '/page/eottae-') !== false;
+            case 'market':
+                return $bo === $market_table;
+            case 'job':
+                return $bo === $job_table;
+            case 'estate':
+                return $bo === $estate_table;
+            case 'gallery':
+                return $bo === $gallery_table;
+            case 'youtube':
+                return $bo === $youtube_table;
+            case 'people':
+                return $bo === $people_table;
             default:
-                return isset($board_map[$key]) && $bo === $board_map[$key];
+                return false;
         }
     }
 }

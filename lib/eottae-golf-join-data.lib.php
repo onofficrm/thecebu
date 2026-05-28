@@ -53,13 +53,19 @@ if (!function_exists('eottae_golf_join_parse_filters')) {
             $venue_type = '';
         }
 
+        $status = isset($_GET['status']) ? preg_replace('/[^a-z]/', '', (string) $_GET['status']) : '';
+        if (!in_array($status, array('open', 'closed'), true)) {
+            $status = '';
+        }
+
         return array(
             'region'        => $region,
             'date_preset'   => $date_preset,
             'date'          => $date,
             'time_zone'     => $time_zone,
             'venue_type'    => $venue_type,
-            'exclude_full'  => !empty($_GET['exclude_full']),
+            'status'        => $status,
+            'exclude_full'  => $status === '' && !empty($_GET['exclude_full']),
             'sort'          => $sort,
             'q'             => $q,
         );
@@ -576,7 +582,13 @@ if (!function_exists('eottae_golf_join_fetch_posts_from_db')) {
         if (!empty($filters['venue_type'])) {
             $where[] = " p.venue_type = '".sql_escape_string(eottae_golf_join_normalize_venue_type($filters['venue_type']))."' ";
         }
-        if (!empty($filters['exclude_full'])) {
+        if (!empty($filters['status'])) {
+            if ($filters['status'] === 'open') {
+                $where[] = " p.status IN ('recruiting') ";
+            } elseif ($filters['status'] === 'closed') {
+                $where[] = " p.status IN ('full', 'closed') ";
+            }
+        } elseif (!empty($filters['exclude_full'])) {
             $where[] = " p.status IN ('recruiting') ";
         }
         if (!empty($filters['q'])) {
@@ -682,7 +694,15 @@ if (!function_exists('eottae_golf_join_apply_list_filters')) {
                     return false;
                 }
             }
-            if (!empty($filters['exclude_full']) && !in_array($post['status'] ?? '', array('recruiting'), true)) {
+            if (!empty($filters['status'])) {
+                $post_status = (string) ($post['status'] ?? 'recruiting');
+                if ($filters['status'] === 'open' && $post_status !== 'recruiting') {
+                    return false;
+                }
+                if ($filters['status'] === 'closed' && !in_array($post_status, array('full', 'closed'), true)) {
+                    return false;
+                }
+            } elseif (!empty($filters['exclude_full']) && !in_array($post['status'] ?? '', array('recruiting'), true)) {
                 return false;
             }
             if (!empty($filters['q'])) {

@@ -59,10 +59,9 @@ g5_page_start('컬럼리스트 모집');
             </div>
         </div>
         <div class="sebu-columnist-hero__visual" id="columnist-hero-visual">
-            <?php /* 이미지 교체: <?php echo get_text($img_base.'/hero-columnist.svg'); ?> */ ?>
             <img
-                src="<?php echo get_text($img_base.'/hero-columnist.svg'); ?>"
-                alt="세부 커뮤니티에서 정보를 나누는 일러스트"
+                src="<?php echo get_text($img_base.'/hero-columnist.png'); ?>"
+                alt="세부어때 컬럼니스트 모집 — 세부의 좋은 정보를 함께 나누는 일러스트"
                 class="sebu-columnist-hero__img"
                 loading="eager"
                 onerror="this.classList.add('is-hidden');this.parentElement.classList.add('is-placeholder');"

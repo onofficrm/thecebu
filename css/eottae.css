@@ -376,6 +376,115 @@ img[data-eottae-logo] {
   margin-left: auto;
 }
 
+.eottae-gnb-header__nav-item {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.eottae-gnb-header__nav-link--parent {
+  gap: 4px;
+}
+
+.eottae-gnb-header__nav-caret {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-top: 2px;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  opacity: 0.55;
+}
+
+.eottae-gnb-header__submenu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 120;
+  min-width: 188px;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+}
+
+.eottae-gnb-header__nav-item.has-children:hover .eottae-gnb-header__submenu,
+.eottae-gnb-header__nav-item.has-children:focus-within .eottae-gnb-header__submenu {
+  display: block;
+}
+
+.eottae-gnb-header__submenu-link {
+  display: block;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.eottae-gnb-header__submenu-link:hover,
+.eottae-gnb-header__submenu-link.is-active {
+  color: var(--eottae-gnb-primary);
+  background: #f0f9ff;
+}
+
+.eottae-gnb-header__mobile-group {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.eottae-gnb-header__mobile-summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.eottae-gnb-header__mobile-summary::-webkit-details-marker {
+  display: none;
+}
+
+.eottae-gnb-header__mobile-summary span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.eottae-gnb-header__mobile-summary span::after {
+  content: '▾';
+  font-size: 12px;
+  opacity: 0.55;
+}
+
+.eottae-gnb-header__mobile-group[open] .eottae-gnb-header__mobile-summary span::after {
+  transform: rotate(180deg);
+}
+
+.eottae-gnb-header__mobile-children {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 0 10px 12px;
+}
+
+.eottae-gnb-header__mobile-child-link {
+  display: block;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  text-decoration: none;
+}
+
+.eottae-gnb-header__mobile-child-link:hover,
+.eottae-gnb-header__mobile-child-link.is-active {
+  color: var(--eottae-gnb-primary);
+  background: #f8fafc;
+}
+
 .eottae-gnb-header__actions {
   display: flex;
   align-items: center;

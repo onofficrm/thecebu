@@ -10,7 +10,9 @@ $is_member = !empty($eottae_auth['is_member']);
 $is_admin = !empty($eottae_auth['is_admin']) ? $eottae_auth['is_admin'] : '';
 $member = isset($eottae_auth['member']) ? $eottae_auth['member'] : array('mb_id' => '', 'mb_level' => 1, 'mb_point' => 0);
 
+include_once G5_PATH.'/components/eottae/gnb-nav-items.php';
 $eottae_gnb_links = eottae_gnb_nav_links();
+$eottae_gnb_menu_items = function_exists('eottae_gnb_nav_menu') ? eottae_gnb_nav_menu() : array();
 $eottae_site_title = isset($g5_site_title) ? $g5_site_title : '세부어때';
 $eottae_header_logo_url = function_exists('eottae_site_logo_url')
     ? eottae_site_logo_url('logo_path')
@@ -52,25 +54,12 @@ foreach ($eottae_gnb_links as $link) {
                     </a>
 
                     <nav class="eottae-gnb-header__nav" aria-label="메인메뉴">
-                        <?php foreach ($eottae_gnb_links as $link) {
-                            if (!empty($link['desktop_action'])) {
-                                continue;
-                            }
-                            $active = eottae_gnb_link_is_active($link['key']);
-                            $link_class = function_exists('eottae_gnb_nav_link_classes')
-                                ? eottae_gnb_nav_link_classes($link, 'desktop', $active)
-                                : 'eottae-gnb-header__nav-link'.($active ? ' is-active' : '');
-                            ?>
-                        <a href="<?php echo $link['href']; ?>" class="<?php echo $link_class; ?>">
-                            <?php echo get_text($link['label']); ?>
-                        </a>
-                        <?php } ?>
+                        <?php eottae_gnb_render_nav_items($eottae_gnb_menu_items, 'desktop'); ?>
                     </nav>
                 </div>
 
                 <div class="eottae-gnb-header__actions">
                     <?php if ($is_member) { ?>
-                    <a href="<?php echo $eottae_mypage_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop">MY</a>
                     <a href="<?php echo $eottae_logout_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop">로그아웃</a>
                     <?php if ($is_admin) { ?>
                     <a href="<?php echo correct_goto_url(G5_ADMIN_URL); ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop">관리자</a>
@@ -96,23 +85,10 @@ foreach ($eottae_gnb_links as $link) {
 
             <div id="siteMobileNav" class="eottae-gnb-header__mobile site-header__mobile-nav" aria-hidden="true">
                 <nav class="eottae-gnb-header__mobile-nav">
-                    <?php foreach ($eottae_gnb_links as $link) {
-                        if (!empty($link['desktop_action'])) {
-                            continue;
-                        }
-                        $active = eottae_gnb_link_is_active($link['key']);
-                        $link_class = function_exists('eottae_gnb_nav_link_classes')
-                            ? eottae_gnb_nav_link_classes($link, 'mobile', $active)
-                            : 'eottae-gnb-header__mobile-link'.($active ? ' is-active' : '');
-                        ?>
-                    <a href="<?php echo $link['href']; ?>" class="<?php echo $link_class; ?>">
-                        <?php echo get_text($link['label']); ?>
-                    </a>
-                    <?php } ?>
+                    <?php eottae_gnb_render_nav_items($eottae_gnb_menu_items, 'mobile'); ?>
                 </nav>
                 <div class="eottae-gnb-header__mobile-auth">
                     <?php if ($is_member) { ?>
-                    <a href="<?php echo $eottae_mypage_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost">MY</a>
                     <a href="<?php echo $eottae_logout_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost">로그아웃</a>
                     <?php } else { ?>
                     <a href="<?php echo $eottae_login_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost">로그인</a>

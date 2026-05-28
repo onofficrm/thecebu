@@ -22,14 +22,13 @@ if (!function_exists('eottae_columnist_recruit_comic_html')) {
                 <li class="sebu-columnist-comic__panel">
                     <article class="sebu-columnist-comic__card">
                         <div class="sebu-columnist-comic__visual" data-comic-num="<?php echo get_text($panel['num']); ?>">
-                            <?php /* 이미지 교체: <?php echo get_text($panel['image']); ?> */ ?>
                             <img
                                 src="<?php echo get_text($panel['image']); ?>"
                                 alt="<?php echo $alt; ?>"
                                 class="sebu-columnist-comic__image"
                                 loading="lazy"
-                                width="640"
-                                height="480"
+                                width="1024"
+                                height="1024"
                                 onerror="this.classList.add('is-hidden');this.parentElement.classList.add('is-placeholder');"
                             >
                             <div class="sebu-columnist-comic__placeholder" aria-hidden="true">
