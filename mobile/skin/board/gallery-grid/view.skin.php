@@ -1,40 +1,31 @@
 <?php
 if (!defined('_GNUBOARD_')) exit;
 include_once(G5_LIB_PATH.'/thumbnail.lib.php');
+include_once(G5_SKIN_PATH.'/board/_inc/g5b-gallery-sidebar.php');
 
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
+
+$gal_related = g5b_gallery_get_related_writes($bo_table, (int) $view['wr_id'], 20);
+$gal_views = g5b_gallery_format_views($view['wr_hit']);
+$gal_rel_time = g5b_gallery_relative_time($view['wr_datetime']);
+$gal_meta_parts = array();
+if ($gal_views !== '') {
+    $gal_meta_parts[] = $gal_views;
+}
+if ($gal_rel_time !== '') {
+    $gal_meta_parts[] = $gal_rel_time;
+}
+$gal_meta_line = implode(' • ', $gal_meta_parts);
 ?>
 
 <script src="<?php echo G5_JS_URL; ?>/viewimageresize.js"></script>
 
-<article class="board-wrap board-wrap--gallery-grid board-view board-view--gallery" id="bo_v" style="width:<?php echo $width; ?>">
+<article class="board-wrap board-wrap--gallery-grid board-view board-view--gallery board-gal-watch" id="bo_v" style="width:<?php echo $width; ?>">
 
-    <header class="board-view__head">
-        <h2 class="board-title" id="bo_v_title">
-            <?php if ($category_name) { ?>
-            <span class="bo_v_cate board-view__cate"><?php echo $view['ca_name']; ?></span>
-            <?php } ?>
-            <span class="bo_v_tit board-title__text"><?php echo cut_str(get_text($view['wr_subject']), 70); ?></span>
-        </h2>
-    </header>
-
-    <section class="board-view__meta" id="bo_v_info">
-        <h2 class="sound_only">페이지 정보</h2>
-        <div class="profile_info board-view__author">
-            <div class="pf_img"><?php echo get_member_profile_img($view['mb_id']) ?></div>
-            <div class="profile_info_ct board-view__author-info">
-                <strong class="board-view__name"><?php echo $view['name'] ?><?php if ($is_ip_view) { echo '&nbsp;('.$ip.')'; } ?></strong>
-                <ul class="board-view__stats">
-                    <li><a href="#bo_vc"><i class="fa fa-commenting-o" aria-hidden="true"></i> <?php echo number_format($view['wr_comment']) ?>건</a></li>
-                    <li><i class="fa fa-eye" aria-hidden="true"></i> <?php echo number_format($view['wr_hit']) ?>회</li>
-                    <li class="if_date"><i class="fa fa-clock-o" aria-hidden="true"></i> <?php echo date('Y-m-d H:i', strtotime($view['wr_datetime'])) ?></li>
-                </ul>
-            </div>
-        </div>
-        <div class="board-actions board-view__actions" id="bo_v_top">
-            <?php ob_start(); ?>
+    <div class="board-gal-watch__toolbar">
+        <a href="<?php echo $list_href ?>" class="board-gal-watch__back btn_b01 btn" title="목록"><i class="fa fa-arrow-left" aria-hidden="true"></i><span class="board-gal-watch__back-label">목록</span></a>
+        <div class="board-gal-watch__toolbar-actions" id="bo_v_top">
             <ul class="btn_bo_user bo_v_com">
-                <li><a href="<?php echo $list_href ?>" class="btn_b01 btn" title="목록"><i class="fa fa-list" aria-hidden="true"></i><span class="sound_only">목록</span></a></li>
                 <?php if ($reply_href) { ?><li><a href="<?php echo $reply_href ?>" class="btn_b01 btn" title="답변"><i class="fa fa-reply" aria-hidden="true"></i><span class="sound_only">답변</span></a></li><?php } ?>
                 <?php if ($write_href) { ?><li><a href="<?php echo $write_href ?>" class="btn_b01 btn" title="글쓰기"><i class="fa fa-pencil" aria-hidden="true"></i><span class="sound_only">글쓰기</span></a></li><?php } ?>
                 <?php if ($update_href || $delete_href || $copy_href || $move_href || $search_href) { ?>
@@ -58,96 +49,130 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
                 });
             });
             </script>
-            <?php ob_end_flush(); ?>
         </div>
-    </section>
+    </div>
 
-    <section class="board-view__body board-view__body--gallery" id="bo_v_atc">
-        <h2 class="sound_only" id="bo_v_atc_title">본문</h2>
-        <div class="board-view__share" id="bo_v_share">
-            <?php include_once(G5_SNS_PATH.'/view.sns.skin.php'); ?>
-            <?php if ($scrap_href) { ?><a href="<?php echo $scrap_href; ?>" target="_blank" class="btn btn_b03" onclick="win_scrap(this.href); return false;"><i class="fa fa-bookmark" aria-hidden="true"></i> 스크랩</a><?php } ?>
+    <div class="board-gal-watch__layout">
+        <div class="board-gal-watch__primary">
+            <section class="board-gal-watch__media-wrap" id="bo_v_atc">
+                <h1 class="sound_only"><?php echo get_text($view['wr_subject']); ?></h1>
+                <?php include_once(G5_SKIN_PATH.'/board/_inc/g5b-gallery-view.php'); ?>
+            </section>
+
+            <header class="board-gal-watch__head">
+                <h2 class="board-gal-watch__title" id="bo_v_title">
+                    <?php if ($category_name) { ?><span class="board-gal-watch__cate"><?php echo $view['ca_name']; ?></span><?php } ?>
+                    <span class="board-gal-watch__title-text"><?php echo get_text($view['wr_subject']); ?></span>
+                </h2>
+            </header>
+
+            <section class="board-gal-watch__meta-row" id="bo_v_info">
+                <div class="board-gal-watch__author">
+                    <div class="board-gal-watch__avatar"><?php echo get_member_profile_img($view['mb_id']); ?></div>
+                    <div class="board-gal-watch__author-text">
+                        <strong class="board-gal-watch__author-name"><?php echo $view['name'] ?><?php if ($is_ip_view) { echo ' ('.$ip.')'; } ?></strong>
+                        <?php if ($gal_meta_line) { ?><span class="board-gal-watch__stats"><?php echo htmlspecialchars($gal_meta_line, ENT_QUOTES, 'UTF-8'); ?></span><?php } ?>
+                    </div>
+                </div>
+                <div class="board-gal-watch__share" id="bo_v_share">
+                    <?php include_once(G5_SNS_PATH.'/view.sns.skin.php'); ?>
+                    <?php if ($scrap_href) { ?><a href="<?php echo $scrap_href; ?>" target="_blank" class="btn btn_b03 board-gal-watch__scrap" onclick="win_scrap(this.href); return false;"><i class="fa fa-bookmark" aria-hidden="true"></i> 스크랩</a><?php } ?>
+                </div>
+            </section>
+
+            <?php if ($is_signature) { ?><div class="board-view__signature"><?php echo $signature ?></div><?php } ?>
+
+            <?php if ($good_href || $nogood_href) { ?>
+            <div id="bo_v_act" class="board-gal-watch__vote">
+                <?php if ($good_href) { ?><span class="bo_v_act_gng"><a href="<?php echo $good_href.'&amp;'.$qstr ?>" id="good_button" class="bo_v_good"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i><strong><?php echo number_format($view['wr_good']) ?></strong></a><b id="bo_v_act_good"></b></span><?php } ?>
+                <?php if ($nogood_href) { ?><span class="bo_v_act_gng"><a href="<?php echo $nogood_href.'&amp;'.$qstr ?>" id="nogood_button" class="bo_v_nogood"><i class="fa fa-thumbs-o-down" aria-hidden="true"></i><strong><?php echo number_format($view['wr_nogood']) ?></strong></a><b id="bo_v_act_nogood"></b></span><?php } ?>
+            </div>
+            <?php } elseif ($board['bo_use_good'] || $board['bo_use_nogood']) { ?>
+            <div id="bo_v_act" class="board-gal-watch__vote">
+                <?php if ($board['bo_use_good']) { ?><span class="bo_v_good"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i><strong><?php echo number_format($view['wr_good']) ?></strong></span><?php } ?>
+                <?php if ($board['bo_use_nogood']) { ?><span class="bo_v_nogood"><i class="fa fa-thumbs-o-down" aria-hidden="true"></i><strong><?php echo number_format($view['wr_nogood']) ?></strong></span><?php } ?>
+            </div>
+            <?php } ?>
+
+            <?php
+            $cnt = 0;
+            if (!empty($view['file']['count'])) {
+                for ($i=0; $i<count($view['file']); $i++) {
+                    if (empty($view['file'][$i]['source'])) {
+                        continue;
+                    }
+                    if (!empty($view['file'][$i]['view'])) {
+                        continue;
+                    }
+                    if (function_exists('eottae_gallery_file_is_image') && eottae_gallery_file_is_image($view['file'][$i]['source'])) {
+                        continue;
+                    }
+                    $cnt++;
+                }
+            }
+            ?>
+            <?php if ($cnt) { ?>
+            <section id="bo_v_file" class="board-view__files">
+                <h3 class="board-view__section-title">첨부파일</h3>
+                <ul>
+                <?php for ($i=0; $i<count($view['file']); $i++) {
+                    if (empty($view['file'][$i]['source']) || !empty($view['file'][$i]['view'])) {
+                        continue;
+                    }
+                    if (function_exists('eottae_gallery_file_is_image') && eottae_gallery_file_is_image($view['file'][$i]['source'])) {
+                        continue;
+                    }
+                ?>
+                    <li>
+                        <a href="<?php echo $view['file'][$i]['href']; ?>" class="view_file_download">
+                            <strong><?php echo $view['file'][$i]['source'] ?></strong> (<?php echo $view['file'][$i]['size'] ?>)
+                        </a>
+                    </li>
+                <?php } ?>
+                </ul>
+            </section>
+            <?php } ?>
+
+            <?php if (isset($view['link']) && array_filter($view['link'])) { ?>
+            <section id="bo_v_link" class="board-view__links">
+                <h3 class="board-view__section-title">관련링크</h3>
+                <ul>
+                <?php for ($i=1; $i<=count($view['link']); $i++) {
+                    if (!empty($view['link'][$i])) {
+                ?>
+                    <li><a href="<?php echo $view['link_href'][$i] ?>" target="_blank" rel="noopener noreferrer"><?php echo cut_str($view['link'][$i], 70); ?></a></li>
+                <?php } } ?>
+                </ul>
+            </section>
+            <?php } ?>
+
+            <?php if ($prev_href || $next_href) { ?>
+            <nav class="bo_v_nb board-view__nav board-gal-watch__nav">
+                <ul>
+                    <?php if ($prev_href) { ?><li class="btn_prv"><span class="nb_tit">이전글</span><a href="<?php echo $prev_href ?>"><?php echo $prev_wr_subject;?></a></li><?php } ?>
+                    <?php if ($next_href) { ?><li class="btn_next"><span class="nb_tit">다음글</span><a href="<?php echo $next_href ?>"><?php echo $next_wr_subject;?></a></li><?php } ?>
+                </ul>
+            </nav>
+            <?php } ?>
+
+            <section class="board-gal-watch__comments-wrap">
+                <?php include_once(G5_BBS_PATH.'/view_comment.php'); ?>
+            </section>
         </div>
 
-        <?php include_once(G5_SKIN_PATH.'/board/_inc/g5b-gallery-view.php'); ?>
-
-        <?php if ($is_signature) { ?><div class="board-view__signature"><?php echo $signature ?></div><?php } ?>
-
-        <?php if ($good_href || $nogood_href) { ?>
-        <div id="bo_v_act" class="board-view__vote">
-            <?php if ($good_href) { ?><span class="bo_v_act_gng"><a href="<?php echo $good_href.'&amp;'.$qstr ?>" id="good_button" class="bo_v_good"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i><strong><?php echo number_format($view['wr_good']) ?></strong></a><b id="bo_v_act_good"></b></span><?php } ?>
-            <?php if ($nogood_href) { ?><span class="bo_v_act_gng"><a href="<?php echo $nogood_href.'&amp;'.$qstr ?>" id="nogood_button" class="bo_v_nogood"><i class="fa fa-thumbs-o-down" aria-hidden="true"></i><strong><?php echo number_format($view['wr_nogood']) ?></strong></a><b id="bo_v_act_nogood"></b></span><?php } ?>
-        </div>
-        <?php } elseif ($board['bo_use_good'] || $board['bo_use_nogood']) { ?>
-        <div id="bo_v_act" class="board-view__vote">
-            <?php if ($board['bo_use_good']) { ?><span class="bo_v_good"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i><strong><?php echo number_format($view['wr_good']) ?></strong></span><?php } ?>
-            <?php if ($board['bo_use_nogood']) { ?><span class="bo_v_nogood"><i class="fa fa-thumbs-o-down" aria-hidden="true"></i><strong><?php echo number_format($view['wr_nogood']) ?></strong></span><?php } ?>
-        </div>
-        <?php } ?>
-    </section>
-
-    <?php
-    $cnt = 0;
-    if (!empty($view['file']['count'])) {
-        for ($i=0; $i<count($view['file']); $i++) {
-            if (empty($view['file'][$i]['source'])) {
-                continue;
-            }
-            if (!empty($view['file'][$i]['view'])) {
-                continue;
-            }
-            if (function_exists('eottae_gallery_file_is_image') && eottae_gallery_file_is_image($view['file'][$i]['source'])) {
-                continue;
-            }
-            $cnt++;
-        }
-    }
-    ?>
-    <?php if ($cnt) { ?>
-    <section id="bo_v_file" class="board-view__files">
-        <h3 class="board-view__section-title">첨부파일</h3>
-        <ul>
-        <?php for ($i=0; $i<count($view['file']); $i++) {
-            if (empty($view['file'][$i]['source']) || !empty($view['file'][$i]['view'])) {
-                continue;
-            }
-            if (function_exists('eottae_gallery_file_is_image') && eottae_gallery_file_is_image($view['file'][$i]['source'])) {
-                continue;
-            }
-        ?>
-            <li>
-                <a href="<?php echo $view['file'][$i]['href']; ?>" class="view_file_download">
-                    <strong><?php echo $view['file'][$i]['source'] ?></strong> (<?php echo $view['file'][$i]['size'] ?>)
-                </a>
-            </li>
-        <?php } ?>
-        </ul>
-    </section>
-    <?php } ?>
-
-    <?php if (isset($view['link']) && array_filter($view['link'])) { ?>
-    <section id="bo_v_link" class="board-view__links">
-        <h3 class="board-view__section-title">관련링크</h3>
-        <ul>
-        <?php for ($i=1; $i<=count($view['link']); $i++) {
-            if (!empty($view['link'][$i])) {
-        ?>
-            <li><a href="<?php echo $view['link_href'][$i] ?>" target="_blank" rel="noopener noreferrer"><?php echo cut_str($view['link'][$i], 70); ?></a></li>
-        <?php } } ?>
-        </ul>
-    </section>
-    <?php } ?>
-
-    <?php if ($prev_href || $next_href) { ?>
-    <nav class="bo_v_nb board-view__nav">
-        <ul>
-            <?php if ($prev_href) { ?><li class="btn_prv"><span class="nb_tit">이전글</span><a href="<?php echo $prev_href ?>"><?php echo $prev_wr_subject;?></a></li><?php } ?>
-            <?php if ($next_href) { ?><li class="btn_next"><span class="nb_tit">다음글</span><a href="<?php echo $next_href ?>"><?php echo $next_wr_subject;?></a></li><?php } ?>
-        </ul>
-    </nav>
-    <?php } ?>
-
-    <?php include_once(G5_BBS_PATH.'/view_comment.php'); ?>
+        <aside class="board-gal-watch__sidebar" aria-label="다른 갤러리">
+            <h2 class="board-gal-watch__sidebar-title">다른 갤러리</h2>
+            <?php if (empty($gal_related)) { ?>
+            <p class="board-gal-watch__sidebar-empty">다른 글이 없습니다.</p>
+            <?php } else { ?>
+            <ul class="board-gal-sidebar">
+                <?php foreach ($gal_related as $gal_row) {
+                    echo g5b_gallery_sidebar_item_html($gal_row, $bo_table, (int) $view['wr_id']);
+                } ?>
+            </ul>
+            <?php } ?>
+        </aside>
+    </div>
 </article>
 
 <script>

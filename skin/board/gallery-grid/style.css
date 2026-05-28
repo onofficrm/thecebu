@@ -328,58 +328,275 @@
   margin-top: 2.25rem;
 }
 
-/* 글보기 */
-.board-view--gallery .board-view__hero {
-  margin-bottom: var(--space-xl, 2rem);
-  border-radius: var(--radius-lg, 12px);
+/* 글보기 (YouTube watch 스타일 2열) */
+.board-gal-watch {
+  max-width: none;
+}
+
+.board-gal-watch__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.board-gal-watch__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.board-gal-watch__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 402px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.board-gal-watch__primary {
+  min-width: 0;
+}
+
+.board-gal-watch__media-wrap {
+  margin-bottom: 0.75rem;
+}
+
+.board-view--gallery .board-view__hero,
+.board-gal-watch .board-view__hero {
+  margin-bottom: 0.75rem;
+  border-radius: 12px;
   overflow: hidden;
-  background: var(--color-surface, #f8fafc);
+  background: #0f172a;
   text-align: center;
 }
 
 .board-view--gallery .board-view__hero img,
-.board-view--gallery .board-view__hero-img {
+.board-view--gallery .board-view__hero-img,
+.board-gal-watch .board-view__hero img,
+.board-gal-watch .board-view__hero-img {
   display: block;
   width: 100%;
-  max-height: 70vh;
+  max-height: min(70vh, 720px);
   margin: 0 auto;
   object-fit: contain;
 }
 
-.board-view--gallery .board-view__gallery {
-  margin-bottom: var(--space-xl, 2rem);
+.board-view--gallery .board-view__gallery,
+.board-gal-watch .board-view__gallery {
+  margin-bottom: 1rem;
 }
 
-.board-view--gallery .board-view__gallery-grid {
+.board-view--gallery .board-view__gallery-grid,
+.board-gal-watch .board-view__gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: var(--space-md, 1rem);
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.65rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.board-view--gallery .board-view__gallery-item {
-  border-radius: var(--radius-md, 8px);
+.board-view--gallery .board-view__gallery-item,
+.board-gal-watch .board-view__gallery-item {
+  border-radius: 8px;
   overflow: hidden;
   background: var(--color-surface, #f8fafc);
 }
 
-.board-view--gallery .board-view__gallery-item img {
+.board-view--gallery .board-view__gallery-item img,
+.board-gal-watch .board-view__gallery-item img {
   width: 100%;
   height: auto;
   display: block;
 }
 
-.board-view--gallery .board-view__content-wrap {
-  max-width: 48rem;
-  margin: 0 auto;
-  padding: var(--space-xl, 2rem) 0;
+.board-gal-watch__title {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--gal-text);
 }
 
-.board-view--gallery .board-view__content {
-  font-size: var(--font-size-base, 1rem);
-  line-height: var(--line-height-relaxed, 1.75);
+.board-gal-watch__cate {
+  display: inline-block;
+  margin-right: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #0284c7;
+}
+
+.board-gal-watch__meta-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--gal-line);
+}
+
+.board-gal-watch__author {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.board-gal-watch__avatar .member_profile_img,
+.board-gal-watch__avatar img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.board-gal-watch__author-text {
+  min-width: 0;
+}
+
+.board-gal-watch__author-name {
+  display: block;
+  font-size: 0.9375rem;
+  color: var(--gal-text);
+}
+
+.board-gal-watch__stats {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.8125rem;
+  color: var(--gal-muted);
+}
+
+.board-gal-watch .board-view__content-wrap {
+  max-width: none;
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.board-gal-watch .board-view__content {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--gal-text);
+}
+
+.board-gal-watch__comments-wrap {
+  margin-top: 1.5rem;
+}
+
+.board-gal-watch__comments-wrap .cmt_btn {
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.75rem 0;
+  border: none;
+  border-bottom: 1px solid var(--gal-line);
+  background: transparent;
+  text-align: left;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gal-text);
+}
+
+.board-gal-watch__sidebar {
+  position: sticky;
+  top: 1rem;
+}
+
+.board-gal-watch__sidebar-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--gal-text);
+}
+
+.board-gal-watch__sidebar-empty {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--gal-muted);
+}
+
+.board-gal-sidebar {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.board-gal-sidebar-item__link {
+  display: flex;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.board-gal-sidebar-item__media {
+  position: relative;
+  flex-shrink: 0;
+  width: 168px;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+.board-gal-sidebar-item__media .board-thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.board-gal-sidebar-item__media .board-thumb__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.board-gal-sidebar-item__info {
+  flex: 1;
+  min-width: 0;
+  padding-top: 0.1rem;
+}
+
+.board-gal-sidebar-item__title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--gal-text);
+}
+
+.board-gal-sidebar-item__meta {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--gal-muted);
+}
+
+.board-gal-sidebar-item__link:hover .board-gal-sidebar-item__title {
+  color: #0284c7;
+}
+
+@media (max-width: 1199px) {
+  .board-gal-watch__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .board-gal-watch__sidebar {
+    position: static;
+    margin-top: 0.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--gal-line);
+  }
 }
 
 @media (min-width: 768px) {
