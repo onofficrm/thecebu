@@ -27,6 +27,7 @@ if (!defined('_GNUBOARD_')) {
  * @var string $job_recruit_label
  * @var string $job_thumb_html
  * @var string $job_recruit_status
+ * @var string $job_badge_label
  */
 $estate_deal_label = $estate_deal_label ?? '';
 $estate_thumb_html = $estate_thumb_html ?? '';
@@ -34,9 +35,12 @@ $estate_deal_status = $estate_deal_status ?? '';
 $job_recruit_label = $job_recruit_label ?? '';
 $job_thumb_html = $job_thumb_html ?? '';
 $job_recruit_status = $job_recruit_status ?? '';
+$job_badge_label = $job_badge_label ?? '';
 $status_thumb_html = $estate_thumb_html !== '' ? $estate_thumb_html : $job_thumb_html;
-$has_badges = $is_ai_post || $is_notice || $ca_name !== '' || $region !== '' || $is_new || $is_hot
-    || $estate_deal_label !== '' || $job_recruit_label !== '';
+$badge_category = $job_badge_label !== '' ? $job_badge_label : $ca_name;
+$show_job_recruit_badge = $job_recruit_label !== '' && $job_thumb_html === '';
+$has_badges = $is_ai_post || $is_notice || $badge_category !== '' || $region !== '' || $is_new || $is_hot
+    || $estate_deal_label !== '' || $show_job_recruit_badge;
 ?>
 <article class="<?php echo $item_class; ?>">
     <a href="<?php echo $item['href']; ?>" class="community-post__link">
@@ -59,8 +63,8 @@ $has_badges = $is_ai_post || $is_notice || $ca_name !== '' || $region !== '' || 
                             <?php if ($is_notice) { ?>
                             <span class="community-badge community-badge--notice"><span aria-hidden="true">📣</span> 공지</span>
                             <?php } else { ?>
-                                <?php if ($ca_name !== '') { ?>
-                            <span class="community-badge <?php echo eottae_community_badge_class($ca_name); ?>"><?php echo $ca_name; ?></span>
+                                <?php if ($badge_category !== '') { ?>
+                            <span class="community-badge <?php echo eottae_community_badge_class($badge_category); ?>"><?php echo $badge_category; ?></span>
                                 <?php } ?>
                                 <?php if ($region !== '') { ?>
                             <span class="community-badge community-badge--region"><?php echo $region; ?></span>
@@ -68,7 +72,7 @@ $has_badges = $is_ai_post || $is_notice || $ca_name !== '' || $region !== '' || 
                                 <?php if ($estate_deal_label !== '') { ?>
                             <span class="community-badge estate-deal-badge <?php echo htmlspecialchars('estate-deal-badge--'.$estate_deal_status, ENT_QUOTES, 'UTF-8'); ?>"><?php echo get_text($estate_deal_label); ?></span>
                                 <?php } ?>
-                                <?php if ($job_recruit_label !== '') { ?>
+                                <?php if ($show_job_recruit_badge) { ?>
                             <span class="community-badge job-recruit-badge <?php echo htmlspecialchars('job-recruit-badge--'.$job_recruit_status, ENT_QUOTES, 'UTF-8'); ?>"><?php echo get_text($job_recruit_label); ?></span>
                                 <?php } ?>
                                 <?php if ($is_new) { ?><span class="community-badge community-badge--new">NEW</span><?php } ?>

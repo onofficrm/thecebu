@@ -967,33 +967,13 @@ if (!function_exists('eottae_builder_inject_home_talk_feed_script')) {
 
 if (!function_exists('eottae_builder_inject_home_briefing_script')) {
     /**
-     * 홈(빌더) 하단 「오늘의 세부 체크」 티저
-     * - 일반회원 로그인 시 미노출 (사업자·비로그인은 유지, /briefing/ 페이지는 유지)
+     * 홈(빌더)에서는 「오늘의 세부 체크」를 노출하지 않습니다.
+     *
+     * 브리핑은 /briefing/ 전용 페이지, 커뮤니티 허브, 마이페이지에서 진입하도록 유지합니다.
      */
     function eottae_builder_inject_home_briefing_script()
     {
-        global $is_member, $is_admin;
-
-        if ($is_member && !$is_admin && function_exists('eottae_is_business_member') && !eottae_is_business_member()) {
-            return '<style>#eottae-sebu-briefing-home,.sebu-briefing-teaser--home-mount{display:none!important}</style>';
-        }
-
-        if (!function_exists('eottae_briefing_home_payload')) {
-            include_once G5_LIB_PATH.'/eottae-briefing.lib.php';
-        }
-
-        $payload = eottae_briefing_home_payload();
-        $payload_json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if ($payload_json === false) {
-            return '';
-        }
-
-        $css = defined('G5_CSS_URL') ? G5_CSS_URL.'/eottae-briefing.css?v=2' : '/css/eottae-briefing.css';
-        $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-briefing.js' : '/js/eottae-home-briefing.js';
-
-        return '<link rel="stylesheet" href="'.htmlspecialchars($css, ENT_QUOTES, 'UTF-8').'">'
-            .'<script>window.__EOTTae_HOME_BRIEFING__='.$payload_json.';</script>'
-            .'<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
+        return '';
     }
 }
 
@@ -4689,6 +4669,13 @@ if (!function_exists('eottae_shop_render_cards_html')) {
 
         $list = eottae_shop_list_card_attach_meta($list, $bo_table);
 
+        if (!function_exists('eottae_event_prefetch_shop_posts_for_rows') && is_file(G5_LIB_PATH.'/eottae-event.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-event.lib.php';
+        }
+        if (function_exists('eottae_event_prefetch_shop_posts_for_rows')) {
+            eottae_event_prefetch_shop_posts_for_rows($list, $bo_table);
+        }
+
         ob_start();
         foreach ($list as $row) {
             if (!is_array($row)) {
@@ -5586,6 +5573,12 @@ if (!function_exists('eottae_community_board_hero')) {
                 'desc'   => '세부 업체에 대한 회원 리뷰를 모아 보는 게시판입니다.',
                 'image'  => sprintf($cebu_img, '1414235077428-338989a43e79'),
             ),
+            'report' => array(
+                'kicker' => '세부어때 제보함',
+                'title'  => '세부 제보함',
+                'desc'   => '세부에서 본 소식, 생활정보, 이벤트, 주의사항을 제보해주세요. 작은 제보가 세부 교민과 여행자에게 큰 도움이 됩니다.',
+                'image'  => sprintf($cebu_img, '1518509562904-7fc873a70436'),
+            ),
         );
 
         if (isset($presets[$table])) {
@@ -5927,10 +5920,13 @@ if (!function_exists('eottae_gnb_nav_links')) {
             array('key' => 'food', 'label' => '맛집', 'href' => eottae_board_list_url(defined('EOTTae_FOOD_TABLE') ? EOTTae_FOOD_TABLE : 'food')),
             array('key' => 'golf_join', 'label' => '골프조인', 'href' => function_exists('eottae_golf_join_list_url') ? eottae_golf_join_list_url() : G5_URL.'/golf-join/'),
             array('key' => 'community', 'label' => '커뮤니티', 'href' => eottae_community_list_url()),
-            array('key' => 'column', 'label' => function_exists('eottae_column_menu_label') ? eottae_column_menu_label() : '컬럼', 'href' => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/'),
-            array('key' => 'adroom', 'label' => '광고방', 'href' => function_exists('eottae_adroom_list_url') ? eottae_adroom_list_url() : G5_URL.'/ad-room/'),
+            array('key' => 'report', 'label' => '제보함', 'href' => eottae_board_list_url(defined('EOTTae_REPORT_TABLE') ? EOTTae_REPORT_TABLE : 'report')),
+            array('key' => 'cebu_map', 'label' => '세부생활지도', 'href' => G5_URL.'/cebu-map/', 'emphasis' => 'accent'),
+            array('key' => 'market', 'label' => '중고장터', 'href' => eottae_board_list_url(defined('EOTTae_MARKET_TABLE') ? EOTTae_MARKET_TABLE : 'market')),
             array('key' => 'job', 'label' => '구인구직', 'href' => eottae_board_list_url(defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job')),
             array('key' => 'estate', 'label' => '부동산', 'href' => eottae_board_list_url(defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate')),
+            array('key' => 'column', 'label' => function_exists('eottae_column_menu_label') ? eottae_column_menu_label() : '컬럼', 'href' => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/'),
+            array('key' => 'adroom', 'label' => '광고방', 'href' => function_exists('eottae_adroom_list_url') ? eottae_adroom_list_url() : G5_URL.'/ad-room/'),
             array('key' => 'gallery', 'label' => '갤러리', 'href' => eottae_board_list_url(defined('EOTTae_GALLERY_TABLE') ? EOTTae_GALLERY_TABLE : 'gallery')),
             array('key' => 'youtube', 'label' => '유튜브', 'href' => eottae_board_list_url(defined('EOTTae_YOUTUBE_TABLE') ? EOTTae_YOUTUBE_TABLE : 'youtube')),
             array('key' => 'talk', 'label' => '세부톡', 'href' => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk', 'desktop_action' => true),
@@ -6013,6 +6009,8 @@ if (!function_exists('eottae_gnb_link_is_active')) {
             case 'adroom':
                 return strpos($uri, '/ad-room') !== false
                     || $bo === (defined('EOTTae_ADROOM_TABLE') ? EOTTae_ADROOM_TABLE : 'adroom');
+            case 'cebu_map':
+                return strpos($uri, '/cebu-map') !== false || strpos($uri, '/page/cebu-map.php') !== false;
             case 'community':
                 if (function_exists('eottae_is_community_hub_board') && $bo !== '' && eottae_is_community_hub_board($bo)) {
                     return true;

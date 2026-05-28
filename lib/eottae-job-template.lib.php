@@ -39,5 +39,12 @@ if (!function_exists('eottae_job_template_load_assets')) {
 
         add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-job-template.css?ver='.$css_ver.'">', 25);
         add_javascript('<script src="'.G5_JS_URL.'/eottae-job-template.js?ver='.$js_ver.'" defer></script>', 25);
+
+        if (!function_exists('eottae_location_picker_load_assets') && is_file(G5_LIB_PATH.'/eottae-location.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-location.lib.php';
+        }
+        if (function_exists('eottae_location_picker_load_assets')) {
+            eottae_location_picker_load_assets(true);
+        }
     }
 }

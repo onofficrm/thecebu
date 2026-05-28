@@ -1,0 +1,390 @@
+.cebu-map-page {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto 48px;
+  color: #0f172a;
+}
+
+.cebu-map-hero {
+  padding: 38px 0 22px;
+}
+
+.cebu-map-hero__eyebrow {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #2563eb;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cebu-map-hero__title {
+  margin: 0;
+  font-size: clamp(30px, 4vw, 48px);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.cebu-map-hero__lead {
+  max-width: 720px;
+  margin: 12px 0 0;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #475569;
+}
+
+.cebu-map-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.cebu-map-hero__actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.cebu-map-notice {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border: 1px solid #fed7aa;
+  border-radius: 14px;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 13px;
+}
+
+.cebu-map-filters {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: minmax(180px, 1.35fr) repeat(5, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.cebu-map-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.cebu-map-filter label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #64748b;
+}
+
+.cebu-map-filter select,
+.cebu-map-filter input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #fff;
+  color: #0f172a;
+  font: inherit;
+  font-weight: 700;
+}
+
+.cebu-map-near-btn {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #0ea5e9;
+  border-radius: 12px;
+  background: #0ea5e9;
+  color: #fff;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.cebu-map-status {
+  min-height: 20px;
+  margin: -4px 0 12px;
+  color: #0369a1;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.cebu-map-layout {
+  display: grid;
+  grid-template-columns: minmax(300px, 390px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.cebu-map-list-panel,
+.cebu-map-canvas-wrap {
+  min-height: 640px;
+  border: 1px solid #e2e8f0;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.cebu-map-list-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.cebu-map-list-panel__head {
+  padding: 18px 18px 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.cebu-map-list-panel__head h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.cebu-map-list-panel__head p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.cebu-map-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: auto;
+  padding: 12px;
+}
+
+.cebu-map-list-item {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cebu-map-card {
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+}
+
+.cebu-map-card.is-dimmed {
+  opacity: 0.62;
+}
+
+.cebu-map-card__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.cebu-map-card__type,
+.cebu-map-card__status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.cebu-map-card__type {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.cebu-map-card__status {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.cebu-map-card--market .cebu-map-card__status {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.cebu-map-card--job .cebu-map-card__status {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.cebu-map-card__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.cebu-map-card__price,
+.cebu-map-card__location {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.cebu-map-card__price {
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.cebu-map-card__location {
+  color: #64748b;
+}
+
+.cebu-map-card__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.cebu-map-canvas-wrap {
+  position: sticky;
+  top: 92px;
+}
+
+.cebu-map-canvas {
+  width: 100%;
+  height: 100%;
+  min-height: 640px;
+  background: #dbeafe;
+}
+
+.cebu-map-canvas.is-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(135deg, rgba(219, 234, 254, 0.9), rgba(240, 249, 255, 0.95)),
+    repeating-linear-gradient(45deg, transparent 0 18px, rgba(148, 163, 184, 0.16) 18px 19px);
+}
+
+.cebu-map-fallback {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px;
+  text-align: center;
+  color: #334155;
+}
+
+.cebu-map-empty {
+  margin: 16px 6px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.cebu-map-bottom-card {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  z-index: 3;
+}
+
+.gm-style .cebu-map-card {
+  min-width: 220px;
+  box-shadow: none;
+  border: 0;
+  padding: 8px;
+}
+
+@media (max-width: 900px) {
+  .cebu-map-page {
+    width: min(100% - 20px, 680px);
+  }
+
+  .cebu-map-filters {
+    display: flex;
+    overflow-x: auto;
+    position: static;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .cebu-map-filter {
+    flex: 0 0 158px;
+    scroll-snap-align: start;
+  }
+
+  .cebu-map-filter--search {
+    flex-basis: 220px;
+  }
+
+  .cebu-map-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .cebu-map-list-panel,
+  .cebu-map-canvas-wrap,
+  .cebu-map-canvas {
+    min-height: 0;
+  }
+
+  .cebu-map-canvas-wrap {
+    position: relative;
+    order: 1;
+  }
+
+  .cebu-map-canvas {
+    height: 58vh;
+    min-height: 360px;
+  }
+
+  .cebu-map-list-panel {
+    order: 2;
+  }
+
+  .cebu-map-list {
+    max-height: none;
+  }
+
+  .cebu-map-bottom-card {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+  }
+}
+
+@media (max-width: 560px) {
+  .cebu-map-hero {
+    padding-top: 24px;
+  }
+
+  .cebu-map-hero__actions a {
+    flex: 1 1 100%;
+  }
+}

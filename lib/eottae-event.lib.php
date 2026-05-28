@@ -917,3 +917,214 @@ if (!function_exists('eottae_event_sync_fields_from_row')) {
         get_write($write_table, $wr_id, false);
     }
 }
+
+if (!function_exists('eottae_event_shop_posts_cache_ref')) {
+    /**
+     * @return array<string, array<int, array<string, mixed>>>
+     */
+    function &eottae_event_shop_posts_cache_ref()
+    {
+        static $cache = array();
+
+        return $cache;
+    }
+}
+
+if (!function_exists('eottae_event_reset_shop_posts_cache')) {
+    function eottae_event_reset_shop_posts_cache()
+    {
+        $cache = &eottae_event_shop_posts_cache_ref();
+        $cache = array();
+    }
+}
+
+if (!function_exists('eottae_event_posts_for_shop')) {
+    /**
+     * 업체에 연결된 이벤트/프로모션 글 목록 (최신순)
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    function eottae_event_posts_for_shop($bo_table, $wr_id, $active_only = true, $limit = 5)
+    {
+        $ref = eottae_event_format_shop_ref($bo_table, $wr_id);
+        if ($ref === '') {
+            return array();
+        }
+
+        $cache = &eottae_event_shop_posts_cache_ref();
+        $cache_key = $active_only ? $ref.':active' : $ref.':all';
+        if (array_key_exists($cache_key, $cache)) {
+            return $cache[$cache_key];
+        }
+
+        if (!function_exists('eottae_event_board_table')) {
+            return array();
+        }
+
+        global $g5;
+
+        $event_bo = eottae_event_board_table();
+        $write_table = $g5['write_prefix'].$event_bo;
+        $limit = max(1, min(20, (int) $limit));
+        $ref_sql = sql_escape_string($ref);
+
+        $result = sql_query("
+            SELECT wr_id, wr_subject, wr_1, wr_2, wr_3, wr_4, wr_5, wr_6, wr_7, wr_8, wr_9, wr_datetime
+            FROM `{$write_table}`
+            WHERE wr_is_comment = 0
+              AND wr_2 = '{$ref_sql}'
+            ORDER BY wr_id DESC
+            LIMIT {$limit}
+        ");
+
+        $items = array();
+        while ($row = sql_fetch_array($result)) {
+            if ($active_only && eottae_event_status_from_row($row) !== 'active') {
+                continue;
+            }
+            $row['event_status'] = eottae_event_status_from_row($row);
+            $row['event_type'] = eottae_event_normalize_type($row['wr_1'] ?? 'other');
+            $items[] = $row;
+        }
+
+        $cache[$cache_key] = $items;
+
+        return $items;
+    }
+}
+
+if (!function_exists('eottae_event_prefetch_shop_posts_for_rows')) {
+    /**
+     * 업소 목록 렌더 전 일괄 조회 (썸네일 배지용)
+     *
+     * @param array<int, array<string, mixed>> $rows
+     */
+    function eottae_event_prefetch_shop_posts_for_rows(array $rows, $bo_table = '', $active_only = true)
+    {
+        if (!$rows) {
+            return;
+        }
+
+        if ($bo_table === '') {
+            $bo_table = function_exists('eottae_shop_table') ? eottae_shop_table() : 'shop';
+        }
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+
+        $refs = array();
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $wr_id = (int) ($row['wr_id'] ?? 0);
+            if ($wr_id < 1) {
+                continue;
+            }
+            $ref = eottae_event_format_shop_ref($bo_table, $wr_id);
+            if ($ref !== '') {
+                $refs[$ref] = true;
+            }
+        }
+
+        foreach (array_keys($refs) as $ref) {
+            $parsed = eottae_event_parse_shop_ref($ref);
+            if ($parsed['bo_table'] === '' || $parsed['wr_id'] < 1) {
+                continue;
+            }
+            eottae_event_posts_for_shop($parsed['bo_table'], $parsed['wr_id'], $active_only, 8);
+        }
+    }
+}
+
+if (!function_exists('eottae_event_render_shop_thumb_badges')) {
+    /**
+     * 업체 썸네일 위 이벤트/프로모션 배지 HTML
+     *
+     * @param array<int, array<string, mixed>>|array<string, mixed>|null $events
+     */
+    function eottae_event_render_shop_thumb_badges($events, $size = 'sm')
+    {
+        if (is_array($events) && isset($events['wr_id'])) {
+            $events = array($events);
+        }
+        if (!is_array($events) || !$events) {
+            return '';
+        }
+
+        $primary = $events[0];
+        $type = eottae_event_normalize_type($primary['event_type'] ?? ($primary['wr_1'] ?? 'other'));
+        $status = ($primary['event_status'] ?? eottae_event_status_from_row($primary)) === 'ended' ? 'ended' : 'active';
+        $promo_kinds = array('discount', 'coupon', 'oneplus', 'gift');
+        $promo_label = in_array($type, $promo_kinds, true) ? '프로모션' : '이벤트';
+        $size_class = $size === 'lg' ? ' shop-thumb-event-badges--lg' : '';
+
+        $extra = '';
+        $count = count($events);
+        if ($count > 1) {
+            $extra = '<span class="shop-thumb-event-badge shop-thumb-event-badge--count" title="진행 중 이벤트 '.number_format($count).'건">+'.($count - 1).'</span>';
+        }
+
+        return '<span class="shop-thumb-event-badges'.$size_class.'" aria-hidden="true">'
+            .'<span class="shop-thumb-event-badge shop-thumb-event-badge--promo">'.get_text($promo_label).'</span>'
+            .eottae_event_render_type_badge($type, 'shop-thumb-event-badge shop-thumb-event-badge--type')
+            .($status === 'active' ? '' : eottae_event_render_status_badge($status, 'shop-thumb-event-badge--status'))
+            .$extra
+            .'</span>';
+    }
+}
+
+if (!function_exists('eottae_shop_event_thumb_badges_html')) {
+    function eottae_shop_event_thumb_badges_html($bo_table, $wr_id, $size = 'sm', $active_only = true)
+    {
+        $events = eottae_event_posts_for_shop($bo_table, $wr_id, $active_only, 5);
+
+        return eottae_event_render_shop_thumb_badges($events, $size);
+    }
+}
+
+if (!function_exists('eottae_event_shop_list_thumb_html')) {
+    /**
+     * 이벤트 글 목록 — 연결 업체 썸네일 + 배지
+     */
+    function eottae_event_shop_list_thumb_html(array $event_row, $size = 'md')
+    {
+        $shop = eottae_event_shop_from_row($event_row);
+        if (!$shop) {
+            return '';
+        }
+
+        global $g5;
+        $write_table = $g5['write_prefix'].$shop['bo_table'];
+        $shop_row = sql_fetch(" SELECT * FROM `{$write_table}` WHERE wr_id = '".(int) $shop['wr_id']."' AND wr_is_comment = 0 LIMIT 1 ");
+        if (!$shop_row) {
+            return '';
+        }
+
+        if (!function_exists('eottae_shop_card_thumb')) {
+            include_once G5_PATH.'/components/eottae/shop-card.php';
+        }
+
+        $thumb = function_exists('eottae_shop_card_thumb') ? eottae_shop_card_thumb($shop_row, $shop['bo_table']) : '';
+        if ($thumb !== '' && function_exists('eottae_map_public_url')) {
+            $thumb = eottae_map_public_url($thumb);
+        }
+
+        $event_row['event_status'] = eottae_event_status_from_row($event_row);
+        $event_row['event_type'] = eottae_event_normalize_type($event_row['wr_1'] ?? 'other');
+        $badges = eottae_event_render_shop_thumb_badges($event_row, $size);
+        $size_class = $size === 'lg' ? ' event-post__thumb-wrap--lg' : '';
+
+        ob_start();
+        ?>
+        <div class="event-post__thumb-wrap<?php echo $size_class; ?>">
+            <?php if ($thumb !== '') { ?>
+            <img src="<?php echo htmlspecialchars($thumb, ENT_QUOTES, 'UTF-8'); ?>" alt="" class="event-post__thumb" width="168" height="94" loading="lazy" decoding="async">
+            <?php } else { ?>
+            <span class="event-post__thumb event-post__thumb--empty" aria-hidden="true"></span>
+            <?php } ?>
+            <?php echo $badges; ?>
+        </div>
+        <?php
+
+        return (string) ob_get_clean();
+    }
+}

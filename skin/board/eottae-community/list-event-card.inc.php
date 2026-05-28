@@ -25,8 +25,18 @@ $card_class = 'event-post';
 if ($event_status === 'ended') {
     $card_class .= ' event-post--ended';
 }
+$event_shop_thumb = '';
+if (is_array($event_shop) && function_exists('eottae_event_shop_list_thumb_html')) {
+    $event_shop_thumb = eottae_event_shop_list_thumb_html($item);
+    if ($event_shop_thumb !== '') {
+        $card_class .= ' event-post--has-shop-thumb';
+    }
+}
 ?>
 <article class="<?php echo $card_class; ?>">
+    <div class="event-post__layout">
+        <?php echo $event_shop_thumb; ?>
+        <div class="event-post__main">
     <a href="<?php echo $item['href']; ?>" class="event-post__link">
         <div class="event-post__head">
             <?php echo eottae_event_render_status_badge($event_status); ?>
@@ -46,5 +56,7 @@ if ($event_status === 'ended') {
         <a href="<?php echo get_text($event_shop['view_url']); ?>" class="event-post__btn event-post__btn--shop" onclick="event.stopPropagation();">업체정보 보기</a>
         <?php } ?>
         <a href="<?php echo $item['href']; ?>" class="event-post__btn event-post__btn--detail">상세보기</a>
+    </div>
+        </div>
     </div>
 </article>

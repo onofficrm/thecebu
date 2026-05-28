@@ -340,8 +340,36 @@ if (!function_exists('eottae_install_get_board_defs')) {
                 eottae_install_community_board_def('people', '사람찾기', 11, ''),
                 array('bo_use_category' => 0)
             ),
-            eottae_install_community_board_def('job', '구인구직', 12, '구인|구직|알바|기타'),
-            eottae_install_community_board_def('estate', '부동산', 13, '매매|전월세|양도|기타'),
+            array_merge(
+                eottae_install_community_board_def('job', '구인구직', 12, '구인|구직|알바|기타'),
+                array(
+                    'bo_1_subj'  => '자동분류 지역',
+                    'bo_2_subj'  => '모집상태',
+                    'bo_3_subj'  => '구인구직 템플릿 JSON',
+                    'bo_4_subj'  => '상세위치',
+                    'bo_5_subj'  => '위도',
+                    'bo_6_subj'  => '경도',
+                    'bo_7_subj'  => '지도표시 여부',
+                    'bo_8_subj'  => '예비',
+                    'bo_9_subj'  => '예비',
+                    'bo_10_subj' => '예비',
+                )
+            ),
+            array_merge(
+                eottae_install_community_board_def('estate', '부동산', 13, '매매|전월세|양도|기타'),
+                array(
+                    'bo_1_subj'  => '자동분류 지역',
+                    'bo_2_subj'  => '거래상태',
+                    'bo_3_subj'  => '부동산 템플릿 JSON',
+                    'bo_4_subj'  => '상세위치',
+                    'bo_5_subj'  => '위도',
+                    'bo_6_subj'  => '경도',
+                    'bo_7_subj'  => '지도표시 여부',
+                    'bo_8_subj'  => '예비',
+                    'bo_9_subj'  => '예비',
+                    'bo_10_subj' => '예비',
+                )
+            ),
             array_merge(
                 eottae_install_community_board_def('gallery', '갤러리', 14, '풍경|맛집|일상|기타', 'gallery-grid'),
                 array(
@@ -370,6 +398,43 @@ if (!function_exists('eottae_install_get_board_defs')) {
                 'bo_1_subj'        => '톡방 ID',
                 'bo_2_subj'        => '삭제상태',
                 'bo_3_subj'        => '삭제자',
+            ),
+            array_merge(
+                eottae_install_community_board_def('report', '세부 제보함', 18, ''),
+                array(
+                    'bo_use_category'     => 0,
+                    'bo_use_dhtml_editor' => 0,
+                    'bo_upload_count'     => 5,
+                    'bo_1_subj'           => '제보 유형',
+                    'bo_2_subj'           => '지역',
+                    'bo_3_subj'           => '익명 여부',
+                    'bo_4_subj'           => '연락 가능 여부',
+                    'bo_5_subj'           => '연락처',
+                    'bo_6_subj'           => '관련 업체명',
+                    'bo_7_subj'           => '관련 링크',
+                    'bo_8_subj'           => '제보 상태',
+                    'bo_9_subj'           => '관리자 메모',
+                    'bo_10_subj'          => '공개 전환 예비',
+                )
+            ),
+            array_merge(
+                eottae_install_community_board_def('market', '중고장터', 19, '', 'eottae-market'),
+                array(
+                    'bo_use_category'     => 0,
+                    'bo_use_dhtml_editor' => 0,
+                    'bo_upload_count'     => 8,
+                    'bo_order'            => 19,
+                    'bo_1_subj'           => '가격',
+                    'bo_2_subj'           => '거래상태',
+                    'bo_3_subj'           => '자동분류 지역',
+                    'bo_4_subj'           => '상세위치',
+                    'bo_5_subj'           => '위도',
+                    'bo_6_subj'           => '경도',
+                    'bo_7_subj'           => '연락방법',
+                    'bo_8_subj'           => '가격제안 가능 여부',
+                    'bo_9_subj'           => '지도표시 여부',
+                    'bo_10_subj'          => '예비',
+                )
             ),
             array(
                 'bo_table'         => 'inquiry',

@@ -86,32 +86,32 @@ if (!function_exists('eottae_columnist_recruit_comic_panels')) {
             array(
                 'num'   => '1',
                 'lines' => array('세부에 살다 보면 이런 생각 들 때 없나요?', '이 정보, 나만 알기 아까운데?'),
-                'image' => $img.'/comic-01.png',
+                'image' => $img.'/comic-01.svg',
             ),
             array(
                 'num'   => '2',
                 'lines' => array('맛집도 알고, 병원도 알고, 집 구하는 팁도 알고…', '근데 이걸 어디에 정리하지?'),
-                'image' => $img.'/comic-02.png',
+                'image' => $img.'/comic-02.svg',
             ),
             array(
                 'num'   => '3',
                 'lines' => array('세부어때 컬럼리스트가 되어주세요!', '당신의 경험이 누군가에게는 진짜 필요한 정보가 됩니다.'),
-                'image' => $img.'/comic-03.png',
+                'image' => $img.'/comic-03.svg',
             ),
             array(
                 'num'   => '4',
                 'lines' => array('글을 잘 쓰지 않아도 괜찮아요.', '직접 겪은 이야기면 충분합니다.'),
-                'image' => $img.'/comic-04.png',
+                'image' => $img.'/comic-04.svg',
             ),
             array(
                 'num'   => '5',
                 'lines' => array('활동하면 내 이름도 알리고, 내 전문 분야도 보여줄 수 있어요.', '업체나 개인 활동 홍보에도 도움이 됩니다.'),
-                'image' => $img.'/comic-05.png',
+                'image' => $img.'/comic-05.svg',
             ),
             array(
                 'num'   => '6',
                 'lines' => array('세부의 좋은 정보를 함께 쌓아가는 사람들', '지금 세부어때 컬럼리스트에 참여해보세요!'),
-                'image' => $img.'/comic-06.png',
+                'image' => $img.'/comic-06.svg',
             ),
         );
     }

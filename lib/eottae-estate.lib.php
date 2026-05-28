@@ -3,6 +3,10 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
+if (!function_exists('format_location_display') && is_file(G5_LIB_PATH.'/eottae-location.lib.php')) {
+    include_once G5_LIB_PATH.'/eottae-location.lib.php';
+}
+
 if (!function_exists('eottae_estate_deal_statuses')) {
     /**
      * @return array<string, string>
@@ -240,18 +244,22 @@ if (!function_exists('eottae_estate_set_deal_status')) {
 if (!function_exists('eottae_estate_location_from_row')) {
     /**
      * @param array<string, mixed> $row
-     * @return array{address:string, lat:string, lng:string}
+     * @return array{address:string, lat:string, lng:string, auto_area:string, area_label:string, location_text:string, latitude:string, longitude:string, map_visible:bool, display:string}
      */
     function eottae_estate_location_from_row($row)
     {
         $address = '';
         $lat = '';
         $lng = '';
+        $map_visible = true;
+        $region = '';
 
         if (is_array($row)) {
+            $region = trim(strip_tags((string) ($row['wr_1'] ?? '')));
             $address = trim(strip_tags((string) ($row['wr_4'] ?? '')));
             $lat = trim((string) ($row['wr_5'] ?? ''));
             $lng = trim((string) ($row['wr_6'] ?? ''));
+            $map_visible = (string) ($row['wr_7'] ?? '1') !== '0';
         }
 
         if (!function_exists('eottae_estate_template_from_row')) {
@@ -269,13 +277,38 @@ if (!function_exists('eottae_estate_location_from_row')) {
                 if ($lng === '' && !empty($data['lng'])) {
                     $lng = trim((string) $data['lng']);
                 }
+                if ($region === '' && !empty($data['region'])) {
+                    $region = trim((string) $data['region']);
+                }
             }
         }
 
+        $area_key = function_exists('eottae_location_normalize_area')
+            ? eottae_location_normalize_area($region)
+            : '';
+        if ($area_key === '' || $area_key === 'other') {
+            $area_key = function_exists('eottae_location_auto_area')
+                ? eottae_location_auto_area($address ?: $region, $lat, $lng)
+                : 'other';
+        }
+        $area_label = function_exists('eottae_location_area_label')
+            ? eottae_location_area_label($area_key)
+            : ($region !== '' ? $region : '기타');
+        $display = function_exists('format_location_display')
+            ? format_location_display(array('auto_area' => $area_key, 'location_text' => $address))
+            : trim($area_label.' · '.$address, ' ·');
+
         return array(
-            'address' => $address,
-            'lat'     => $lat,
-            'lng'     => $lng,
+            'address'       => $address,
+            'lat'           => $lat,
+            'lng'           => $lng,
+            'auto_area'     => $area_key,
+            'area_label'    => $area_label,
+            'location_text' => $address,
+            'latitude'      => $lat,
+            'longitude'     => $lng,
+            'map_visible'   => $map_visible,
+            'display'       => $display,
         );
     }
 }
@@ -285,8 +318,47 @@ if (!function_exists('eottae_estate_has_map_location')) {
     {
         $loc = eottae_estate_location_from_row(is_array($row) ? $row : array());
 
-        return $loc['lat'] !== '' && $loc['lng'] !== ''
+        return !empty($loc['map_visible'])
+            && $loc['lat'] !== '' && $loc['lng'] !== ''
             && is_numeric($loc['lat']) && is_numeric($loc['lng']);
+    }
+}
+
+if (!function_exists('eottae_estate_map_marker_from_row')) {
+    /**
+     * 세부생활지도 연결용 마커 데이터 구조
+     *
+     * @return array<string, mixed>|null
+     */
+    function eottae_estate_map_marker_from_row($row, $bo_table = '')
+    {
+        if (!is_array($row)) {
+            return null;
+        }
+
+        $loc = eottae_estate_location_from_row($row);
+        if ($loc['latitude'] === '' || $loc['longitude'] === '' || !is_numeric($loc['latitude']) || !is_numeric($loc['longitude'])) {
+            return null;
+        }
+
+        $tpl = function_exists('eottae_estate_template_from_row') ? eottae_estate_template_from_row($row) : null;
+        $price = is_array($tpl) ? trim((string) ($tpl['price'] ?? '')) : '';
+        $bo_table = $bo_table !== '' ? $bo_table : (function_exists('eottae_estate_board_table') ? eottae_estate_board_table() : 'estate');
+
+        return array(
+            'type'       => 'estate',
+            'type_label' => '부동산',
+            'wr_id'      => (int) ($row['wr_id'] ?? 0),
+            'title'      => get_text($row['wr_subject'] ?? ''),
+            'location'   => $loc['display'],
+            'area'       => $loc['area_label'],
+            'lat'        => (float) $loc['latitude'],
+            'lng'        => (float) $loc['longitude'],
+            'summary'    => $price,
+            'url'        => function_exists('get_pretty_url')
+                ? get_pretty_url($bo_table, (int) ($row['wr_id'] ?? 0))
+                : G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.(int) ($row['wr_id'] ?? 0),
+        );
     }
 }
 
@@ -326,7 +398,10 @@ if (!function_exists('eottae_estate_list_card_data')) {
             ? eottae_estate_template_label('deal_type', $template['deal_type'] ?? '')
             : '';
 
-        $region = trim((string) ($template['region'] ?? ($item['wr_1'] ?? '')));
+        $location = eottae_estate_location_from_row($item);
+        $region = !empty($location['display'])
+            ? $location['display']
+            : trim((string) ($template['region'] ?? ($item['wr_1'] ?? '')));
         $price = trim((string) ($template['price'] ?? ''));
         $building = trim((string) ($template['building_name'] ?? ''));
         $rooms = trim((string) ($template['rooms'] ?? ''));
@@ -355,6 +430,8 @@ if (!function_exists('eottae_estate_list_card_data')) {
             'time_label'      => function_exists('eottae_community_relative_time')
                 ? eottae_community_relative_time($item['wr_datetime'] ?? '')
                 : '',
+            'location'        => $location['display'],
+            'map_visible'     => !empty($location['map_visible']),
             'has_map'         => eottae_estate_has_map_location($item),
         );
     }

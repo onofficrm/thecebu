@@ -27,6 +27,14 @@ if (!defined('EOTTae_EVENT_TABLE')) {
     define('EOTTae_EVENT_TABLE', 'event');
 }
 
+if (!defined('EOTTae_REPORT_TABLE')) {
+    define('EOTTae_REPORT_TABLE', 'report');
+}
+
+if (!defined('EOTTae_MARKET_TABLE')) {
+    define('EOTTae_MARKET_TABLE', 'market');
+}
+
 if (!defined('EOTTae_FOOD_TABLE')) {
     define('EOTTae_FOOD_TABLE', 'food');
 }

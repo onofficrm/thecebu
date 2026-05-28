@@ -1284,3 +1284,115 @@
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
+
+/* 갤러리 글보기 — YouTube형 2열 (본문 좌 · 썸네일 목록 우) */
+.board-wrap--gallery-grid.board-gal-watch,
+.board-wrap--gallery-grid#bo_v.board-gal-watch {
+  width: 100% !important;
+  max-width: min(100%, 1680px);
+}
+
+.board-gal-watch__layout {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 402px);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.board-gal-watch__primary {
+  min-width: 0;
+}
+
+.board-gal-watch__sidebar {
+  position: sticky;
+  top: calc(var(--eottae-header-h, 56px) + 12px);
+  align-self: start;
+  max-height: calc(100vh - var(--eottae-header-h, 56px) - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.board-gal-sidebar {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.board-gal-sidebar-item__link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.board-gal-sidebar-item__media {
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+.board-gal-sidebar-item__media .board-thumb,
+.board-gal-sidebar-item__media .board-thumb__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.board-gal-sidebar-item__info {
+  flex: 1;
+  min-width: 0;
+  padding-top: 0;
+}
+
+.board-gal-sidebar-item__title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--gal-text, #0f172a);
+}
+
+.board-gal-sidebar-item__meta {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--gal-muted, #64748b);
+}
+
+@media (max-width: 767px) {
+  .board-gal-watch__layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .board-gal-watch__sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    margin-top: 0.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--gal-line, rgba(15, 23, 42, 0.08));
+  }
+
+  .board-gal-sidebar-item__link {
+    flex-direction: row;
+    gap: 0.65rem;
+  }
+
+  .board-gal-sidebar-item__media {
+    width: 168px;
+  }
+}

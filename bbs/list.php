@@ -43,6 +43,9 @@ if ($sca || $stx || $stx === '0') {     //검색이면
     if (function_exists('eottae_shop_list_segment_sql')) {
         $sql_search .= eottae_shop_list_segment_sql();
     }
+    if (function_exists('eottae_report_list_segment_sql')) {
+        $sql_search .= eottae_report_list_segment_sql();
+    }
 
     // 가장 작은 번호를 얻어서 변수에 저장 (하단의 페이징에서 사용)
     $sql = " select MIN(wr_num) as min_wr_num from {$write_table} ";
@@ -68,6 +71,9 @@ if ($sca || $stx || $stx === '0') {     //검색이면
 
     if (function_exists('eottae_shop_list_segment_total_count')) {
         $segment_total = eottae_shop_list_segment_total_count($write_table);
+        $total_count = $segment_total !== null ? $segment_total : $board['bo_count_write'];
+    } elseif (function_exists('eottae_report_list_segment_total_count')) {
+        $segment_total = eottae_report_list_segment_total_count($write_table);
         $total_count = $segment_total !== null ? $segment_total : $board['bo_count_write'];
     } else {
         $total_count = $board['bo_count_write'];
@@ -240,6 +246,9 @@ if ($page_rows > 0) {
         $sql = " select * from {$write_table} where wr_is_comment = 0 ";
         if (function_exists('eottae_shop_list_segment_sql')) {
             $sql .= trim(eottae_shop_list_segment_sql());
+        }
+        if (function_exists('eottae_report_list_segment_sql')) {
+            $sql .= trim(eottae_report_list_segment_sql());
         }
         if(!empty($notice_array))
             $sql .= " and wr_id not in (".implode(', ', $notice_array).") ";

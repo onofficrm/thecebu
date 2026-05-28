@@ -1,0 +1,122 @@
+/**
+ * 세부 제보함 — 글쓰기 폼
+ */
+
+.sebu-report-template {
+  margin: 0 0 1.25rem;
+}
+
+.sebu-report-template__notice {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #fde68a;
+  background: #fffbeb;
+  font-size: 0.82rem;
+  color: #92400e;
+  line-height: 1.55;
+}
+
+.sebu-report-template__notice p {
+  margin: 0 0 0.35rem;
+}
+
+.sebu-report-template__notice p:last-child {
+  margin-bottom: 0;
+}
+
+.sebu-report-template__card {
+  margin-bottom: 0.85rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.sebu-report-template__card-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #334155;
+}
+
+.sebu-report-template__field {
+  margin-bottom: 0.85rem;
+}
+
+.sebu-report-template__field:last-child {
+  margin-bottom: 0;
+}
+
+.sebu-report-template__label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.sebu-report-template__req {
+  color: #ea580c;
+}
+
+.sebu-report-template__opt {
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.sebu-report-template__input,
+.sebu-report-template__select,
+.sebu-report-template__textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  color: #0f172a;
+  background: #fff;
+}
+
+.sebu-report-template__textarea {
+  min-height: 140px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.sebu-report-template__input:focus,
+.sebu-report-template__select:focus,
+.sebu-report-template__textarea:focus {
+  outline: none;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+}
+
+.sebu-report-template__check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  color: #475569;
+  cursor: pointer;
+}
+
+.sebu-report-template__check input {
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.sebu-report-template__contact {
+  margin-top: 0.65rem;
+}
+
+.sebu-report-template__contact[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+  .sebu-report-template__card {
+    padding: 0.9rem;
+  }
+}

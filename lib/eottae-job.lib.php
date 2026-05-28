@@ -3,6 +3,10 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
+if (!function_exists('format_location_display') && is_file(G5_LIB_PATH.'/eottae-location.lib.php')) {
+    include_once G5_LIB_PATH.'/eottae-location.lib.php';
+}
+
 if (!function_exists('eottae_job_recruit_statuses')) {
     /**
      * @return array<string, string>
@@ -152,6 +156,159 @@ if (!function_exists('eottae_job_render_list_thumb')) {
         <?php
 
         return (string) ob_get_clean();
+    }
+}
+
+if (!function_exists('eottae_job_list_snippet')) {
+    /**
+     * 구인구직 목록 요약 — 템플릿 핵심 정보 우선, 제목과 동일한 본문은 생략
+     */
+    function eottae_job_list_snippet($row, $subject = '', $len = 110)
+    {
+        $subject = trim(strip_tags((string) $subject));
+        $len = max(40, (int) $len);
+
+        $data = eottae_job_template_from_row($row);
+        if (is_array($data)) {
+            $parts = array();
+
+            if (!empty($data['company'])) {
+                $parts[] = get_text($data['company']);
+            }
+            if (!empty($data['job_type'])) {
+                $parts[] = get_text($data['job_type']);
+            }
+            if (!empty($data['region'])) {
+                $parts[] = get_text($data['region']);
+            }
+
+            $salary = trim((string) ($data['salary'] ?? ''));
+            if ($salary !== '') {
+                $pay_label = eottae_job_template_label('pay_type', $data['pay_type'] ?? '');
+                $parts[] = $pay_label !== '' ? $pay_label.' '.$salary : $salary;
+            } elseif (!empty($data['work_type'])) {
+                $work_label = eottae_job_template_label('work_type', $data['work_type']);
+                if ($work_label !== '') {
+                    $parts[] = $work_label;
+                }
+            }
+
+            if ($parts) {
+                $line = implode(' · ', array_values(array_unique($parts)));
+                if ($subject === '' || $line !== $subject) {
+                    return function_exists('cut_str') ? cut_str($line, $len, '…') : $line;
+                }
+            }
+
+            if (!empty($data['work_desc'])) {
+                $desc = trim(strip_tags($data['work_desc']));
+                if ($desc !== '' && $desc !== $subject) {
+                    return function_exists('cut_str') ? cut_str($desc, $len, '…') : $desc;
+                }
+            }
+        }
+
+        if (!function_exists('eottae_community_snippet')) {
+            return '';
+        }
+
+        $fallback = eottae_community_snippet(isset($row['wr_content']) ? $row['wr_content'] : '', $len);
+        $fallback = trim(strip_tags($fallback));
+
+        if ($fallback === '' || ($subject !== '' && $fallback === $subject)) {
+            return '';
+        }
+
+        return $fallback;
+    }
+}
+
+if (!function_exists('eottae_job_location_from_row')) {
+    /**
+     * @return array{auto_area:string, area_label:string, location_text:string, latitude:string, longitude:string, map_visible:bool, display:string}
+     */
+    function eottae_job_location_from_row($row)
+    {
+        if (!is_array($row)) {
+            $row = array();
+        }
+
+        $auto_area = isset($row['wr_1']) ? (string) $row['wr_1'] : '';
+        $location_text = trim(strip_tags((string) ($row['wr_4'] ?? '')));
+        $lat = trim((string) ($row['wr_5'] ?? ''));
+        $lng = trim((string) ($row['wr_6'] ?? ''));
+        $map_visible = (string) ($row['wr_7'] ?? '1') !== '0';
+
+        if ($location_text === '') {
+            $tpl = function_exists('eottae_job_template_from_row') ? eottae_job_template_from_row($row) : null;
+            if (is_array($tpl) && !empty($tpl['region'])) {
+                $location_text = trim(strip_tags((string) $tpl['region']));
+            }
+        }
+
+        $area_key = function_exists('eottae_location_normalize_area')
+            ? eottae_location_normalize_area($auto_area)
+            : '';
+        if ($area_key === '' || $area_key === 'other') {
+            $area_key = function_exists('eottae_location_auto_area')
+                ? eottae_location_auto_area($location_text ?: $auto_area, $lat, $lng)
+                : 'other';
+        }
+
+        $area_label = function_exists('eottae_location_area_label')
+            ? eottae_location_area_label($area_key)
+            : ($auto_area !== '' ? $auto_area : '기타');
+        $display = function_exists('format_location_display')
+            ? format_location_display(array('auto_area' => $area_key, 'location_text' => $location_text))
+            : trim($area_label.' · '.$location_text, ' ·');
+
+        return array(
+            'auto_area'     => $area_key,
+            'area_label'    => $area_label,
+            'location_text' => $location_text,
+            'latitude'      => $lat,
+            'longitude'     => $lng,
+            'map_visible'   => $map_visible,
+            'display'       => $display,
+        );
+    }
+}
+
+if (!function_exists('eottae_job_map_marker_from_row')) {
+    /**
+     * 세부생활지도 연결용 마커 데이터 구조
+     *
+     * @return array<string, mixed>|null
+     */
+    function eottae_job_map_marker_from_row($row, $bo_table = '')
+    {
+        if (!is_array($row)) {
+            return null;
+        }
+
+        $loc = eottae_job_location_from_row($row);
+        if ($loc['latitude'] === '' || $loc['longitude'] === '' || !is_numeric($loc['latitude']) || !is_numeric($loc['longitude'])) {
+            return null;
+        }
+
+        $tpl = eottae_job_template_from_row($row);
+        $salary = is_array($tpl) ? trim((string) ($tpl['salary'] ?? '')) : '';
+        $bo_table = $bo_table !== '' ? $bo_table : (function_exists('eottae_job_board_table') ? eottae_job_board_table() : 'job');
+
+        return array(
+            'type'      => 'job',
+            'type_label'=> '구인구직',
+            'wr_id'     => (int) ($row['wr_id'] ?? 0),
+            'title'     => get_text($row['wr_subject'] ?? ''),
+            'location'  => $loc['display'],
+            'area'      => $loc['area_label'],
+            'lat'       => (float) $loc['latitude'],
+            'lng'       => (float) $loc['longitude'],
+            'summary'   => $salary,
+            'url'       => function_exists('get_pretty_url')
+                ? get_pretty_url($bo_table, (int) ($row['wr_id'] ?? 0))
+                : G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.(int) ($row['wr_id'] ?? 0),
+        );
     }
 }
 

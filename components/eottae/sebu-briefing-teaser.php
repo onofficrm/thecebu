@@ -9,9 +9,16 @@ $sebu_briefing_teaser_line = isset($teaser_line) ? get_text($teaser_line) : '';
 $sebu_briefing_teaser_stats = isset($teaser_stats) && is_array($teaser_stats) ? $teaser_stats : array();
 $sebu_briefing_teaser_url = isset($teaser_url) ? (string) $teaser_url : (function_exists('eottae_briefing_url') ? eottae_briefing_url() : G5_URL.'/briefing/');
 $sebu_briefing_teaser_cta = isset($teaser_cta) ? (string) $teaser_cta : '브리핑 보기';
+$sebu_briefing_teaser_variant = isset($teaser_variant)
+    ? preg_replace('/[^a-z0-9_-]/i', '', (string) $teaser_variant)
+    : '';
+$sebu_briefing_teaser_class = 'sebu-briefing-teaser';
+if ($sebu_briefing_teaser_variant !== '') {
+    $sebu_briefing_teaser_class .= ' sebu-briefing-teaser--'.$sebu_briefing_teaser_variant;
+}
 ?>
 
-<section class="sebu-briefing-teaser" aria-labelledby="sebu-briefing-teaser-title">
+<section class="<?php echo $sebu_briefing_teaser_class; ?>" aria-labelledby="sebu-briefing-teaser-title">
     <div class="sebu-briefing-teaser__inner">
         <div class="sebu-briefing-teaser__content">
             <p class="sebu-briefing-teaser__eyebrow">Daily Briefing</p>

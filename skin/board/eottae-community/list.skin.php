@@ -8,6 +8,12 @@ include_once(G5_LIB_PATH.'/eottae-job.lib.php');
 include_once(G5_LIB_PATH.'/eottae-community-hub.lib.php');
 include_once(G5_LIB_PATH.'/eottae-event-template.lib.php');
 include_once(G5_LIB_PATH.'/eottae-event.lib.php');
+include_once(G5_LIB_PATH.'/eottae-report.lib.php');
+include_once(G5_LIB_PATH.'/eottae-report-template.lib.php');
+include_once(G5_LIB_PATH.'/eottae-briefing.lib.php');
+if (function_exists('eottae_briefing_load_assets')) {
+    eottae_briefing_load_assets();
+}
 $community_skin_css = G5_PATH.'/skin/board/eottae-community/style.css';
 $community_skin_ver = is_file($community_skin_css) ? (int) filemtime($community_skin_css) : 0;
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css?ver='.$community_skin_ver.'">', 30);
@@ -44,6 +50,15 @@ $is_free_board_list = function_exists('eottae_is_free_board') && eottae_is_free_
 $is_estate_board_list = function_exists('eottae_is_estate_board') && eottae_is_estate_board($bo_table);
 $is_job_board_list = function_exists('eottae_is_job_board') && eottae_is_job_board($bo_table);
 $is_event_board_list = function_exists('eottae_is_event_board') && eottae_is_event_board($bo_table);
+$is_report_board_list = function_exists('eottae_is_report_board') && eottae_is_report_board($bo_table);
+if ($is_report_board_list) {
+    if (function_exists('eottae_report_board_load_assets')) {
+        eottae_report_board_load_assets();
+    }
+    $hero = function_exists('eottae_report_board_hero') ? eottae_report_board_hero($board) : eottae_community_board_hero($board, $sca);
+    $community_hero_write_label = '제보하기';
+    $community_hero_hide_search = true;
+}
 if ($is_event_board_list && function_exists('eottae_event_board_load_assets')) {
     eottae_event_board_load_assets();
 }
@@ -94,7 +109,7 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
 }
 ?>
 
-<div class="community-page board-wrap board-wrap--eottae-community" id="bo_list" style="width:<?php echo $width; ?>">
+<div class="community-page board-wrap board-wrap--eottae-community<?php echo !empty($is_report_board_list) ? ' community-page--report' : ''; ?>" id="bo_list" style="width:<?php echo $width; ?>">
 
 <div class="community-page__layout">
 <main class="community-page__main">
@@ -114,7 +129,29 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
     include G5_PATH.'/components/eottae/community-hero.php';
     ?>
 
-    <?php if (!empty($community_tabs)) { ?>
+    <?php if ($is_job_board_list || $is_estate_board_list) {
+        $map_type = $is_job_board_list ? 'job' : 'estate';
+        $map_primary_label = '지도에서 보기';
+        $map_near_label = $is_job_board_list ? '내 주변 일자리 보기' : '지도에서 매물 보기';
+        $map_url = G5_URL.'/cebu-map/?type='.$map_type;
+        $map_near_url = $map_url.'&near=1';
+        ?>
+    <nav class="community-map-actions" aria-label="<?php echo $is_job_board_list ? '구인구직' : '부동산'; ?> 지도 보기">
+        <a href="<?php echo get_text($map_url); ?>" class="community-map-actions__btn community-map-actions__btn--primary"><?php echo get_text($map_primary_label); ?></a>
+        <a href="<?php echo get_text($map_near_url); ?>" class="community-map-actions__btn"><?php echo get_text($map_near_label); ?></a>
+    </nav>
+    <?php } ?>
+
+    <?php if (!empty($is_community_hub_list) && empty($is_report_board_list) && function_exists('render_today_sebu_briefing_community_strip')) {
+        render_today_sebu_briefing_community_strip();
+    } ?>
+
+    <?php if (!empty($is_report_board_list)) {
+        include G5_PATH.'/components/eottae/report-list-notice.php';
+        include G5_PATH.'/components/eottae/report-status-filter.php';
+    } ?>
+
+    <?php if (!empty($community_tabs) && empty($is_report_board_list)) { ?>
     <nav class="community-tabs" aria-label="<?php echo $is_community_hub_list ? '커뮤니티 게시판' : '게시판 분류'; ?>">
         <?php foreach ($community_tabs as $tab) {
             if ($is_community_hub_list) {
@@ -133,6 +170,7 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
     </nav>
     <?php } ?>
 
+    <?php if (empty($is_report_board_list)) { ?>
     <section class="community-toolbar community-toolbar--filters">
         <div class="community-toolbar__filters">
             <form class="community-filter" method="get" action="<?php echo G5_BBS_URL; ?>/board.php">
@@ -163,6 +201,7 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
             </form>
         </div>
     </section>
+    <?php } ?>
 
     <form name="fboardlist" id="fboardlist" action="<?php echo G5_BBS_URL; ?>/board_list_update.php" method="post">
     <input type="hidden" name="bo_table" value="<?php echo $bo_table ?>">
@@ -212,6 +251,7 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
             $job_recruit_status = '';
             $job_recruit_label = '';
             $job_thumb_html = '';
+            $job_location_label = '';
             $post_thumb = eottae_community_list_thumb(
                 $item_bo_table,
                 (int) $item['wr_id'],
@@ -225,6 +265,7 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
                     $estate_thumb_html = eottae_estate_render_list_thumb($item, $post_thumb);
                 }
             }
+            $job_badge_label = '';
             if ($is_job_board_list) {
                 $job_recruit_status = eottae_job_recruit_status_from_row($item);
                 $job_recruit_meta = eottae_job_recruit_status_meta($job_recruit_status);
@@ -232,8 +273,34 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
                 if (!$is_community_hub_all_list) {
                     $job_thumb_html = eottae_job_render_list_thumb($item, $post_thumb);
                 }
+                if (function_exists('eottae_job_template_from_row')) {
+                    $job_tpl = eottae_job_template_from_row($item);
+                    if (is_array($job_tpl)) {
+                        if (!empty($job_tpl['job_type'])) {
+                            $job_badge_label = get_text($job_tpl['job_type']);
+                        }
+                        if (!empty($job_tpl['region']) && $region === '') {
+                            $region = get_text($job_tpl['region']);
+                        }
+                    }
+                }
+                if (function_exists('eottae_job_location_from_row')) {
+                    $job_loc = eottae_job_location_from_row($item);
+                    if (!empty($job_loc['display'])) {
+                        $job_location_label = get_text($job_loc['display']);
+                        $region = $job_location_label;
+                    }
+                }
             }
-            $snippet = eottae_community_snippet(isset($item['wr_content']) ? $item['wr_content'] : '');
+            if ($is_job_board_list && function_exists('eottae_job_list_snippet')) {
+                $snippet = eottae_job_list_snippet(
+                    $item,
+                    isset($item['subject']) ? strip_tags($item['subject']) : '',
+                    110
+                );
+            } else {
+                $snippet = eottae_community_snippet(isset($item['wr_content']) ? $item['wr_content'] : '');
+            }
             $thumb = ($is_community_hub_all_list || (!$is_estate_board_list && !$is_job_board_list))
                 ? $post_thumb
                 : '';
@@ -274,6 +341,8 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
                 $event_period_label = eottae_event_period_label_from_row($item);
                 $event_shop = eottae_event_shop_from_row($item);
                 include __DIR__.'/list-event-card.inc.php';
+            } elseif ($is_report_board_list || (function_exists('eottae_is_report_board') && eottae_is_report_board($item_bo_table))) {
+                include __DIR__.'/list-report-card.inc.php';
             } elseif ($is_estate_board_list) {
                 include __DIR__.'/list-estate-card.inc.php';
             } else {
@@ -284,9 +353,15 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
 
         <?php if (count($list) === 0) { ?>
         <div class="empty-state community-list__empty">
+            <?php if (!empty($is_report_board_list)) { ?>
+            <p class="empty-state__title">등록된 제보가 없습니다</p>
+            <p>세부에서 본 소식을 첫 제보로 남겨 주세요.</p>
+            <?php if ($write_href) { ?><a href="<?php echo $write_href; ?>" class="community-hero__write community-hero__write--inline">제보하기</a><?php } ?>
+            <?php } else { ?>
             <p class="empty-state__title">게시글이 없습니다</p>
             <p>첫 글을 작성해 보세요.</p>
             <?php if ($write_href) { ?><a href="<?php echo $write_href; ?>" class="community-hero__write community-hero__write--inline">글쓰기</a><?php } ?>
+            <?php } ?>
         </div>
         <?php } ?>
     </div>

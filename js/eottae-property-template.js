@@ -213,9 +213,9 @@
   function syncEstateMetaFields(data) {
     var wr1 = document.getElementById('wr_1');
     var wr2 = document.getElementById('wr_2');
-    var wr4 = document.getElementById('wr_4');
-    var wr5 = document.getElementById('wr_5');
-    var wr6 = document.getElementById('wr_6');
+    var addressInput = root.querySelector('[name="wr_4"]');
+    var latInput = root.querySelector('[name="wr_5"]');
+    var lngInput = root.querySelector('[name="wr_6"]');
     if (wr1) {
       wr1.value = (data && data.region) ? data.region : '';
     }
@@ -223,16 +223,35 @@
       var status = (data && data.estate_deal_status) ? data.estate_deal_status : 'trading';
       wr2.value = status === 'completed' ? 'completed' : 'trading';
     }
-    if (wr4) {
-      wr4.value = (data && data.address) ? data.address : '';
+    if (addressInput && data && typeof data.address !== 'undefined') {
+      addressInput.value = data.address || '';
     }
-    if (wr5) {
-      wr5.value = (data && data.lat) ? data.lat : '';
+    if (latInput && data && typeof data.lat !== 'undefined') {
+      latInput.value = data.lat || '';
     }
-    if (wr6) {
-      wr6.value = (data && data.lng) ? data.lng : '';
+    if (lngInput && data && typeof data.lng !== 'undefined') {
+      lngInput.value = data.lng || '';
     }
     syncEstateTemplateJson(data);
+  }
+
+  function mergeLocationData(data) {
+    data = data || {};
+    var addressInput = root.querySelector('[name="wr_4"]');
+    var latInput = root.querySelector('[name="wr_5"]');
+    var lngInput = root.querySelector('[name="wr_6"]');
+
+    if (addressInput) {
+      data.address = (addressInput.value || '').trim();
+    }
+    if (latInput) {
+      data.lat = (latInput.value || '').trim();
+    }
+    if (lngInput) {
+      data.lng = (lngInput.value || '').trim();
+    }
+
+    return data;
   }
 
   function syncEstateTemplateJson(data) {
@@ -275,7 +294,7 @@
 
   function applyTemplateToEditor(options) {
     options = options || {};
-    var data = getData();
+    var data = mergeLocationData(getData());
     if (!validateRequired(data)) {
       if (!options.silent) {
         showError(true);
@@ -333,6 +352,17 @@
     });
   });
 
+  ['wr_4', 'wr_5', 'wr_6'].forEach(function (name) {
+    var el = root.querySelector('[name="' + name + '"]');
+    if (!el) return;
+    el.addEventListener('input', function () {
+      syncEstateTemplateJson(mergeLocationData(getData()));
+    });
+    el.addEventListener('change', function () {
+      syncEstateTemplateJson(mergeLocationData(getData()));
+    });
+  });
+
   if (window.__SEBU_ESTATE_TEMPLATE_INITIAL__) {
     applyDataToFields(window.__SEBU_ESTATE_TEMPLATE_INITIAL__);
   } else {
@@ -346,7 +376,7 @@
     }
   }
 
-  syncEstateMetaFields(getData());
+  syncEstateMetaFields(mergeLocationData(getData()));
 
   document.getElementById('sebuPropertyTemplateApply').addEventListener('click', function () {
     if (!applyTemplateToEditor({ confirmReplace: true })) {
@@ -367,7 +397,7 @@
   var writeForm = root.closest('form');
   if (writeForm) {
     writeForm.addEventListener('submit', function () {
-      syncEstateMetaFields(getData());
+      syncEstateMetaFields(mergeLocationData(getData()));
       applyTemplateToEditor({ silent: true, force: false, confirmReplace: false });
       if (typeof oEditors !== 'undefined' && oEditors.getById && oEditors.getById.wr_content) {
         try {
@@ -380,7 +410,7 @@
   }
 
   window.sebuPropertyTemplateApplyBeforeSubmit = function () {
-    syncEstateMetaFields(getData());
+    syncEstateMetaFields(mergeLocationData(getData()));
     return applyTemplateToEditor({ silent: true, force: false, confirmReplace: false });
   };
 })();

@@ -27,6 +27,7 @@ if (!function_exists('eottae_shop_card_html')) {
             ? eottae_shop_view_url($shop['wr_id'], $bo_table)
             : G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$shop['wr_id'];
         $status_class = $shop['status'] === '영업중' ? ' shop-card--open' : '';
+        $event_badges = eottae_shop_card_event_badges_html($row, $bo_table);
 
         ob_start();
         ?>
@@ -41,6 +42,7 @@ if (!function_exists('eottae_shop_card_html')) {
                     <?php if ($shop['status']) { ?>
                     <span class="shop-card__status"><?php echo $shop['status']; ?></span>
                     <?php } ?>
+                    <?php echo $event_badges; ?>
                 </div>
                 <div class="shop-card__body">
                     <?php if ($shop['category']) { ?><span class="shop-card__cate"><?php echo $shop['category']; ?></span><?php } ?>
@@ -62,6 +64,40 @@ if (!function_exists('eottae_shop_card_html')) {
         <?php
 
         return ob_get_clean();
+    }
+}
+
+if (!function_exists('eottae_shop_card_event_badges_html')) {
+    function eottae_shop_card_event_badges_html($row, $bo_table = '')
+    {
+        static $assets_loaded = false;
+        if (!$assets_loaded && function_exists('eottae_event_board_load_assets')) {
+            eottae_event_board_load_assets();
+            $assets_loaded = true;
+        }
+
+        if (!is_array($row)) {
+            return '';
+        }
+
+        $wr_id = (int) ($row['wr_id'] ?? 0);
+        if ($wr_id < 1) {
+            return '';
+        }
+
+        if ($bo_table === '') {
+            $bo_table = !empty($row['bo_table']) ? (string) $row['bo_table'] : (defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop');
+        }
+
+        if (!function_exists('eottae_shop_event_thumb_badges_html') && is_file(G5_LIB_PATH.'/eottae-event.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-event.lib.php';
+        }
+
+        if (!function_exists('eottae_shop_event_thumb_badges_html')) {
+            return '';
+        }
+
+        return eottae_shop_event_thumb_badges_html($bo_table, $wr_id);
     }
 }
 
@@ -148,6 +184,7 @@ if (!function_exists('eottae_shop_list_card_html')) {
         }
         $status_label = trim((string) $shop['status']);
         $status_open = $status_label === '영업중';
+        $event_badges = eottae_shop_card_event_badges_html($row, $bo_table);
 
         ob_start();
         ?>
@@ -168,6 +205,7 @@ if (!function_exists('eottae_shop_list_card_html')) {
                 <span class="shop-list-card__badge shop-list-card__badge--hot">인기</span>
                     <?php } ?>
                 <?php } ?>
+                <?php echo $event_badges; ?>
             </a>
             <div class="shop-list-card__body">
                 <div class="shop-list-card__head">

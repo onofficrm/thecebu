@@ -174,13 +174,13 @@ if (!function_exists('eottae_estate_template_merge_row_meta')) {
             }
             $data['estate_deal_status'] = eottae_estate_normalize_deal_status($row['wr_2']);
         }
-        if ($data['address'] === '' && !empty($row['wr_4'])) {
+        if (!empty($row['wr_4'])) {
             $data['address'] = trim(strip_tags((string) $row['wr_4']));
         }
-        if ($data['lat'] === '' && !empty($row['wr_5'])) {
+        if (!empty($row['wr_5'])) {
             $data['lat'] = trim((string) $row['wr_5']);
         }
-        if ($data['lng'] === '' && !empty($row['wr_6'])) {
+        if (!empty($row['wr_6'])) {
             $data['lng'] = trim((string) $row['wr_6']);
         }
 

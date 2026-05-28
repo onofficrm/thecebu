@@ -329,8 +329,10 @@
 }
 
 /* 글보기 (YouTube watch 스타일 2열) */
-.board-gal-watch {
-  max-width: none;
+.board-wrap--gallery-grid.board-gal-watch,
+.board-wrap--gallery-grid#bo_v.board-gal-watch {
+  width: 100% !important;
+  max-width: min(100%, 1680px);
 }
 
 .board-gal-watch__toolbar {
@@ -348,8 +350,8 @@
 }
 
 .board-gal-watch__layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 402px;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 402px);
   gap: 1.5rem;
   align-items: start;
 }
@@ -502,7 +504,11 @@
 
 .board-gal-watch__sidebar {
   position: sticky;
-  top: 1rem;
+  top: calc(var(--eottae-header-h, 56px) + 12px);
+  align-self: start;
+  max-height: calc(100vh - var(--eottae-header-h, 56px) - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .board-gal-watch__sidebar-title {
@@ -529,7 +535,8 @@
 
 .board-gal-sidebar-item__link {
   display: flex;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.4rem;
   text-decoration: none;
   color: inherit;
 }
@@ -537,7 +544,7 @@
 .board-gal-sidebar-item__media {
   position: relative;
   flex-shrink: 0;
-  width: 168px;
+  width: 100%;
   aspect-ratio: 16 / 9;
   border-radius: 8px;
   overflow: hidden;
@@ -586,16 +593,27 @@
   color: #0284c7;
 }
 
-@media (max-width: 1199px) {
+@media (max-width: 767px) {
   .board-gal-watch__layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
 
   .board-gal-watch__sidebar {
     position: static;
+    max-height: none;
+    overflow: visible;
     margin-top: 0.5rem;
     padding-top: 1.25rem;
     border-top: 1px solid var(--gal-line);
+  }
+
+  .board-gal-sidebar-item__link {
+    flex-direction: row;
+    gap: 0.65rem;
+  }
+
+  .board-gal-sidebar-item__media {
+    width: 168px;
   }
 }
 

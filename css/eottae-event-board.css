@@ -37,12 +37,124 @@
   border: 1px solid #fed7aa;
 }
 
+/* 업체 썸네일 — 이벤트/프로모션 배지 */
+.shop-thumb-event-badges {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.shop-thumb-event-badges--lg {
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  gap: 5px;
+}
+
+.shop-thumb-event-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+}
+
+.shop-thumb-event-badge--promo {
+  color: #fff;
+  background: linear-gradient(135deg, #ea580c, #f97316);
+}
+
+.shop-thumb-event-badge--type.event-type-badge {
+  padding: 2px 6px;
+  font-size: 9px;
+  border: none;
+  color: #9a3412;
+  background: rgba(255, 237, 213, 0.95);
+}
+
+.shop-thumb-event-badge--status.event-status-badge {
+  padding: 2px 6px;
+  font-size: 9px;
+}
+
+.shop-thumb-event-badge--count {
+  color: #fff;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.shop-card__media .shop-thumb-event-badges,
+.shop-list-card__thumb-wrap .shop-thumb-event-badges,
+.event-post__thumb-wrap .shop-thumb-event-badges {
+  max-width: calc(100% - 12px);
+}
+
 .event-post {
   border: 1px solid #e2e8f0;
   border-radius: 14px;
   background: #fff;
   margin-bottom: 0.75rem;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.event-post--has-shop-thumb .event-post__layout {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+.event-post__thumb-wrap {
+  position: relative;
+  flex: 0 0 112px;
+  width: 112px;
+  min-height: 84px;
+  overflow: hidden;
+  border-radius: 14px 0 0 14px;
+  background: linear-gradient(145deg, #f8fafc, #e2e8f0);
+}
+
+.event-post__thumb-wrap--lg {
+  flex-basis: 128px;
+  width: 128px;
+}
+
+.event-post__thumb {
+  width: 100%;
+  height: 100%;
+  min-height: 84px;
+  object-fit: cover;
+  display: block;
+}
+
+.event-post__thumb--empty {
+  display: block;
+  min-height: 84px;
+  background: linear-gradient(145deg, #ffedd5, #fed7aa);
+}
+
+.event-post--has-shop-thumb .event-post__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.event-post--has-shop-thumb .event-post__link {
+  padding-left: 0.85rem;
+}
+
+.event-post--has-shop-thumb .event-post__actions {
+  margin-left: 0.85rem;
+  margin-right: 0.85rem;
 }
 
 .event-post:hover {
@@ -227,5 +339,21 @@
 @media (max-width: 640px) {
   .event-info-panel__grid {
     grid-template-columns: 1fr;
+  }
+
+  .event-post--has-shop-thumb .event-post__layout {
+    flex-direction: column;
+  }
+
+  .event-post__thumb-wrap,
+  .event-post__thumb-wrap--lg {
+    flex: none;
+    width: 100%;
+    border-radius: 14px 14px 0 0;
+  }
+
+  .event-post__thumb,
+  .event-post__thumb--empty {
+    min-height: 120px;
   }
 }

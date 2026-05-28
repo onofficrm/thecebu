@@ -12,11 +12,15 @@ $hero_stx = isset($stx) ? get_text(stripslashes($stx)) : '';
 $community_hero_search_placeholder = isset($community_hero_search_placeholder)
     ? (string) $community_hero_search_placeholder
     : '궁금한 세부 정보를 검색해보세요';
+$community_hero_write_label = isset($community_hero_write_label)
+    ? (string) $community_hero_write_label
+    : '글쓰기';
+$community_hero_hide_search = !empty($community_hero_hide_search);
 ?>
 
 <section class="community-hero">
-    <div class="community-hero__inner"<?php if ($hero_image !== '') { ?> style="--hero-bg-image: url('<?php echo htmlspecialchars($hero_image, ENT_QUOTES, 'UTF-8'); ?>')"<?php } ?>>
-        <span class="community-hero__bg" aria-hidden="true"></span>
+    <div class="community-hero__inner">
+        <span class="community-hero__bg" aria-hidden="true"<?php if ($hero_image !== '') { ?> style="background-image: url('<?php echo htmlspecialchars($hero_image, ENT_QUOTES, 'UTF-8'); ?>')"<?php } ?>></span>
         <span class="community-hero__overlay" aria-hidden="true"></span>
 
         <div class="community-hero__content">
@@ -36,11 +40,12 @@ $community_hero_search_placeholder = isset($community_hero_search_placeholder)
                 <?php if (!empty($write_href)) { ?>
                 <a href="<?php echo $write_href; ?>" class="community-hero__write">
                     <span class="community-hero__write-icon" aria-hidden="true">✎</span>
-                    글쓰기
+                    <?php echo get_text($community_hero_write_label); ?>
                 </a>
                 <?php } ?>
             </div>
 
+            <?php if (!$community_hero_hide_search) { ?>
             <form class="community-hero__search community-search" name="fsearch" method="get" action="<?php echo G5_BBS_URL; ?>/board.php">
                 <input type="hidden" name="bo_table" value="<?php echo $bo_table; ?>">
                 <?php
@@ -57,6 +62,7 @@ $community_hero_search_placeholder = isset($community_hero_search_placeholder)
                 <input type="search" id="community_stx" name="stx" value="<?php echo $hero_stx; ?>" placeholder="<?php echo get_text($community_hero_search_placeholder); ?>" class="community-search__input">
                 <button type="submit" class="community-hero__search-btn">검색</button>
             </form>
+            <?php } ?>
         </div>
     </div>
 </section>

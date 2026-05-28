@@ -875,6 +875,32 @@ if (!function_exists('render_today_sebu_briefing_teaser')) {
     }
 }
 
+if (!function_exists('render_today_sebu_briefing_community_strip')) {
+    /**
+     * 커뮤니티 허브 안에서만 사용하는 가벼운 브리핑 진입 카드.
+     *
+     * 메인 페이지에는 노출하지 않고, 커뮤니티에 들어온 사용자에게만 오늘의 흐름을 안내합니다.
+     *
+     * @param array<string, mixed>|null $data
+     */
+    function render_today_sebu_briefing_community_strip($data = null)
+    {
+        if (!is_array($data)) {
+            $data = collect_today_sebu_briefing_data();
+        }
+
+        $teaser_title = '오늘 세부어때 한눈에';
+        $teaser_summary = eottae_briefing_summary_line_today($data);
+        $teaser_line = eottae_briefing_teaser_line($data);
+        $teaser_stats = eottae_briefing_teaser_stats($data);
+        $teaser_url = eottae_briefing_url();
+        $teaser_cta = '오늘의 세부 브리핑 보기';
+        $teaser_variant = 'community-strip';
+
+        include G5_PATH.'/components/eottae/sebu-briefing-teaser.php';
+    }
+}
+
 if (!function_exists('eottae_briefing_home_payload')) {
     function eottae_briefing_home_payload()
     {

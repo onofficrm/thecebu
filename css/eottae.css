@@ -358,6 +358,20 @@ img[data-eottae-logo] {
   font-weight: 700;
 }
 
+.eottae-gnb-header__nav-link--accent {
+  color: #0369a1;
+  font-weight: 800;
+}
+
+.eottae-gnb-header__nav-link--accent::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  margin-right: 5px;
+  border-radius: 999px;
+  background: #38bdf8;
+}
+
 .eottae-gnb-header__nav-link--end {
   margin-left: auto;
 }
@@ -2929,10 +2943,9 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   inset: 0;
   z-index: 0;
   background-color: #0f172a;
-  background-image: var(--hero-bg-image, linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%));
+  background-image: linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%);
   background-size: cover;
   background-position: center;
-  transform: scale(1.02);
 }
 
 .community-hero__overlay {

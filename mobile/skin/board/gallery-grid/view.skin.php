@@ -3,7 +3,9 @@ if (!defined('_GNUBOARD_')) exit;
 include_once(G5_LIB_PATH.'/thumbnail.lib.php');
 include_once(G5_SKIN_PATH.'/board/_inc/g5b-gallery-sidebar.php');
 
-add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
+$gallery_grid_skin_css = G5_PATH.'/skin/board/gallery-grid/style.css';
+$gallery_grid_skin_ver = is_file($gallery_grid_skin_css) ? (int) filemtime($gallery_grid_skin_css) : 0;
+add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css?ver='.$gallery_grid_skin_ver.'">', 99);
 
 $gal_related = g5b_gallery_get_related_writes($bo_table, (int) $view['wr_id'], 20);
 $gal_views = g5b_gallery_format_views($view['wr_hit']);

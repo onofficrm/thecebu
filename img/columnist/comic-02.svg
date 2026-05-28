@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" role="img" aria-label="i´Ä 8€ Ý\ ô| ¬X” ¥t">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fafaf9"/>
+      <stop offset=".55" stop-color="#f5f4f0"/>
+      <stop offset="1" stop-color="#e9f1ef"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#1c1917" flood-opacity=".12"/>
+    </filter>
+  </defs>
+  <rect width="640" height="480" fill="url(#bg)"/>
+  <circle cx="104" cy="96" r="86" fill="#fef3c7" opacity=".8"/>
+  <path d="M0 338c78-36 153-24 222-55 88-40 155-40 238 7 62 35 112 44 180 17v173H0z" fill="#d6ebe8" opacity=".72"/>
+  <g filter="url(#shadow)">
+    <rect x="130" y="96" width="382" height="282" rx="28" fill="#fff"/>
+    <rect x="164" y="132" width="314" height="34" rx="17" fill="#0f4c5c" opacity=".12"/>
+    <g transform="translate(174 204)">
+      <rect width="92" height="86" rx="18" fill="#fff7ed" stroke="#fed7aa"/>
+      <circle cx="46" cy="33" r="18" fill="#b45309" opacity=".18"/>
+      <path d="M32 60h28" stroke="#b45309" stroke-width="6" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(274 188)">
+      <rect width="92" height="86" rx="18" fill="#f0f9ff" stroke="#bae6fd"/>
+      <path d="M29 61h34M31 31h30M46 22v50" stroke="#0f4c5c" stroke-width="6" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(374 208)">
+      <rect width="92" height="86" rx="18" fill="#fefce8" stroke="#fcd34d"/>
+      <path d="M30 64l18-38 17 38M38 49h21" stroke="#b45309" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <path d="M198 328h244" stroke="#d6d3d1" stroke-width="10" stroke-linecap="round"/>
+  </g>
+  <path d="M112 396c42 10 84 10 126 0" stroke="#0f4c5c" stroke-width="8" stroke-linecap="round" opacity=".25"/>
+</svg>

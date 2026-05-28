@@ -63,6 +63,12 @@ if (!empty($card['mb_id']) && function_exists('eottae_estate_member_thumb_url'))
             <?php if ($card['subtitle'] !== '') { ?>
             <p class="estate-list-card__subtitle"><?php echo get_text($card['subtitle']); ?></p>
             <?php } ?>
+            <?php if (!empty($card['location'])) { ?>
+            <p class="estate-list-card__location">
+                <?php echo get_text($card['location']); ?>
+                <?php if (!empty($card['has_map'])) { ?><span>지도보기 가능</span><?php } ?>
+            </p>
+            <?php } ?>
             <?php if ($card['meta'] !== '') { ?>
             <p class="estate-list-card__meta"><?php echo get_text($card['meta']); ?></p>
             <?php } ?>

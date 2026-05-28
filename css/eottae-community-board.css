@@ -11,26 +11,98 @@
 .community-page .community-hero {
   position: relative;
   z-index: 1;
+  overflow: hidden;
+  border-radius: 22px;
 }
 
 .community-page .community-hero__inner {
   position: relative;
+  z-index: 0;
   isolation: isolate;
   overflow: hidden;
-  contain: layout paint;
+  contain: layout paint style;
 }
 
 .community-page .community-hero__bg,
 .community-page .community-hero__overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
 }
 
 .community-page .community-hero__bg {
-  max-width: 100%;
-  max-height: 100%;
+  z-index: 0;
+  max-width: none;
+  max-height: none;
+  transform: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.community-page .community-hero__overlay {
+  z-index: 1;
+}
+
+.community-page .community-hero__content {
+  position: relative;
+  z-index: 2;
+}
+
+.community-page .community-list {
+  position: relative;
+  z-index: 2;
+}
+
+.community-map-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+.community-map-actions__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 0.9rem;
+  border: 1px solid #bae6fd;
+  border-radius: 999px;
+  background: #f0f9ff;
+  color: #0369a1;
+  font-size: 0.84rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.community-map-actions__btn--primary {
+  border-color: #0ea5e9;
+  background: #0ea5e9;
+  color: #fff;
 }
 
 @media (max-width: 768px) {
+  .community-page .community-hero {
+    border-radius: 18px;
+  }
+
+  .community-map-actions {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .community-map-actions__btn {
+    flex: 0 0 auto;
+  }
+
   #bo_list.board-wrap--eottae-community {
     --eottae-list-thumb-size: 88px;
     --eottae-list-thumb-radius: 12px;
@@ -195,8 +267,6 @@
 }
 
 #bo_list.board-wrap--eottae-community .community-post__meta {
-  grid-column: 2;
-  grid-row: 2;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -205,44 +275,51 @@
   color: #94a3b8;
 }
 
-/* 구인구직·부동산 — 본문+작성자를 한 열에 묶어 자유게시판처럼 정돈 */
+/* 구인구직·부동산 — 뱃지·제목 2줄 + 본문 요약 */
+#bo_list.board-wrap--eottae-community .community-post--job .community-post__cols,
+#bo_list.board-wrap--eottae-community .community-post--estate .community-post__cols {
+  align-items: center;
+}
+
+#bo_list.board-wrap--eottae-community .community-post--job .community-post__title-line,
+#bo_list.board-wrap--eottae-community .community-post--estate .community-post__title-line {
+  flex-direction: column;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+#bo_list.board-wrap--eottae-community .community-post--job .community-post__badges,
+#bo_list.board-wrap--eottae-community .community-post--estate .community-post__badges {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+#bo_list.board-wrap--eottae-community .community-post--job .community-post__title,
+#bo_list.board-wrap--eottae-community .community-post--estate .community-post__title {
+  width: 100%;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 #bo_list.board-wrap--eottae-community .community-post--job .community-post__body,
 #bo_list.board-wrap--eottae-community .community-post--estate .community-post__body {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  gap: 4px;
-  grid-column: 2;
-  grid-row: 1;
+  justify-content: center;
+  gap: 6px;
   min-width: 0;
-  align-self: start;
-}
-
-#bo_list.board-wrap--eottae-community .community-post--job .community-post__text,
-#bo_list.board-wrap--eottae-community .community-post--estate .community-post__text,
-#bo_list.board-wrap--eottae-community .community-post--job .community-post__meta,
-#bo_list.board-wrap--eottae-community .community-post--estate .community-post__meta {
-  grid-column: auto;
-  grid-row: auto;
-}
-
-#bo_list.board-wrap--eottae-community .community-post--job .community-post__cols,
-#bo_list.board-wrap--eottae-community .community-post--estate .community-post__cols {
-  grid-template-rows: auto;
-  row-gap: 0;
-  align-items: start;
-}
-
-#bo_list.board-wrap--eottae-community .community-post--job .community-post__thumb,
-#bo_list.board-wrap--eottae-community .community-post--estate .community-post__thumb {
-  grid-row: 1;
-  align-self: start;
-}
-
-#bo_list.board-wrap--eottae-community .community-post--job .community-post__aside,
-#bo_list.board-wrap--eottae-community .community-post--estate .community-post__aside {
-  grid-row: 1;
   align-self: center;
+}
+
+#bo_list.board-wrap--eottae-community .community-post--job .community-post__aside {
+  align-self: center;
+  flex-shrink: 0;
 }
 
 #bo_list.board-wrap--eottae-community .community-post__foot {
@@ -250,8 +327,7 @@
 }
 
 #bo_list.board-wrap--eottae-community .community-post__aside {
-  grid-column: 3;
-  grid-row: 1 / span 2;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;

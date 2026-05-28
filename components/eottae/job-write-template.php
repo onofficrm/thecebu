@@ -14,9 +14,16 @@ if (function_exists('eottae_job_template_load_assets')) {
 if (!function_exists('eottae_job_recruit_status_from_row') && is_file(G5_LIB_PATH.'/eottae-job.lib.php')) {
     include_once G5_LIB_PATH.'/eottae-job.lib.php';
 }
+if (!function_exists('eottae_location_area_label') && is_file(G5_LIB_PATH.'/eottae-location.lib.php')) {
+    include_once G5_LIB_PATH.'/eottae-location.lib.php';
+}
 
 $job_recruit_status = 'recruiting';
 $job_region = '';
+$job_location_text = '';
+$job_location_lat = '';
+$job_location_lng = '';
+$job_location_map_visible = true;
 $job_template_json = '';
 $job_template_values = array();
 if (isset($write) && is_array($write)) {
@@ -26,6 +33,10 @@ if (isset($write) && is_array($write)) {
     if (!empty($write['wr_1'])) {
         $job_region = get_text($write['wr_1']);
     }
+    $job_location_text = get_text($write['wr_4'] ?? '');
+    $job_location_lat = get_text($write['wr_5'] ?? '');
+    $job_location_lng = get_text($write['wr_6'] ?? '');
+    $job_location_map_visible = (string) ($write['wr_7'] ?? '1') !== '0';
     $decoded = function_exists('eottae_job_template_from_row')
         ? eottae_job_template_from_row($write)
         : null;
@@ -152,6 +163,34 @@ $sebu_job_languages = array(
                     </select>
                 </label>
             </div>
+        </fieldset>
+
+        <fieldset class="sebu-job-template__group sebu-job-template__group--location">
+            <legend class="sebu-job-template__legend">근무 위치</legend>
+            <?php
+            $location_picker = array(
+                'id'          => 'jobLocationPicker',
+                'title'       => '근무 위치',
+                'desc'        => '정확한 개인 주소보다 근처 랜드마크 기준으로 입력해 주세요. 세부생활지도 표시를 위해 좌표가 함께 저장됩니다.',
+                'placeholder' => '예: IT Park 근처, Ayala Center Cebu 근처',
+                'required'    => true,
+                'fields'      => array(
+                    'auto_area'     => 'job_location_auto_area',
+                    'location_text' => 'wr_4',
+                    'latitude'      => 'wr_5',
+                    'longitude'     => 'wr_6',
+                    'map_visible'   => 'wr_7',
+                ),
+                'values'      => array(
+                    'auto_area'     => function_exists('eottae_location_normalize_area') ? eottae_location_normalize_area($job_region) : $job_region,
+                    'location_text' => $job_location_text !== '' ? $job_location_text : $job_region,
+                    'latitude'      => $job_location_lat,
+                    'longitude'     => $job_location_lng,
+                    'map_visible'   => $job_location_map_visible ? '1' : '0',
+                ),
+            );
+            include G5_PATH.'/components/eottae/location-picker-fields.php';
+            ?>
         </fieldset>
 
         <fieldset class="sebu-job-template__group">

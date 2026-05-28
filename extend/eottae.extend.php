@@ -36,6 +36,8 @@ include_once G5_LIB_PATH.'/eottae-calendar.lib.php';
 include_once G5_LIB_PATH.'/eottae-calendar-google.lib.php';
 include_once G5_LIB_PATH.'/eottae-calendar-report.lib.php';
 include_once G5_LIB_PATH.'/eottae-briefing.lib.php';
+include_once G5_LIB_PATH.'/eottae-location.lib.php';
+include_once G5_LIB_PATH.'/eottae-market.lib.php';
 include_once G5_LIB_PATH.'/eottae-challenge.lib.php';
 include_once G5_LIB_PATH.'/eottae-challenge-likes.lib.php';
 include_once G5_LIB_PATH.'/eottae-challenge-report.lib.php';
@@ -1207,7 +1209,11 @@ if (!function_exists('eottae_load_media_board_assets')) {
         }
 
         add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/g5b-board.css">', 4);
-        add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-media-boards.css?v=3">', 30);
+        $media_boards_css = G5_PATH.'/css/eottae-media-boards.css';
+        add_stylesheet(
+            '<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-media-boards.css?ver='.(is_file($media_boards_css) ? (int) filemtime($media_boards_css) : 4).'">',
+            30
+        );
     }
 }
 add_event('board_head_before', 'eottae_load_media_board_assets', 5);
@@ -1631,6 +1637,10 @@ if (!function_exists('eottae_on_estate_write_before')) {
             return;
         }
 
+        if (!function_exists('sanitize_location_fields') && is_file(G5_LIB_PATH.'/eottae-location.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-location.lib.php';
+        }
+
         $region = isset($_POST['wr_1']) ? trim(strip_tags((string) $_POST['wr_1'])) : '';
         if (function_exists('cut_str') && $region !== '') {
             $region = cut_str($region, 120, '');
@@ -1647,6 +1657,24 @@ if (!function_exists('eottae_on_estate_write_before')) {
         }
         if (function_exists('eottae_estate_template_apply_to_post')) {
             eottae_estate_template_apply_to_post();
+        }
+
+        if (function_exists('sanitize_location_fields')) {
+            $location = sanitize_location_fields($_POST, array(
+                'auto_area'     => 'estate_location_auto_area',
+                'location_text' => 'wr_4',
+                'latitude'      => 'wr_5',
+                'longitude'     => 'wr_6',
+                'map_visible'   => 'wr_7',
+            ));
+
+            $_POST['wr_1'] = function_exists('eottae_location_area_label')
+                ? eottae_location_area_label($location['auto_area'])
+                : ($_POST['wr_1'] ?: $location['auto_area']);
+            $_POST['wr_4'] = $location['location_text'];
+            $_POST['wr_5'] = $location['latitude'];
+            $_POST['wr_6'] = $location['longitude'];
+            $_POST['wr_7'] = $location['map_visible'];
         }
     }
 }
@@ -1695,6 +1723,10 @@ if (!function_exists('eottae_on_job_write_before')) {
             return;
         }
 
+        if (!function_exists('sanitize_location_fields') && is_file(G5_LIB_PATH.'/eottae-location.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-location.lib.php';
+        }
+
         $region = isset($_POST['wr_1']) ? trim(strip_tags((string) $_POST['wr_1'])) : '';
         if (function_exists('cut_str') && $region !== '') {
             $region = cut_str($region, 120, '');
@@ -1708,6 +1740,24 @@ if (!function_exists('eottae_on_job_write_before')) {
 
         if (function_exists('eottae_job_template_apply_to_post')) {
             eottae_job_template_apply_to_post();
+        }
+
+        if (function_exists('sanitize_location_fields')) {
+            $location = sanitize_location_fields($_POST, array(
+                'auto_area'     => 'job_location_auto_area',
+                'location_text' => 'wr_4',
+                'latitude'      => 'wr_5',
+                'longitude'     => 'wr_6',
+                'map_visible'   => 'wr_7',
+            ));
+
+            $_POST['wr_1'] = function_exists('eottae_location_area_label')
+                ? eottae_location_area_label($location['auto_area'])
+                : ($_POST['wr_1'] ?: $location['auto_area']);
+            $_POST['wr_4'] = $location['location_text'];
+            $_POST['wr_5'] = $location['latitude'];
+            $_POST['wr_6'] = $location['longitude'];
+            $_POST['wr_7'] = $location['map_visible'];
         }
     }
 }
@@ -1738,6 +1788,83 @@ if (!function_exists('eottae_on_event_write_before')) {
     }
 }
 add_event('write_update_before', 'eottae_on_event_write_before', 14, 4);
+
+if (!function_exists('eottae_on_report_write_before')) {
+    function eottae_on_report_write_before($board, $wr_id, $w, $qstr)
+    {
+        if (empty($board['bo_table']) || !function_exists('eottae_is_report_board') || !eottae_is_report_board($board['bo_table'])) {
+            return;
+        }
+
+        if (!function_exists('eottae_report_validate_write_post')) {
+            include_once G5_LIB_PATH.'/eottae-report.lib.php';
+        }
+
+        global $is_admin;
+
+        $check = eottae_report_validate_write_post($_POST);
+        if (empty($check['ok'])) {
+            alert($check['message'] ?? '입력값을 확인해 주세요.');
+        }
+
+        $existing = null;
+        if ($w === 'u' && (int) $wr_id > 0) {
+            $existing = eottae_report_get_existing_write($board['bo_table'], (int) $wr_id);
+        }
+
+        $is_board_admin = !empty($is_admin);
+        $normalized = eottae_report_normalize_write_post(
+            $_POST,
+            $existing,
+            $is_board_admin,
+            $w === 'u'
+        );
+        eottae_report_apply_write_post($normalized);
+    }
+}
+add_event('write_update_before', 'eottae_on_report_write_before', 14, 4);
+
+if (!function_exists('eottae_on_market_write_before')) {
+    function eottae_on_market_write_before($board, $wr_id, $w, $qstr)
+    {
+        if (empty($board['bo_table']) || !function_exists('eottae_is_market_board') || !eottae_is_market_board($board['bo_table'])) {
+            return;
+        }
+
+        if (!function_exists('eottae_market_validate_write_post')) {
+            include_once G5_LIB_PATH.'/eottae-market.lib.php';
+        }
+
+        $check = eottae_market_validate_write_post($_POST);
+        if (empty($check['ok'])) {
+            alert($check['message'] ?? '입력값을 확인해 주세요.');
+        }
+
+        eottae_market_apply_write_post(eottae_market_normalize_write_post($_POST));
+    }
+}
+add_event('write_update_before', 'eottae_on_market_write_before', 14, 4);
+
+if (!function_exists('eottae_report_on_board_head_before')) {
+    function eottae_report_on_board_head_before($board, $write, $wr_id)
+    {
+        if (empty($board['bo_table']) || !function_exists('eottae_is_report_board') || !eottae_is_report_board($board['bo_table'])) {
+            return;
+        }
+
+        if (!function_exists('eottae_report_prepare_list_context')) {
+            include_once G5_LIB_PATH.'/eottae-report.lib.php';
+        }
+
+        eottae_report_prepare_list_context($board);
+
+        $wr_id = (int) $wr_id;
+        if ($wr_id > 0 && is_array($write) && !empty($write['wr_id'])) {
+            eottae_report_assert_can_read($write);
+        }
+    }
+}
+add_event('board_head_before', 'eottae_report_on_board_head_before', 4, 3);
 
 add_event('bbs_write', 'eottae_adroom_on_bbs_write', 11, 3);
 add_event('write_update_before', 'eottae_adroom_on_write_update_before', 16, 4);
