@@ -270,6 +270,9 @@
     if (subjectEl) {
       subjectEl.value = title;
       subjectEl.dispatchEvent(new Event('input', { bubbles: true }));
+      if (window.matchMedia && window.matchMedia('(max-width: 767px)').matches) {
+        subjectEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
 
     var existing = getEditorPlain(contentId);

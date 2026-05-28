@@ -5,7 +5,11 @@ include_once(G5_LIB_PATH.'/eottae.lib.php');
 include_once(G5_LIB_PATH.'/eottae-job-template.lib.php');
 include_once(G5_LIB_PATH.'/eottae-property-template.lib.php');
 include_once(G5_LIB_PATH.'/eottae-free-board.lib.php');
+include_once(G5_LIB_PATH.'/eottae-board-write-mobile.lib.php');
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
+if (function_exists('eottae_board_write_enqueue_mobile_css')) {
+    eottae_board_write_enqueue_mobile_css();
+}
 
 $is_job_board_write = function_exists('eottae_is_job_board') && eottae_is_job_board($bo_table);
 $is_estate_board_write = function_exists('eottae_is_estate_board') && eottae_is_estate_board($bo_table);

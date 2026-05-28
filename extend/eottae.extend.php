@@ -14,6 +14,7 @@ include_once G5_LIB_PATH.'/eottae-board-seo.lib.php';
 include_once G5_LIB_PATH.'/eottae-job-template.lib.php';
 include_once G5_LIB_PATH.'/eottae-property-template.lib.php';
 include_once G5_LIB_PATH.'/eottae-free-board.lib.php';
+include_once G5_LIB_PATH.'/eottae-board-write-mobile.lib.php';
 include_once G5_LIB_PATH.'/eottae-icrm.lib.php';
 include_once G5_LIB_PATH.'/eottae-icrm-template.lib.php';
 include_once G5_LIB_PATH.'/eottae-board-editor.lib.php';

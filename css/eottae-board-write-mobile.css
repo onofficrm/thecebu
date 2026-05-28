@@ -1,0 +1,263 @@
+/**
+ * 게시판 글쓰기·수정 — 모바일 UX (구인구직, 부동산, 광고방, 커뮤니티형)
+ */
+@media (max-width: 767px) {
+  body.eottae-page #bo_w.community-write-page,
+  body.eottae-page #bo_w.adroom-write {
+    max-width: none;
+    margin: 0;
+    padding: 12px 12px calc(20px + var(--eottae-bottom-nav-h, 64px) + env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
+  }
+
+  .community-write-page__header,
+  .adroom-write__header {
+    margin-bottom: 16px;
+  }
+
+  .community-write-page__title,
+  .adroom-write__title {
+    font-size: 1.25rem;
+    line-height: 1.35;
+    word-break: keep-all;
+  }
+
+  .community-write-page__desc,
+  .adroom-write__desc {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .community-write-page__form,
+  .adroom-write__form {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .community-write-page__field,
+  .adroom-write__field {
+    margin-bottom: 18px;
+  }
+
+  .community-write-page__field label,
+  .adroom-write__field label {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  /* iOS — 16px 미만이면 포커스 시 화면 확대 */
+  .community-write-page__input,
+  .community-write-page__select,
+  .community-write-page__textarea,
+  .adroom-write__input,
+  .adroom-write__select,
+  .sebu-job-template__input,
+  .sebu-job-template__select,
+  .sebu-job-template__textarea,
+  .sebu-property-template__input,
+  .sebu-property-template__select,
+  .sebu-property-template__textarea,
+  .adroom-shop-picker__search {
+    font-size: 16px !important;
+    min-height: 48px;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .community-write-page__textarea,
+  .sebu-job-template__textarea,
+  .sebu-property-template__textarea {
+    min-height: 120px;
+  }
+
+  /* 템플릿 박스 */
+  .sebu-job-template,
+  .sebu-property-template {
+    margin-bottom: 18px;
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .sebu-job-template__title,
+  .sebu-property-template__title {
+    font-size: 1rem;
+  }
+
+  .sebu-job-template__desc,
+  .sebu-property-template__desc {
+    font-size: 0.8rem;
+  }
+
+  .sebu-job-template__grid,
+  .sebu-property-template__grid {
+    gap: 14px;
+  }
+
+  .sebu-job-template__legend,
+  .sebu-property-template__legend {
+    font-size: 0.78rem;
+    margin-bottom: 8px;
+  }
+
+  .sebu-job-template__label,
+  .sebu-property-template__label {
+    font-size: 0.78rem;
+  }
+
+  .sebu-job-template__actions,
+  .sebu-property-template__actions {
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .sebu-job-template__btn,
+  .sebu-property-template__btn {
+    width: 100%;
+    min-height: 48px;
+    font-size: 0.9rem;
+  }
+
+  .sebu-job-template__error,
+  .sebu-property-template__error {
+    margin-top: 0;
+    margin-bottom: 8px;
+  }
+
+  /* SmartEditor2 */
+  .community-write-page__field--content,
+  .adroom-write__field--content {
+    overflow: visible;
+  }
+
+  .eottae-board-editor {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .eottae-board-editor #smart_editor2,
+  .eottae-board-editor .se2_inputarea,
+  .eottae-board-editor iframe {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .eottae-board-editor .se2_tool {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  .eottae-board-editor textarea.smarteditor2,
+  .eottae-board-editor .smarteditor2 {
+    min-height: 220px !important;
+  }
+
+  /* 사진 첨부 */
+  .community-write-page__photo-grid {
+    padding-bottom: 4px;
+    margin: 0 -4px;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .community-write-page__photo-slot {
+    width: 72px;
+    height: 72px;
+  }
+
+  /* 하단 등록/취소 */
+  .community-write-page__actions,
+  .adroom-write__actions {
+    position: sticky;
+    bottom: calc(var(--eottae-bottom-nav-h, 64px) + env(safe-area-inset-bottom, 0px));
+    z-index: 25;
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 10px;
+    margin: 20px -16px -16px;
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, #fff 24%);
+    border-top: 1px solid #e2e8f0;
+    border-radius: 0 0 14px 14px;
+  }
+
+  .community-write-page__submit,
+  .community-write-page__cancel,
+  .adroom-write__actions .adroom-btn {
+    width: 100%;
+    min-height: 48px;
+    justify-content: center;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  .community-write-page__submit {
+    font-size: 15px;
+    padding: 14px 20px;
+  }
+
+  .community-write-page__cancel {
+    padding: 12px 16px;
+  }
+
+  /* 광고방 — 업체·쿠폰 선택 */
+  .adroom-shop-picker,
+  .adroom-coupon-picker {
+    padding: 14px;
+    margin-bottom: 0;
+  }
+
+  .adroom-shop-picker__search {
+    min-height: 48px;
+    margin-bottom: 10px;
+  }
+
+  .adroom-shop-picker__item {
+    min-height: 48px;
+    padding: 14px;
+  }
+
+  .adroom-coupon-picker__choices {
+    gap: 10px;
+  }
+
+  .adroom-coupon-picker__choice {
+    min-height: 48px;
+    padding: 14px 12px;
+    align-items: center;
+  }
+
+  .adroom-coupon-picker__choice input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .adroom-coupon-picker__manage .adroom-btn {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .adroom-write__file-input {
+    width: 100%;
+    min-height: 44px;
+    font-size: 14px;
+  }
+
+  .business-snippets__toggle {
+    min-height: 48px;
+    padding: 14px 16px;
+  }
+}
+
+@media (max-width: 380px) {
+  .community-write-page__photo-slot {
+    width: 64px;
+    height: 64px;
+  }
+}

@@ -7,8 +7,12 @@ include_once G5_LIB_PATH.'/eottae.lib.php';
 include_once G5_LIB_PATH.'/eottae-adroom.lib.php';
 include_once G5_PATH.'/components/eottae/adroom-shop-picker.php';
 include_once G5_PATH.'/components/eottae/adroom-coupon-picker.php';
+include_once G5_LIB_PATH.'/eottae-board-write-mobile.lib.php';
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
 add_javascript('<script src="'.G5_JS_URL.'/eottae-adroom.js"></script>', 10);
+if (function_exists('eottae_board_write_enqueue_mobile_css')) {
+    eottae_board_write_enqueue_mobile_css();
+}
 
 global $member, $is_admin;
 
