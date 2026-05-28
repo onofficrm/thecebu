@@ -259,10 +259,18 @@ if (!function_exists('eottae_board_seo_sync_write')) {
         $updates = array();
 
         $seo_title = isset($write['wr_seo_title']) ? trim((string) $write['wr_seo_title']) : '';
-        if ($seo_title === '' && !empty($write['wr_subject'])
-            && function_exists('generate_seo_title') && function_exists('exist_seo_title_recursive')) {
-            $seo_title = exist_seo_title_recursive('bbs', generate_seo_title($write['wr_subject']), $write_table, $wr_id);
-            $updates[] = " wr_seo_title = '".sql_escape_string($seo_title)."' ";
+        if ($seo_title === '' && !empty($write['wr_subject'])) {
+            if (function_exists('eottae_icrm_ensure_wr_seo_title')) {
+                include_once G5_LIB_PATH.'/eottae-icrm.lib.php';
+                $ensure = eottae_icrm_ensure_wr_seo_title($bo_table, $wr_id);
+                if (!empty($ensure['ok'])) {
+                    $seo_title = trim((string) ($ensure['wr_seo_title'] ?? ''));
+                }
+            } elseif (function_exists('generate_seo_title') && function_exists('exist_seo_title_recursive')) {
+                include_once G5_LIB_PATH.'/uri.lib.php';
+                $seo_title = exist_seo_title_recursive('bbs', generate_seo_title($write['wr_subject']), $write_table, $wr_id);
+                $updates[] = " wr_seo_title = '".sql_escape_string($seo_title)."' ";
+            }
         }
 
         $stored_desc = isset($write['wr_9']) ? trim((string) $write['wr_9']) : '';

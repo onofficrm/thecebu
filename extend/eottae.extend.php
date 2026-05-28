@@ -11,6 +11,7 @@ include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
 include_once G5_LIB_PATH.'/eottae-ad.lib.php';
 include_once G5_LIB_PATH.'/eottae-shop-seo.lib.php';
 include_once G5_LIB_PATH.'/eottae-board-seo.lib.php';
+include_once G5_LIB_PATH.'/eottae-icrm.lib.php';
 include_once G5_LIB_PATH.'/eottae-board-editor.lib.php';
 include_once G5_LIB_PATH.'/eottae-business-snippet.lib.php';
 include_once G5_LIB_PATH.'/eottae-shop-owner.lib.php';
@@ -373,6 +374,21 @@ if (!function_exists('eottae_on_board_seo_write_after')) {
     }
 }
 add_event('write_update_after', 'eottae_on_board_seo_write_after', 18, 5);
+
+if (!function_exists('eottae_icrm_on_write_update_after')) {
+    /**
+     * 모든 게시판 — wr_seo_title 비어 있으면 write_update.php와 동일 로직으로 확정 (iCRM·직접 INSERT 대비)
+     */
+    function eottae_icrm_on_write_update_after($board, $wr_id, $w, $qstr, $redirect_url)
+    {
+        if (empty($board['bo_table']) || !function_exists('eottae_icrm_ensure_wr_seo_title')) {
+            return;
+        }
+
+        eottae_icrm_ensure_wr_seo_title($board['bo_table'], (int) $wr_id);
+    }
+}
+add_event('write_update_after', 'eottae_icrm_on_write_update_after', 12, 5);
 
 if (!function_exists('eottae_on_shop_delete')) {
     function eottae_on_shop_delete($write, $board)

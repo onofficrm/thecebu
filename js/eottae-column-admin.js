@@ -35,23 +35,6 @@
     });
   });
 
-  var authorForm = root.querySelector('[data-sebu-column-author-form]');
-  if (authorForm) {
-    authorForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var fd = new FormData(authorForm);
-      fd.append('admin_token', adminToken);
-      fetch(procUrl, { method: 'POST', body: fd, credentials: 'same-origin' })
-        .then(function (res) { return res.json(); })
-        .then(function (res) {
-          alert(res.message || (res.success ? '저장되었습니다.' : '실패했습니다.'));
-          if (res.success) {
-            window.location.reload();
-          }
-        });
-    });
-  }
-
   var monthlyForm = root.querySelector('[data-sebu-column-monthly-form]');
   if (monthlyForm) {
     monthlyForm.addEventListener('submit', function (e) {

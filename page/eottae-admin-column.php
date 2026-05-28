@@ -6,6 +6,7 @@ if ($is_admin !== 'super') {
 }
 
 include_once G5_LIB_PATH.'/eottae-column.lib.php';
+include_once G5_LIB_PATH.'/eottae-column-admin-authors.lib.php';
 include_once G5_PATH.'/components/eottae/column-author-profile.php';
 include_once G5_LIB_PATH.'/eottae-column-likes.lib.php';
 include_once G5_LIB_PATH.'/eottae-column-report.lib.php';
@@ -15,14 +16,19 @@ eottae_column_ensure_schema();
 eottae_column_ensure_badges();
 
 $tab = isset($_GET['tab']) ? preg_replace('/[^a-z_]/', '', (string) $_GET['tab']) : 'columns';
-if (!in_array($tab, array('columns', 'authors', 'applications', 'monthly', 'reports', 'categories'), true)) {
+if ($tab === 'authors') {
+    $redirect = function_exists('eottae_column_admin_authors_url')
+        ? eottae_column_admin_authors_url()
+        : G5_URL.'/page/eottae-admin-column-authors.php';
+    goto_url($redirect);
+}
+if (!in_array($tab, array('columns', 'applications', 'monthly', 'reports', 'categories'), true)) {
     $tab = 'columns';
 }
 
 $admin_token = eottae_talkroom_admin_token();
 $proc_url = eottae_column_admin_proc_url();
 $columns = eottae_column_list(array('limit' => 100, 'include_hidden' => true));
-$authors = eottae_column_admin_list_authors(isset($_GET['q']) ? (string) $_GET['q'] : '');
 $applications = eottae_column_list_applications(isset($_GET['application_status']) ? (string) $_GET['application_status'] : 'pending', 100);
 $reports = eottae_column_list_pending_reports(50);
 $monthly = eottae_column_get_monthly_columnist();
@@ -43,7 +49,7 @@ g5_page_start('생활정보 컬럼 관리');
 
     <nav class="sebu-column-admin__tabs" aria-label="관리 메뉴">
         <a href="<?php echo eottae_column_admin_url(array('tab' => 'columns')); ?>" class="sebu-column-admin__tab<?php echo $tab === 'columns' ? ' is-active' : ''; ?>">컬럼 목록</a>
-        <a href="<?php echo eottae_column_admin_url(array('tab' => 'authors')); ?>" class="sebu-column-admin__tab<?php echo $tab === 'authors' ? ' is-active' : ''; ?>">칼럼니스트</a>
+        <a href="<?php echo eottae_column_admin_authors_url(); ?>" class="sebu-column-admin__tab">칼럼니스트</a>
         <a href="<?php echo eottae_column_admin_url(array('tab' => 'applications')); ?>" class="sebu-column-admin__tab<?php echo $tab === 'applications' ? ' is-active' : ''; ?>">신청 관리<?php
             $pending_tab_count = eottae_column_pending_application_count();
             if ($pending_tab_count > 0) {
@@ -99,67 +105,6 @@ g5_page_start('생활정보 컬럼 관리');
                 </tbody>
             </table>
         </div>
-    </section>
-    <?php } ?>
-
-    <?php if ($tab === 'authors') { ?>
-    <section class="sebu-column-admin__panel">
-        <h2 class="sebu-column-admin__panel-title">칼럼니스트 관리</h2>
-        <form class="sebu-column-admin-form" method="post" action="<?php echo get_text($proc_url); ?>" enctype="multipart/form-data" data-sebu-column-author-form>
-            <input type="hidden" name="action" value="save_author">
-            <input type="hidden" name="admin_token" value="<?php echo get_text($admin_token); ?>">
-
-            <label class="sebu-column-form__field">
-                <span class="sebu-column-form__label">회원 ID (mb_id) *</span>
-                <input type="text" name="mb_id" class="sebu-column-form__input" required>
-            </label>
-            <label class="sebu-column-form__field">
-                <span class="sebu-column-form__label">필명</span>
-                <input type="text" name="pen_name" class="sebu-column-form__input">
-            </label>
-            <label class="sebu-column-form__field">
-                <span class="sebu-column-form__label">타이틀</span>
-                <input type="text" name="title" class="sebu-column-form__input" placeholder="예: 교육·가족 컬럼니스트">
-            </label>
-            <label class="sebu-column-form__field">
-                <span class="sebu-column-form__label">전문 분야</span>
-                <input type="text" name="specialty" class="sebu-column-form__input">
-            </label>
-            <label class="sebu-column-form__field">
-                <span class="sebu-column-form__label">소개글</span>
-                <textarea name="bio" class="sebu-column-form__textarea" rows="4"></textarea>
-            </label>
-            <label class="sebu-column-form__field">
-                <span class="sebu-column-form__label">프로필 이미지</span>
-                <input type="file" name="profile_image" accept="image/*">
-            </label>
-            <label class="sebu-column-form__field">
-                <span class="sebu-column-form__label">활동 지역</span>
-                <select name="area" class="sebu-column-form__select">
-                    <option value="">선택</option>
-                    <?php foreach (eottae_column_area_options() as $code => $label) { ?>
-                    <option value="<?php echo get_text($code); ?>"><?php echo get_text($label); ?></option>
-                    <?php } ?>
-                </select>
-            </label>
-            <label class="sebu-column-form__field"><input type="checkbox" name="is_active" value="1" checked> 칼럼니스트 활성</label>
-            <label class="sebu-column-form__field"><input type="checkbox" name="is_visible" value="1" checked> 프로필 노출</label>
-            <label class="sebu-column-form__field"><input type="checkbox" name="is_official" value="1"> 공식 칼럼니스트</label>
-            <button type="submit" class="sebu-column-btn sebu-column-btn--primary">칼럼니스트 저장</button>
-        </form>
-
-        <h3 class="sebu-column-admin__subtitle">등록된 칼럼니스트</h3>
-        <ul class="sebu-column-admin__author-list">
-            <?php foreach ($authors as $author) { ?>
-            <li>
-                <strong><?php echo get_text($author['display_name'] ?? ''); ?></strong>
-                (<?php echo get_text($author['mb_id'] ?? ''); ?>)
-                · <?php echo get_text($author['title'] ?? ''); ?>
-                · 컬럼 <?php echo number_format((int) ($author['stats']['column_count'] ?? 0)); ?>개
-                <a href="<?php echo get_text($author['profile_url'] ?? '#'); ?>">프로필</a>
-            </li>
-            <?php } ?>
-        </ul>
     </section>
     <?php } ?>
 

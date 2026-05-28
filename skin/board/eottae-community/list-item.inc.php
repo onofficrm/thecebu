@@ -29,7 +29,7 @@ $has_badges = $is_ai_post || $is_notice || $ca_name !== '' || $region !== '' || 
         <div class="community-post__cols">
             <?php if ($thumb !== '') { ?>
             <div class="community-post__thumb" aria-hidden="true">
-                <img src="<?php echo htmlspecialchars($thumb, ENT_QUOTES, 'UTF-8'); ?>" alt="" width="96" height="96" loading="lazy" decoding="async">
+                <img src="<?php echo htmlspecialchars($thumb, ENT_QUOTES, 'UTF-8'); ?>" alt="" width="104" height="104" loading="lazy" decoding="async">
             </div>
             <?php } ?>
             <div class="community-post__body">

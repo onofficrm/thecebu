@@ -28,4 +28,13 @@ $eottae_secrets_override = array(
     /* Google 로그인 (선택) */
     'google_oauth_client_id'     => '',
     'google_oauth_client_secret' => '',
+
+    /*
+     * iCRM 게시 URL API (icrm/final-url.php, icrm/write-url.php)
+     * - icrm_api_token: X-ICRM-Token 헤더 또는 ?token= / POST token
+     * - icrm_allowed_ips: 허용 IP 콤마 구분 (토큰 없이 IP만으로도 가능)
+     * iCRM은 final_url만 사용하고, 제목으로 slug를 만들지 마세요.
+     */
+    'icrm_api_token'   => '',
+    'icrm_allowed_ips' => '',
 );

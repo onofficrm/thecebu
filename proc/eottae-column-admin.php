@@ -3,6 +3,7 @@ chdir(dirname(__FILE__).'/..');
 include_once dirname(__FILE__).'/../_common.php';
 include_once G5_LIB_PATH.'/eottae-column.lib.php';
 include_once G5_LIB_PATH.'/eottae-column-report.lib.php';
+include_once G5_LIB_PATH.'/eottae-column-admin-authors.lib.php';
 include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
 
 if ($is_admin !== 'super') {
@@ -66,6 +67,39 @@ if ($action === 'review_application') {
     $memo = (string) ($_POST['review_memo'] ?? '');
     $result = eottae_column_review_application($application_id, $decision, $member['mb_id'] ?? '', $memo);
     eottae_column_admin_json(!empty($result['ok']), $result['message'] ?? '');
+}
+
+if ($action === 'send_author_memo') {
+    $scope = isset($_POST['memo_scope']) ? preg_replace('/[^a-z_]/', '', (string) $_POST['memo_scope']) : 'selected';
+    $memo_body = isset($_POST['memo_body']) ? (string) $_POST['memo_body'] : '';
+    $mb_ids = array();
+    if (!empty($_POST['mb_ids']) && is_array($_POST['mb_ids'])) {
+        $mb_ids = $_POST['mb_ids'];
+    } elseif (!empty($_POST['mb_ids']) && is_string($_POST['mb_ids'])) {
+        $mb_ids = explode(',', $_POST['mb_ids']);
+    }
+
+    $recv_mb_ids = eottae_column_admin_author_mb_ids_for_scope($scope, array(
+        'mb_ids' => $mb_ids,
+        'search' => isset($_POST['list_search']) ? (string) $_POST['list_search'] : '',
+    ));
+
+    $result = eottae_column_admin_send_memo($member['mb_id'] ?? '', $recv_mb_ids, $memo_body);
+    eottae_column_admin_json(!empty($result['ok']), $result['message'] ?? '', array(
+        'sent'     => (int) ($result['sent'] ?? 0),
+        'skipped'  => (int) ($result['skipped'] ?? 0),
+    ));
+}
+
+if ($action === 'toggle_author_flag') {
+    $mb_id = isset($_POST['mb_id']) ? preg_replace('/[^a-z0-9_]/i', '', (string) $_POST['mb_id']) : '';
+    $field = isset($_POST['field']) ? preg_replace('/[^a-z_]/', '', (string) $_POST['field']) : '';
+    $value = isset($_POST['value']) ? (int) $_POST['value'] : 0;
+    $result = eottae_column_admin_toggle_author_flag($mb_id, $field, $value);
+    eottae_column_admin_json(!empty($result['ok']), $result['message'] ?? '', array(
+        'field' => $result['field'] ?? $field,
+        'value' => (int) ($result['value'] ?? $value),
+    ));
 }
 
 eottae_column_admin_json(false, '알 수 없는 요청입니다.');

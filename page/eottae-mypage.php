@@ -132,6 +132,7 @@ $mypage_menu_groups[] = array(
 
 if ($is_admin === 'super') {
     include_once G5_LIB_PATH.'/eottae-column.lib.php';
+    include_once G5_LIB_PATH.'/eottae-column-admin-authors.lib.php';
     $talk_kicked_count = function_exists('eottae_talkroom_admin_kicked_count') ? eottae_talkroom_admin_kicked_count() : 0;
     $talk_report_pending = function_exists('eottae_talkroom_admin_pending_report_count') ? eottae_talkroom_admin_pending_report_count() : 0;
     $public_ai_pending = function_exists('eottae_public_ai_pending_count') ? eottae_public_ai_pending_count() : 0;
@@ -163,6 +164,13 @@ if ($is_admin === 'super') {
         array(
             'label' => '컬럼 관리',
             'href' => eottae_column_admin_url(),
+            'tone' => 'admin',
+        ),
+        array(
+            'label' => '칼럼니스트 관리',
+            'href' => function_exists('eottae_column_admin_authors_url')
+                ? eottae_column_admin_authors_url()
+                : G5_URL.'/page/eottae-admin-column-authors.php',
             'tone' => 'admin',
         ),
     );
