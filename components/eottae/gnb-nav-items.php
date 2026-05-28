@@ -116,7 +116,7 @@ if (!function_exists('eottae_gnb_render_desktop_mega_panel')) {
             return;
         }
         ?>
-        <div class="eottae-gnb-header__mega-panel" id="eottaeGnbMegaPanel" aria-label="전체 서브메뉴">
+        <div class="eottae-gnb-header__mega-panel" id="eottaeGnbMegaPanel" data-eottae-gnb-mega aria-label="전체 서브메뉴" aria-hidden="true">
             <div class="eottae-gnb-header__mega-inner">
                 <?php foreach ($columns as $item) {
                     $key = isset($item['key']) ? (string) $item['key'] : '';

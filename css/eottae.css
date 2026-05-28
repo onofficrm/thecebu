@@ -405,35 +405,43 @@ img[data-eottae-logo] {
 }
 
 @media (min-width: 1024px) {
+  .eottae-gnb-header__desktop-head {
+    position: relative;
+    width: 100%;
+  }
+
   .eottae-gnb-header__mega-panel {
     display: block;
     position: absolute;
-    top: calc(100% + 4px);
-    left: 16px;
-    right: 16px;
+    top: 100%;
+    left: 12px;
+    right: 12px;
     z-index: 200;
-    padding-top: 8px;
+    margin-top: -4px;
+    padding-top: 12px;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.18s ease, visibility 0.18s ease;
+    transition: opacity 0.15s ease, visibility 0s linear 0.2s;
   }
 
+  /* 대메뉴 → 서브메뉴 이동 시 끊김 방지용 투명 연결 영역 */
   .eottae-gnb-header__mega-panel::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 12px;
+    height: 14px;
   }
 
-  .eottae-gnb-header__shell:has(.eottae-gnb-header__nav:hover) .eottae-gnb-header__mega-panel,
-  .eottae-gnb-header__shell:has(.eottae-gnb-header__mega-panel:hover) .eottae-gnb-header__mega-panel,
+  .eottae-gnb-header__shell.is-mega-open .eottae-gnb-header__mega-panel,
+  .eottae-gnb-header__desktop-head:hover .eottae-gnb-header__mega-panel,
   .eottae-gnb-header__shell:has(.eottae-gnb-header__nav:focus-within) .eottae-gnb-header__mega-panel {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
+    transition-delay: 0s;
   }
 
   .eottae-gnb-header__mega-inner {

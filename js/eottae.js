@@ -2426,6 +2426,75 @@
     loadList();
   }
 
+  function initGnbMegaMenu() {
+    if (document.documentElement.getAttribute('data-eottae-gnb-mega-init') === '1') {
+      return;
+    }
+
+    var shell = qs('[data-eottae-gnb-shell]');
+    var head = qs('[data-eottae-gnb-desktop-head]');
+    var nav = qs('[data-eottae-gnb-nav]');
+    var panel = qs('[data-eottae-gnb-mega]');
+    if (!shell || !head || !nav || !panel) {
+      return;
+    }
+
+    if (window.matchMedia('(max-width: 1023px)').matches) {
+      return;
+    }
+
+    document.documentElement.setAttribute('data-eottae-gnb-mega-init', '1');
+
+    var closeTimer = null;
+    var open = false;
+
+    function setOpen(next) {
+      open = !!next;
+      shell.classList.toggle('is-mega-open', open);
+      panel.setAttribute('aria-hidden', open ? 'false' : 'true');
+    }
+
+    function clearCloseTimer() {
+      if (closeTimer) {
+        clearTimeout(closeTimer);
+        closeTimer = null;
+      }
+    }
+
+    function scheduleClose() {
+      clearCloseTimer();
+      closeTimer = setTimeout(function () {
+        setOpen(false);
+      }, 200);
+    }
+
+    function handleEnter() {
+      clearCloseTimer();
+      setOpen(true);
+    }
+
+    head.addEventListener('mouseenter', handleEnter);
+    head.addEventListener('mouseleave', scheduleClose);
+    panel.addEventListener('mouseenter', handleEnter);
+    panel.addEventListener('mouseleave', scheduleClose);
+
+    nav.addEventListener('focusin', handleEnter);
+    head.addEventListener('focusout', function (event) {
+      var related = event.relatedTarget;
+      if (related instanceof Node && head.contains(related)) {
+        return;
+      }
+      scheduleClose();
+    });
+    panel.addEventListener('focusout', function (event) {
+      var related = event.relatedTarget;
+      if (related instanceof Node && (head.contains(related) || panel.contains(related))) {
+        return;
+      }
+      scheduleClose();
+    });
+  }
+
   function initMobileMenu() {
     if (document.documentElement.getAttribute('data-eottae-mobile-menu-init') === '1') {
       return;
@@ -2509,6 +2578,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     document.body.classList.add('eottae-page');
     initMobileMenu();
+    initGnbMegaMenu();
     initShopRegisterWizard();
     initShopGeocode();
     initShopCoordinatePicker();
