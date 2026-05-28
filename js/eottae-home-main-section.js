@@ -68,20 +68,66 @@
       && (merged.indexOf('추천글') !== -1 || merged.indexOf('커뮤니티최신글') !== -1);
   }
 
-  function resolvePopularSectionRoot(heading) {
+  function isUnsafeHomeRemovalTarget(node, heading) {
+    var root = document.getElementById('root');
+
+    if (!node || !node.parentNode || node === root || node === document.body) {
+      return true;
+    }
+
+    if (heading && !node.contains(heading)) {
+      return true;
+    }
+
+    if (node.querySelector('header') || node.closest('header')) {
+      return true;
+    }
+
+    if (node.querySelector('[data-eottae-home-main-mounted="1"], [data-eottae-home-popular-hot="1"]')) {
+      return false;
+    }
+
+    if (root && node === root.firstElementChild && node.children.length > 2) {
+      return true;
+    }
+
+    if (node.querySelectorAll('h2').length > 4) {
+      return true;
+    }
+
+    return false;
+  }
+
+  function resolveScopedSectionRoot(heading, matcher) {
     var root = document.getElementById('root') || document;
     var node = heading;
     var depth = 0;
+    var match = null;
 
-    while (node && node !== root && depth < 16) {
-      if (nodeHasLegacyPopularGrid(node)) {
-        return node;
+    while (node && node !== root && depth < 10) {
+      if (matcher(node) && !isUnsafeHomeRemovalTarget(node, heading)) {
+        match = node;
       }
       node = node.parentElement;
       depth += 1;
     }
 
-    return heading.closest('section') || heading.parentElement;
+    if (match) {
+      return match;
+    }
+
+    var fallback = heading.parentElement;
+    if (fallback && !isUnsafeHomeRemovalTarget(fallback, heading)) {
+      return fallback;
+    }
+
+    return null;
+  }
+
+  function resolvePopularSectionRoot(heading) {
+    return resolveScopedSectionRoot(heading, nodeHasLegacyPopularGrid)
+      || heading.closest('section')
+      || heading.parentElement;
   }
 
   function findPopularSectionHeading(root) {
@@ -397,25 +443,12 @@
   }
 
   function findLegacySectionContainer(heading) {
-    var root = document.getElementById('root') || document;
-    var node = heading;
-    var candidate = null;
-    var depth = 0;
+    var scoped = resolveScopedSectionRoot(heading, function (node) {
+      return nodeHasLegacyBoardRow(node)
+        || (nodeHasLegacyPopularGrid(node) && isLegacySectionTitle(normalizeText(heading.textContent), heading.tagName));
+    });
 
-    while (node && node !== root && depth < 24) {
-      if (
-        nodeHasLegacyPopularGrid(node)
-        || nodeHasLegacyBoardRow(node)
-        || node.querySelector('[class*="grid-cols-3"]')
-        || node.querySelector('[class*="lg:grid-cols-3"]')
-      ) {
-        candidate = node;
-      }
-      node = node.parentElement;
-      depth += 1;
-    }
-
-    return candidate || heading.closest('section') || heading.parentElement;
+    return scoped;
   }
 
   function nodeHasLegacyBoardRow(node) {
@@ -479,6 +512,7 @@
     var heading;
     var node;
     var depth;
+    var candidate;
 
     for (i = 0; i < headings.length; i += 1) {
       text = normalizeText(headings[i].textContent);
@@ -486,18 +520,28 @@
         heading = headings[i];
         node = heading.parentElement;
         depth = 0;
-        while (node && node !== root && depth < 8) {
-          if (node.children && node.children.length >= 2) {
-            return node;
+        candidate = null;
+
+        while (node && node !== root && depth < 10) {
+          if (node.querySelector('header')) {
+            break;
           }
+
+          if (!isUnsafeHomeRemovalTarget(node, heading)) {
+            candidate = node;
+          }
+
           node = node.parentElement;
           depth += 1;
         }
-        return heading.parentElement;
+
+        if (candidate) {
+          return candidate;
+        }
       }
     }
 
-    return findPopularSection();
+    return null;
   }
 
   function findBuilderPopularHotSection() {
@@ -588,10 +632,9 @@
       text = normalizeText(headings[i].textContent);
       sectionRoot = findLegacySectionContainer(headings[i]);
       shouldRemove = isLegacySectionTitle(text, headings[i].tagName)
-        || (text === '자유게시판' && nodeHasLegacyBoardRow(sectionRoot))
-        || (headings[i].tagName && String(headings[i].tagName).toUpperCase() === 'H3' && nodeHasLegacyBoardRow(sectionRoot));
+        || (text === '자유게시판' && nodeHasLegacyBoardRow(sectionRoot));
 
-      if (!shouldRemove || !sectionRoot || removed[sectionRoot]) {
+      if (!shouldRemove || !sectionRoot || removed[sectionRoot] || isUnsafeHomeRemovalTarget(sectionRoot, headings[i])) {
         continue;
       }
 
@@ -605,34 +648,8 @@
     }
   }
 
-  var legacyRemoveObserver = null;
-  var legacyRemoveStopTimer = null;
-
   function watchLegacyHomeSectionsRemoval() {
     removeLegacyHomeSections();
-
-    if (legacyRemoveObserver || legacyRemoveStopTimer) {
-      return;
-    }
-
-    var root = document.getElementById('root');
-    if (!root) {
-      return;
-    }
-
-    legacyRemoveObserver = new MutationObserver(function () {
-      removeLegacyHomeSections();
-    });
-
-    legacyRemoveObserver.observe(root, { childList: true, subtree: true });
-
-    legacyRemoveStopTimer = global.setTimeout(function () {
-      if (legacyRemoveObserver) {
-        legacyRemoveObserver.disconnect();
-        legacyRemoveObserver = null;
-      }
-      legacyRemoveStopTimer = null;
-    }, 45000);
   }
 
   function renderTodayOverview(latestNews) {
@@ -1146,8 +1163,6 @@
     section.appendChild(mountRoot);
     mountDone = true;
 
-    watchLegacyHomeSectionsRemoval();
-
     initTalkRoomsCarousels(mountRoot);
     bindLatestNewsTabs(mountRoot.querySelector('[data-eottae-news-tabs="1"]'));
 
@@ -1166,6 +1181,7 @@
     }
 
     if (mount()) {
+      watchLegacyHomeSectionsRemoval();
       if (popularMountObserver) {
         popularMountObserver.disconnect();
         popularMountObserver = null;
@@ -1207,7 +1223,6 @@
 
   function init() {
     var run = function () {
-      watchLegacyHomeSectionsRemoval();
       watchPopularSectionMount();
     };
 
