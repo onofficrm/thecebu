@@ -782,6 +782,17 @@ img[data-eottae-logo] {
 }
 
 /* 홈(빌더) — 서브페이지와 동일 GNB(주입) */
+#root header.eottae-gnb-header[data-eottae-home-header-rebuilt="1"] {
+  box-sizing: border-box;
+}
+
+#root header.eottae-gnb-header[data-eottae-home-header-rebuilt="1"] [data-eottae-home-gnb-shell="1"] {
+  width: 100%;
+  max-width: 1280px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
 #root header [data-eottae-home-gnb-nav="1"] {
   display: none !important;
   align-items: center;
