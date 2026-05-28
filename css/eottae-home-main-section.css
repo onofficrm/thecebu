@@ -650,41 +650,58 @@
   color: #0f172a;
 }
 
+/* 커뮤니티 게시판(.community-tabs)과 동일한 페이지형 탭 */
 .sebu-news-tabs {
   position: relative;
   z-index: 1;
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  margin: 0 -2px 14px;
-  padding: 2px 2px 8px;
-  overflow-x: auto;
-  scrollbar-width: none;
+  margin: 0 0 16px;
+  padding: 0;
 }
 
-.sebu-news-tabs::-webkit-scrollbar {
-  display: none;
-}
-
-.sebu-news-tabs__btn {
-  flex: 0 0 auto;
-  min-height: 34px;
-  padding: 0 12px;
+.sebu-news-tabs__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 10px 16px;
   border: 1px solid #e2e8f0;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  color: #64748b;
-  font-size: 0.76rem;
-  font-weight: 800;
+  background: #fff;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
   cursor: pointer;
-  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
-.sebu-news-tabs__btn:hover,
-.sebu-news-tabs__btn.is-active {
-  transform: translateY(-1px);
-  border-color: #0ea5e9;
+.sebu-news-tabs__item span {
+  white-space: nowrap;
+}
+
+.sebu-news-tabs__item em {
+  font-style: normal;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sebu-news-tabs__item:hover {
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.sebu-news-tabs__item.is-active {
+  border-color: #0f172a;
   background: #0f172a;
   color: #fff;
+}
+
+.sebu-news-tabs__item.is-active em {
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .sebu-news-panels {

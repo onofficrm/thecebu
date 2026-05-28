@@ -28,51 +28,103 @@
     return '/bbs/board.php?bo_table=community';
   }
 
-  function findPopularSection() {
+  function headingMatchesPopularSection(text) {
+    return text.indexOf('전체실시간') !== -1
+      || text.indexOf('실시간인기글') !== -1
+      || text.indexOf('커뮤니티인기글') !== -1
+      || text.indexOf('커뮤니티최신글') !== -1
+      || text.indexOf('세부최신소식') !== -1
+      || text.indexOf('오늘의세부커뮤니티') !== -1;
+  }
+
+  function nodeHasLegacyPopularGrid(node) {
+    if (!node || !node.querySelector) {
+      return false;
+    }
+
+    if (
+      node.querySelector('[class*="grid-cols-3"]')
+      || node.querySelector('[class*="lg:grid-cols-3"]')
+    ) {
+      return true;
+    }
+
+    var merged = '';
+    var h3s = node.querySelectorAll('h3');
+    var i;
+
+    for (i = 0; i < h3s.length; i += 1) {
+      merged += normalizeText(h3s[i].textContent);
+    }
+
+    return merged.indexOf('댓글많은글') !== -1
+      && (merged.indexOf('추천글') !== -1 || merged.indexOf('커뮤니티최신글') !== -1);
+  }
+
+  function resolvePopularSectionRoot(heading) {
     var root = document.getElementById('root') || document;
-    var headings;
+    var node = heading;
+    var best = null;
+    var depth = 0;
+
+    while (node && node !== root && depth < 16) {
+      if (nodeHasLegacyPopularGrid(node)) {
+        best = node;
+      }
+      node = node.parentElement;
+      depth += 1;
+    }
+
+    if (best) {
+      return best;
+    }
+
+    return heading.closest('section') || heading.parentElement;
+  }
+
+  function findPopularSectionHeading(root) {
+    var headings = root.querySelectorAll('h2, h3');
     var i;
     var text;
-    var section;
+    var heading = null;
 
-    headings = root.querySelectorAll('h2');
     for (i = 0; i < headings.length; i += 1) {
       text = normalizeText(headings[i].textContent);
-      if (text.indexOf('커뮤니티인기글') !== -1 || text.indexOf('커뮤니티최신글') !== -1) {
-        section = headings[i].closest('section') || headings[i].closest('div');
-        if (section) {
-          return section;
-        }
+      if (text.indexOf('전체실시간') !== -1 || text.indexOf('실시간인기글') !== -1) {
+        return headings[i];
       }
     }
 
-    headings = root.querySelectorAll('h3');
+    for (i = 0; i < headings.length; i += 1) {
+      text = normalizeText(headings[i].textContent);
+      if (headingMatchesPopularSection(text)) {
+        return headings[i];
+      }
+    }
+
     for (i = 0; i < headings.length; i += 1) {
       text = normalizeText(headings[i].textContent);
       if (text.indexOf('댓글많은글') !== -1 || text.indexOf('댓글많은순') !== -1) {
-        section = headings[i].closest('section') || headings[i].closest('div');
-        if (section) {
-          return section;
-        }
+        return headings[i];
       }
     }
 
-    headings = root.querySelectorAll('h2, h3');
-    for (i = 0; i < headings.length; i += 1) {
-      text = normalizeText(headings[i].textContent);
-      if (
-        text.indexOf('실시간인기글') !== -1
-        || text.indexOf('전체실시간') !== -1
-      ) {
-        section = headings[i].closest('section');
-        if (section) {
-          return section;
-        }
-        return headings[i].closest('div');
-      }
+    return heading;
+  }
+
+  function findPopularSection() {
+    var root = document.getElementById('root') || document;
+    var mount = root.querySelector('[data-eottae-home-community-mount="1"]');
+    if (mount) {
+      return mount;
     }
 
-    return null;
+    var heading = findPopularSectionHeading(root);
+    if (!heading) {
+      return null;
+    }
+
+    return resolvePopularSectionRoot(heading);
   }
 
   function renderEventItem(event) {
@@ -389,10 +441,11 @@
 
     for (i = 0; i < tabs.length; i += 1) {
       tabsHtml += ''
-        + '<button type="button" class="sebu-news-tabs__btn' + (i === 0 ? ' is-active' : '') + '"'
+        + '<button type="button" class="sebu-news-tabs__item' + (i === 0 ? ' is-active' : '') + '"'
         + ' data-news-tab="' + esc(tabs[i].key || '') + '"'
         + ' aria-pressed="' + (i === 0 ? 'true' : 'false') + '">'
-        + esc(tabs[i].label || '')
+        + '<span>' + esc(tabs[i].label || '') + '</span>'
+        + '<em>' + esc(formatCount(tabs[i].count || 0)) + '</em>'
         + '</button>';
       panelsHtml += renderNewsPanel(tabs[i], i);
     }
@@ -401,7 +454,7 @@
       + '<article class="sebu-community-col sebu-community-col--news" data-eottae-news-tabs="1">'
       + '<header class="sebu-community-col__head sebu-community-col__head--news">'
       + '<div>'
-      + '<p class="sebu-news-kicker">Local board now</p>'
+      + '<p class="sebu-news-kicker">세부 커뮤니티</p>'
       + '<h3 class="sebu-community-col__title">'
       + '<span class="sebu-community-col__accent sebu-community-col__accent--sky" aria-hidden="true"></span>'
       + esc(latestNews.title || '세부 최신소식')
@@ -410,7 +463,7 @@
       + '</div>'
       + '</header>'
       + renderTodayOverview(latestNews)
-      + '<div class="sebu-news-tabs" role="tablist" aria-label="최신소식 분류">' + tabsHtml + '</div>'
+      + '<nav class="sebu-news-tabs" role="tablist" aria-label="최신소식 분류">' + tabsHtml + '</nav>'
       + '<div class="sebu-news-panels">' + panelsHtml + '</div>'
       + '</article>';
   }
@@ -731,7 +784,6 @@
       + '</section>';
   }
 
-  var mountScheduled = false;
   var mountDone = false;
 
   function mount() {
@@ -776,30 +828,56 @@
     return true;
   }
 
+  var popularMountObserver = null;
+
   function scheduleMount(retryCount) {
-    if (mountDone || mountScheduled) {
+    if (mountDone) {
       return;
     }
 
-    mountScheduled = true;
-    global.requestAnimationFrame(function () {
-      mountScheduled = false;
-      if (mount()) {
-        return;
+    if (mount()) {
+      if (popularMountObserver) {
+        popularMountObserver.disconnect();
+        popularMountObserver = null;
       }
+      return;
+    }
 
-      var tries = typeof retryCount === 'number' ? retryCount : 0;
-      if (tries < 8) {
-        global.setTimeout(function () {
-          scheduleMount(tries + 1);
-        }, 250);
+    var tries = typeof retryCount === 'number' ? retryCount : 0;
+    if (tries < 24) {
+      global.setTimeout(function () {
+        scheduleMount(tries + 1);
+      }, 300);
+    }
+  }
+
+  function watchPopularSectionMount() {
+    var root = document.getElementById('root');
+    scheduleMount(0);
+
+    if (!root || mountDone || popularMountObserver) {
+      return;
+    }
+
+    popularMountObserver = new MutationObserver(function () {
+      if (mount()) {
+        popularMountObserver.disconnect();
+        popularMountObserver = null;
       }
     });
+
+    popularMountObserver.observe(root, { childList: true, subtree: true });
+    global.setTimeout(function () {
+      if (popularMountObserver) {
+        popularMountObserver.disconnect();
+        popularMountObserver = null;
+      }
+    }, 20000);
   }
 
   function init() {
     var run = function () {
-      scheduleMount(0);
+      watchPopularSectionMount();
     };
 
     if (typeof global.eottaeHomeAfterReactReady === 'function') {
