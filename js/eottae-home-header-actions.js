@@ -292,12 +292,52 @@
     return link;
   }
 
-  function findAdroomInsertAfter(scope) {
+  function freeNavExists(scope) {
+    if (!scope) {
+      return false;
+    }
+
+    var links = scope.querySelectorAll('a[href]');
+    var i;
+    for (i = 0; i < links.length; i += 1) {
+      var href = links[i].getAttribute('href') || '';
+      var label = normalizeNavLabel(links[i].textContent);
+      if (
+        label === '자유게시판'
+        || href.indexOf('/free') !== -1
+        || href.indexOf('bo_table=free') !== -1
+        || href.indexOf('bo_table%3Dfree') !== -1
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function buildFreeNavLink(data, className, attrName) {
+    var link = document.createElement('a');
+    link.href = data.free_url;
+    link.className = className || 'eottae-gnb-header__nav-link';
+    link.setAttribute(attrName, '1');
+    link.textContent = data.free_label || '자유게시판';
+    return link;
+  }
+
+  function findFreeInsertAfter(scope) {
     var column = scope.querySelector('[data-eottae-home-column-nav="1"], [data-eottae-home-column-menu="1"]');
     if (column) {
       return column;
     }
-    return findNavLinkByLabel(scope, '컬럼') || findNavLinkByLabel(scope, '커뮤니티');
+    return findNavLinkByLabel(scope, '컬럼');
+  }
+
+  function findAdroomInsertAfter(scope) {
+    var free = scope.querySelector('[data-eottae-home-free-nav="1"], [data-eottae-home-free-menu="1"]');
+    if (free) {
+      return free;
+    }
+    return findFreeInsertAfter(scope) || findNavLinkByLabel(scope, '커뮤니티');
   }
 
   function mountAdroomNav(data) {
@@ -345,6 +385,60 @@
       'data-eottae-home-column-nav'
     );
     community.parentNode.insertBefore(columnLink, community.nextSibling);
+  }
+
+  function mountFreeNav(data) {
+    if (!data.free_url) {
+      return;
+    }
+
+    var header = document.querySelector('header');
+    if (!header || freeNavExists(header)) {
+      return;
+    }
+
+    var anchor = findFreeInsertAfter(header);
+    if (!anchor || !anchor.parentNode) {
+      return;
+    }
+
+    var className = anchor.className || 'eottae-gnb-header__nav-link';
+    if (className.indexOf('eottae-gnb-header__nav-link') === -1) {
+      className = 'eottae-gnb-header__nav-link';
+    }
+
+    var freeLink = buildFreeNavLink(data, className, 'data-eottae-home-free-nav');
+    anchor.parentNode.insertBefore(freeLink, anchor.nextSibling);
+  }
+
+  function mountFreeInMobileMenu(data) {
+    if (!data.free_url) {
+      return;
+    }
+
+    var menu = findMobileMenuNav();
+    if (!menu || menu.querySelector('[data-eottae-home-free-menu="1"]')) {
+      return;
+    }
+
+    if (freeNavExists(menu)) {
+      return;
+    }
+
+    var anchor = findFreeInsertAfter(menu);
+    var link = buildFreeNavLink(
+      data,
+      'eottae-gnb-header__mobile-link',
+      'data-eottae-home-free-menu'
+    );
+    link.setAttribute('data-eottae-home-free-menu', '1');
+
+    if (anchor && anchor.parentNode === menu) {
+      menu.insertBefore(link, anchor.nextSibling);
+      return;
+    }
+
+    menu.appendChild(link);
   }
 
   function mountColumnInMobileMenu(data) {
@@ -488,6 +582,8 @@
     mountCalendarInMobileMenu(data);
     mountColumnNav(data);
     mountColumnInMobileMenu(data);
+    mountFreeNav(data);
+    mountFreeInMobileMenu(data);
     mountAdroomNav(data);
     mountAdroomInMobileMenu(data);
     hideRentcarMenuLinks();

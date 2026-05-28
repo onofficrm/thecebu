@@ -1159,6 +1159,8 @@ if (!function_exists('eottae_builder_inject_home_header_actions_script')) {
             'golf_join_label'=> '골프조인',
             'column_url'     => function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/',
             'column_label'   => function_exists('eottae_column_menu_label') ? eottae_column_menu_label() : '컬럼',
+            'free_url'       => function_exists('eottae_free_list_url') ? eottae_free_list_url() : G5_BBS_URL.'/board.php?bo_table=free',
+            'free_label'     => '자유게시판',
             'adroom_url'     => function_exists('eottae_adroom_list_url') ? eottae_adroom_list_url() : G5_URL.'/ad-room/',
             'adroom_label'   => '광고방',
         );
