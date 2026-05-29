@@ -215,7 +215,7 @@
             emptyEl.hidden = true;
           }
           if (hintEl) {
-            hintEl.textContent = '검색어를 입력하면 등록된 업체가 표시됩니다.';
+            hintEl.textContent = '업체명을 한 글자만 입력해도 검색됩니다.';
           }
           return;
         }

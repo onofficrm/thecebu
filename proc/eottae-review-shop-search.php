@@ -15,6 +15,7 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
+include_once G5_LIB_PATH.'/eottae.lib.php';
 include_once G5_LIB_PATH.'/eottae-review-board.lib.php';
 
 $keyword = isset($_GET['q']) ? trim((string) $_GET['q']) : '';

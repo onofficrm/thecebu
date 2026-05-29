@@ -86,7 +86,7 @@ if (!function_exists('eottae_review_board_shop_row_to_picker')) {
 
         $region = trim(get_text($row['wr_2'] ?? ''));
         $address = trim(get_text($row['wr_3'] ?? ''));
-        $category = trim(get_text($row['sca'] ?? ''));
+        $category = trim(get_text($row['ca_name'] ?? ($row['sca'] ?? '')));
         $board_label = $labels[$bo_table] ?? $bo_table;
 
         $shop = function_exists('eottae_shop_from_write')
@@ -130,60 +130,72 @@ if (!function_exists('eottae_review_board_shop_row_to_picker')) {
     }
 }
 
+if (!function_exists('eottae_review_board_resolve_shop_bo_for_row')) {
+    function eottae_review_board_resolve_shop_bo_for_row(array $row, $fallback = '')
+    {
+        $fallback = eottae_review_board_normalize_shop_bo($fallback);
+        if ($fallback === '') {
+            $fallback = function_exists('eottae_shop_table') ? eottae_shop_table() : 'shop';
+        }
+
+        if (!function_exists('eottae_shop_segment_master_map')) {
+            return $fallback;
+        }
+
+        $master = trim(get_text($row['wr_1'] ?? ''));
+        if ($master === '') {
+            return $fallback;
+        }
+
+        foreach (eottae_shop_segment_master_map() as $bo_table => $label) {
+            if ($master === $label) {
+                return preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+            }
+        }
+
+        return $fallback;
+    }
+}
+
 if (!function_exists('eottae_review_board_search_shops')) {
     /**
      * @return array<int, array<string, mixed>>
      */
     function eottae_review_board_search_shops($keyword = '', $limit = 30)
     {
-        global $g5;
-
-        if (!function_exists('eottae_shop_board_tables')) {
+        $keyword = trim((string) $keyword);
+        if ($keyword === '') {
             return array();
         }
 
-        $keyword = trim((string) $keyword);
-        $limit = max(5, min(50, (int) $limit));
-        $per_table = max(8, (int) ceil($limit / 2));
-        $shops = array();
-        $seen = array();
+        if (!function_exists('eottae_shop_fetch_raw_rows') || !function_exists('eottae_shop_table')) {
+            return array();
+        }
 
-        foreach (eottae_shop_board_tables() as $bo_table) {
-            $bo_table = eottae_review_board_normalize_shop_bo($bo_table);
-            $write_table = $g5['write_prefix'].$bo_table;
-            if (!sql_query(" DESCRIBE `{$write_table}` ", false)) {
+        $limit = max(5, min(50, (int) $limit));
+        $base_bo = eottae_shop_table();
+        $result = eottae_shop_fetch_raw_rows($base_bo, array(
+            'stx' => $keyword,
+            'sfl' => 'wr_subject',
+            'limit' => $limit,
+        ));
+
+        $shops = array();
+        foreach ($result['rows'] as $row) {
+            if (!is_array($row)) {
                 continue;
             }
 
-            $where = ' wr_is_comment = 0 ';
-            if ($keyword !== '') {
-                $esc = sql_escape_string($keyword);
-                $where .= " and (wr_subject like '%{$esc}%' or wr_2 like '%{$esc}%' or wr_3 like '%{$esc}%' or sca like '%{$esc}%') ";
+            $display_bo = eottae_review_board_resolve_shop_bo_for_row($row, $base_bo);
+            $item = eottae_review_board_shop_row_to_picker($row, $display_bo);
+            if (!$item) {
+                continue;
             }
 
-            $result = sql_query("
-                select wr_id, wr_subject, wr_2, wr_3, sca
-                from `{$write_table}`
-                where {$where}
-                order by wr_id desc
-                limit {$per_table}
-            ");
-
-            while ($row = sql_fetch_array($result)) {
-                $item = eottae_review_board_shop_row_to_picker($row, $bo_table);
-                if (!$item) {
-                    continue;
-                }
-                $key = $item['bo_table'].':'.$item['wr_id'];
-                if (isset($seen[$key])) {
-                    continue;
-                }
-                $seen[$key] = true;
-                $shops[] = $item;
-            }
+            $shops[] = $item;
         }
 
-        if ($keyword !== '' && function_exists('mb_stripos')) {
+        if (function_exists('mb_stripos')) {
             $needle = mb_strtolower($keyword, 'UTF-8');
             usort($shops, function ($a, $b) use ($needle) {
                 $a_name = mb_strtolower((string) ($a['name'] ?? ''), 'UTF-8');
@@ -216,15 +228,36 @@ if (!function_exists('eottae_review_board_fetch_shop')) {
         }
 
         $shop_bo_table = eottae_review_board_normalize_shop_bo($shop_bo_table);
-        $write_table = $g5['write_prefix'].$shop_bo_table;
-        if (!sql_query(" DESCRIBE `{$write_table}` ", false)) {
+        $write_table = function_exists('eottae_shop_list_write_table')
+            ? eottae_shop_list_write_table($shop_bo_table)
+            : $g5['write_prefix'].$shop_bo_table;
+        if ($write_table === '') {
             return null;
         }
 
-        $row = sql_fetch(" select wr_id, wr_subject, wr_2, wr_3, sca from `{$write_table}`
-            where wr_id = '{$shop_wr_id}' and wr_is_comment = 0 limit 1 ");
+        $exists = sql_fetch(" show tables like '".sql_escape_string($write_table)."' ");
+        if (empty($exists)) {
+            return null;
+        }
 
-        return is_array($row) ? eottae_review_board_shop_row_to_picker($row, $shop_bo_table) : null;
+        $where = " wr_id = '{$shop_wr_id}' and wr_is_comment = 0 ";
+        if (function_exists('eottae_shop_segment_master_category')) {
+            $master = eottae_shop_segment_master_category($shop_bo_table);
+            if ($master !== '') {
+                $where .= " and wr_1 = '".sql_escape_string($master)."' ";
+            }
+        }
+
+        $row = sql_fetch(" select wr_id, wr_subject, wr_2, wr_3, ca_name, wr_1 from `{$write_table}`
+            where {$where} limit 1 ");
+
+        if (!is_array($row) || empty($row['wr_id'])) {
+            return null;
+        }
+
+        $display_bo = eottae_review_board_resolve_shop_bo_for_row($row, $shop_bo_table);
+
+        return eottae_review_board_shop_row_to_picker($row, $display_bo);
     }
 }
 

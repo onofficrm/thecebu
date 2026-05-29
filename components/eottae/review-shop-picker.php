@@ -82,8 +82,8 @@ $review_search_url = G5_URL.'/proc/eottae-review-shop-search.php';
 
     <div class="review-shop-picker__search-wrap" id="reviewShopPickerSearchWrap"<?php echo $review_selected_shop ? ' hidden' : ''; ?>>
         <label class="review-shop-picker__search-label" for="reviewShopPickerSearch">업체 검색</label>
-        <input type="search" id="reviewShopPickerSearch" class="review-shop-picker__search" placeholder="업체명, 지역, 주소로 검색" autocomplete="off">
-        <p class="review-shop-picker__hint" id="reviewShopPickerHint">검색어를 입력하면 등록된 업체가 표시됩니다.</p>
+        <input type="search" id="reviewShopPickerSearch" class="review-shop-picker__search" placeholder="업체명으로 검색 (한 글자부터)" autocomplete="off">
+        <p class="review-shop-picker__hint" id="reviewShopPickerHint">업체명을 한 글자만 입력해도 검색됩니다.</p>
         <div class="review-shop-picker__results" id="reviewShopPickerResults" role="listbox" aria-label="업체 검색 결과" hidden></div>
         <p class="review-shop-picker__empty" id="reviewShopPickerEmpty" hidden>검색 결과가 없습니다. 업체 연결 없이 리뷰를 작성해 주세요.</p>
     </div>
