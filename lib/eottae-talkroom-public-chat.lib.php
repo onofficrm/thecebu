@@ -473,6 +473,52 @@ if (!function_exists('eottae_talkroom_public_group_list_messages')) {
     }
 }
 
+if (!function_exists('eottae_talkroom_public_group_list_messages_before')) {
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    function eottae_talkroom_public_group_list_messages_before($room_id, $before_wr_id, $limit = 10)
+    {
+        $room_id = (int) $room_id;
+        if ($room_id < 1 || !function_exists('eottae_talkroom_write_table')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
+        }
+
+        $write_table = eottae_talkroom_write_table();
+        $before_wr_id = (int) $before_wr_id;
+        if ($room_id < 1 || $write_table === '' || $before_wr_id < 1) {
+            return array();
+        }
+
+        $limit = max(1, min(20, (int) $limit));
+        $visible = eottae_talkroom_post_visible_sql();
+
+        $result = sql_query("
+            SELECT wr_id, wr_subject, wr_content, wr_name, wr_datetime, mb_id, wr_3, wr_1, wr_link1, wr_link2, wr_5
+            FROM `{$write_table}`
+            WHERE wr_is_comment = 0
+              AND wr_1 = '{$room_id}'
+              AND {$visible}
+              AND wr_id < '{$before_wr_id}'
+            ORDER BY wr_id DESC
+            LIMIT {$limit}
+        ", false);
+
+        $rows = array();
+        if ($result) {
+            while ($row = sql_fetch_array($result)) {
+                $text = eottae_talkroom_public_group_message_text($row);
+                if ($text === '') {
+                    continue;
+                }
+                $rows[] = $row;
+            }
+        }
+
+        return array_reverse($rows);
+    }
+}
+
 if (!function_exists('eottae_talkroom_public_group_chat_payload')) {
     function eottae_talkroom_public_group_chat_payload($limit = 20, $viewer_mb_id = '')
     {

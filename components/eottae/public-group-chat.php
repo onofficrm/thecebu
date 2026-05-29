@@ -4,7 +4,7 @@ if (!defined('_GNUBOARD_')) {
 }
 
 if (!function_exists('eottae_public_group_chat_html')) {
-    function eottae_public_group_chat_html($limit = 20)
+    function eottae_public_group_chat_html($limit = 20, $defer_history = false)
     {
         include_once G5_LIB_PATH.'/eottae-talkroom-public-chat.lib.php';
         include_once G5_PATH.'/components/eottae/public-group-chat-message.php';
@@ -12,7 +12,9 @@ if (!function_exists('eottae_public_group_chat_html')) {
         global $member;
 
         $viewer_mb_id = !empty($member['mb_id']) ? (string) $member['mb_id'] : '';
-        $payload = eottae_talkroom_public_group_chat_payload($limit, $viewer_mb_id);
+        $total_limit = max(1, (int) $limit);
+        $initial_limit = $defer_history ? 1 : $total_limit;
+        $payload = eottae_talkroom_public_group_chat_payload($initial_limit, $viewer_mb_id);
         $messages = $payload['messages'];
 
         ob_start();
@@ -32,6 +34,10 @@ if (!function_exists('eottae_public_group_chat_html')) {
             data-register-url="<?php echo get_text($payload['register_href']); ?>"
             data-needs-join="<?php echo !empty($payload['needs_join']) ? '1' : '0'; ?>"
             data-can-manage-ai="<?php echo !empty($payload['can_manage_ai']) ? '1' : '0'; ?>"
+            <?php if ($defer_history) { ?>
+            data-defer-history="1"
+            data-history-total="<?php echo (int) $total_limit; ?>"
+            <?php } ?>
         >
             <div class="public-group-chat__inner">
                 <header class="public-group-chat__head">

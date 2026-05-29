@@ -48,6 +48,37 @@ $viewer_mb_id = !empty($member['mb_id']) ? (string) $member['mb_id'] : '';
 $is_super = ($is_admin === 'super');
 $can_manage_ai = eottae_talkroom_public_group_can_manage_ai($room_id, $viewer_mb_id, $is_super);
 
+if ($action === 'history') {
+    $before_wr_id = isset($_REQUEST['before_wr_id']) ? (int) $_REQUEST['before_wr_id'] : 0;
+    $history_limit = isset($_REQUEST['limit']) ? (int) $_REQUEST['limit'] : 5;
+    $history_limit = max(1, min(10, $history_limit));
+
+    if ($before_wr_id < 1) {
+        eottae_talkroom_public_chat_json(false, '이전 메시지 기준이 없습니다.', array(
+            'room_id'  => $room_id,
+            'messages' => array(),
+        ));
+    }
+
+    $rows = eottae_talkroom_public_group_list_messages_before($room_id, $before_wr_id, $history_limit);
+    $messages = eottae_talkroom_public_group_format_messages_for_viewer($rows, $viewer_mb_id, $can_manage_ai, $room_id, $is_super);
+    $oldest_wr_id = $before_wr_id;
+
+    foreach ($messages as $message) {
+        $wr_id = (int) ($message['wr_id'] ?? 0);
+        if ($wr_id > 0) {
+            $oldest_wr_id = min($oldest_wr_id, $wr_id);
+        }
+    }
+
+    eottae_talkroom_public_chat_json(true, '', array(
+        'room_id'      => $room_id,
+        'messages'     => $messages,
+        'oldest_wr_id' => $oldest_wr_id,
+        'has_more'     => count($messages) >= $history_limit ? 1 : 0,
+    ));
+}
+
 if ($method === 'GET' || $action === 'poll') {
     $rows = eottae_talkroom_public_group_list_messages($room_id, 30, $since_wr_id);
     $messages = eottae_talkroom_public_group_format_messages_for_viewer($rows, $viewer_mb_id, $can_manage_ai, $room_id, $is_super);

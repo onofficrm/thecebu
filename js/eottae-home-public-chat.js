@@ -432,6 +432,215 @@
     return lastId;
   }
 
+  function getOldestWrId(section) {
+    var messagesEl = getMessagesEl(section);
+    if (!messagesEl) {
+      return 0;
+    }
+
+    var nodes = messagesEl.querySelectorAll('[data-wr-id]');
+    var oldest = 0;
+    var i;
+    for (i = 0; i < nodes.length; i += 1) {
+      var wrId = parseInt(nodes[i].getAttribute('data-wr-id'), 10) || 0;
+      if (wrId < 1) {
+        continue;
+      }
+      if (oldest < 1 || wrId < oldest) {
+        oldest = wrId;
+      }
+    }
+
+    return oldest;
+  }
+
+  function countRenderedMessages(section) {
+    var messagesEl = getMessagesEl(section);
+    if (!messagesEl) {
+      return 0;
+    }
+
+    return messagesEl.querySelectorAll('[data-wr-id]').length;
+  }
+
+  function prependMessages(section, messages) {
+    var messagesEl = getMessagesEl(section);
+    if (!messagesEl || !messages || !messages.length) {
+      return 0;
+    }
+
+    var html = '';
+    var i;
+    var inserted = 0;
+    var oldestId = getOldestWrId(section);
+
+    for (i = 0; i < messages.length; i += 1) {
+      var message = messages[i];
+      var wrId = parseInt(message.wr_id, 10) || 0;
+      if (wrId < 1 || messagesEl.querySelector('[data-wr-id="' + wrId + '"]')) {
+        continue;
+      }
+      html += renderMessage(message, section);
+      inserted += 1;
+      if (oldestId < 1 || wrId < oldestId) {
+        oldestId = wrId;
+      }
+    }
+
+    if (!html) {
+      return 0;
+    }
+
+    removeEmptyState(messagesEl);
+
+    var stickToBottom = messagesEl.scrollTop + messagesEl.clientHeight >= messagesEl.scrollHeight - 24;
+    messagesEl.insertAdjacentHTML('afterbegin', html);
+
+    if (oldestId > 0) {
+      section.setAttribute('data-oldest-wr-id', String(oldestId));
+    }
+
+    if (stickToBottom) {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    return inserted;
+  }
+
+  function fetchHistory(section, beforeWrId, limit) {
+    var pollUrl = section.getAttribute('data-poll-url');
+    if (!pollUrl || beforeWrId < 1) {
+      return Promise.resolve({ success: false, messages: [] });
+    }
+
+    var url = pollUrl
+      + (pollUrl.indexOf('?') >= 0 ? '&' : '?')
+      + 'action=history'
+      + '&before_wr_id=' + encodeURIComponent(String(beforeWrId))
+      + '&limit=' + encodeURIComponent(String(limit || 3));
+
+    return fetch(url, {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' },
+    })
+      .then(parseJsonResponse)
+      .catch(function () {
+        return { success: false, messages: [] };
+      });
+  }
+
+  function dispatchChatLayout(section) {
+    if (typeof global.scheduleEottaeHeroColumnHeights === 'function') {
+      global.scheduleEottaeHeroColumnHeights(0);
+    }
+
+    global.dispatchEvent(new CustomEvent('eottae-public-chat-layout', {
+      detail: { section: section || getSection() },
+    }));
+  }
+
+  function loadDeferredHistory(section) {
+    if (!section || section.getAttribute('data-defer-history') !== '1') {
+      return;
+    }
+
+    if (section.dataset.historyDone === '1' || section.dataset.historyLoading === '1') {
+      return;
+    }
+
+    var totalLimit = parseInt(section.getAttribute('data-history-total') || '20', 10) || 20;
+    var batchSize = 3;
+    var delayMs = 140;
+
+    section.dataset.historyLoading = '1';
+    messagesElClass(section, true);
+
+    function finish() {
+      section.dataset.historyDone = '1';
+      section.dataset.historyLoading = '0';
+      messagesElClass(section, false);
+      scheduleScrollMessagesToBottom(section);
+      dispatchChatLayout(section);
+    }
+
+    function step() {
+      var loadedCount = countRenderedMessages(section);
+      var oldest = getOldestWrId(section);
+
+      if (loadedCount >= totalLimit || oldest < 1) {
+        finish();
+        return;
+      }
+
+      var remaining = totalLimit - loadedCount;
+      var limit = Math.min(batchSize, remaining);
+
+      fetchHistory(section, oldest, limit).then(function (data) {
+        if (!data || !data.success) {
+          finish();
+          return;
+        }
+
+        var inserted = prependMessages(section, data.messages || []);
+        loadedCount = countRenderedMessages(section);
+
+        if (inserted < 1 || loadedCount >= totalLimit) {
+          finish();
+          return;
+        }
+
+        global.setTimeout(step, delayMs);
+      });
+    }
+
+    step();
+  }
+
+  function messagesElClass(section, loading) {
+    var messagesEl = getMessagesEl(section);
+    if (!messagesEl) {
+      return;
+    }
+
+    messagesEl.classList.toggle('public-group-chat__messages--history-loading', !!loading);
+  }
+
+  function scheduleDeferredHistory(section) {
+    if (!section || section.getAttribute('data-defer-history') !== '1') {
+      return;
+    }
+
+    if (section.dataset.historyScheduled === '1') {
+      return;
+    }
+
+    section.dataset.historyScheduled = '1';
+
+    var start = function () {
+      var run = function () {
+        loadDeferredHistory(section);
+      };
+
+      if (typeof global.requestIdleCallback === 'function') {
+        global.requestIdleCallback(run, { timeout: 3200 });
+      } else {
+        global.setTimeout(run, 400);
+      }
+    };
+
+    var onReady = function () {
+      global.setTimeout(start, global.innerWidth >= 1024 ? 900 : 500);
+    };
+
+    if (document.readyState === 'complete') {
+      onReady();
+      return;
+    }
+
+    global.addEventListener('load', onReady, { once: true });
+    global.setTimeout(onReady, 2800);
+  }
+
   function poll(section) {
     var pollUrl = section.getAttribute('data-poll-url');
     if (!pollUrl) {
@@ -577,6 +786,9 @@
     messagesEl.dataset.scrollLayoutObserved = '1';
     var scrollTimer = null;
     var observer = new global.ResizeObserver(function () {
+      if (section.dataset.historyLoading === '1') {
+        return;
+      }
       global.clearTimeout(scrollTimer);
       scrollTimer = global.setTimeout(function () {
         scrollMessagesToBottom(section);
@@ -619,6 +831,8 @@
     global.setInterval(function () {
       poll(section);
     }, POLL_MS);
+
+    scheduleDeferredHistory(section);
 
     if (global.EottaePublicChatManage) {
       global.EottaePublicChatManage.appendMessages = appendMessages;
