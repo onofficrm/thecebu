@@ -565,6 +565,69 @@
     return match || resolveCommunitySectionRoot(anchor);
   }
 
+  function findCommunityInsertPoint() {
+    var hotMounted = document.querySelector('[data-eottae-home-popular-hot-mounted="1"]');
+    if (hotMounted) {
+      var hotHost = hotMounted.closest('[data-eottae-home-main-host="popular-hot"]') || hotMounted.parentNode;
+      if (hotHost && hotHost.parentNode) {
+        return { parent: hotHost.parentNode, before: hotHost.nextSibling };
+      }
+    }
+
+    var builderHot = findBuilderPopularHotSection();
+    if (builderHot && builderHot.parentNode) {
+      return { parent: builderHot.parentNode, before: builderHot.nextSibling };
+    }
+
+    var markers = [
+      '갤러리최신글',
+      '유튜브최신글',
+      '지역별로찾아보세요',
+      '내주변정보찾기',
+      '주변인기업소',
+      '세부생활지금시작하세요',
+    ];
+    var heading = findHeadingWithMarker(markers);
+    if (heading) {
+      var section = resolveCommunitySectionRoot(heading);
+      if (section && section.parentNode) {
+        return { parent: section.parentNode, before: section };
+      }
+    }
+
+    return null;
+  }
+
+  function ensureCommunityMountHost() {
+    var root = document.getElementById('root') || document;
+    var existing = root.querySelector('[data-eottae-home-community-mount="1"]');
+    if (existing) {
+      return existing;
+    }
+
+    var mounted = root.querySelector('[data-eottae-home-main-mounted="1"]');
+    if (mounted) {
+      return mounted.closest('[data-eottae-home-main-host]') || mounted.parentElement;
+    }
+
+    var insertPoint = findCommunityInsertPoint();
+    if (!insertPoint || !insertPoint.parent) {
+      return null;
+    }
+
+    var host = document.createElement('div');
+    host.className = 'sebu-home-main-host-wrap';
+    host.setAttribute('data-eottae-home-community-mount', '1');
+
+    if (insertPoint.before) {
+      insertPoint.parent.insertBefore(host, insertPoint.before);
+    } else {
+      insertPoint.parent.appendChild(host);
+    }
+
+    return host;
+  }
+
   function findCommunitySection() {
     var root = document.getElementById('root') || document;
     var mount = root.querySelector('[data-eottae-home-community-mount="1"]');
@@ -622,7 +685,7 @@
       }
     }
 
-    return null;
+    return ensureCommunityMountHost();
   }
 
   function findBuilderPopularHotSection() {
@@ -635,6 +698,7 @@
       text = normalizeText(headings[i].textContent);
       if (
         text.indexOf('전체실시간') !== -1
+        || text.indexOf('현재실시간인기글') !== -1
         || text.indexOf('실시간인기글') !== -1
         || text.indexOf('커뮤니티인기글') !== -1
         || text.indexOf('실시간추천글') !== -1
@@ -1235,7 +1299,7 @@
     }
 
     var data = cfg();
-    if (!data || (!data.popular && !data.latest_news)) {
+    if (!data || (!data.popular && !data.latest_news && !data.talk_rooms)) {
       return false;
     }
 

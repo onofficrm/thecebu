@@ -232,6 +232,26 @@
     return shell;
   }
 
+  function homeHeaderNeedsFullRebuild(header) {
+    if (!header) {
+      return false;
+    }
+
+    if (header.getAttribute('data-eottae-home-header-rebuilt') !== '1') {
+      return true;
+    }
+
+    if (!header.querySelector('[data-eottae-home-gnb-shell="1"]')) {
+      return true;
+    }
+
+    if (!header.querySelector('[data-eottae-home-menu-btn="1"]')) {
+      return true;
+    }
+
+    return false;
+  }
+
   function rebuildHomeHeader(data) {
     if (!data || !data.mobile_menu || !data.mobile_menu.items || !data.mobile_menu.items.length) {
       return false;
@@ -242,9 +262,10 @@
       return false;
     }
 
-    if (header.getAttribute('data-eottae-home-header-rebuilt') !== '1') {
+    if (homeHeaderNeedsFullRebuild(header)) {
       header.innerHTML = renderHomeGnbShell(data);
       header.setAttribute('data-eottae-home-header-rebuilt', '1');
+      mountHomeMobileMenu(data);
     } else {
       var nav = header.querySelector('[data-eottae-home-gnb-nav="1"]');
       if (nav) {
@@ -510,50 +531,92 @@
     return header;
   }
 
-  function initHomeMobileMenuToggle(openBtn, menu, overlay, closeBtn) {
-    if (!openBtn || !menu || openBtn.getAttribute('data-eottae-menu-toggle-bound') === '1') {
+  function getHomeMobileMenuNodes() {
+    return {
+      menu: document.querySelector('[data-eottae-home-mobile-nav="1"]'),
+      overlay: document.querySelector('[data-eottae-home-mobile-overlay="1"]'),
+    };
+  }
+
+  function setHomeMobileMenuOpen(open) {
+    var nodes = getHomeMobileMenuNodes();
+    var menu = nodes.menu;
+    if (!menu) {
       return;
     }
 
-    openBtn.setAttribute('data-eottae-menu-toggle-bound', '1');
+    var overlay = nodes.overlay;
+    var on = !!open;
 
-    function setOpen(open) {
-      var on = !!open;
-      menu.classList.toggle('is-open', on);
-      if (overlay) {
-        overlay.classList.toggle('is-open', on);
-      }
-      openBtn.setAttribute('aria-expanded', on ? 'true' : 'false');
-      openBtn.setAttribute('aria-label', on ? '메뉴 닫기' : '메뉴 열기');
-      menu.setAttribute('aria-hidden', on ? 'false' : 'true');
-      if (overlay) {
-        overlay.setAttribute('aria-hidden', on ? 'false' : 'true');
-      }
-      document.body.style.overflow = on ? 'hidden' : '';
+    menu.classList.toggle('is-open', on);
+    if (overlay) {
+      overlay.classList.toggle('is-open', on);
     }
 
-    openBtn.addEventListener('click', function (event) {
-      event.preventDefault();
-      event.stopPropagation();
-      setOpen(!menu.classList.contains('is-open'));
+    menu.setAttribute('aria-hidden', on ? 'false' : 'true');
+    if (overlay) {
+      overlay.setAttribute('aria-hidden', on ? 'false' : 'true');
+    }
+
+    document.body.style.overflow = on ? 'hidden' : '';
+
+    document.querySelectorAll('[data-eottae-home-menu-btn="1"]').forEach(function (btn) {
+      btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+      btn.setAttribute('aria-label', on ? '메뉴 닫기' : '메뉴 열기');
+    });
+  }
+
+  function ensureHomeMobileMenuControls() {
+    if (document.documentElement.getAttribute('data-eottae-home-menu-controls') === '1') {
+      return;
+    }
+
+    document.documentElement.setAttribute('data-eottae-home-menu-controls', '1');
+
+    document.addEventListener('click', function (event) {
+      var target = event.target;
+      if (!(target instanceof Element)) {
+        return;
+      }
+
+      var openBtn = target.closest('[data-eottae-home-menu-btn="1"]');
+      if (openBtn) {
+        var header = openBtn.closest('header');
+        var root = document.getElementById('root');
+        if (!header || !root || !root.contains(header)) {
+          return;
+        }
+
+        var menu = document.querySelector('[data-eottae-home-mobile-nav="1"]');
+        if (!menu) {
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        setHomeMobileMenuOpen(!menu.classList.contains('is-open'));
+        return;
+      }
+
+      if (target.closest('.eottae-home-mobile-nav__close, .site-header__mobile-close')) {
+        event.preventDefault();
+        setHomeMobileMenuOpen(false);
+        return;
+      }
+
+      if (target.closest('[data-eottae-home-mobile-overlay="1"]')) {
+        setHomeMobileMenuOpen(false);
+      }
     });
 
-    if (closeBtn) {
-      closeBtn.addEventListener('click', function (event) {
-        event.preventDefault();
-        setOpen(false);
-      });
-    }
-
-    if (overlay) {
-      overlay.addEventListener('click', function () {
-        setOpen(false);
-      });
-    }
-
     document.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape' && menu.classList.contains('is-open')) {
-        setOpen(false);
+      if (event.key !== 'Escape') {
+        return;
+      }
+
+      var menu = document.querySelector('[data-eottae-home-mobile-nav="1"]');
+      if (menu && menu.classList.contains('is-open')) {
+        setHomeMobileMenuOpen(false);
       }
     });
   }
@@ -593,24 +656,24 @@
       }
     }
 
-    var menu = document.getElementById('siteMobileNav');
-    var overlay = document.querySelector('[data-eottae-home-mobile-overlay="1"]');
+    var menu = document.querySelector('[data-eottae-home-mobile-nav="1"]');
+    if (!menu) {
+      menu = document.getElementById('siteMobileNav');
+    }
 
     if (!menu) {
       var wrap = document.createElement('div');
       wrap.setAttribute('data-eottae-home-mobile-shell', '1');
       wrap.innerHTML = renderMobileMenuShell(data.mobile_menu);
       document.body.appendChild(wrap);
-      menu = document.getElementById('siteMobileNav');
-      overlay = document.querySelector('[data-eottae-home-mobile-overlay="1"]');
+      menu = document.querySelector('[data-eottae-home-mobile-nav="1"]');
     }
 
     if (!menu) {
       return;
     }
 
-    var closeBtn = menu.querySelector('.eottae-home-mobile-nav__close');
-    initHomeMobileMenuToggle(openBtn, menu, overlay, closeBtn);
+    ensureHomeMobileMenuControls();
   }
 
   function isShopWriteLabel(text) {

@@ -1,5 +1,6 @@
 /* 홈 — 이번 3일 세부 일정 + 커뮤니티 인기글 */
-.sebu-home-main-host {
+.sebu-home-main-host,
+.sebu-home-main-host-wrap {
   min-height: 0 !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
