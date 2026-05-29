@@ -5,11 +5,20 @@
 }
 
 .cebu-map-hero {
-  padding: 38px 0 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px 40px;
+  padding: 22px 0 14px;
+}
+
+.cebu-map-hero__main {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .cebu-map-hero__eyebrow {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   font-size: 12px;
   font-weight: 900;
   color: #2563eb;
@@ -19,24 +28,25 @@
 
 .cebu-map-hero__title {
   margin: 0;
-  font-size: clamp(30px, 4vw, 48px);
+  font-size: clamp(28px, 3.4vw, 42px);
   font-weight: 900;
   letter-spacing: -0.04em;
 }
 
 .cebu-map-hero__lead {
-  max-width: 720px;
-  margin: 12px 0 0;
-  font-size: 16px;
-  line-height: 1.7;
+  max-width: 640px;
+  margin: 8px 0 0;
+  font-size: 15px;
+  line-height: 1.65;
   color: #475569;
 }
 
 .cebu-map-hero__actions {
   display: flex;
-  flex-wrap: wrap;
+  flex: 0 0 auto;
+  flex-direction: column;
   gap: 8px;
-  margin-top: 18px;
+  margin-top: 0;
 }
 
 .cebu-map-hero__actions a {
@@ -44,13 +54,15 @@
   align-items: center;
   justify-content: center;
   min-height: 38px;
-  padding: 0 14px;
+  min-width: 148px;
+  padding: 0 16px;
   border-radius: 999px;
   background: #0f172a;
   color: #fff;
   font-size: 13px;
   font-weight: 800;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .cebu-map-notice {
@@ -133,7 +145,7 @@
 
 .cebu-map-list-panel,
 .cebu-map-canvas-wrap {
-  min-height: 640px;
+  min-height: 680px;
   border: 1px solid #e2e8f0;
   border-radius: 22px;
   background: #fff;
@@ -397,6 +409,23 @@
     width: min(100% - 20px, 680px);
   }
 
+  .cebu-map-hero {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 18px 0 12px;
+  }
+
+  .cebu-map-hero__actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .cebu-map-hero__actions a {
+    flex: 1 1 calc(33.333% - 6px);
+    min-width: 0;
+  }
+
   .cebu-map-filters {
     display: flex;
     overflow-x: auto;
@@ -461,10 +490,15 @@
 
 @media (max-width: 560px) {
   .cebu-map-hero {
-    padding-top: 24px;
+    padding-top: 16px;
+  }
+
+  .cebu-map-hero__actions {
+    flex-direction: column;
   }
 
   .cebu-map-hero__actions a {
-    flex: 1 1 100%;
+    flex: 1 1 auto;
+    width: 100%;
   }
 }

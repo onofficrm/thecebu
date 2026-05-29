@@ -18,11 +18,14 @@ $market_offer = (string) ($write['wr_8'] ?? '1') === '1';
 $market_map_show = (string) ($write['wr_9'] ?? '1') !== '0';
 $market_price = preg_replace('/[^0-9]/', '', (string) ($write['wr_1'] ?? ''));
 $market_content = isset($content) ? $content : '';
-$market_free_mode = (isset($_GET['free']) && (string) $_GET['free'] === '1')
-    || eottae_market_is_free_giveaway(array(
+if ($w === 'u') {
+    $market_free_mode = eottae_market_is_free_giveaway(array(
         'wr_1'  => $write['wr_1'] ?? 0,
         'wr_10' => $write['wr_10'] ?? '',
     ));
+} else {
+    $market_free_mode = isset($_GET['free']) && (string) $_GET['free'] === '1';
+}
 $market_price_ai_url = G5_URL.'/proc/eottae-market-price-ai.php';
 ?>
 

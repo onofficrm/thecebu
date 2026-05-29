@@ -21,7 +21,14 @@ if (!function_exists('eottae_column_home_feed_html')) {
             $featured = eottae_column_list(array('limit' => 1, 'sort' => 'popular'));
         }
 
-        $latest = eottae_column_list(array('limit' => 3));
+        $latest = eottae_column_list(array('limit' => 4));
+        if (!empty($featured[0]['wr_id'])) {
+            $featured_id = (int) $featured[0]['wr_id'];
+            $latest = array_values(array_filter($latest, function ($post) use ($featured_id) {
+                return (int) ($post['wr_id'] ?? 0) !== $featured_id;
+            }));
+        }
+        $latest = array_slice($latest, 0, 3);
         $monthly = eottae_column_get_monthly_columnist();
         $list_url = eottae_column_list_url();
 
