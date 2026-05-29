@@ -1761,6 +1761,11 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   box-shadow: 0 4px 16px rgba(14, 165, 233, 0.08);
 }
 
+.shop-near-search__geo:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 .shop-near-filters {
   padding: 14px 18px 16px;
   border-bottom: 1px solid var(--shop-list-border);
@@ -2597,6 +2602,14 @@ body.eottae-page:has(.shop-near-page) #hd .eottae-gnb-header {
   font-size: 13px;
   color: #64748b;
   text-align: center;
+}
+
+.shop-near-infinite__status.is-error {
+  color: #dc2626;
+}
+
+.shop-near-infinite__status.is-success {
+  color: #0369a1;
 }
 
 .shop-near-infinite__sentinel {

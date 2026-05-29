@@ -236,10 +236,6 @@
   background: linear-gradient(135deg, #fff7ed, #ffedd5);
 }
 
-.cebu-map-card--shop .cebu-map-card__thumb--empty {
-  background: linear-gradient(135deg, #ecfeff, #dbeafe);
-}
-
 .cebu-map-card--job .cebu-map-card__thumb--empty {
   background: linear-gradient(135deg, #f5f3ff, #ede9fe);
 }
@@ -293,11 +289,6 @@
   color: #c2410c;
 }
 
-.cebu-map-card--shop .cebu-map-card__status {
-  background: #dbeafe;
-  color: #1d4ed8;
-}
-
 .cebu-map-card--job .cebu-map-card__status {
   background: #ede9fe;
   color: #6d28d9;
@@ -327,11 +318,21 @@
 }
 
 .cebu-map-card__actions {
+  display: grid !important;
+  grid-template-columns: 4fr 4fr 2fr;
+  gap: 6px;
   margin-top: auto;
   padding-top: 8px;
 }
 
-.cebu-map-card__actions .inquiry-button__btn--primary {
+.cebu-map-card__actions .inquiry-button__btn {
+  width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.cebu-map-card__actions .inquiry-button__btn--primary,
+.cebu-map-card__actions .inquiry-button__btn--map {
   font-size: 11px;
 }
 

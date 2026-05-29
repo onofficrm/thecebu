@@ -82,6 +82,7 @@ jobs:
             .env.*
             data/dbconfig.local.php
             _site.config.local.php
+            plugin/auto_comment/packages/**
 
       - name: Deploy secrets via FTP (data/ only)
         if: env.HAS_DEPLOY_SECRETS == '1'

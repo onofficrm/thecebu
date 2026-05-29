@@ -256,7 +256,10 @@
 .sebu-column-card__thumb {
   position: relative;
   aspect-ratio: 16 / 10;
-  background: var(--col-paper-warm) center/cover no-repeat;
+  background-color: var(--col-paper-warm);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
   overflow: hidden;
 }
 
@@ -1386,23 +1389,283 @@
 }
 
 /* Writer / mypage / admin — inherit tokens */
+.sebu-writer-page {
+  padding-top: 18px;
+}
+
+.sebu-writer-page__back {
+  margin: 0 0 18px;
+}
+
+.sebu-writer-page__back a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--col-line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--col-muted);
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
 .sebu-writer-page__profile {
+  position: relative;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 36px;
+  align-items: center;
+  margin-bottom: 22px;
+  padding: clamp(28px, 5vw, 54px);
+  overflow: hidden;
+  border: 1px solid rgba(231, 229, 228, 0.9);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 14% 18%, rgba(180, 83, 9, 0.16), transparent 28%),
+    radial-gradient(circle at 90% 10%, rgba(15, 76, 92, 0.18), transparent 34%),
+    linear-gradient(135deg, #fff 0%, #fafaf9 44%, #f5f4f0 100%);
+  box-shadow: 0 24px 70px rgba(28, 25, 23, 0.11);
+}
+
+.sebu-writer-page__profile::before {
+  content: '';
+  position: absolute;
+  inset: 18px;
+  border: 1px solid rgba(180, 83, 9, 0.16);
+  border-radius: 24px;
+  pointer-events: none;
+}
+
+.sebu-writer-page__profile::after {
+  content: 'COLUMNIST';
+  position: absolute;
+  right: clamp(18px, 5vw, 58px);
+  bottom: -0.18em;
+  color: rgba(28, 25, 23, 0.035);
+  font-family: var(--col-serif);
+  font-size: clamp(3.6rem, 12vw, 9rem);
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.sebu-writer-page__profile-visual,
+.sebu-writer-page__intro {
+  position: relative;
+  z-index: 1;
+}
+
+.sebu-writer-page__profile-visual {
+  display: grid;
+  place-items: center;
+  min-height: 220px;
+}
+
+.sebu-writer-page__avatar,
+.sebu-writer-page__avatar.sebu-column-avatar {
+  width: 156px;
+  height: 156px;
+  border-radius: 50%;
+  border: 6px solid #fff;
+  object-fit: cover;
+  box-shadow: 0 18px 46px rgba(15, 76, 92, 0.2), 0 0 0 1px rgba(15, 76, 92, 0.08);
+}
+
+.sebu-writer-page__avatar.sebu-column-avatar--initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--col-accent), var(--col-gold));
+  color: #fff;
+  font-family: var(--col-serif);
+  font-size: 3rem;
+  font-weight: 700;
+}
+
+.sebu-writer-page__avatar-ring {
+  position: absolute;
+  width: 202px;
+  height: 202px;
+  border: 1px solid rgba(15, 76, 92, 0.2);
+  border-radius: 50%;
+}
+
+.sebu-writer-page__eyebrow {
+  margin: 0 0 12px;
+  color: var(--col-gold);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.sebu-writer-page__headline {
   display: flex;
-  gap: 20px;
-  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.sebu-writer-page__grade {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(180, 83, 9, 0.26);
+  border-radius: 999px;
+  background: rgba(254, 243, 199, 0.86);
+  color: #92400e;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.sebu-writer-page__name {
+  margin: 12px 0 0;
+  font-family: var(--col-serif);
+  font-size: clamp(2.35rem, 6vw, 4.5rem);
+  font-weight: 700;
+  letter-spacing: -0.055em;
+  line-height: 1.05;
+  color: var(--col-ink);
+}
+
+.sebu-writer-page__title {
+  margin: 12px 0 0;
+  color: var(--col-accent);
+  font-size: 1.06rem;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.sebu-writer-page__bio {
+  max-width: 720px;
+  margin: 18px 0 0;
+  color: var(--col-ink-soft);
+  font-size: 1rem;
+  line-height: 1.85;
+}
+
+.sebu-writer-page__meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 24px 0 0;
+}
+
+.sebu-writer-page__meta div {
+  padding: 14px 16px;
+  border: 1px solid rgba(231, 229, 228, 0.92);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.sebu-writer-page__meta dt {
+  margin: 0 0 6px;
+  color: var(--col-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.sebu-writer-page__meta dd {
+  margin: 0;
+  color: var(--col-ink);
+  font-size: 0.92rem;
+  font-weight: 900;
+  line-height: 1.45;
+}
+
+.sebu-writer-page__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 22px;
+}
+
+.sebu-writer-page__links > a,
+.sebu-writer-page__social .sebu-column-social__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 13px;
+  border: 1px solid rgba(15, 76, 92, 0.14);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--col-accent);
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.sebu-writer-page__social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .sebu-writer-page__stats {
+  position: relative;
+  z-index: 2;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
+  margin: -8px 0 48px;
 }
 
 .sebu-writer-stat {
-  padding: 16px;
+  padding: 18px;
   border: 1px solid var(--col-line);
+  border-radius: 18px;
   text-align: center;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 14px 36px rgba(28, 25, 23, 0.06);
+}
+
+.sebu-writer-stat__value {
+  display: block;
+  color: var(--col-ink);
+  font-family: var(--col-serif);
+  font-size: clamp(1.5rem, 4vw, 2.15rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.sebu-writer-stat__label {
+  display: block;
+  margin-top: 8px;
+  color: var(--col-muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.sebu-writer-page__badges {
+  margin-top: 48px;
+}
+
+.sebu-writer-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sebu-writer-badges__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--col-line);
+  border-radius: 999px;
   background: var(--col-surface);
+  color: var(--col-ink-soft);
+  font-weight: 800;
 }
 
 .sebu-column-mypage {
@@ -1718,19 +1981,46 @@
   }
 
   .sebu-writer-page__profile {
-    flex-direction: column;
-    align-items: center;
+    grid-template-columns: 1fr;
     text-align: center;
-    gap: 16px;
+    gap: 18px;
+    padding: 28px 18px;
+    border-radius: 24px;
   }
 
   .sebu-writer-page__intro {
     width: 100%;
   }
 
+  .sebu-writer-page__profile-visual {
+    min-height: 170px;
+  }
+
+  .sebu-writer-page__avatar,
+  .sebu-writer-page__avatar.sebu-column-avatar {
+    width: 124px;
+    height: 124px;
+  }
+
+  .sebu-writer-page__avatar-ring {
+    width: 158px;
+    height: 158px;
+  }
+
+  .sebu-writer-page__headline,
+  .sebu-writer-page__links,
+  .sebu-writer-page__social {
+    justify-content: center;
+  }
+
+  .sebu-writer-page__meta {
+    grid-template-columns: 1fr;
+  }
+
   .sebu-writer-page__stats {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
+    margin-top: 12px;
   }
 
   .sebu-column-mypage {

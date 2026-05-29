@@ -8,3 +8,4 @@ _BUILDER_INPUT/
 dist/
 .env
 .env.*
+plugin/auto_comment/packages/

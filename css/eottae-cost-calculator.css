@@ -1,0 +1,334 @@
+.cost-calculator-page {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto 64px;
+  color: #0f172a;
+}
+
+.cost-calculator-hero,
+.cost-calculator-presets,
+.cost-result-panel,
+.cost-calculator-guide {
+  border: 1px solid #e2e8f0;
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+}
+
+.cost-calculator-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 42px;
+  background:
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.18), transparent 34%),
+    linear-gradient(135deg, #f8fafc 0%, #fff7ed 100%);
+}
+
+.cost-calculator-hero__eyebrow,
+.cost-calculator-section-kicker {
+  margin: 0 0 10px;
+  color: #0284c7;
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cost-calculator-hero__title {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3.8rem);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
+.cost-calculator-hero__lead {
+  max-width: 760px;
+  margin: 18px 0 0;
+  color: #475569;
+  font-size: 1.02rem;
+  line-height: 1.75;
+}
+
+.cost-calculator-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.cost-calculator-hero__actions a,
+.cost-calculator-guide__grid a {
+  text-decoration: none;
+}
+
+.cost-calculator-hero__actions a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #fff;
+  font-weight: 900;
+}
+
+.cost-calculator-hero__actions a:nth-child(2) {
+  background: #0284c7;
+}
+
+.cost-calculator-hero__actions a:nth-child(3) {
+  background: #f97316;
+}
+
+.cost-calculator-presets {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 20px;
+  align-items: center;
+  margin-top: 20px;
+  padding: 24px;
+}
+
+.cost-calculator-presets h2,
+.cost-calculator-guide h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.cost-calculator-presets p {
+  margin: 8px 0 0;
+  color: #64748b;
+}
+
+.cost-calculator-presets__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.cost-calculator-presets__buttons button {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #fff;
+  color: #334155;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.cost-calculator-presets__buttons button.is-active {
+  border-color: #0f172a;
+  background: #0f172a;
+  color: #fff;
+}
+
+.cost-calculator-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 20px;
+  align-items: start;
+  margin-top: 20px;
+}
+
+.cost-calculator-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.cost-calculator-card {
+  padding: 22px;
+  border: 1px solid #e2e8f0;
+  border-radius: 22px;
+  background: #fff;
+}
+
+.cost-calculator-card h2 {
+  margin: 0 0 16px;
+  font-size: 1.05rem;
+}
+
+.cost-field {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.cost-field span {
+  color: #475569;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.cost-field input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.cost-field input:focus {
+  border-color: #0284c7;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+}
+
+.cost-result-panel {
+  position: sticky;
+  top: 84px;
+  padding: 26px;
+}
+
+.cost-result-panel__label {
+  margin: 0;
+  color: #64748b;
+  font-weight: 900;
+}
+
+.cost-result-panel strong {
+  display: block;
+  margin-top: 8px;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.cost-result-panel > span {
+  display: block;
+  margin-top: 8px;
+  color: #0284c7;
+  font-weight: 900;
+}
+
+.cost-result-panel__level {
+  margin: 16px 0 0;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.cost-result-panel__bar {
+  height: 10px;
+  margin-top: 18px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.cost-result-panel__bar span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #22c55e, #f97316);
+  transition: width 0.2s ease;
+}
+
+.cost-result-panel__breakdown {
+  display: grid;
+  gap: 9px;
+  margin: 20px 0 0;
+}
+
+.cost-result-panel__breakdown div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.cost-result-panel__breakdown dt {
+  color: #64748b;
+  font-weight: 800;
+}
+
+.cost-result-panel__breakdown dd {
+  margin: 0;
+  font-weight: 900;
+}
+
+.cost-result-panel__note {
+  margin: 18px 0 0;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.cost-calculator-guide {
+  margin-top: 20px;
+  padding: 26px;
+}
+
+.cost-calculator-guide__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.cost-calculator-guide__grid a {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #f8fafc;
+  color: inherit;
+}
+
+.cost-calculator-guide__grid strong {
+  font-size: 1rem;
+}
+
+.cost-calculator-guide__grid span {
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 920px) {
+  .cost-calculator-page {
+    width: min(100% - 20px, 760px);
+  }
+
+  .cost-calculator-hero,
+  .cost-calculator-presets,
+  .cost-calculator-guide {
+    border-radius: 22px;
+    padding: 22px;
+  }
+
+  .cost-calculator-presets,
+  .cost-calculator-layout,
+  .cost-calculator-form,
+  .cost-calculator-guide__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cost-calculator-presets__buttons {
+    justify-content: flex-start;
+  }
+
+  .cost-result-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 560px) {
+  .cost-calculator-hero__actions,
+  .cost-calculator-presets__buttons {
+    flex-direction: column;
+  }
+
+  .cost-calculator-hero__actions a,
+  .cost-calculator-presets__buttons button {
+    justify-content: center;
+    width: 100%;
+  }
+}

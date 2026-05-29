@@ -2890,12 +2890,14 @@ body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .public-group-chat
   /* 온오프 상담 챗봇 FAB과 겹치지 않도록 */
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__composer,
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__composer--login,
-  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__composer--disabled {
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__composer--disabled,
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__composer--join {
     margin-bottom: var(--talkroom-chat-fab-offset, 0px);
   }
 
   body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__composer--login,
-  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__composer--disabled {
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__composer--disabled,
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__composer--join {
     padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
   }
 

@@ -23,12 +23,13 @@ copy_file() {
 
 copy_dir() {
   local rel="$1"
+  shift
   if [[ ! -d "$ROOT/$rel" ]]; then
     echo "missing dir: $rel" >&2
     exit 1
   fi
   mkdir -p "$STAGING/$(dirname "$rel")"
-  rsync -a --exclude '.DS_Store' --exclude '._*' --exclude '__MACOSX' "$ROOT/$rel/" "$STAGING/$rel/"
+  rsync -a --exclude '.DS_Store' --exclude '._*' --exclude '__MACOSX' "$@" "$ROOT/$rel/" "$STAGING/$rel/"
 }
 
 ROOT_FILES=(
@@ -41,6 +42,7 @@ ROOT_FILES=(
 EXTEND_FILES=(
   extend/eottae.extend.php
   extend/eottae.config.php
+  extend/auto_comment.extend.php
 )
 
 LIB_FILES=(
@@ -99,6 +101,7 @@ SETUP_FILES=(
   setup/tools/eottae-install.php
   setup/tools/eottae-install.lib.php
   setup/tools/eottae-install-cli.php
+  setup/tools/eottae-auto-comment-install-cli.php
   setup/tools/eottae-seed.php
   setup/tools/eottae-seed.lib.php
 )
@@ -123,10 +126,15 @@ DIRS=(
   mobile/skin/board/eottae-community
   mobile/skin/member/eottae
   plugin/onoff-builder-bridge
+  plugin/auto_comment
 )
 
 for d in "${DIRS[@]}"; do
-  copy_dir "$d"
+  if [[ "$d" == "plugin/auto_comment" ]]; then
+    copy_dir "$d" --exclude 'packages'
+  else
+    copy_dir "$d"
+  fi
 done
 
 find "$STAGING" -name '.DS_Store' -delete

@@ -88,9 +88,38 @@ if (!function_exists('eottae_talkroom_chat_html')) {
                         </div>
                     </div>
                     <?php } elseif (!empty($payload['needs_join'])) { ?>
+                    <div class="public-group-chat__composer public-group-chat__composer--join">
+                        <div class="public-group-chat__composer-row">
+                            <button type="button" class="public-group-chat__join" data-talk-join="<?php echo (int) $payload['room_id']; ?>">참여하기</button>
+                            <div class="public-group-chat__composer-field">
+                                <label class="sr-only" for="eottae-talkroom-chat-input">메시지 입력</label>
+                                <textarea
+                                    id="eottae-talkroom-chat-input"
+                                    class="public-group-chat__input"
+                                    rows="1"
+                                    maxlength="500"
+                                    placeholder="참여 후 메시지를 입력하세요"
+                                    disabled
+                                ></textarea>
+                                <button type="button" class="public-group-chat__send" disabled>전송</button>
+                            </div>
+                        </div>
+                    </div>
+                    <?php } elseif (!empty($payload['membership_pending'])) { ?>
+                    <div class="public-group-chat__composer public-group-chat__composer--disabled public-group-chat__composer--pending">
+                        <p class="public-group-chat__hint">참여 승인 대기 중입니다. 승인 후 메시지를 보낼 수 있습니다.</p>
+                        <div class="public-group-chat__composer-field">
+                            <textarea class="public-group-chat__input" rows="1" placeholder="메시지를 입력하세요" disabled></textarea>
+                            <button type="button" class="public-group-chat__send" disabled>전송</button>
+                        </div>
+                    </div>
+                    <?php } elseif (!empty($payload['join_blocked'])) { ?>
                     <div class="public-group-chat__composer public-group-chat__composer--disabled">
-                        <p class="public-group-chat__hint"><?php echo $payload['join_hint'] !== '' ? $payload['join_hint'] : '톡방에 참여한 뒤 메시지를 보낼 수 있습니다.'; ?></p>
-                        <button type="button" class="public-group-chat__join" data-talk-join="<?php echo (int) $payload['room_id']; ?>">참여하기</button>
+                        <p class="public-group-chat__hint"><?php echo $payload['join_hint'] !== '' ? get_text($payload['join_hint']) : '이 톡방에 참여할 수 없습니다.'; ?></p>
+                        <div class="public-group-chat__composer-field">
+                            <textarea class="public-group-chat__input" rows="1" placeholder="메시지를 입력하세요" disabled></textarea>
+                            <button type="button" class="public-group-chat__send" disabled>전송</button>
+                        </div>
                     </div>
                     <?php } else { ?>
                     <form class="public-group-chat__composer" id="eottae-talkroom-chat-form" action="#" method="post">

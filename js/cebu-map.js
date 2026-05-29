@@ -2,7 +2,6 @@
   'use strict';
 
   var TYPE_META = {
-    shop: { label: '업체', icon: '🏪', color: '#0ea5e9' },
     market: { label: '중고장터', icon: '🛍', color: '#f97316' },
     job: { label: '구인구직', icon: '💼', color: '#7c3aed' },
     estate: { label: '부동산', icon: '🏠', color: '#0284c7' },
@@ -203,7 +202,6 @@
   CebuLifeMap.prototype.matchesStatus = function (loc) {
     var val = this.filters.status;
     if (val === 'all') return true;
-    if (loc.type === 'shop') return val === 'shop';
     if (val === 'market:not-sold') return loc.type !== 'market' || loc.status_key !== 'sold';
     var parts = val.split(':');
     return parts.length === 2 && loc.type === parts[0] && loc.status_key === parts[1];

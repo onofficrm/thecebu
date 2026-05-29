@@ -554,7 +554,12 @@ if (!function_exists('eottae_talkroom_public_group_chat_payload')) {
             $member_row = eottae_talkroom_get_member_row($room_id, $viewer_mb_id);
         }
 
-        $can_send = !empty($is_member) && $room_id > 0;
+        $can_send = !empty($is_member) && $room_id > 0 && eottae_talkroom_is_active_member($member_row);
+        $needs_join = !empty($is_member)
+            && $room_id > 0
+            && $viewer_mb_id !== ''
+            && (!$member_row || ($member_row['status'] ?? '') !== 'active')
+            && (!$member_row || !eottae_talkroom_is_kicked_status($member_row['status'] ?? ''));
 
         return array(
             'room_id'      => $room_id,
@@ -566,7 +571,7 @@ if (!function_exists('eottae_talkroom_public_group_chat_payload')) {
             'last_wr_id'   => $last_wr_id,
             'is_member'    => !empty($is_member) ? 1 : 0,
             'can_send'     => $can_send ? 1 : 0,
-            'needs_join'   => ($can_send && (!$member_row || ($member_row['status'] ?? '') !== 'active')) ? 1 : 0,
+            'needs_join'   => ($needs_join && !$can_send) ? 1 : 0,
             'login_href'    => function_exists('eottae_login_url') ? eottae_login_url(G5_URL) : G5_BBS_URL.'/login.php',
             'register_href' => function_exists('eottae_register_url') ? eottae_register_url() : G5_BBS_URL.'/register.php',
             'member_token' => !empty($is_member) && function_exists('eottae_talkroom_member_token')
@@ -906,11 +911,18 @@ if (!function_exists('eottae_talkroom_room_chat_payload')) {
         }
 
         $can_send = !empty($is_member) && !empty($ctx['can_write']);
-        $needs_join = false;
-        if ($can_send && $viewer_mb_id !== '') {
-            $member_row = !empty($ctx['member_row']) ? $ctx['member_row'] : eottae_talkroom_get_member_row($room_id, $viewer_mb_id);
-            $needs_join = !$member_row || ($member_row['status'] ?? '') !== 'active';
-        }
+        $membership = isset($ctx['membership']) ? (string) $ctx['membership'] : 'guest';
+        $can_join = !empty($ctx['can_join']);
+        $needs_join = !empty($is_member)
+            && $viewer_mb_id !== ''
+            && $can_join
+            && in_array($membership, array('guest', 'left'), true);
+        $membership_pending = !empty($is_member) && $membership === 'pending';
+        $join_blocked = !empty($is_member)
+            && !$needs_join
+            && !$membership_pending
+            && !empty($ctx['can_view_posts'])
+            && empty($ctx['can_write']);
 
         $return_url = function_exists('eottae_talkroom_enter_url')
             ? eottae_talkroom_enter_url($room_id)
@@ -927,6 +939,8 @@ if (!function_exists('eottae_talkroom_room_chat_payload')) {
             'can_send'      => $can_send ? 1 : 0,
             'can_view'      => !empty($ctx['can_view_posts']) ? 1 : 0,
             'needs_join'    => $needs_join ? 1 : 0,
+            'membership_pending' => $membership_pending ? 1 : 0,
+            'join_blocked'  => $join_blocked ? 1 : 0,
             'login_href'    => function_exists('eottae_login_url') ? eottae_login_url($return_url) : G5_BBS_URL.'/login.php?url='.urlencode($return_url),
             'register_href' => function_exists('eottae_register_url') ? eottae_register_url() : G5_BBS_URL.'/register.php',
             'member_token'  => !empty($is_member) && function_exists('eottae_talkroom_member_token')

@@ -41,42 +41,63 @@ if (empty($representative)) {
 }
 
 $stats = $author['stats'] ?? array();
+$specialties = array_filter(array_map('trim', explode(',', (string) ($author['specialty'] ?? ''))));
+$primary_specialty = !empty($specialties) ? $specialties[0] : '';
+$author_meta = array();
+if (!empty($author['area_label'])) {
+    $author_meta[] = array('label' => '활동 지역', 'value' => $author['area_label']);
+}
+if (!empty($primary_specialty)) {
+    $author_meta[] = array('label' => '대표 분야', 'value' => $primary_specialty);
+}
+if (!empty($author['title'])) {
+    $author_meta[] = array('label' => '소개', 'value' => $author['title']);
+}
 
+add_stylesheet('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">', 20);
 add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-column.css">', 24);
 
 g5_page_start(get_text($author['display_name'] ?? '').' · 칼럼니스트');
 ?>
 
-<main class="sebu-writer-page">
+<main class="sebu-writer-page sebu-column-editorial">
     <p class="sebu-writer-page__back"><a href="<?php echo eottae_column_list_url(); ?>">← <?php echo eottae_column_menu_label(); ?></a></p>
 
     <header class="sebu-writer-page__profile">
-        <div class="sebu-writer-page__profile-visual">
+        <div class="sebu-writer-page__profile-visual" aria-hidden="true">
             <?php echo eottae_column_render_avatar_html($author, 'lg', 'sebu-writer-page__avatar'); ?>
+            <span class="sebu-writer-page__avatar-ring"></span>
         </div>
         <div class="sebu-writer-page__intro">
-            <?php if (!empty($author['grade_label'])) { ?>
-            <span class="sebu-writer-page__grade"><?php echo get_text($author['grade_label']); ?></span>
-            <?php } ?>
+            <p class="sebu-writer-page__eyebrow">Columnist Profile</p>
+            <div class="sebu-writer-page__headline">
+                <?php if (!empty($author['grade_label'])) { ?>
+                <span class="sebu-writer-page__grade"><?php echo get_text($author['grade_label']); ?></span>
+                <?php } ?>
+            </div>
             <h1 class="sebu-writer-page__name"><?php echo get_text($author['display_name'] ?? ''); ?></h1>
             <?php if (!empty($author['title'])) { ?>
             <p class="sebu-writer-page__title"><?php echo get_text($author['title']); ?></p>
             <?php } ?>
-            <?php if (!empty($author['specialty'])) { ?>
-            <p class="sebu-writer-page__specialty">전문 분야: <?php echo get_text($author['specialty']); ?></p>
-            <?php } ?>
-            <?php if (!empty($author['area_label'])) { ?>
-            <p class="sebu-writer-page__area">활동 지역: <?php echo get_text($author['area_label']); ?></p>
-            <?php } ?>
             <?php if (!empty($author['bio'])) { ?>
             <p class="sebu-writer-page__bio"><?php echo nl2br(get_text($author['bio'])); ?></p>
             <?php } ?>
-            <?php if (!empty($author['website_url'])) { ?>
-            <p class="sebu-writer-page__links">
-                <a href="<?php echo get_text($author['website_url']); ?>" target="_blank" rel="noopener noreferrer">홈페이지</a>
-            </p>
+            <?php if (!empty($author_meta)) { ?>
+            <dl class="sebu-writer-page__meta">
+                <?php foreach ($author_meta as $meta) { ?>
+                <div>
+                    <dt><?php echo get_text($meta['label']); ?></dt>
+                    <dd><?php echo get_text($meta['value']); ?></dd>
+                </div>
+                <?php } ?>
+            </dl>
             <?php } ?>
-            <?php echo eottae_column_render_social_links_html($author, 'sebu-writer-page__social'); ?>
+            <div class="sebu-writer-page__links">
+                <?php if (!empty($author['website_url'])) { ?>
+                <a href="<?php echo get_text($author['website_url']); ?>" target="_blank" rel="noopener noreferrer">홈페이지</a>
+                <?php } ?>
+                <?php echo eottae_column_render_social_links_html($author, 'sebu-writer-page__social'); ?>
+            </div>
         </div>
     </header>
 

@@ -314,10 +314,27 @@
     );
   }
 
+  function locationErrorMessage(error) {
+    if (!global.isSecureContext && global.location.protocol !== 'https:' && global.location.hostname !== 'localhost') {
+      return '현재 위치 검색은 HTTPS 보안 연결에서만 사용할 수 있습니다.';
+    }
+    if (error && error.code === 1) {
+      return '브라우저 위치 권한이 차단되었습니다. 주소창의 위치 권한을 허용한 뒤 다시 시도해 주세요.';
+    }
+    if (error && error.code === 2) {
+      return '현재 위치를 확인하지 못했습니다. Wi-Fi/GPS를 켠 뒤 다시 시도해 주세요.';
+    }
+    if (error && error.code === 3) {
+      return '현재 위치 확인 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.';
+    }
+    return '현재 위치를 확인하지 못했습니다. 브라우저 위치 권한을 확인해 주세요.';
+  }
+
   function ShopMapPanel(root) {
     this.root = root;
     this.canvas = root.querySelector('.shop-map-panel__map');
     this.locateBtn = root.querySelector('#shopMapLocateBtn');
+    this.statusEl = document.querySelector('[data-shop-infinite-status]');
     this.markersApi = root.getAttribute('data-map-markers-api') || '';
     this.boTable = root.getAttribute('data-map-bo-table') || 'shop';
     this.locations = parseLocations(root.getAttribute('data-shop-locations'))
@@ -339,6 +356,16 @@
     this.radiusCircle = null;
     this.userMarker = null;
   }
+
+  ShopMapPanel.prototype.setStatus = function (message, type) {
+    if (!this.statusEl) {
+      return;
+    }
+    this.statusEl.hidden = !message;
+    this.statusEl.textContent = message || '';
+    this.statusEl.classList.toggle('is-error', type === 'error');
+    this.statusEl.classList.toggle('is-success', type === 'success');
+  };
 
   ShopMapPanel.prototype.isNearRadiusMode = function () {
     return this.root.dataset.mapNearActive === '1' || isNearModeFromUrl();
@@ -633,18 +660,29 @@
     var self = this;
     if (!self.map) return;
     if (!navigator.geolocation) {
-      alert('현재 위치를 사용할 수 없습니다.');
+      self.setStatus('이 브라우저에서는 현재 위치를 사용할 수 없습니다.', 'error');
       return;
     }
+    if (self.locateBtn) {
+      self.locateBtn.disabled = true;
+    }
+    self.setStatus('현재 위치를 확인하는 중입니다...', 'success');
     navigator.geolocation.getCurrentPosition(
       function (pos) {
         var loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         self.applyNearRadiusView(loc);
+        self.setStatus('현재 위치 주변을 지도에 표시했습니다.', 'success');
+        if (self.locateBtn) {
+          self.locateBtn.disabled = false;
+        }
       },
-      function () {
-        alert('위치 권한이 필요합니다.');
+      function (error) {
+        self.setStatus(locationErrorMessage(error), 'error');
+        if (self.locateBtn) {
+          self.locateBtn.disabled = false;
+        }
       },
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
     );
   };
 
