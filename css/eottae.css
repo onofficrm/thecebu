@@ -793,6 +793,15 @@ img[data-eottae-logo] {
   margin-left: auto;
 }
 
+/* 모바일 홈 헤더 — 업소등록 버튼 숨김 (pill 강제 표시 규칙보다 우선) */
+@media (max-width: 1023px) {
+  #root header.eottae-gnb-header[data-eottae-home-header-rebuilt="1"] .eottae-gnb-header__actions a.eottae-gnb-header__btn--register,
+  #root header.eottae-gnb-header[data-eottae-home-header-rebuilt="1"] .eottae-gnb-header__actions a[href*="bo_table=shop"][href*="write"]:not([href*="안내"]),
+  #root header.eottae-gnb-header[data-eottae-home-header-rebuilt="1"] .eottae-gnb-header__actions a[href*="bo_table%3Dshop"][href*="write"]:not([href*="안내"]) {
+    display: none !important;
+  }
+}
+
 #root header [data-eottae-home-gnb-nav="1"] {
   display: none !important;
   align-items: center;
@@ -836,26 +845,36 @@ img[data-eottae-logo] {
 }
 
 .eottae-home-mobile-nav {
-  position: fixed;
-  top: 0;
-  right: 0;
-  z-index: 100060;
-  display: flex;
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: auto !important;
+  z-index: 100060 !important;
+  display: flex !important;
   flex-direction: column;
   width: min(320px, 92vw);
   max-width: 100%;
   height: 100%;
   max-height: 100dvh;
-  padding: 0;
+  padding: 0 !important;
   overflow: hidden;
-  background: #fff;
-  box-shadow: -8px 0 32px rgba(15, 23, 42, 0.12);
-  transform: translate3d(100%, 0, 0);
+  background: #fff !important;
+  border-top: 0 !important;
+  box-shadow: -8px 0 32px rgba(15, 23, 42, 0.12) !important;
+  transform: translate3d(100%, 0, 0) !important;
   transition: transform 0.24s ease;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.eottae-home-mobile-nav:not(.is-open) {
+  pointer-events: none;
 }
 
 .eottae-home-mobile-nav.is-open {
-  transform: translate3d(0, 0, 0);
+  display: flex !important;
+  transform: translate3d(0, 0, 0) !important;
 }
 
 .eottae-home-mobile-nav__head {
@@ -904,9 +923,10 @@ img[data-eottae-logo] {
 }
 
 .eottae-home-mobile-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 100050;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 100050 !important;
+  display: none !important;
   background: rgba(15, 23, 42, 0.45);
   opacity: 0;
   visibility: hidden;
@@ -914,6 +934,7 @@ img[data-eottae-logo] {
 }
 
 .eottae-home-mobile-overlay.is-open {
+  display: block !important;
   opacity: 1;
   visibility: visible;
 }
@@ -967,7 +988,7 @@ img[data-eottae-logo] {
   display: none !important;
 }
 
-.eottae-gnb-header__mobile {
+.eottae-gnb-header__mobile:not(.eottae-home-mobile-nav) {
   display: none;
   position: static;
   top: auto;
@@ -985,13 +1006,13 @@ img[data-eottae-logo] {
 }
 
 @media (min-width: 640px) {
-  .eottae-gnb-header__mobile {
+  .eottae-gnb-header__mobile:not(.eottae-home-mobile-nav) {
     padding: 16px 24px;
   }
 }
 
 @media (min-width: 1024px) {
-  .eottae-gnb-header__mobile {
+  .eottae-gnb-header__mobile:not(.eottae-home-mobile-nav) {
     display: none !important;
   }
 }

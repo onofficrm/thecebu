@@ -566,6 +566,36 @@
     });
   }
 
+  function findHomeMenuOpenButton(target) {
+    if (!(target instanceof Element)) {
+      return null;
+    }
+
+    return target.closest(
+      '[data-eottae-home-menu-btn="1"], '
+      + '#root header.eottae-gnb-header .eottae-gnb-header__menu-btn, '
+      + '#root header.eottae-gnb-header .site-header__menu-btn'
+    );
+  }
+
+  function isHomeHeaderMenuButton(btn) {
+    if (!btn) {
+      return false;
+    }
+
+    var header = btn.closest('header');
+    if (!header) {
+      return false;
+    }
+
+    if (header.getAttribute('data-eottae-home-header-rebuilt') === '1') {
+      return true;
+    }
+
+    var root = document.getElementById('root');
+    return !!(root && root.contains(header));
+  }
+
   function ensureHomeMobileMenuControls() {
     if (document.documentElement.getAttribute('data-eottae-home-menu-controls') === '1') {
       return;
@@ -579,11 +609,9 @@
         return;
       }
 
-      var openBtn = target.closest('[data-eottae-home-menu-btn="1"]');
+      var openBtn = findHomeMenuOpenButton(target);
       if (openBtn) {
-        var header = openBtn.closest('header');
-        var root = document.getElementById('root');
-        if (!header || !root || !root.contains(header)) {
+        if (!isHomeHeaderMenuButton(openBtn)) {
           return;
         }
 
@@ -607,7 +635,7 @@
       if (target.closest('[data-eottae-home-mobile-overlay="1"]')) {
         setHomeMobileMenuOpen(false);
       }
-    });
+    }, true);
 
     document.addEventListener('keydown', function (event) {
       if (event.key !== 'Escape') {
@@ -1262,6 +1290,8 @@
   }
 
   function init() {
+    ensureHomeMobileMenuControls();
+
     var run = function () {
       mount();
     };
