@@ -58,6 +58,32 @@ if (!function_exists('eottae_board_force_dhtml_editor')) {
     }
 }
 
+if (!function_exists('eottae_editor_upload_path_url')) {
+    /**
+     * SmartEditor 업로드 URL을 /data/editor/... 상대 경로로 통일
+     * conv_content()의 // 제거로 https:// 이미지가 깨지는 문제 방지
+     */
+    function eottae_editor_upload_path_url($url, $file_path = '', $file = null)
+    {
+        $url = (string) $url;
+        if ($url === '') {
+            return $url;
+        }
+
+        $path = parse_url($url, PHP_URL_PATH);
+        if (!is_string($path) || $path === '') {
+            return $url;
+        }
+
+        if (preg_match('#/data/editor/#i', $path)) {
+            return $path;
+        }
+
+        return $url;
+    }
+}
+add_replace('get_editor_upload_url', 'eottae_editor_upload_path_url', 10, 3);
+
 if (!function_exists('eottae_board_write_content_for_editor')) {
     /**
      * 수정 시 SmartEditor에 넣을 HTML (이스케이프된 plain text 방지)

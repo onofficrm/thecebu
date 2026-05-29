@@ -249,6 +249,7 @@ if (!function_exists('eottae_column_category_options')) {
             'area'        => '지역정보',
             'settlement'  => '정착이야기',
             'interview'   => '교민 인터뷰',
+            'webtoon'     => '웹툰',
         );
     }
 }
@@ -278,6 +279,7 @@ if (!function_exists('eottae_column_category_descriptions')) {
             'area'       => '세부시티, 막탄, 라푸라푸, 만다우에, IT Park 등 지역별 생활 정보를 모았습니다.',
             'settlement' => '세부 이주 준비, 한달살기와 장기거주, 생활비와 교민사회 적응 이야기를 전합니다.',
             'interview'  => '세부 교민과 현지 생활자를 만나 실제 경험과 노하우를 인터뷰로 전합니다.',
+            'webtoon'    => '세부 생활, 교민 이야기, 여행·일상을 그림과 말풍선으로 풀어낸 웹툰 컬럼입니다.',
         );
     }
 }
@@ -637,6 +639,7 @@ if (!function_exists('eottae_column_ensure_schema')) {
         }
 
         eottae_column_ensure_board();
+        eottae_column_sync_board_categories();
         eottae_column_migrate_profile_columns();
         eottae_column_migrate_meta_columns();
 
@@ -743,6 +746,24 @@ if (!function_exists('eottae_column_ensure_board')) {
         }
 
         return eottae_install_create_board(eottae_column_board_def());
+    }
+}
+
+if (!function_exists('eottae_column_sync_board_categories')) {
+    function eottae_column_sync_board_categories()
+    {
+        global $g5;
+
+        $bo_table = eottae_column_board_table();
+        $cats = implode('|', array_values(eottae_column_category_options()));
+
+        sql_query("
+            UPDATE {$g5['board_table']} SET
+                bo_use_category = 1,
+                bo_category_list = '".sql_escape_string($cats)."'
+            WHERE bo_table = '".sql_escape_string($bo_table)."'
+            LIMIT 1
+        ", false);
     }
 }
 
@@ -1406,6 +1427,7 @@ if (!function_exists('eottae_column_save_post')) {
 
         $subject = trim(strip_tags((string) ($input['wr_subject'] ?? $input['title'] ?? '')));
         $content = trim((string) ($input['wr_content'] ?? $input['content'] ?? ''));
+        $content = eottae_column_normalize_content_images($content);
         if (!empty($_FILES['content_images']) && is_array($_FILES['content_images'])) {
             $content = eottae_column_append_body_images_to_content($content, $_FILES['content_images'], $wr_id);
         }
@@ -1679,6 +1701,169 @@ if (!function_exists('eottae_column_editor_form_js')) {
     }
 }
 
+if (!function_exists('eottae_column_data_public_path')) {
+    function eottae_column_data_public_path($relative)
+    {
+        return '/'.G5_DATA_DIR.'/'.ltrim(str_replace('\\', '/', (string) $relative), '/');
+    }
+}
+
+if (!function_exists('eottae_column_guess_uploaded_image_url')) {
+    function eottae_column_guess_uploaded_image_url($filename)
+    {
+        $filename = trim(basename(str_replace('\\', '/', (string) $filename)), " \t\n\r\0\x0B\"'");
+        if ($filename === '') {
+            return '';
+        }
+
+        if (preg_match('/^body_\d+_\d{14}_[a-f0-9]{8}\.(jpe?g|png|gif|webp)$/i', $filename)) {
+            return eottae_column_data_public_path('column/body/'.$filename);
+        }
+
+        if (preg_match('/^[a-f0-9]{32}_\d{10}_\d+\.(jpe?g|png|gif|webp)$/i', $filename)) {
+            $parts = explode('_', $filename);
+            $timestamp = (int) ($parts[1] ?? 0);
+            if ($timestamp < 1) {
+                return '';
+            }
+
+            return eottae_column_data_public_path('editor/'.date('ym', $timestamp).'/'.$filename);
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('eottae_column_extract_editor_filename')) {
+    function eottae_column_extract_editor_filename($value)
+    {
+        $value = html_entity_decode((string) $value, ENT_QUOTES, 'UTF-8');
+        $value = str_replace('\\', '', $value);
+        $value = trim($value, " \t\n\r\0\x0B\"'");
+
+        if (preg_match('/([a-f0-9]{32}_\d{10}_\d+\.(?:jpe?g|png|gif|webp)|body_\d+_\d{14}_[a-f0-9]{8}\.(?:jpe?g|png|gif|webp))/i', $value, $matches)) {
+            return $matches[1];
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('eottae_column_normalize_image_src')) {
+    function eottae_column_normalize_image_src($src)
+    {
+        $src = trim(html_entity_decode((string) $src, ENT_QUOTES, 'UTF-8'));
+        $src = str_replace('\/', '/', $src);
+
+        if ($src === '' || $src === '\\' || strcasecmp($src, '%5C') === 0 || $src === '/') {
+            return '';
+        }
+
+        if (preg_match('#^(https?):([^/])#i', $src, $matches)) {
+            $src = $matches[1].'://'.ltrim(substr($src, strlen($matches[1]) + 1), '/');
+        }
+
+        if (preg_match('#^//([^/])#', $src)) {
+            $src = 'https://'.ltrim(substr($src, 2), '/');
+        }
+
+        if (preg_match('#^https?://[^/]+/(data/.+)$#i', $src, $matches)) {
+            return '/'.$matches[1];
+        }
+
+        if (preg_match('#^/?data/#i', $src)) {
+            return '/'.ltrim($src, '/');
+        }
+
+        $filename = eottae_column_extract_editor_filename($src);
+        if ($filename !== '' && strcasecmp($filename, basename($src)) === 0) {
+            return eottae_column_guess_uploaded_image_url($filename);
+        }
+
+        return $src;
+    }
+}
+
+if (!function_exists('eottae_column_normalize_content_images')) {
+    function eottae_column_normalize_content_images($content)
+    {
+        $content = (string) $content;
+        if ($content === '' || stripos($content, '<img') === false) {
+            return $content;
+        }
+
+        $content = str_replace('\/', '/', $content);
+
+        return preg_replace_callback('/<img\b([^>]*?)>/i', function ($matches) {
+            $attrs = (string) $matches[1];
+            $src = '';
+
+            if (preg_match('/\bsrc=(["\']?)([^"\'>\s]*)\1?/i', $attrs, $src_matches)) {
+                $src = (string) $src_matches[2];
+            }
+
+            $normalized_src = eottae_column_normalize_image_src($src);
+            if ($normalized_src === '') {
+                $filename = '';
+                if (preg_match('/\btitle=(["\'])(.*?)\1/i', $attrs, $title_matches)) {
+                    $filename = eottae_column_extract_editor_filename($title_matches[2]);
+                }
+                if ($filename === '' && preg_match('/\balt=(["\'])(.*?)\1/i', $attrs, $alt_matches)) {
+                    $filename = eottae_column_extract_editor_filename($alt_matches[2]);
+                }
+                if ($filename !== '') {
+                    $normalized_src = eottae_column_guess_uploaded_image_url($filename);
+                }
+            }
+
+            if ($normalized_src === '') {
+                return $matches[0];
+            }
+
+            $safe_src = htmlspecialchars($normalized_src, ENT_QUOTES, 'UTF-8');
+            if (preg_match('/\bsrc=(["\']?)[^"\'>\s]*\1?/i', $attrs)) {
+                $attrs = preg_replace('/\bsrc=(["\']?)[^"\'>\s]*\1?/i', 'src="'.$safe_src.'"', $attrs, 1);
+            } else {
+                $attrs = ' src="'.$safe_src.'"'.$attrs;
+            }
+
+            return '<img'.$attrs.'>';
+        }, $content);
+    }
+}
+
+if (!function_exists('eottae_column_render_content')) {
+    function eottae_column_render_content($content)
+    {
+        $content = eottae_column_normalize_content_images($content);
+        if ($content === '') {
+            return '';
+        }
+
+        $placeholders = array();
+        $idx = 0;
+        $protected = preg_replace_callback(
+            '#https?://[^\s<>"\']+#i',
+            function ($match) use (&$placeholders, &$idx) {
+                $key = '___SEBU_COLUMN_URL_'.$idx.'___';
+                $placeholders[$key] = $match[0];
+                $idx++;
+
+                return $key;
+            },
+            $content
+        );
+
+        $html = conv_content($protected, 1);
+
+        foreach ($placeholders as $key => $url) {
+            $html = str_replace($key, $url, $html);
+        }
+
+        return $html;
+    }
+}
+
 if (!function_exists('eottae_column_content_is_empty')) {
     function eottae_column_content_is_empty($content)
     {
@@ -1723,7 +1908,7 @@ if (!function_exists('eottae_column_upload_body_image')) {
         return array(
             'ok'   => true,
             'path' => 'column/body/'.$filename,
-            'url'  => G5_DATA_URL.'/column/body/'.$filename,
+            'url'  => eottae_column_data_public_path('column/body/'.$filename),
         );
     }
 }

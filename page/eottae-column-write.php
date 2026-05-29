@@ -39,7 +39,7 @@ $proc_url = eottae_column_proc_url();
 
 $column_use_editor = eottae_column_editor_enabled();
 $column_editor_js = array('js' => '', 'chk' => '');
-$content_raw = $post ? (string) ($post['wr_content'] ?? '') : '';
+$content_raw = $post ? eottae_column_normalize_content_images((string) ($post['wr_content'] ?? '')) : '';
 $column_editor_html = '';
 
 if ($column_use_editor) {

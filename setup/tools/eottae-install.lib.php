@@ -323,7 +323,7 @@ if (!function_exists('eottae_install_get_board_defs')) {
                 'bo_write_level'   => 10,
                 'bo_comment_level' => 2,
                 'bo_use_category'  => 1,
-                'bo_category_list' => '생활정보|병원/건강|교육/가족|집/렌트|비자/행정|교통/차량|맛집/장보기|사업/창업|지역정보|정착이야기|교민 인터뷰',
+                'bo_category_list' => '생활정보|병원/건강|교육/가족|집/렌트|비자/행정|교통/차량|맛집/장보기|사업/창업|지역정보|정착이야기|교민 인터뷰|웹툰',
                 'bo_upload_count'  => 10,
                 'bo_order'         => 16,
             ),
