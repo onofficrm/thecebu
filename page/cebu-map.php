@@ -54,11 +54,9 @@ g5_page_start('세부생활지도');
     </script>
 
     <header class="cebu-map-hero">
-        <div class="cebu-map-hero__main">
-            <p class="cebu-map-hero__eyebrow">Cebu Life Map</p>
-            <h1 class="cebu-map-hero__title">세부생활지도</h1>
-            <p class="cebu-map-hero__lead">세부의 부동산, 구인구직, 중고장터 정보를 지도에서 한눈에 확인하세요. 위치를 기준으로 내 주변 생활정보를 쉽고 빠르게 찾을 수 있습니다.</p>
-        </div>
+        <p class="cebu-map-hero__eyebrow">Cebu Life Map</p>
+        <h1 class="cebu-map-hero__title">세부생활지도</h1>
+        <p class="cebu-map-hero__lead">세부의 부동산, 구인구직, 중고장터 정보를 지도에서 한눈에 확인하세요. 위치를 기준으로 내 주변 생활정보를 쉽고 빠르게 찾을 수 있습니다.</p>
         <div class="cebu-map-hero__actions">
             <a href="<?php echo get_text($market_write_url); ?>">중고물품 등록</a>
             <a href="<?php echo get_text($job_write_url); ?>">구인공고 등록</a>
