@@ -28,6 +28,7 @@ if (!defined('_GNUBOARD_')) {
  * @var string $job_thumb_html
  * @var string $job_recruit_status
  * @var string $job_badge_label
+ * @var array<string,mixed>|null $job_shop
  */
 $estate_deal_label = $estate_deal_label ?? '';
 $estate_thumb_html = $estate_thumb_html ?? '';
@@ -36,6 +37,7 @@ $job_recruit_label = $job_recruit_label ?? '';
 $job_thumb_html = $job_thumb_html ?? '';
 $job_recruit_status = $job_recruit_status ?? '';
 $job_badge_label = $job_badge_label ?? '';
+$job_shop = isset($job_shop) && is_array($job_shop) ? $job_shop : null;
 $status_thumb_html = $estate_thumb_html !== '' ? $estate_thumb_html : $job_thumb_html;
 $badge_category = $job_badge_label !== '' ? $job_badge_label : $ca_name;
 $show_job_recruit_badge = $job_recruit_label !== '' && $job_thumb_html === '';
@@ -84,6 +86,11 @@ $has_badges = $is_ai_post || $is_notice || $badge_category !== '' || $region !==
                     </div>
                     <?php if ($snippet !== '') { ?>
                     <p class="community-post__excerpt"><?php echo htmlspecialchars($snippet, ENT_QUOTES, 'UTF-8'); ?></p>
+                    <?php } ?>
+                    <?php if (is_array($job_shop) && !empty($job_shop['view_url'])) { ?>
+                    <span class="community-post__shop-link" role="link" tabindex="0" data-href="<?php echo get_text($job_shop['view_url']); ?>" onclick="event.preventDefault(); event.stopPropagation(); window.location.href=this.getAttribute('data-href');" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); event.stopPropagation(); window.location.href=this.getAttribute('data-href');}">
+                        <span aria-hidden="true">🏪</span> <?php echo get_text($job_shop['name'] ?? '업체정보'); ?>
+                    </span>
                     <?php } ?>
                 </div>
                 <div class="community-post__meta">

@@ -2,6 +2,7 @@
   'use strict';
 
   var TYPE_META = {
+    shop: { label: '업체', icon: '🏪', color: '#0ea5e9' },
     market: { label: '중고장터', icon: '🛍', color: '#f97316' },
     job: { label: '구인구직', icon: '💼', color: '#7c3aed' },
     estate: { label: '부동산', icon: '🏠', color: '#0284c7' },
@@ -58,6 +59,9 @@
       lat: lat,
       lng: lng,
       url: item.url || '#',
+      share_url: item.share_url || '',
+      directions_url: item.directions_url || '',
+      thumbnail: item.thumbnail || '',
       is_dimmed: !!item.is_dimmed,
       timestamp: parseInt(item.timestamp, 10) || 0,
       price_num: parseInt(item.price_num, 10) || 0,
@@ -76,6 +80,45 @@
     return r * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
   }
 
+  function shareIconSvg() {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.59 13.51 15.42 17.49"></path><path d="M15.41 6.51 8.59 10.49"></path></svg>';
+  }
+
+  function directionsUrl(loc) {
+    if (loc.directions_url) return loc.directions_url;
+    if (isFinite(loc.lat) && isFinite(loc.lng)) {
+      return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(loc.lat + ',' + loc.lng);
+    }
+    return '#';
+  }
+
+  function shareUrl(loc) {
+    return loc.share_url || loc.url || window.location.href;
+  }
+
+  function thumbHtml(loc) {
+    if (loc.thumbnail) {
+      return (
+        '<div class="cebu-map-card__thumb-wrap">' +
+        '<img src="' + escapeHtml(loc.thumbnail) + '" alt="" class="cebu-map-card__thumb" width="96" height="96" loading="lazy" decoding="async">' +
+        '</div>'
+      );
+    }
+    return '<div class="cebu-map-card__thumb-wrap"><div class="cebu-map-card__thumb cebu-map-card__thumb--empty" aria-hidden="true"></div></div>';
+  }
+
+  function actionsHtml(loc) {
+    return (
+      '<div class="cebu-map-card__actions inquiry-button inquiry-button--list">' +
+      '<a href="' + escapeHtml(loc.url) + '" class="inquiry-button__btn inquiry-button__btn--primary">상세보기</a>' +
+      '<a href="' + escapeHtml(directionsUrl(loc)) + '" class="inquiry-button__btn inquiry-button__btn--map inquiry-button__btn--outline" target="_blank" rel="noopener noreferrer">길찾기</a>' +
+      '<button type="button" class="inquiry-button__btn inquiry-button__btn--share inquiry-button__btn--share-compact" data-share-url="' + escapeHtml(shareUrl(loc)) + '" aria-label="공유하기">' +
+      '<span class="inquiry-button__icon">' + shareIconSvg() + '</span>' +
+      '</button>' +
+      '</div>'
+    );
+  }
+
   function markerIcon(loc) {
     var meta = TYPE_META[loc.type] || TYPE_META.market;
     if (!global.google || !google.maps) return null;
@@ -92,12 +135,14 @@
     };
   }
 
-  function cardHtml(loc, compact) {
+  function cardHtml(loc) {
     var meta = TYPE_META[loc.type] || TYPE_META.market;
     var price = loc.price ? '<p class="cebu-map-card__price">' + escapeHtml(loc.price) + '</p>' : '';
     var status = loc.status ? '<span class="cebu-map-card__status">' + escapeHtml(loc.status) + '</span>' : '';
     return (
       '<article class="cebu-map-card cebu-map-card--' + escapeHtml(loc.type) + (loc.is_dimmed ? ' is-dimmed' : '') + '">' +
+      thumbHtml(loc) +
+      '<div class="cebu-map-card__body">' +
       '<div class="cebu-map-card__top">' +
       '<span class="cebu-map-card__type"><span aria-hidden="true">' + meta.icon + '</span> ' + escapeHtml(loc.label) + '</span>' +
       status +
@@ -105,7 +150,8 @@
       '<h3 class="cebu-map-card__title">' + escapeHtml(loc.title) + '</h3>' +
       price +
       '<p class="cebu-map-card__location">' + escapeHtml(loc.location || loc.area) + '</p>' +
-      '<a class="cebu-map-card__link" href="' + escapeHtml(loc.url) + '">' + (compact ? '상세보기' : '상세보기') + '</a>' +
+      actionsHtml(loc) +
+      '</div>' +
       '</article>'
     );
   }
@@ -124,7 +170,7 @@
     this.infoWindow = null;
     this.markers = [];
     this.userLocation = null;
-    this.filters = { type: 'all', area: 'all', status: 'all', keyword: '', sort: 'latest' };
+    this.filters = { type: 'all', area: 'all', status: 'all', radius: 'all', keyword: '', sort: 'latest' };
     this.bind();
     this.applyFilters();
     this.initMap();
@@ -157,6 +203,7 @@
   CebuLifeMap.prototype.matchesStatus = function (loc) {
     var val = this.filters.status;
     if (val === 'all') return true;
+    if (loc.type === 'shop') return val === 'shop';
     if (val === 'market:not-sold') return loc.type !== 'market' || loc.status_key !== 'sold';
     var parts = val.split(':');
     return parts.length === 2 && loc.type === parts[0] && loc.status_key === parts[1];
@@ -165,10 +212,14 @@
   CebuLifeMap.prototype.applyFilters = function () {
     var self = this;
     var keyword = String(this.filters.keyword || '').trim().toLowerCase();
+    var radius = this.filters.radius === 'all' ? 0 : parseFloat(this.filters.radius);
     this.filtered = this.data.filter(function (loc) {
       if (self.filters.type !== 'all' && loc.type !== self.filters.type) return false;
       if (self.filters.area !== 'all' && loc.area_key !== self.filters.area) return false;
       if (!self.matchesStatus(loc)) return false;
+      if (radius > 0 && self.userLocation) {
+        if (!self.userLocation || loc.distance_km == null || loc.distance_km > radius) return false;
+      }
       if (keyword) {
         var hay = [
           loc.title, loc.price, loc.status, loc.area, loc.location_text, loc.location, loc.label
@@ -215,11 +266,16 @@
       self.filters.sort = 'near';
       var sortEl = qs('[data-map-filter="sort"]', self.root);
       if (sortEl) sortEl.value = 'near';
+      var radiusEl = qs('[data-map-filter="radius"]', self.root);
+      if (radiusEl && radiusEl.value === 'all') {
+        radiusEl.value = '5';
+        self.filters.radius = '5';
+      }
       if (self.map) {
         self.map.setCenter({ lat: lat, lng: lng });
         self.map.setZoom(14);
       }
-      self.setStatus('현재위치 기준으로 가까운 생활정보를 먼저 보여줍니다. 반경 필터와 거리순 세부 정렬은 다음 단계에서 확장할 수 있습니다.');
+      self.setStatus('현재위치 기준으로 반경 안의 생활정보를 가까운순으로 보여줍니다.');
       self.applyFilters();
     }, function () {
       self.setStatus('현재위치 권한이 거부되었습니다. 검색 또는 지역 필터를 이용해 주세요.');
@@ -235,11 +291,19 @@
       return;
     }
     this.listEl.innerHTML = this.filtered.map(function (loc, idx) {
-      return '<button type="button" class="cebu-map-list-item" data-map-list-index="' + idx + '">' + cardHtml(loc, true) + '</button>';
+      return '<div class="cebu-map-list-item" data-map-list-index="' + idx + '" tabindex="0" role="button" aria-label="' + escapeHtml(loc.title) + '">' + cardHtml(loc) + '</div>';
     }).join('');
-    qsa('[data-map-list-index]', this.listEl).forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var loc = self.filtered[parseInt(btn.getAttribute('data-map-list-index'), 10)];
+    qsa('[data-map-list-index]', this.listEl).forEach(function (item) {
+      item.addEventListener('click', function (e) {
+        if (e.target.closest('.cebu-map-card__actions, a, button')) return;
+        var loc = self.filtered[parseInt(item.getAttribute('data-map-list-index'), 10)];
+        self.focusMarker(loc);
+      });
+      item.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        if (e.target.closest('.cebu-map-card__actions, a, button')) return;
+        e.preventDefault();
+        var loc = self.filtered[parseInt(item.getAttribute('data-map-list-index'), 10)];
         self.focusMarker(loc);
       });
     });
@@ -258,7 +322,7 @@
       streetViewControl: false,
       fullscreenControl: true
     });
-    this.infoWindow = new google.maps.InfoWindow({ maxWidth: 280 });
+    this.infoWindow = new google.maps.InfoWindow({ maxWidth: 340 });
     this.renderMarkers();
   };
 
@@ -301,11 +365,11 @@
 
   CebuLifeMap.prototype.openMarker = function (marker, loc) {
     if (this.infoWindow && this.map && marker) {
-      this.infoWindow.setContent(cardHtml(loc, true));
+      this.infoWindow.setContent(cardHtml(loc));
       this.infoWindow.open(this.map, marker);
     }
     if (this.activeCardEl) {
-      this.activeCardEl.innerHTML = cardHtml(loc, false);
+      this.activeCardEl.innerHTML = cardHtml(loc);
       this.activeCardEl.hidden = false;
     }
   };
@@ -321,7 +385,7 @@
       return;
     }
     if (this.activeCardEl) {
-      this.activeCardEl.innerHTML = cardHtml(loc, false);
+      this.activeCardEl.innerHTML = cardHtml(loc);
       this.activeCardEl.hidden = false;
     }
   };

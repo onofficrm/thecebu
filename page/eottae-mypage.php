@@ -101,7 +101,23 @@ $message_label = '쪽지';
 if ($message_unread_count > 0) {
     $message_label .= ' ('.number_format($message_unread_count).')';
 }
-$notification_total = $message_unread_count + $my_comment_count + $hub_activity_total;
+$notification_summary = function_exists('eottae_mypage_notification_summary')
+    ? eottae_mypage_notification_summary($member['mb_id'])
+    : array(
+        'total' => $message_unread_count + $my_comment_count + $hub_activity_total,
+        'message_unread' => $message_unread_count,
+        'comment_count' => $my_comment_count,
+        'talk_activity' => $hub_activity_total,
+        'comment_summary' => $my_comment_summary,
+        'talk_hub' => $my_talk_hub,
+    );
+$notification_total = (int) ($notification_summary['total'] ?? 0);
+$notification_items = function_exists('eottae_notification_hub_items')
+    ? eottae_notification_hub_items($member['mb_id'], $notification_summary)
+    : array();
+$notification_hub_url = function_exists('eottae_notification_hub_url')
+    ? eottae_notification_hub_url()
+    : G5_URL.'/page/eottae-notifications.php';
 $talk_label = '내 세부톡';
 if ($hub_activity_total > 0) {
     $talk_label .= ' ('.number_format($hub_activity_total).')';
@@ -240,21 +256,13 @@ g5_page_start('마이페이지');
             <?php } ?>
         </div>
         <div class="my-notification-hub__grid">
-            <a href="<?php echo eottae_message_url(); ?>" class="my-notification-hub__item<?php echo $message_unread_count > 0 ? ' is-alert' : ''; ?>">
-                <span class="my-notification-hub__item-label">새 쪽지</span>
-                <strong class="my-notification-hub__item-value"><?php echo number_format($message_unread_count); ?></strong>
-                <span class="my-notification-hub__item-desc"><?php echo $message_unread_count > 0 ? '답장이 필요한 쪽지가 있어요' : '새 쪽지가 없습니다'; ?></span>
+            <?php foreach ($notification_items as $notification_item) { ?>
+            <a href="<?php echo get_text($notification_item['href'] ?? '#'); ?>" class="my-notification-hub__item<?php echo (int) ($notification_item['count'] ?? 0) > 0 ? ' is-alert' : ''; ?>">
+                <span class="my-notification-hub__item-label"><?php echo get_text($notification_item['label'] ?? '알림'); ?></span>
+                <strong class="my-notification-hub__item-value"><?php echo number_format((int) ($notification_item['count'] ?? 0)); ?></strong>
+                <span class="my-notification-hub__item-desc"><?php echo get_text($notification_item['description'] ?? ''); ?></span>
             </a>
-            <a href="<?php echo G5_BBS_URL; ?>/board.php?bo_table=<?php echo EOTTae_COMMUNITY_TABLE; ?>" class="my-notification-hub__item<?php echo $my_comment_count > 0 ? ' is-alert' : ''; ?>">
-                <span class="my-notification-hub__item-label">내 글 댓글</span>
-                <strong class="my-notification-hub__item-value"><?php echo number_format($my_comment_count); ?></strong>
-                <span class="my-notification-hub__item-desc">최근 30일 기준</span>
-            </a>
-            <a href="<?php echo $mypage_talk_url; ?>" class="my-notification-hub__item<?php echo $hub_activity_total > 0 ? ' is-alert' : ''; ?>">
-                <span class="my-notification-hub__item-label">세부톡 새 활동</span>
-                <strong class="my-notification-hub__item-value"><?php echo number_format($hub_activity_total); ?></strong>
-                <span class="my-notification-hub__item-desc"><?php echo $hub_room_count > 0 ? number_format($hub_room_count).'개 톡방 참여 중' : '참여한 톡방이 없습니다'; ?></span>
-            </a>
+            <?php } ?>
         </div>
         <?php if (!empty($my_comment_summary['latest'])) {
             $latest_comment = $my_comment_summary['latest'];
@@ -265,6 +273,7 @@ g5_page_start('마이페이지');
             <span class="my-notification-hub__latest-preview"><?php echo get_text($latest_comment['author']); ?>: <?php echo get_text($latest_comment['preview']); ?></span>
         </a>
         <?php } ?>
+        <a href="<?php echo get_text($notification_hub_url); ?>" class="my-notification-hub__more">알림 허브 전체보기</a>
     </section>
 
     <?php if ($is_biz) { ?>

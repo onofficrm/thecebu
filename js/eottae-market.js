@@ -98,6 +98,99 @@
     }
   }
 
+  function formatPeso(value) {
+    var num = parseInt(value, 10) || 0;
+    if (num < 1) {
+      return '-';
+    }
+    return '₱' + String(num).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  function renderPriceAiResult(target, json) {
+    var data = json && json.data ? json.data : {};
+    var stats = json && json.stats ? json.stats : {};
+    var comps = json && json.comps ? json.comps : [];
+    var range = formatPeso(data.price_min) + ' ~ ' + formatPeso(data.price_max);
+    var html = ''
+      + '<strong>추천가 ' + formatPeso(data.suggested_price) + '</strong>'
+      + '<span>참고 범위 ' + range + '</span>'
+      + '<p>' + (data.summary || '최근 유사 매물을 기준으로 참고 가격을 계산했습니다.') + '</p>'
+      + '<small>' + (data.disclaimer || '참고용 가격입니다. 실제 거래가는 협의에 따라 달라질 수 있습니다.') + '</small>';
+    if (stats.count) {
+      html += '<em>비교 매물 ' + stats.count + '건 · 평균 ' + formatPeso(stats.avg) + '</em>';
+    } else if (!comps.length) {
+      html += '<em>유사 매물이 부족합니다.</em>';
+    }
+    target.innerHTML = html;
+    target.hidden = false;
+  }
+
+  function initPriceAi() {
+    var form = qs('#fwrite');
+    var btn = qs('[data-market-price-ai-trigger]');
+    var result = qs('[data-market-price-ai-result]');
+    if (!form || !btn || !result || btn.dataset.bound === '1') {
+      return;
+    }
+    btn.dataset.bound = '1';
+
+    btn.addEventListener('click', function () {
+      var url = form.getAttribute('data-market-price-ai-url') || '';
+      var subject = qs('#wr_subject');
+      var region = qs('#wr_3');
+      var content = qs('#wr_content');
+      var priceInput = qs('#wr_1');
+      var body = new FormData();
+
+      if (!url) {
+        result.textContent = 'AI 가격 참고 기능을 사용할 수 없습니다.';
+        result.hidden = false;
+        return;
+      }
+      if (!subject || !subject.value.trim()) {
+        result.textContent = '상품명을 먼저 입력해 주세요.';
+        result.hidden = false;
+        subject && subject.focus();
+        return;
+      }
+
+      body.append('bo_table', (form.querySelector('[name="bo_table"]') || {}).value || 'market');
+      body.append('subject', subject.value.trim());
+      body.append('region', region ? region.value : '');
+      body.append('content', content ? content.value : '');
+
+      btn.disabled = true;
+      btn.classList.add('is-loading');
+      result.textContent = 'AI가 최근 유사 매물을 비교 중입니다...';
+      result.hidden = false;
+
+      fetch(url, {
+        method: 'POST',
+        credentials: 'same-origin',
+        body: body,
+        headers: { Accept: 'application/json' }
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+          if (!json || !json.success) {
+            throw new Error((json && json.message) || '가격 참고 요청에 실패했습니다.');
+          }
+          renderPriceAiResult(result, json);
+          if (priceInput && (!priceInput.value || parseInt(priceInput.value, 10) < 1) && json.data && json.data.suggested_price) {
+            priceInput.value = parseInt(json.data.suggested_price, 10) || '';
+          }
+        })
+        .catch(function (err) {
+          result.textContent = err && err.message ? err.message : '가격 참고 요청에 실패했습니다.';
+          result.hidden = false;
+        })
+        .then(function () {
+          btn.disabled = false;
+          btn.classList.remove('is-loading');
+        });
+    });
+  }
+
   function initPriceMode() {
     var wrap = qs('[data-market-price-mode]');
     if (!wrap || wrap.dataset.bound === '1') {
@@ -121,6 +214,7 @@
     document.querySelectorAll('[data-market-status-panel]').forEach(initStatusPanel);
     initPhotoPreviews();
     initPriceMode();
+    initPriceAi();
   }
 
   if (document.readyState === 'loading') {

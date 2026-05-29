@@ -411,6 +411,60 @@
   color: #0f172a;
 }
 
+.market-price-ai {
+  margin-top: 0.55rem;
+}
+
+.market-price-ai__btn {
+  min-height: 34px;
+  padding: 0 0.75rem;
+  border: 1px solid #111827;
+  border-radius: 999px;
+  background: #111827;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.market-price-ai__btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.market-price-ai__result {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.55rem;
+  padding: 0.75rem;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.market-price-ai__result strong {
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.market-price-ai__result span,
+.market-price-ai__result em {
+  font-style: normal;
+  font-weight: 800;
+}
+
+.market-price-ai__result p,
+.market-price-ai__result small {
+  margin: 0;
+}
+
+.market-price-ai__result small {
+  color: #475569;
+}
+
 .market-btn,
 .market-write__cancel,
 .market-status-panel__btn {
@@ -671,6 +725,23 @@
   font-size: 1rem;
   font-weight: 900;
   color: #334155;
+}
+
+/* g5b-board.css #bo_v_con { padding: 1.5rem 0 } 가 좌우 여백을 제거하므로 복구 */
+.board-wrap--eottae-market .market-view__content#bo_v_con {
+  padding: 1rem 1.25rem 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: #334155;
+  word-break: break-word;
+}
+
+.board-wrap--eottae-market .market-view__content#bo_v_con img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0.75rem 0;
+  border-radius: 12px;
 }
 
 .market-view__footer {

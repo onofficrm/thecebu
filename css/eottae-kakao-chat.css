@@ -415,10 +415,73 @@
   opacity: 0.4;
 }
 
+.public-group-chat--kakao .public-group-chat__quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 7px;
+}
+
+.public-group-chat--kakao .public-group-chat__life-ai {
+  flex: 0 0 auto;
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 999px;
+  background: #fff;
+  color: #334155;
+  font-size: 0.76rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.public-group-chat--kakao .public-group-chat__life-ai:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.public-group-chat--kakao .public-group-chat__life-ai-status {
+  min-width: 0;
+  color: #64748b;
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
 .public-group-chat--kakao .public-group-chat__join {
   color: var(--kakao-send-text);
   background: var(--kakao-send-bg);
   border: 0;
+}
+
+.public-group-chat--kakao .public-group-chat__composer--join .public-group-chat__composer-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.public-group-chat--kakao .public-group-chat__composer--join .public-group-chat__join {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.public-group-chat--kakao .public-group-chat__composer--join .public-group-chat__composer-field {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 6px 8px;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.public-group-chat--kakao .public-group-chat__composer--pending .public-group-chat__composer-field,
+.public-group-chat--kakao .public-group-chat__composer--disabled .public-group-chat__composer-field {
+  margin-top: 8px;
+  padding: 6px 8px;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .public-group-chat--kakao .public-group-chat__action {

@@ -75,6 +75,102 @@ if (!function_exists('eottae_job_can_change_recruit_status')) {
     }
 }
 
+if (!function_exists('eottae_job_format_shop_ref')) {
+    function eottae_job_format_shop_ref($bo_table, $wr_id)
+    {
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+        $wr_id = (int) $wr_id;
+        if ($bo_table === '' || $wr_id < 1) {
+            return '';
+        }
+
+        return $bo_table.':'.$wr_id;
+    }
+}
+
+if (!function_exists('eottae_job_parse_shop_ref')) {
+    function eottae_job_parse_shop_ref($ref)
+    {
+        $ref = trim((string) $ref);
+        if ($ref === '') {
+            return array('bo_table' => '', 'wr_id' => 0);
+        }
+
+        if (strpos($ref, ':') !== false) {
+            list($bo_table, $wr_id) = explode(':', $ref, 2);
+        } else {
+            $bo_table = function_exists('eottae_shop_table') ? eottae_shop_table() : 'shop';
+            $wr_id = $ref;
+        }
+
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+        $wr_id = (int) $wr_id;
+
+        return array('bo_table' => $bo_table, 'wr_id' => $wr_id);
+    }
+}
+
+if (!function_exists('eottae_job_fetch_shop')) {
+    function eottae_job_fetch_shop($shop_wr_id, $shop_bo_table = '')
+    {
+        if (!function_exists('eottae_review_board_fetch_shop') && is_file(G5_LIB_PATH.'/eottae-review-board.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-review-board.lib.php';
+        }
+
+        if (!function_exists('eottae_review_board_fetch_shop')) {
+            return null;
+        }
+
+        return eottae_review_board_fetch_shop((int) $shop_wr_id, $shop_bo_table);
+    }
+}
+
+if (!function_exists('eottae_job_shop_from_row')) {
+    function eottae_job_shop_from_row($row)
+    {
+        if (!is_array($row)) {
+            return null;
+        }
+
+        $parsed = eottae_job_parse_shop_ref($row['wr_8'] ?? '');
+        if ((int) ($parsed['wr_id'] ?? 0) < 1) {
+            return null;
+        }
+
+        return eottae_job_fetch_shop($parsed['wr_id'], $parsed['bo_table']);
+    }
+}
+
+if (!function_exists('eottae_job_shop_apply_to_post')) {
+    function eottae_job_shop_apply_to_post()
+    {
+        $shop_wr_id = isset($_POST['eottae_job_shop_wr_id']) ? (int) $_POST['eottae_job_shop_wr_id'] : 0;
+        $shop_bo = isset($_POST['eottae_job_shop_bo_table'])
+            ? preg_replace('/[^a-z0-9_]/', '', (string) $_POST['eottae_job_shop_bo_table'])
+            : '';
+
+        if ($shop_wr_id < 1 && !empty($_POST['wr_8'])) {
+            $parsed = eottae_job_parse_shop_ref($_POST['wr_8']);
+            $shop_wr_id = (int) ($parsed['wr_id'] ?? 0);
+            $shop_bo = (string) ($parsed['bo_table'] ?? $shop_bo);
+        }
+
+        if ($shop_wr_id < 1) {
+            $_POST['wr_8'] = '';
+            return;
+        }
+
+        $shop = eottae_job_fetch_shop($shop_wr_id, $shop_bo);
+        if (!$shop) {
+            $_POST['wr_8'] = '';
+            return;
+        }
+
+        $shop_bo = (string) ($shop['bo_table'] ?? $shop_bo);
+        $_POST['wr_8'] = eottae_job_format_shop_ref($shop_bo, (int) ($shop['wr_id'] ?? $shop_wr_id));
+    }
+}
+
 if (!function_exists('eottae_job_render_recruit_badge')) {
     function eottae_job_render_recruit_badge($status, $extra_class = '')
     {

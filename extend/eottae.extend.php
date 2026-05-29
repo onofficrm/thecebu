@@ -1753,6 +1753,10 @@ if (!function_exists('eottae_on_job_write_before')) {
             eottae_job_template_apply_to_post();
         }
 
+        if (function_exists('eottae_job_shop_apply_to_post')) {
+            eottae_job_shop_apply_to_post();
+        }
+
         if (function_exists('sanitize_location_fields')) {
             $location = sanitize_location_fields($_POST, array(
                 'auto_area'     => 'job_location_auto_area',

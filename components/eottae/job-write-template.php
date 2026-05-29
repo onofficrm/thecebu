@@ -26,6 +26,8 @@ $job_location_lng = '';
 $job_location_map_visible = true;
 $job_template_json = '';
 $job_template_values = array();
+$job_shop_ref = '';
+$job_selected_shop = null;
 if (isset($write) && is_array($write)) {
     if (!empty($write['wr_2'])) {
         $job_recruit_status = eottae_job_normalize_recruit_status($write['wr_2']);
@@ -37,6 +39,10 @@ if (isset($write) && is_array($write)) {
     $job_location_lat = get_text($write['wr_5'] ?? '');
     $job_location_lng = get_text($write['wr_6'] ?? '');
     $job_location_map_visible = (string) ($write['wr_7'] ?? '1') !== '0';
+    $job_shop_ref = get_text($write['wr_8'] ?? '');
+    if ($job_shop_ref !== '' && function_exists('eottae_job_shop_from_row')) {
+        $job_selected_shop = eottae_job_shop_from_row($write);
+    }
     $decoded = function_exists('eottae_job_template_from_row')
         ? eottae_job_template_from_row($write)
         : null;
@@ -53,6 +59,12 @@ if (isset($write) && is_array($write)) {
         }
     }
 }
+
+$job_shop_wr_id = is_array($job_selected_shop) ? (int) ($job_selected_shop['wr_id'] ?? 0) : 0;
+$job_shop_bo = is_array($job_selected_shop) ? (string) ($job_selected_shop['bo_table'] ?? '') : '';
+$job_shop_name = is_array($job_selected_shop) ? (string) ($job_selected_shop['name'] ?? '') : '';
+$job_shop_search_url = G5_URL.'/proc/eottae-review-shop-search.php';
+$job_ai_url = G5_URL.'/proc/eottae-job-write-ai.php';
 
 if (!function_exists('eottae_job_template_field_value')) {
     function eottae_job_template_field_value($key, $values = array())
@@ -104,7 +116,7 @@ $sebu_job_languages = array(
 );
 ?>
 
-<section class="sebu-job-template" id="sebuJobTemplate" aria-labelledby="sebuJobTemplateTitle">
+<section class="sebu-job-template" id="sebuJobTemplate" aria-labelledby="sebuJobTemplateTitle" data-job-ai-url="<?php echo get_text($job_ai_url); ?>">
     <header class="sebu-job-template__head">
         <h2 class="sebu-job-template__title" id="sebuJobTemplateTitle">구인구직 템플릿 작성</h2>
         <p class="sebu-job-template__desc">간단한 정보를 입력하면 구인구직 게시글 제목과 본문이 자동으로 정리됩니다.</p>
@@ -243,6 +255,40 @@ $sebu_job_languages = array(
             </div>
         </fieldset>
 
+        <fieldset class="sebu-job-template__group sebu-job-shop-picker" data-job-shop-picker data-search-url="<?php echo get_text($job_shop_search_url); ?>">
+            <legend class="sebu-job-template__legend">연결 업체 <span class="sebu-job-template__optional">(선택)</span></legend>
+            <p class="sebu-job-shop-picker__desc">등록된 업체 페이지를 연결하면 구인공고에서 업체정보 바로가기가 표시됩니다.</p>
+            <input type="hidden" name="eottae_job_shop_wr_id" id="eottae_job_shop_wr_id" value="<?php echo (int) $job_shop_wr_id; ?>">
+            <input type="hidden" name="eottae_job_shop_bo_table" id="eottae_job_shop_bo_table" value="<?php echo get_text($job_shop_bo); ?>">
+            <div class="sebu-job-shop-picker__selected<?php echo $job_selected_shop ? '' : ' is-empty'; ?>" id="jobShopPickerSelected"<?php echo $job_selected_shop ? '' : ' hidden'; ?>>
+                <div class="sebu-job-shop-picker__selected-card">
+                    <?php if ($job_selected_shop && !empty($job_selected_shop['thumb_url'])) { ?>
+                    <img src="<?php echo get_text($job_selected_shop['thumb_url']); ?>" alt="" class="sebu-job-shop-picker__thumb" loading="lazy" decoding="async">
+                    <?php } ?>
+                    <div class="sebu-job-shop-picker__selected-body">
+                        <strong id="jobShopPickerSelectedName"><?php echo get_text($job_shop_name); ?></strong>
+                        <span id="jobShopPickerSelectedMeta"><?php
+                            if ($job_selected_shop) {
+                                $meta = array_filter(array(
+                                    $job_selected_shop['board_label'] ?? '',
+                                    $job_selected_shop['region'] ?? '',
+                                ));
+                                echo get_text(implode(' · ', $meta));
+                            }
+                        ?></span>
+                    </div>
+                    <button type="button" class="sebu-job-shop-picker__clear" id="jobShopPickerClear">연결 해제</button>
+                </div>
+            </div>
+            <div class="sebu-job-shop-picker__search-wrap" id="jobShopPickerSearchWrap"<?php echo $job_selected_shop ? ' hidden' : ''; ?>>
+                <label class="sebu-job-shop-picker__search-label" for="jobShopPickerSearch">업체 검색</label>
+                <input type="search" id="jobShopPickerSearch" class="sebu-job-template__input" placeholder="업체명으로 검색" autocomplete="off">
+                <p class="sebu-job-shop-picker__hint" id="jobShopPickerHint">업체명을 검색해 공고와 연결할 수 있습니다.</p>
+                <div class="sebu-job-shop-picker__results" id="jobShopPickerResults" role="listbox" aria-label="업체 검색 결과" hidden></div>
+                <p class="sebu-job-shop-picker__empty" id="jobShopPickerEmpty" hidden>검색 결과가 없습니다. 업체 연결 없이 작성할 수 있습니다.</p>
+            </div>
+        </fieldset>
+
         <fieldset class="sebu-job-template__group">
             <legend class="sebu-job-template__legend">지원정보</legend>
             <div class="sebu-job-template__grid">
@@ -280,8 +326,10 @@ $sebu_job_languages = array(
     <input type="hidden" name="job_template_json" id="job_template_json" value="<?php echo htmlspecialchars($job_template_json, ENT_QUOTES, 'UTF-8'); ?>">
 
     <p class="sebu-job-template__error" id="sebuJobTemplateError" role="alert" hidden>필수 정보를 입력해주세요.</p>
+    <p class="sebu-job-template__ai-status" id="sebuJobTemplateAiStatus" role="status" aria-live="polite" hidden></p>
 
     <div class="sebu-job-template__actions">
+        <button type="button" class="sebu-job-template__btn sebu-job-template__btn--ai eottae-ai-btn" id="sebuJobTemplateAi">AI로 구인글 초안 작성</button>
         <button type="button" class="sebu-job-template__btn sebu-job-template__btn--primary" id="sebuJobTemplateApply">구인구직 글 자동작성</button>
         <button type="button" class="sebu-job-template__btn sebu-job-template__btn--ghost" id="sebuJobTemplateReset">입력내용 초기화</button>
     </div>

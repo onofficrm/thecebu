@@ -753,6 +753,85 @@
       });
   }
 
+  function askLifeAi(section, form) {
+    var input = form.querySelector('#eottae-public-chat-input');
+    var btn = form.querySelector('[data-public-chat-life-ai]');
+    var status = form.querySelector('[data-public-chat-life-ai-status]');
+    var sendUrl = section.getAttribute('data-send-url');
+    var token = section.getAttribute('data-member-token') || '';
+    var question = input ? input.value.trim() : '';
+    var body = new FormData();
+
+    if (!sendUrl) {
+      return;
+    }
+    if (requiresAuth(section)) {
+      handleAuthRequired(section, '회원가입 또는 로그인 후 AI 질문을 사용할 수 있습니다.');
+      return;
+    }
+    if (!question) {
+      if (status) status.textContent = '질문을 먼저 입력해 주세요.';
+      input && input.focus();
+      return;
+    }
+    if (form.dataset.lifeAiSending === '1') {
+      return;
+    }
+
+    body.append('action', 'life_qa');
+    body.append('question', question);
+    body.append('eottae_talkroom_member_token', token);
+
+    form.dataset.lifeAiSending = '1';
+    if (btn) {
+      btn.disabled = true;
+      btn.classList.add('is-loading');
+    }
+    if (status) {
+      status.textContent = 'AI가 세부 생활 답변을 작성 중입니다...';
+    }
+
+    fetch(sendUrl, {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: body,
+      headers: { Accept: 'application/json' },
+    })
+      .then(parseJsonResponse)
+      .then(function (data) {
+        if (data && data.auth_required) {
+          handleAuthRequired(section, data.message, data);
+          return;
+        }
+        if (!data || !data.success) {
+          throw new Error((data && data.message) || 'AI 질문 요청에 실패했습니다.');
+        }
+        if (data.member_token) {
+          section.setAttribute('data-member-token', data.member_token);
+        }
+        if (data.message_row) {
+          appendMessages(section, [data.message_row]);
+        }
+        if (status) {
+          status.textContent = 'AI 답변이 공개톡에 올라왔습니다.';
+        }
+      })
+      .catch(function (err) {
+        if (status) {
+          status.textContent = err && err.message ? err.message : 'AI 질문 요청에 실패했습니다.';
+        } else {
+          window.alert(err && err.message ? err.message : 'AI 질문 요청에 실패했습니다.');
+        }
+      })
+      .then(function () {
+        form.dataset.lifeAiSending = '0';
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove('is-loading');
+        }
+      });
+  }
+
   function scrollMessagesToBottom(section) {
     var messagesEl = getMessagesEl(section);
     if (!messagesEl) {
@@ -823,6 +902,13 @@
             event.preventDefault();
             sendMessage(section, form);
           }
+        });
+      }
+
+      var lifeAiBtn = form.querySelector('[data-public-chat-life-ai]');
+      if (lifeAiBtn) {
+        lifeAiBtn.addEventListener('click', function () {
+          askLifeAi(section, form);
         });
       }
     }

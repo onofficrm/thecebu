@@ -23,6 +23,7 @@ $market_free_mode = (isset($_GET['free']) && (string) $_GET['free'] === '1')
         'wr_1'  => $write['wr_1'] ?? 0,
         'wr_10' => $write['wr_10'] ?? '',
     ));
+$market_price_ai_url = G5_URL.'/proc/eottae-market-price-ai.php';
 ?>
 
 <div class="market-write board-wrap board-wrap--eottae-market" id="bo_w" style="width:<?php echo $width; ?>">
@@ -34,7 +35,7 @@ $market_free_mode = (isset($_GET['free']) && (string) $_GET['free'] === '1')
             : '사진, 가격, 거래 위치만 빠르게 입력해보세요. 정확한 집 주소보다 근처 장소 중심으로 등록하는 것을 권장합니다.'; ?></p>
     </header>
 
-    <form name="fwrite" id="fwrite" class="market-write__form" action="<?php echo $action_url; ?>" onsubmit="return market_write_submit(this);" method="post" enctype="multipart/form-data" autocomplete="off">
+    <form name="fwrite" id="fwrite" class="market-write__form" action="<?php echo $action_url; ?>" onsubmit="return market_write_submit(this);" method="post" enctype="multipart/form-data" autocomplete="off" data-market-price-ai-url="<?php echo get_text($market_price_ai_url); ?>">
     <input type="hidden" name="uid" value="<?php echo get_uniqid(); ?>">
     <input type="hidden" name="w" value="<?php echo $w; ?>">
     <input type="hidden" name="bo_table" value="<?php echo $bo_table; ?>">
@@ -65,6 +66,10 @@ $market_free_mode = (isset($_GET['free']) && (string) $_GET['free'] === '1')
                 <div class="market-price-input">
                     <span>₱</span>
                     <input type="number" name="wr_1" id="wr_1" value="<?php echo $market_free_mode ? '' : $market_price; ?>"<?php echo $market_free_mode ? '' : ' required'; ?> min="1" step="1" class="market-input" placeholder="3000">
+                </div>
+                <div class="market-price-ai" data-market-price-ai>
+                    <button type="button" class="market-price-ai__btn eottae-ai-btn" data-market-price-ai-trigger>AI 가격 참고</button>
+                    <div class="market-price-ai__result" data-market-price-ai-result hidden></div>
                 </div>
             </div>
             <div>

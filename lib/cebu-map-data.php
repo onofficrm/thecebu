@@ -7,6 +7,7 @@ include_once G5_LIB_PATH.'/eottae-location.lib.php';
 include_once G5_LIB_PATH.'/eottae-market.lib.php';
 include_once G5_LIB_PATH.'/eottae-job.lib.php';
 include_once G5_LIB_PATH.'/eottae-estate.lib.php';
+include_once G5_LIB_PATH.'/eottae.lib.php';
 
 if (!function_exists('cebu_map_board_exists')) {
     function cebu_map_board_exists($bo_table)
@@ -30,6 +31,55 @@ if (!function_exists('cebu_map_post_url')) {
         return function_exists('get_pretty_url')
             ? get_pretty_url($bo_table, (int) $wr_id)
             : G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.(int) $wr_id;
+    }
+}
+
+if (!function_exists('cebu_map_absolute_url')) {
+    function cebu_map_absolute_url($url)
+    {
+        $url = trim((string) $url);
+        if ($url === '') {
+            return '';
+        }
+        if (preg_match('#^https?://#i', $url)) {
+            return $url;
+        }
+        if ($url[0] === '/') {
+            return G5_URL.$url;
+        }
+
+        return G5_URL.'/'.$url;
+    }
+}
+
+if (!function_exists('cebu_map_marker_thumb_url')) {
+    function cebu_map_marker_thumb_url($type, $bo_table, $row)
+    {
+        $wr_id = (int) ($row['wr_id'] ?? 0);
+        if ($wr_id < 1) {
+            return '';
+        }
+
+        $thumb = '';
+        if ($type === 'market' && function_exists('eottae_market_thumb_url')) {
+            $thumb = eottae_market_thumb_url($bo_table, $wr_id, 216, 216);
+        } elseif (function_exists('eottae_community_list_thumb')) {
+            $content = isset($row['wr_content']) ? (string) $row['wr_content'] : '';
+            $thumb = eottae_community_list_thumb($bo_table, $wr_id, $content);
+        }
+
+        if ($thumb === '' && in_array($type, array('job', 'estate'), true)) {
+            $mb_id = trim((string) ($row['mb_id'] ?? ''));
+            if ($mb_id !== '' && function_exists('eottae_estate_member_thumb_url')) {
+                $thumb = eottae_estate_member_thumb_url($mb_id);
+            }
+        }
+
+        if ($thumb !== '' && function_exists('eottae_map_public_url')) {
+            $thumb = eottae_map_public_url($thumb);
+        }
+
+        return $thumb;
     }
 }
 
@@ -76,6 +126,10 @@ if (!function_exists('cebu_map_marker_base')) {
             $area_label = eottae_location_area_label($area_key);
         }
         $location_text = trim(strip_tags((string) ($loc['location_text'] ?? ($loc['address'] ?? ''))));
+        $post_url = cebu_map_post_url($bo_table, $wr_id);
+        $directions_url = function_exists('eottae_maps_directions_url')
+            ? eottae_maps_directions_url($lat, $lng, $location_text)
+            : 'https://www.google.com/maps/dir/?api=1&destination='.rawurlencode($lat.','.$lng);
 
         return array(
             'type'          => $type,
@@ -94,7 +148,10 @@ if (!function_exists('cebu_map_marker_base')) {
                 : trim($area_label.' · '.$location_text, ' ·'),
             'lat'           => (float) $lat,
             'lng'           => (float) $lng,
-            'url'           => cebu_map_post_url($bo_table, $wr_id),
+            'url'           => $post_url,
+            'share_url'     => cebu_map_absolute_url($post_url),
+            'directions_url'=> $directions_url,
+            'thumbnail'     => cebu_map_marker_thumb_url($type, $bo_table, $row),
             'datetime'      => (string) ($row['wr_datetime'] ?? ''),
             'timestamp'     => isset($row['wr_datetime']) ? (int) strtotime($row['wr_datetime']) : 0,
             'price_num'     => 0,
@@ -223,10 +280,88 @@ if (!function_exists('cebu_map_estate_markers')) {
     }
 }
 
+if (!function_exists('cebu_map_shop_markers')) {
+    function cebu_map_shop_markers($limit = 200)
+    {
+        $bo_table = function_exists('eottae_shop_table') ? eottae_shop_table() : 'shop';
+        if (!function_exists('eottae_shop_fetch_raw_rows') || !function_exists('eottae_shop_from_write')) {
+            return array();
+        }
+
+        $chunk = eottae_shop_fetch_raw_rows($bo_table, array(
+            'limit'    => max(1, min(500, (int) $limit)),
+            'max_rows' => max(1, min(500, (int) $limit)),
+        ));
+        $rows = isset($chunk['rows']) && is_array($chunk['rows']) ? $chunk['rows'] : array();
+        $markers = array();
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $shop = eottae_shop_from_write($row, $bo_table);
+            $lat = trim((string) ($shop['lat'] ?? ''));
+            $lng = trim((string) ($shop['lng'] ?? ''));
+            $address = trim((string) ($shop['address'] ?? ''));
+            $region = trim((string) ($shop['region'] ?? ''));
+            if (($lat === '' || $lng === '' || !is_numeric($lat) || !is_numeric($lng)) && function_exists('eottae_shop_guess_coords')) {
+                $fallback = eottae_shop_guess_coords($address, $region);
+                if (!empty($fallback['lat']) && !empty($fallback['lng'])) {
+                    $lat = (string) $fallback['lat'];
+                    $lng = (string) $fallback['lng'];
+                }
+            }
+            if ($lat === '' || $lng === '' || !is_numeric($lat) || !is_numeric($lng)) {
+                continue;
+            }
+
+            $loc = array(
+                'auto_area'     => $region,
+                'area_label'    => $region,
+                'location_text' => $address,
+                'latitude'      => $lat,
+                'longitude'     => $lng,
+            );
+            $marker = cebu_map_marker_base('shop', '업체', $bo_table, $row, $loc);
+            if (!$marker) {
+                continue;
+            }
+
+            $summary = function_exists('eottae_get_shop_review_summary')
+                ? eottae_get_shop_review_summary((int) ($shop['wr_id'] ?? 0))
+                : array('average' => 0, 'count' => 0);
+            $rating = isset($summary['average']) ? (float) $summary['average'] : 0;
+            $review_count = isset($summary['count']) ? (int) $summary['count'] : 0;
+
+            $marker['title'] = trim((string) ($shop['name'] ?? ''));
+            $marker['status'] = trim((string) ($shop['category'] ?? ''));
+            $marker['status_key'] = 'shop';
+            $marker['price'] = $review_count > 0
+                ? '★ '.number_format($rating, 1).' · 리뷰 '.number_format($review_count)
+                : trim((string) ($shop['hours'] ?? ''));
+            $marker['thumbnail'] = function_exists('eottae_shop_listing_thumb_url')
+                ? eottae_shop_listing_thumb_url($bo_table, (int) ($shop['wr_id'] ?? 0), $row)
+                : $marker['thumbnail'];
+            if ($marker['thumbnail'] !== '' && function_exists('eottae_map_public_url')) {
+                $marker['thumbnail'] = eottae_map_public_url($marker['thumbnail']);
+            }
+            $marker['url'] = function_exists('eottae_shop_view_url')
+                ? eottae_shop_view_url((int) ($shop['wr_id'] ?? 0), $bo_table)
+                : $marker['url'];
+            $marker['share_url'] = cebu_map_absolute_url($marker['url']);
+
+            $markers[] = $marker;
+        }
+
+        return $markers;
+    }
+}
+
 if (!function_exists('cebu_map_markers')) {
     function cebu_map_markers($limit_per_board = 200)
     {
         return array_values(array_merge(
+            cebu_map_shop_markers($limit_per_board),
             cebu_map_market_markers($limit_per_board),
             cebu_map_job_markers($limit_per_board),
             cebu_map_estate_markers($limit_per_board)

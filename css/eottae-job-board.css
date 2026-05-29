@@ -172,6 +172,95 @@
   padding: 4px 10px;
 }
 
+.community-post__shop-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  margin-top: 6px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.community-post__shop-link:hover {
+  background: #dbeafe;
+}
+
+.job-shop-panel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 1rem;
+  padding: 12px;
+  border: 1px solid #bfdbfe;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #eff6ff 0%, #fff 100%);
+}
+
+.job-shop-panel__thumb {
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #dbeafe;
+}
+
+.job-shop-panel__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.job-shop-panel__eyebrow {
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.job-shop-panel__name {
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 0.98rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.job-shop-panel__meta {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.job-shop-panel__link,
+.job-detail-panel__shop-link {
+  color: #1d4ed8;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.job-shop-panel__link {
+  flex: 0 0 auto;
+  padding: 8px 11px;
+  border-radius: 999px;
+  background: #1d4ed8;
+  color: #fff;
+  font-size: 12px;
+}
+
+.job-detail-panel__shop-link:hover,
+.job-shop-panel__link:hover {
+  text-decoration: underline;
+}
+
 /* 구인구직 상세 — 템플릿 정보 패널 */
 .job-detail-panel {
   margin: 0 0 1.25rem;
@@ -262,6 +351,18 @@
   font-size: 0.76rem;
   font-weight: 800;
   color: #64748b;
+}
+
+@media (max-width: 640px) {
+  .job-shop-panel {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .job-shop-panel__link {
+    width: 100%;
+    text-align: center;
+  }
 }
 
 .job-location-panel__item dd {

@@ -243,6 +243,17 @@
     }
   }
 
+  function showAiStatus(message, type) {
+    var status = document.getElementById('sebuJobTemplateAiStatus');
+    if (!status) {
+      return;
+    }
+    status.hidden = !message;
+    status.textContent = message || '';
+    status.classList.toggle('is-error', type === 'error');
+    status.classList.toggle('is-success', type === 'success');
+  }
+
   function syncJobMetaFields(data) {
     var wr1 = document.getElementById('wr_1');
     var wr2 = document.getElementById('wr_2');
@@ -301,6 +312,144 @@
     syncJobMetaFields(getData());
   }
 
+  function initJobShopPicker() {
+    var picker = root.querySelector('[data-job-shop-picker]');
+    if (!picker) {
+      return;
+    }
+
+    var searchUrl = picker.getAttribute('data-search-url') || '/proc/eottae-review-shop-search.php';
+    var searchInput = document.getElementById('jobShopPickerSearch');
+    var resultsEl = document.getElementById('jobShopPickerResults');
+    var emptyEl = document.getElementById('jobShopPickerEmpty');
+    var hintEl = document.getElementById('jobShopPickerHint');
+    var selectedWrap = document.getElementById('jobShopPickerSelected');
+    var selectedName = document.getElementById('jobShopPickerSelectedName');
+    var selectedMeta = document.getElementById('jobShopPickerSelectedMeta');
+    var searchWrap = document.getElementById('jobShopPickerSearchWrap');
+    var clearBtn = document.getElementById('jobShopPickerClear');
+    var wrIdInput = document.getElementById('eottae_job_shop_wr_id');
+    var boInput = document.getElementById('eottae_job_shop_bo_table');
+    var timer = null;
+
+    function setSelected(shop) {
+      var hasShop = !!(shop && shop.wr_id);
+      var meta = [];
+      if (hasShop && shop.board_label) meta.push(shop.board_label);
+      if (hasShop && shop.region) meta.push(shop.region);
+
+      if (wrIdInput) wrIdInput.value = hasShop ? String(parseInt(shop.wr_id, 10) || '') : '';
+      if (boInput) boInput.value = hasShop ? String(shop.bo_table || '') : '';
+      if (selectedWrap) {
+        selectedWrap.hidden = !hasShop;
+        selectedWrap.classList.toggle('is-empty', !hasShop);
+      }
+      if (searchWrap) searchWrap.hidden = hasShop;
+      if (selectedName) selectedName.textContent = hasShop ? String(shop.name || '') : '';
+      if (selectedMeta) selectedMeta.textContent = meta.join(' · ');
+      if (resultsEl) {
+        resultsEl.hidden = true;
+        resultsEl.innerHTML = '';
+      }
+      if (emptyEl) emptyEl.hidden = true;
+      if (searchInput && hasShop) searchInput.value = '';
+
+      var companyEl = root.querySelector('[data-job-field="company"]');
+      if (hasShop && companyEl && !companyEl.value.trim()) {
+        companyEl.value = String(shop.name || '');
+        syncJobMetaFields(getData());
+      }
+    }
+
+    function renderResults(items) {
+      if (!resultsEl) return;
+      if (!items || !items.length) {
+        resultsEl.hidden = true;
+        resultsEl.innerHTML = '';
+        if (emptyEl) emptyEl.hidden = false;
+        if (hintEl) hintEl.textContent = '검색 결과가 없습니다. 업체 연결 없이 작성할 수 있습니다.';
+        return;
+      }
+
+      if (emptyEl) emptyEl.hidden = true;
+      if (hintEl) hintEl.textContent = items.length + '개 업체';
+      resultsEl.innerHTML = items.map(function (shop) {
+        var meta = [];
+        if (shop.board_label) meta.push(shop.board_label);
+        if (shop.region) meta.push(shop.region);
+        var thumb = shop.thumb_url
+          ? '<img src="' + escapeHtml(shop.thumb_url) + '" alt="" class="sebu-job-shop-picker__result-thumb" loading="lazy" decoding="async">'
+          : '<span class="sebu-job-shop-picker__result-thumb sebu-job-shop-picker__result-thumb--empty" aria-hidden="true"></span>';
+        return ''
+          + '<button type="button" class="sebu-job-shop-picker__result" role="option"'
+          + ' data-bo-table="' + escapeHtml(shop.bo_table || '') + '"'
+          + ' data-wr-id="' + escapeHtml(shop.wr_id || '') + '"'
+          + ' data-name="' + escapeHtml(shop.name || '') + '"'
+          + ' data-region="' + escapeHtml(shop.region || '') + '"'
+          + ' data-board-label="' + escapeHtml(shop.board_label || '') + '">'
+          + thumb
+          + '<span class="sebu-job-shop-picker__result-body">'
+          + '<strong>' + escapeHtml(shop.name || '') + '</strong>'
+          + (meta.length ? '<span>' + escapeHtml(meta.join(' · ')) + '</span>' : '')
+          + (shop.address ? '<em>' + escapeHtml(shop.address) + '</em>' : '')
+          + '</span>'
+          + '</button>';
+      }).join('');
+      resultsEl.hidden = false;
+    }
+
+    function fetchShops(keyword) {
+      var url = searchUrl + '?limit=30&q=' + encodeURIComponent(keyword);
+      return fetch(url, { credentials: 'same-origin' })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          return data && data.success ? (data.items || []) : [];
+        })
+        .catch(function () { return []; });
+    }
+
+    function scheduleSearch() {
+      if (!searchInput) return;
+      clearTimeout(timer);
+      timer = window.setTimeout(function () {
+        var keyword = (searchInput.value || '').trim();
+        if (keyword.length < 1) {
+          if (resultsEl) {
+            resultsEl.hidden = true;
+            resultsEl.innerHTML = '';
+          }
+          if (emptyEl) emptyEl.hidden = true;
+          if (hintEl) hintEl.textContent = '업체명을 검색해 공고와 연결할 수 있습니다.';
+          return;
+        }
+        fetchShops(keyword).then(renderResults);
+      }, 220);
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', scheduleSearch);
+    }
+    if (resultsEl) {
+      resultsEl.addEventListener('click', function (event) {
+        var btn = event.target.closest('.sebu-job-shop-picker__result');
+        if (!btn) return;
+        setSelected({
+          wr_id: btn.getAttribute('data-wr-id'),
+          bo_table: btn.getAttribute('data-bo-table'),
+          name: btn.getAttribute('data-name'),
+          region: btn.getAttribute('data-region'),
+          board_label: btn.getAttribute('data-board-label')
+        });
+      });
+    }
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function () {
+        setSelected(null);
+        if (searchInput) searchInput.focus();
+      });
+    }
+  }
+
   function applyTemplateToEditor(options) {
     options = options || {};
     var data = getData();
@@ -350,6 +499,60 @@
     });
     syncJobMetaFields({ region: '', job_recruit_status: 'recruiting' });
     showError(false);
+    showAiStatus('', '');
+  }
+
+  function requestAiDraft() {
+    var aiUrl = root.getAttribute('data-job-ai-url') || '';
+    var aiBtn = document.getElementById('sebuJobTemplateAi');
+    var data = getData();
+    var body = new FormData();
+
+    if (!aiUrl || !window.fetch) {
+      showAiStatus('AI 초안 작성 기능을 사용할 수 없습니다.', 'error');
+      return;
+    }
+    if (isEmpty(data.company) && isEmpty(data.job_type) && isEmpty(data.region)) {
+      showAiStatus('업체명, 직종, 근무지역 중 하나 이상을 입력하면 더 정확한 초안을 만들 수 있습니다.', 'error');
+      return;
+    }
+
+    Object.keys(data).forEach(function (key) {
+      body.append(key, data[key] || '');
+    });
+
+    showAiStatus('AI가 구인글 초안을 작성 중입니다...', '');
+    if (aiBtn) {
+      aiBtn.disabled = true;
+      aiBtn.classList.add('is-loading');
+    }
+
+    fetch(aiUrl, {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: body,
+      headers: { Accept: 'application/json' }
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (json) {
+        if (!json || !json.success) {
+          throw new Error((json && json.message) || 'AI 초안 작성에 실패했습니다.');
+        }
+        applyDataToFields(json.data || {});
+        if (!applyTemplateToEditor({ force: true, silent: true })) {
+          throw new Error('필수 항목을 채우지 못했습니다. 내용을 확인해 주세요.');
+        }
+        showAiStatus(json.source === 'api' ? 'AI 초안을 작성했습니다. 내용과 연락처를 확인해 주세요.' : '기본 템플릿으로 초안을 작성했습니다. 내용과 연락처를 확인해 주세요.', 'success');
+      })
+      .catch(function (err) {
+        showAiStatus(err && err.message ? err.message : 'AI 초안 작성에 실패했습니다.', 'error');
+      })
+      .then(function () {
+        if (aiBtn) {
+          aiBtn.disabled = false;
+          aiBtn.classList.remove('is-loading');
+        }
+      });
   }
 
   fieldEls().forEach(function (el) {
@@ -375,6 +578,7 @@
   }
 
   syncJobMetaFields(getData());
+  initJobShopPicker();
 
   var writeForm = root.closest('form');
   if (writeForm) {
@@ -405,6 +609,11 @@
       subjectEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   });
+
+  var aiDraftBtn = document.getElementById('sebuJobTemplateAi');
+  if (aiDraftBtn) {
+    aiDraftBtn.addEventListener('click', requestAiDraft);
+  }
 
   document.getElementById('sebuJobTemplateReset').addEventListener('click', function () {
     if (window.confirm('템플릿 입력 내용을 모두 지울까요?')) {

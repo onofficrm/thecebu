@@ -68,7 +68,7 @@
   top: 0;
   z-index: 5;
   display: grid;
-  grid-template-columns: minmax(180px, 1.35fr) repeat(5, minmax(130px, 1fr));
+  grid-template-columns: minmax(180px, 1.35fr) repeat(6, minmax(120px, 1fr));
   gap: 10px;
   margin-bottom: 14px;
   padding: 12px;
@@ -181,12 +181,77 @@
   cursor: pointer;
 }
 
+.cebu-map-list-item:focus-visible {
+  outline: 2px solid #0ea5e9;
+  outline-offset: 2px;
+  border-radius: 18px;
+}
+
 .cebu-map-card {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
   padding: 14px;
   border: 1px solid #e2e8f0;
   border-radius: 16px;
   background: #fff;
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+}
+
+.cebu-map-list-item:hover .cebu-map-card {
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+}
+
+.cebu-map-card__thumb-wrap {
+  position: relative;
+  display: block;
+  width: 96px;
+  min-height: 96px;
+  height: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(145deg, #f8fbff, #eef6ff);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+}
+
+.cebu-map-card__thumb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.cebu-map-card__thumb--empty {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+}
+
+.cebu-map-card--market .cebu-map-card__thumb--empty {
+  background: linear-gradient(135deg, #fff7ed, #ffedd5);
+}
+
+.cebu-map-card--shop .cebu-map-card__thumb--empty {
+  background: linear-gradient(135deg, #ecfeff, #dbeafe);
+}
+
+.cebu-map-card--job .cebu-map-card__thumb--empty {
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+}
+
+.cebu-map-card--estate .cebu-map-card__thumb--empty {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+}
+
+.cebu-map-card__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .cebu-map-card.is-dimmed {
@@ -228,6 +293,11 @@
   color: #c2410c;
 }
 
+.cebu-map-card--shop .cebu-map-card__status {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
 .cebu-map-card--job .cebu-map-card__status {
   background: #ede9fe;
   color: #6d28d9;
@@ -256,19 +326,13 @@
   color: #64748b;
 }
 
-.cebu-map-card__link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 10px;
-  min-height: 32px;
-  padding: 0 12px;
-  border-radius: 999px;
-  background: #0f172a;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 900;
-  text-decoration: none;
+.cebu-map-card__actions {
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.cebu-map-card__actions .inquiry-button__btn--primary {
+  font-size: 11px;
 }
 
 .cebu-map-canvas-wrap {
@@ -316,10 +380,15 @@
 }
 
 .gm-style .cebu-map-card {
-  min-width: 220px;
+  min-width: 280px;
   box-shadow: none;
   border: 0;
   padding: 8px;
+}
+
+.gm-style .cebu-map-card__thumb-wrap {
+  width: 88px;
+  min-height: 88px;
 }
 
 @media (max-width: 900px) {
@@ -376,6 +445,16 @@
     left: 10px;
     right: 10px;
     bottom: 10px;
+  }
+
+  .cebu-map-card {
+    grid-template-columns: 84px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .cebu-map-card__thumb-wrap {
+    width: 84px;
+    min-height: 84px;
   }
 }
 

@@ -252,6 +252,7 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
             $job_recruit_label = '';
             $job_thumb_html = '';
             $job_location_label = '';
+            $job_shop = null;
             $post_thumb = eottae_community_list_thumb(
                 $item_bo_table,
                 (int) $item['wr_id'],
@@ -270,6 +271,9 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
                 $job_recruit_status = eottae_job_recruit_status_from_row($item);
                 $job_recruit_meta = eottae_job_recruit_status_meta($job_recruit_status);
                 $job_recruit_label = $job_recruit_meta['label'];
+                if (function_exists('eottae_job_shop_from_row')) {
+                    $job_shop = eottae_job_shop_from_row($item);
+                }
                 if (!$is_community_hub_all_list) {
                     $job_thumb_html = eottae_job_render_list_thumb($item, $post_thumb);
                 }

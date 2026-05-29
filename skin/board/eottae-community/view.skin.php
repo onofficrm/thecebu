@@ -128,6 +128,7 @@ if ($is_event_board_view) {
 $job_recruit_status = 'recruiting';
 $job_can_change_recruit = false;
 $job_location = null;
+$job_shop = null;
 if ($is_job_board_view) {
     $job_board_css = G5_PATH.'/css/eottae-job-board.css';
     if (is_file($job_board_css)) {
@@ -139,6 +140,9 @@ if ($is_job_board_view) {
     $job_recruit_status = eottae_job_recruit_status_from_row($view);
     if (function_exists('eottae_job_location_from_row')) {
         $job_location = eottae_job_location_from_row($view);
+    }
+    if (function_exists('eottae_job_shop_from_row')) {
+        $job_shop = eottae_job_shop_from_row($view);
     }
     $job_can_change_recruit = !empty($is_member) && !empty($member['mb_id'])
         && eottae_job_can_change_recruit_status($view, $member['mb_id'], ($is_admin === 'super'));
@@ -407,6 +411,23 @@ if ($is_ai_post) {
         $job_template_data = $is_job_board_view && function_exists('eottae_job_template_from_row')
             ? eottae_job_template_from_row($view)
             : null;
+        if ($is_job_board_view && is_array($job_shop) && !empty($job_shop['view_url'])) { ?>
+        <section class="job-shop-panel" aria-label="연결 업체">
+            <?php if (!empty($job_shop['thumb_url'])) { ?>
+            <img src="<?php echo get_text($job_shop['thumb_url']); ?>" alt="" class="job-shop-panel__thumb" loading="lazy" decoding="async">
+            <?php } ?>
+            <div class="job-shop-panel__body">
+                <span class="job-shop-panel__eyebrow">연결 업체</span>
+                <strong class="job-shop-panel__name"><?php echo get_text($job_shop['name'] ?? ''); ?></strong>
+                <?php
+                $job_shop_meta = array_filter(array($job_shop['board_label'] ?? '', $job_shop['region'] ?? ''));
+                if ($job_shop_meta) { ?>
+                <span class="job-shop-panel__meta"><?php echo get_text(implode(' · ', $job_shop_meta)); ?></span>
+                <?php } ?>
+            </div>
+            <a href="<?php echo get_text($job_shop['view_url']); ?>" class="job-shop-panel__link">업체정보 바로가기</a>
+        </section>
+        <?php }
         if ($is_job_board_view && is_array($job_template_data)) {
             include G5_PATH.'/components/eottae/job-view-detail.php';
         }

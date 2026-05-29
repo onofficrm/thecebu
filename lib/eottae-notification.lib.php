@@ -148,3 +148,62 @@ if (!function_exists('eottae_mypage_notification_summary')) {
         );
     }
 }
+
+if (!function_exists('eottae_notification_hub_url')) {
+    function eottae_notification_hub_url()
+    {
+        return G5_URL.'/page/eottae-notifications.php';
+    }
+}
+
+if (!function_exists('eottae_notification_hub_items')) {
+    function eottae_notification_hub_items($mb_id, $summary = null)
+    {
+        $mb_id = trim((string) $mb_id);
+        if ($summary === null || !is_array($summary)) {
+            $summary = eottae_mypage_notification_summary($mb_id);
+        }
+
+        if (!function_exists('eottae_message_url') && is_file(G5_LIB_PATH.'/eottae-message.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-message.lib.php';
+        }
+        if (!function_exists('eottae_mypage_talk_url')) {
+            if (is_file(G5_LIB_PATH.'/eottae-talkroom.lib.php')) {
+                include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
+            }
+        }
+
+        $message_count = (int) ($summary['message_unread'] ?? 0);
+        $comment_count = (int) ($summary['comment_count'] ?? 0);
+        $talk_count = (int) ($summary['talk_activity'] ?? 0);
+        $talk_hub = isset($summary['talk_hub']) && is_array($summary['talk_hub']) ? $summary['talk_hub'] : array();
+        $talk_room_count = (int) ($talk_hub['room_count'] ?? 0);
+
+        return array(
+            array(
+                'key'         => 'message',
+                'label'       => '새 쪽지',
+                'count'       => $message_count,
+                'href'        => function_exists('eottae_message_url') ? eottae_message_url() : G5_URL.'/page/eottae-messages.php',
+                'description' => $message_count > 0 ? '답장이 필요한 쪽지가 있어요' : '새 쪽지가 없습니다',
+                'tone'        => 'message',
+            ),
+            array(
+                'key'         => 'comment',
+                'label'       => '내 글 댓글',
+                'count'       => $comment_count,
+                'href'        => G5_BBS_URL.'/board.php?bo_table='.(defined('EOTTae_COMMUNITY_TABLE') ? EOTTae_COMMUNITY_TABLE : 'community'),
+                'description' => '최근 30일 기준',
+                'tone'        => 'comment',
+            ),
+            array(
+                'key'         => 'talk',
+                'label'       => '세부톡 새 활동',
+                'count'       => $talk_count,
+                'href'        => function_exists('eottae_mypage_talk_url') ? eottae_mypage_talk_url() : G5_URL.'/mypage/talk.php',
+                'description' => $talk_room_count > 0 ? number_format($talk_room_count).'개 톡방 참여 중' : '참여한 톡방이 없습니다',
+                'tone'        => 'talk',
+            ),
+        );
+    }
+}

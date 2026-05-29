@@ -32,10 +32,11 @@ if ($cebu_map_has_key && !empty($cebu_map_cfg['api_key'])) {
 }
 
 $initial_type = isset($_GET['type']) ? preg_replace('/[^a-z_]/', '', (string) $_GET['type']) : 'all';
-if (!in_array($initial_type, array('all', 'market', 'job', 'estate'), true)) {
+if (!in_array($initial_type, array('all', 'shop', 'market', 'job', 'estate'), true)) {
     $initial_type = 'all';
 }
 $request_near = !empty($_GET['near']) && (string) $_GET['near'] === '1';
+$shop_write_url = G5_BBS_URL.'/write.php?bo_table='.(function_exists('eottae_shop_table') ? eottae_shop_table() : 'shop');
 $market_write_url = G5_BBS_URL.'/write.php?bo_table='.(function_exists('eottae_market_board_table') ? eottae_market_board_table() : 'market');
 $job_write_url = G5_BBS_URL.'/write.php?bo_table='.(function_exists('eottae_job_board_table') ? eottae_job_board_table() : 'job');
 $estate_write_url = G5_BBS_URL.'/write.php?bo_table='.(function_exists('eottae_estate_board_table') ? eottae_estate_board_table() : 'estate');
@@ -56,8 +57,9 @@ g5_page_start('세부생활지도');
     <header class="cebu-map-hero">
         <p class="cebu-map-hero__eyebrow">Cebu Life Map</p>
         <h1 class="cebu-map-hero__title">세부생활지도</h1>
-        <p class="cebu-map-hero__lead">세부의 부동산, 구인구직, 중고장터 정보를 지도에서 한눈에 확인하세요. 위치를 기준으로 내 주변 생활정보를 쉽고 빠르게 찾을 수 있습니다.</p>
+        <p class="cebu-map-hero__lead">세부의 업체, 부동산, 구인구직, 중고장터 정보를 지도에서 한눈에 확인하세요. 위치를 기준으로 내 주변 생활정보를 쉽고 빠르게 찾을 수 있습니다.</p>
         <div class="cebu-map-hero__actions">
+            <a href="<?php echo get_text($shop_write_url); ?>">업체 등록</a>
             <a href="<?php echo get_text($market_write_url); ?>">중고물품 등록</a>
             <a href="<?php echo get_text($job_write_url); ?>">구인공고 등록</a>
             <a href="<?php echo get_text($estate_write_url); ?>">부동산 매물 등록</a>
@@ -77,6 +79,7 @@ g5_page_start('세부생활지도');
             <label for="cebuMapType">카테고리</label>
             <select id="cebuMapType" data-map-filter="type">
                 <option value="all"<?php echo $initial_type === 'all' ? ' selected' : ''; ?>>전체</option>
+                <option value="shop"<?php echo $initial_type === 'shop' ? ' selected' : ''; ?>>업체</option>
                 <option value="market"<?php echo $initial_type === 'market' ? ' selected' : ''; ?>>중고장터</option>
                 <option value="job"<?php echo $initial_type === 'job' ? ' selected' : ''; ?>>구인구직</option>
                 <option value="estate"<?php echo $initial_type === 'estate' ? ' selected' : ''; ?>>부동산</option>
@@ -95,6 +98,7 @@ g5_page_start('세부생활지도');
             <label for="cebuMapStatus">상태</label>
             <select id="cebuMapStatus" data-map-filter="status">
                 <option value="all">전체</option>
+                <option value="shop">업체만</option>
                 <optgroup label="중고장터">
                     <option value="market:selling">판매중</option>
                     <option value="market:reserved">예약중</option>
@@ -109,6 +113,16 @@ g5_page_start('세부생활지도');
                     <option value="estate:trading">거래가능</option>
                     <option value="estate:completed">계약완료</option>
                 </optgroup>
+            </select>
+        </div>
+        <div class="cebu-map-filter">
+            <label for="cebuMapRadius">반경</label>
+            <select id="cebuMapRadius" data-map-filter="radius">
+                <option value="all">전체</option>
+                <option value="1">1km</option>
+                <option value="3">3km</option>
+                <option value="5">5km</option>
+                <option value="10">10km</option>
             </select>
         </div>
         <div class="cebu-map-filter">
