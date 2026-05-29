@@ -956,10 +956,62 @@ if (!function_exists('eottae_builder_inject_home_talk_feed')) {
     }
 }
 
+if (!function_exists('eottae_builder_inject_home_column_feed')) {
+    function eottae_builder_inject_home_column_feed($html)
+    {
+        if (!is_string($html) || $html === '') {
+            return $html;
+        }
+
+        if (strpos($html, 'id="eottae-home-column"') !== false || strpos($html, "id='eottae-home-column'") !== false) {
+            return $html;
+        }
+
+        if (!function_exists('eottae_column_home_feed_html')) {
+            $component = G5_PATH.'/components/eottae/column-home-feed.php';
+            if (is_file($component)) {
+                include_once $component;
+            }
+        }
+
+        if (!function_exists('eottae_column_home_feed_html')) {
+            return $html;
+        }
+
+        $feed_html = eottae_column_home_feed_html();
+        if ($feed_html === '') {
+            return $html;
+        }
+
+        if (preg_match('#(<div\s+id=["\']root["\'][^>]*>\s*</div>)#i', $html)) {
+            $html = preg_replace('#(<div\s+id=["\']root["\'][^>]*>\s*</div>)#i', '$1'.$feed_html, $html, 1);
+        } elseif (preg_match('#</body>#i', $html)) {
+            $html = preg_replace('#</body>#i', $feed_html.'</body>', $html, 1);
+        } else {
+            $html .= $feed_html;
+        }
+
+        return $html;
+    }
+}
+
 if (!function_exists('eottae_builder_inject_home_talk_feed_script')) {
     function eottae_builder_inject_home_talk_feed_script()
     {
         $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-talk-feed.js' : '/js/eottae-home-talk-feed.js';
+
+        return '<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
+    }
+}
+
+if (!function_exists('eottae_builder_inject_home_column_feed_script')) {
+    function eottae_builder_inject_home_column_feed_script()
+    {
+        $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-home-column-feed.js' : '/js/eottae-home-column-feed.js';
+        $path = defined('G5_PATH') ? G5_PATH.'/js/eottae-home-column-feed.js' : '';
+        if ($path !== '' && is_file($path)) {
+            $js .= '?ver='.(int) filemtime($path);
+        }
 
         return '<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
     }
@@ -1356,7 +1408,7 @@ if (!function_exists('eottae_builder_inject_site_footer')) {
 
 if (!function_exists('eottae_builder_inject_home_stylesheets')) {
     /**
-     * 빌더 홈 — GNUBoard head 없이도 카카오톡 채팅 UI CSS 로드
+     * 빌더 홈 — GNUBoard head 없이도 홈 보강 UI CSS 로드
      */
     function eottae_builder_inject_home_stylesheets($html)
     {
@@ -1364,24 +1416,42 @@ if (!function_exists('eottae_builder_inject_home_stylesheets')) {
             return $html;
         }
 
-        if (stripos($html, 'eottae-kakao-chat.css') !== false) {
+        $links = array();
+        $stylesheets = array(
+            'eottae-kakao-chat.css' => defined('G5_CSS_URL') ? G5_CSS_URL.'/eottae-kakao-chat.css' : '/css/eottae-kakao-chat.css',
+            'eottae-column.css'     => defined('G5_CSS_URL') ? G5_CSS_URL.'/eottae-column.css' : '/css/eottae-column.css',
+        );
+
+        foreach ($stylesheets as $needle => $css_url) {
+            if (stripos($html, $needle) !== false) {
+                continue;
+            }
+            if (defined('G5_PATH')) {
+                $css_path = G5_PATH.'/css/'.$needle;
+                if (is_file($css_path)) {
+                    $css_url .= '?ver='.(int) filemtime($css_path);
+                }
+            }
+            $links[] = '<link rel="stylesheet" href="'.htmlspecialchars($css_url, ENT_QUOTES, 'UTF-8').'">';
+        }
+
+        if (empty($links)) {
             return $html;
         }
 
-        $css_url = defined('G5_CSS_URL') ? G5_CSS_URL.'/eottae-kakao-chat.css' : '/css/eottae-kakao-chat.css';
-        $link = '<link rel="stylesheet" href="'.htmlspecialchars($css_url, ENT_QUOTES, 'UTF-8').'">';
+        $link_html = implode("\n    ", $links);
 
         if (preg_match('#<link[^>]+href=["\'][^"\']*eottae\.css["\'][^>]*>#i', $html)) {
             return preg_replace(
                 '#(<link[^>]+href=["\'][^"\']*eottae\.css["\'][^>]*>)#i',
-                '$1'."\n    ".$link,
+                '$1'."\n    ".$link_html,
                 $html,
                 1
             );
         }
 
         if (preg_match('#</head>#i', $html)) {
-            return preg_replace('#</head>#i', '    '.$link."\n".'</head>', $html, 1);
+            return preg_replace('#</head>#i', '    '.$link_html."\n".'</head>', $html, 1);
         }
 
         return $html;
@@ -1397,6 +1467,7 @@ if (!function_exists('eottae_builder_inject_html')) {
 
         $html = eottae_builder_inject_home_stylesheets($html);
         $html = eottae_builder_inject_home_map($html);
+        $html = eottae_builder_inject_home_column_feed($html);
         $html = eottae_builder_inject_home_public_chat($html);
 
         $head_script = eottae_builder_inject_logo_head_script();
@@ -1414,6 +1485,7 @@ if (!function_exists('eottae_builder_inject_html')) {
         $body_scripts .= eottae_builder_inject_home_search_script();
         $body_scripts .= eottae_builder_inject_home_briefing_script();
         $body_scripts .= eottae_builder_inject_home_main_section_script();
+        $body_scripts .= eottae_builder_inject_home_column_feed_script();
         $body_scripts .= eottae_builder_inject_home_hero_layout_script();
         $body_scripts .= eottae_builder_inject_home_public_chat_script();
         $body_scripts .= eottae_builder_inject_home_events_banner_script();
