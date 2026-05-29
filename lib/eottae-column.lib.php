@@ -1784,6 +1784,28 @@ if (!function_exists('eottae_column_normalize_image_src')) {
     }
 }
 
+if (!function_exists('eottae_column_resolve_image_src_from_tag')) {
+    function eottae_column_resolve_image_src_from_tag($tag)
+    {
+        $tag = html_entity_decode((string) $tag, ENT_QUOTES, 'UTF-8');
+        $tag = str_replace(array('\\/', "\r", "\n"), array('/', '', ''), $tag);
+
+        if (preg_match('#/(data/(?:editor/\d{4}|column/body)/[a-z0-9._-]+\.(?:jpe?g|png|gif|webp))#i', $tag, $matches)) {
+            return '/'.$matches[1];
+        }
+
+        if (preg_match('#https?://[^"\'\s>]+/(data/(?:editor/\d{4}|column/body)/[a-z0-9._-]+\.(?:jpe?g|png|gif|webp))#i', $tag, $matches)) {
+            return '/'.$matches[1];
+        }
+
+        if (preg_match('/([a-f0-9]{32}_\d{10}_\d+\.(?:jpe?g|png|gif|webp)|body_\d+_\d{14}_[a-f0-9]{8}\.(?:jpe?g|png|gif|webp))/i', $tag, $matches)) {
+            return eottae_column_guess_uploaded_image_url($matches[1]);
+        }
+
+        return '';
+    }
+}
+
 if (!function_exists('eottae_column_normalize_content_images')) {
     function eottae_column_normalize_content_images($content)
     {
@@ -1795,6 +1817,7 @@ if (!function_exists('eottae_column_normalize_content_images')) {
         $content = str_replace('\/', '/', $content);
 
         return preg_replace_callback('/<img\b([^>]*?)>/i', function ($matches) {
+            $tag = (string) $matches[0];
             $attrs = (string) $matches[1];
             $src = '';
 
@@ -1803,21 +1826,12 @@ if (!function_exists('eottae_column_normalize_content_images')) {
             }
 
             $normalized_src = eottae_column_normalize_image_src($src);
-            if ($normalized_src === '') {
-                $filename = '';
-                if (preg_match('/\btitle=(["\'])(.*?)\1/i', $attrs, $title_matches)) {
-                    $filename = eottae_column_extract_editor_filename($title_matches[2]);
-                }
-                if ($filename === '' && preg_match('/\balt=(["\'])(.*?)\1/i', $attrs, $alt_matches)) {
-                    $filename = eottae_column_extract_editor_filename($alt_matches[2]);
-                }
-                if ($filename !== '') {
-                    $normalized_src = eottae_column_guess_uploaded_image_url($filename);
-                }
+            if ($normalized_src === '' || $normalized_src === '\\' || strcasecmp($normalized_src, '%5C') === 0) {
+                $normalized_src = eottae_column_resolve_image_src_from_tag($tag);
             }
 
             if ($normalized_src === '') {
-                return $matches[0];
+                return $tag;
             }
 
             $safe_src = htmlspecialchars($normalized_src, ENT_QUOTES, 'UTF-8');
