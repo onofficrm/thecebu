@@ -356,38 +356,46 @@
 /* ── 입력창 ── */
 .public-group-chat--kakao .public-group-chat__composer {
   flex: 0 0 auto;
-  padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
+  padding: 8px 10px calc(10px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid rgba(0, 0, 0, 0.08);
   background: var(--kakao-composer-bg);
 }
 
 .public-group-chat--kakao .public-group-chat__composer-field {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "input send"
+    "actions send";
   align-items: flex-end;
-  gap: 8px;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
+  gap: 7px 10px;
+  padding: 10px 10px 10px 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 10px 26px -24px rgba(15, 23, 42, 0.45);
 }
 
 .public-group-chat--kakao .public-group-chat__composer-field:focus-within {
-  border: 0;
-  background: transparent;
-  box-shadow: none;
+  border-color: rgba(254, 229, 0, 0.9);
+  box-shadow: 0 0 0 3px rgba(254, 229, 0, 0.18), 0 12px 28px -24px rgba(15, 23, 42, 0.55);
 }
 
 .public-group-chat--kakao .public-group-chat__composer-field .public-group-chat__input {
-  flex: 1 1 auto;
+  grid-area: input;
   min-height: 36px;
   max-height: 100px;
-  padding: 8px 4px;
+  padding: 0;
   border: 0;
   background: transparent;
   font-size: 0.88rem;
-  line-height: 1.4;
+  line-height: 1.45;
   color: var(--kakao-text);
   box-shadow: none;
+}
+
+.public-group-chat--kakao .public-group-chat__composer-field .public-group-chat__input::placeholder {
+  color: #8b95a1;
 }
 
 .public-group-chat--kakao .public-group-chat__composer-field .public-group-chat__input:focus {
@@ -396,15 +404,17 @@
 }
 
 .public-group-chat--kakao .public-group-chat__send {
+  grid-area: send;
+  align-self: center;
   min-height: 34px;
-  min-width: 52px;
-  padding: 0 14px;
-  border-radius: 18px;
+  min-width: 56px;
+  padding: 0 15px;
+  border-radius: 999px;
   font-size: 12px;
   font-weight: 800;
   color: var(--kakao-send-text);
   background: var(--kakao-send-bg);
-  box-shadow: none;
+  box-shadow: 0 8px 18px -14px rgba(17, 17, 17, 0.8);
 }
 
 .public-group-chat--kakao .public-group-chat__send:hover:not(:disabled) {
@@ -416,23 +426,41 @@
 }
 
 .public-group-chat--kakao .public-group-chat__quick-actions {
+  grid-area: actions;
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 7px;
+  gap: 7px;
+  min-width: 0;
+  margin-top: 0;
 }
 
 .public-group-chat--kakao .public-group-chat__life-ai {
   flex: 0 0 auto;
-  min-height: 30px;
-  padding: 0 11px;
-  border: 1px solid rgba(15, 23, 42, 0.14);
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(79, 70, 229, 0.14);
   border-radius: 999px;
-  background: #fff;
+  background: linear-gradient(180deg, #fff, #f8fafc);
   color: #334155;
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 900;
   cursor: pointer;
+  box-shadow: 0 8px 20px -18px rgba(79, 70, 229, 0.8);
+}
+
+.public-group-chat--kakao .public-group-chat__life-ai::before {
+  content: "AI";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  margin-right: 6px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 0.62rem;
+  font-weight: 900;
 }
 
 .public-group-chat--kakao .public-group-chat__life-ai:disabled {
@@ -443,8 +471,11 @@
 .public-group-chat--kakao .public-group-chat__life-ai-status {
   min-width: 0;
   color: #64748b;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .public-group-chat--kakao .public-group-chat__join {
@@ -468,6 +499,7 @@
 
 .public-group-chat--kakao .public-group-chat__composer--join .public-group-chat__composer-field {
   flex: 1 1 auto;
+  display: flex;
   min-width: 0;
   padding: 6px 8px;
   border-radius: 20px;
@@ -477,6 +509,7 @@
 
 .public-group-chat--kakao .public-group-chat__composer--pending .public-group-chat__composer-field,
 .public-group-chat--kakao .public-group-chat__composer--disabled .public-group-chat__composer-field {
+  display: flex;
   margin-top: 8px;
   padding: 6px 8px;
   border-radius: 20px;
@@ -604,6 +637,20 @@
   .public-group-chat--hero.public-group-chat--kakao .public-group-chat__messages {
     flex: 1 1 auto;
     min-height: 0 !important;
+  }
+
+  .public-group-chat--kakao .public-group-chat__composer-field {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "input"
+      "actions"
+      "send";
+  }
+
+  .public-group-chat--kakao .public-group-chat__send {
+    justify-self: end;
+    align-self: auto;
+    min-width: 72px;
   }
 }
 

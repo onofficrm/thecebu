@@ -98,11 +98,11 @@ if (!function_exists('eottae_public_group_chat_html')) {
                                 maxlength="500"
                                 placeholder="세부 소식, 질문, 한마디를 남겨 보세요"
                             ></textarea>
+                            <div class="public-group-chat__quick-actions">
+                                <button type="button" class="public-group-chat__life-ai eottae-ai-btn" data-public-chat-life-ai>세부 생활 질문</button>
+                                <span class="public-group-chat__life-ai-status" data-public-chat-life-ai-status aria-live="polite"></span>
+                            </div>
                             <button type="submit" class="public-group-chat__send" <?php echo empty($payload['can_send']) ? 'disabled' : ''; ?>>전송</button>
-                        </div>
-                        <div class="public-group-chat__quick-actions">
-                            <button type="button" class="public-group-chat__life-ai eottae-ai-btn" data-public-chat-life-ai>세부 생활 질문</button>
-                            <span class="public-group-chat__life-ai-status" data-public-chat-life-ai-status aria-live="polite"></span>
                         </div>
                     </form>
                     <?php } ?>

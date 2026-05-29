@@ -11703,7 +11703,11 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
 }
 
 .public-group-chat__composer-field {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "input send"
+    "actions send";
   align-items: flex-end;
   gap: 8px;
   padding: 8px 8px 8px 12px;
@@ -11719,7 +11723,7 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
 }
 
 .public-group-chat__composer-field .public-group-chat__input {
-  flex: 1 1 auto;
+  grid-area: input;
   width: auto;
   min-width: 0;
   min-height: 44px;
@@ -11738,9 +11742,16 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
 }
 
 .public-group-chat__composer-field .public-group-chat__send {
-  flex: 0 0 auto;
+  grid-area: send;
+  align-self: center;
   min-height: 36px;
   margin: 0;
+}
+
+.public-group-chat__composer-field .public-group-chat__quick-actions {
+  grid-area: actions;
+  min-width: 0;
+  margin-top: 0;
 }
 
 .public-group-chat__composer--login,
