@@ -18,13 +18,20 @@ $market_offer = (string) ($write['wr_8'] ?? '1') === '1';
 $market_map_show = (string) ($write['wr_9'] ?? '1') !== '0';
 $market_price = preg_replace('/[^0-9]/', '', (string) ($write['wr_1'] ?? ''));
 $market_content = isset($content) ? $content : '';
+$market_free_mode = (isset($_GET['free']) && (string) $_GET['free'] === '1')
+    || eottae_market_is_free_giveaway(array(
+        'wr_1'  => $write['wr_1'] ?? 0,
+        'wr_10' => $write['wr_10'] ?? '',
+    ));
 ?>
 
 <div class="market-write board-wrap board-wrap--eottae-market" id="bo_w" style="width:<?php echo $width; ?>">
     <header class="market-write__header">
         <a href="<?php echo $list_href; ?>" class="market-write__back">← 목록으로</a>
-        <h1 class="market-write__title"><?php echo $w === 'u' ? '상품 수정' : '중고물품 등록'; ?></h1>
-        <p class="market-write__desc">사진, 가격, 거래 위치만 빠르게 입력해보세요. 정확한 집 주소보다 근처 장소 중심으로 등록하는 것을 권장합니다.</p>
+        <h1 class="market-write__title"><?php echo $w === 'u' ? '상품 수정' : ($market_free_mode ? '무료나눔 등록' : '중고물품 등록'); ?></h1>
+        <p class="market-write__desc"><?php echo $market_free_mode
+            ? '필요 없는 물건을 무료로 나눠 주세요. 사진, 거래 위치, 연락방법만 입력하면 됩니다.'
+            : '사진, 가격, 거래 위치만 빠르게 입력해보세요. 정확한 집 주소보다 근처 장소 중심으로 등록하는 것을 권장합니다.'; ?></p>
     </header>
 
     <form name="fwrite" id="fwrite" class="market-write__form" action="<?php echo $action_url; ?>" onsubmit="return market_write_submit(this);" method="post" enctype="multipart/form-data" autocomplete="off">
@@ -45,11 +52,19 @@ $market_content = isset($content) ? $content : '';
             <input type="text" name="wr_subject" id="wr_subject" value="<?php echo $subject; ?>" required maxlength="255" class="market-input" placeholder="예: 삼성 냉장고 판매합니다">
         </div>
         <div class="market-field market-field--split">
-            <div>
+            <div class="market-price-mode" data-market-price-mode>
+                <span class="market-price-mode__label">등록 유형</span>
+                <div class="market-price-mode__buttons" role="group" aria-label="등록 유형 선택">
+                    <button type="button" class="market-price-mode__btn<?php echo !$market_free_mode ? ' is-active' : ''; ?>" data-market-price-mode="sell" aria-pressed="<?php echo !$market_free_mode ? 'true' : 'false'; ?>">판매</button>
+                    <button type="button" class="market-price-mode__btn market-price-mode__btn--free<?php echo $market_free_mode ? ' is-active' : ''; ?>" data-market-price-mode="free" aria-pressed="<?php echo $market_free_mode ? 'true' : 'false'; ?>">무료나눔</button>
+                </div>
+                <input type="hidden" name="market_free_giveaway" id="market_free_giveaway" value="<?php echo $market_free_mode ? '1' : '0'; ?>">
+            </div>
+            <div class="market-price-fields<?php echo $market_free_mode ? ' is-hidden' : ''; ?>" data-market-price-fields>
                 <label for="wr_1">가격 <span>*</span></label>
                 <div class="market-price-input">
                     <span>₱</span>
-                    <input type="number" name="wr_1" id="wr_1" value="<?php echo $market_price; ?>" required min="1" step="1" class="market-input" placeholder="3000">
+                    <input type="number" name="wr_1" id="wr_1" value="<?php echo $market_free_mode ? '' : $market_price; ?>"<?php echo $market_free_mode ? '' : ' required'; ?> min="1" step="1" class="market-input" placeholder="3000">
                 </div>
             </div>
             <div>
@@ -101,8 +116,8 @@ $market_content = isset($content) ? $content : '';
             <input type="text" name="wr_7" id="wr_7" value="<?php echo $market_contact; ?>" required class="market-input" maxlength="200" placeholder="카카오톡 ID / 전화번호 / 댓글문의 / 오픈채팅 링크">
             <p class="market-field__help">연락방법은 현재 상세페이지에 표시됩니다. 추후 회원전용 노출로 변경할 수 있습니다.</p>
         </div>
-        <label class="market-check">
-            <input type="checkbox" name="wr_8" value="1"<?php echo $market_offer ? ' checked' : ''; ?>>
+        <label class="market-check" data-market-offer-wrap<?php echo $market_free_mode ? ' hidden' : ''; ?>>
+            <input type="checkbox" name="wr_8" value="1" id="wr_8"<?php echo $market_offer ? ' checked' : ''; ?><?php echo $market_free_mode ? ' disabled' : ''; ?>>
             <span>가격제안 가능</span>
         </label>
     </section>
@@ -135,7 +150,7 @@ $market_content = isset($content) ? $content : '';
 
     <div class="market-write__actions">
         <a href="<?php echo $list_href; ?>" class="market-write__cancel">취소</a>
-        <button type="submit" id="btn_submit" class="market-write__submit"><?php echo $w === 'u' ? '수정하기' : '상품 등록'; ?></button>
+        <button type="submit" id="btn_submit" class="market-write__submit"><?php echo $w === 'u' ? '수정하기' : ($market_free_mode ? '무료나눔 등록' : '상품 등록'); ?></button>
     </div>
     </form>
 </div>
@@ -149,10 +164,12 @@ function market_write_submit(f) {
         f.wr_subject.focus();
         return false;
     }
-    if (!f.wr_1.value || Number(f.wr_1.value) < 1) {
-        alert('가격을 입력해 주세요.');
-        f.wr_1.focus();
-        return false;
+    if (!document.getElementById('market_free_giveaway') || document.getElementById('market_free_giveaway').value !== '1') {
+        if (!f.wr_1.value || Number(f.wr_1.value) < 1) {
+            alert('가격을 입력해 주세요.');
+            f.wr_1.focus();
+            return false;
+        }
     }
     if (!f.wr_4.value.trim()) {
         alert('거래 상세위치를 입력해 주세요.');

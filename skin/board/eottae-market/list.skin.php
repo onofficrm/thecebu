@@ -11,6 +11,10 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
 $write_label = '상품 등록';
 $cebu_map_url = G5_URL.'/cebu-map/?type=market';
 $cebu_map_near_url = $cebu_map_url.'&near=1';
+$market_free_filter_active = ($sfl === 'wr_10' && $stx === eottae_market_free_flag());
+$market_free_write_href = $write_href ? eottae_market_write_free_url($write_href) : '';
+$market_free_list_url = eottae_market_free_list_url();
+$market_all_list_url = eottae_market_list_url();
 ?>
 
 <div class="market-page board-wrap board-wrap--eottae-market" id="bo_list" style="width:<?php echo $width; ?>">
@@ -21,13 +25,20 @@ $cebu_map_near_url = $cebu_map_url.'&near=1';
             <p class="market-hero__desc">세부에서 필요한 물건을 가까운 위치 기준으로 쉽고 빠르게 거래해보세요.</p>
         </div>
         <?php if ($write_href) { ?>
-        <a href="<?php echo $write_href; ?>" class="market-hero__write"><?php echo $write_label; ?></a>
+        <div class="market-hero__actions">
+            <a href="<?php echo $write_href; ?>" class="market-hero__write"><?php echo $write_label; ?></a>
+            <?php if ($market_free_write_href !== '') { ?>
+            <a href="<?php echo get_text($market_free_write_href); ?>" class="market-hero__write market-hero__write--free">무료나눔</a>
+            <?php } ?>
+        </div>
         <?php } ?>
     </header>
 
-    <nav class="market-map-actions" aria-label="중고장터 지도 보기">
+    <nav class="market-map-actions" aria-label="중고장터 보기">
         <a href="<?php echo get_text($cebu_map_url); ?>" class="market-map-actions__btn market-map-actions__btn--primary">지도에서 보기</a>
         <a href="<?php echo get_text($cebu_map_near_url); ?>" class="market-map-actions__btn">내 주변 중고물품 보기</a>
+        <a href="<?php echo get_text($market_all_list_url); ?>" class="market-map-actions__btn<?php echo !$market_free_filter_active ? ' is-active' : ''; ?>">전체</a>
+        <a href="<?php echo get_text($market_free_list_url); ?>" class="market-map-actions__btn market-map-actions__btn--free<?php echo $market_free_filter_active ? ' is-active' : ''; ?>">무료나눔</a>
     </nav>
 
     <form name="fboardlist" id="fboardlist" action="<?php echo G5_BBS_URL; ?>/board_list_update.php" method="post">
@@ -45,7 +56,8 @@ $cebu_map_near_url = $cebu_map_url.'&near=1';
             $item = $list[$i];
             $thumb = eottae_market_thumb_url($bo_table, (int) $item['wr_id']);
             $status = eottae_market_normalize_status($item['wr_2'] ?? 'selling');
-            $price = eottae_market_format_price($item['wr_1'] ?? 0);
+            $price = eottae_market_format_price($item['wr_1'] ?? 0, $item['wr_10'] ?? '');
+            $is_free_giveaway = eottae_market_is_free_giveaway($item);
             $region = eottae_market_region_label($item['wr_3'] ?? '');
             $location = get_text($item['wr_4'] ?? '');
             $offer = eottae_market_offer_label($item['wr_8'] ?? '0');
@@ -65,7 +77,7 @@ $cebu_map_near_url = $cebu_map_url.'&near=1';
                 </div>
                 <div class="market-card__body">
                     <h2 class="market-card__title"><?php echo $item['subject']; ?></h2>
-                    <p class="market-card__price"><?php echo $price; ?></p>
+                    <p class="market-card__price<?php echo $is_free_giveaway ? ' market-card__price--free' : ''; ?>"><?php echo $price; ?></p>
                     <p class="market-card__meta">
                         <span><?php echo get_text($region); ?></span>
                         <?php if ($location !== '') { ?><span><?php echo $location; ?></span><?php } ?>
@@ -84,7 +96,12 @@ $cebu_map_near_url = $cebu_map_url.'&near=1';
     <div class="empty-state market-empty">
         <p class="empty-state__title">등록된 상품이 없습니다</p>
         <p>세부에서 거래할 첫 중고물품을 등록해보세요.</p>
-        <?php if ($write_href) { ?><a href="<?php echo $write_href; ?>" class="market-hero__write market-hero__write--inline">상품 등록</a><?php } ?>
+        <?php if ($write_href) { ?>
+        <div class="market-empty__actions">
+            <a href="<?php echo $write_href; ?>" class="market-hero__write market-hero__write--inline">상품 등록</a>
+            <a href="<?php echo get_text(eottae_market_write_free_url($write_href)); ?>" class="market-hero__write market-hero__write--inline market-hero__write--free">무료나눔</a>
+        </div>
+        <?php } ?>
     </div>
     <?php } ?>
 

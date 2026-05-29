@@ -52,9 +52,75 @@
     });
   }
 
+  function setMarketPriceMode(isFree) {
+    var flag = qs('#market_free_giveaway');
+    var priceFields = qs('[data-market-price-fields]');
+    var priceInput = qs('#wr_1');
+    var offerWrap = qs('[data-market-offer-wrap]');
+    var offerInput = qs('#wr_8');
+    var submitBtn = qs('#btn_submit');
+    var modeWrap = qs('[data-market-price-mode]');
+
+    if (flag) {
+      flag.value = isFree ? '1' : '0';
+    }
+    if (priceFields) {
+      priceFields.classList.toggle('is-hidden', isFree);
+    }
+    if (priceInput) {
+      priceInput.required = !isFree;
+      if (isFree) {
+        priceInput.value = '';
+      }
+    }
+    if (offerWrap) {
+      offerWrap.hidden = isFree;
+    }
+    if (offerInput) {
+      offerInput.disabled = isFree;
+      if (isFree) {
+        offerInput.checked = false;
+      }
+    }
+    if (submitBtn && submitBtn.textContent.indexOf('수정') === -1) {
+      submitBtn.textContent = isFree ? '무료나눔 등록' : '상품 등록';
+    }
+    if (modeWrap) {
+      modeWrap.querySelectorAll('[data-market-price-mode]').forEach(function (btn) {
+        if (btn.tagName !== 'BUTTON') {
+          return;
+        }
+        var mode = btn.getAttribute('data-market-price-mode');
+        var active = (mode === 'free') === isFree;
+        btn.classList.toggle('is-active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+    }
+  }
+
+  function initPriceMode() {
+    var wrap = qs('[data-market-price-mode]');
+    if (!wrap || wrap.dataset.bound === '1') {
+      return;
+    }
+    wrap.dataset.bound = '1';
+
+    var flag = qs('#market_free_giveaway');
+    setMarketPriceMode(flag && flag.value === '1');
+
+    wrap.addEventListener('click', function (event) {
+      var btn = event.target.closest('[data-market-price-mode]');
+      if (!btn || btn.tagName !== 'BUTTON') {
+        return;
+      }
+      setMarketPriceMode(btn.getAttribute('data-market-price-mode') === 'free');
+    });
+  }
+
   function init() {
     document.querySelectorAll('[data-market-status-panel]').forEach(initStatusPanel);
     initPhotoPreviews();
+    initPriceMode();
   }
 
   if (document.readyState === 'loading') {

@@ -5,6 +5,11 @@ $is_talkroom_board = function_exists('eottae_talkroom_board_table') && isset($bo
 if ($is_talkroom_board) {
     include_once G5_PATH.'/components/eottae/talk-ai-message-ui.php';
 }
+
+$comment_thread_css = G5_PATH.'/css/eottae-comment-thread.css';
+if (is_file($comment_thread_css)) {
+    add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-comment-thread.css?ver='.(int) filemtime($comment_thread_css).'">', 36);
+}
 ?>
 
 <script>
@@ -14,13 +19,13 @@ var char_max = parseInt(<?php echo $comment_max ?>);
 
 <button type="button" class="cmt_btn board-view__cmt-toggle"><span class="total"><b>댓글</b> <?php echo $view['wr_comment']; ?></span><span class="cmt_more"></span></button>
 
-<section id="bo_vc" class="board-view__comments">
+<section id="bo_vc" class="board-view__comments board-view__comments--threaded">
     <h2 class="sound_only">댓글목록</h2>
     <?php
     $cmt_amt = count($list);
     for ($i=0; $i<$cmt_amt; $i++) {
         $comment_id = $list[$i]['wr_id'];
-        $cmt_depth = strlen($list[$i]['wr_comment_reply']) * 50;
+        $cmt_depth_level = strlen($list[$i]['wr_comment_reply']);
         $comment = $list[$i]['content'];
         $comment = preg_replace("/\[\<a\s.*href\=\"(http|https|ftp|mms)\:\/\/([^[:space:]]+)\.(mp3|wma|wmv|asf|asx|mpg|mpeg)\".*\<\/a\>\]/i", "<script>doc_write(obj_movie('$1://$2.$3'));</script>", $comment);
         $cmt_sv = $cmt_amt - $i + 1;
@@ -28,62 +33,75 @@ var char_max = parseInt(<?php echo $comment_max ?>);
         $c_edit_href = $comment_common_url.'&amp;c_id='.$comment_id.'&amp;w=cu#bo_vc_w';
         $is_comment_reply_edit = ($list[$i]['is_reply'] || $list[$i]['is_edit'] || $list[$i]['is_del']) ? 1 : 0;
         $is_ai_comment = $is_talkroom_board && function_exists('eottae_talkroom_ai_message_is_ai') && eottae_talkroom_ai_message_is_ai($list[$i]);
-        $comment_class = 'board-view__comment';
+        $comment_class = 'board-view__comment board-view__comment--depth-'.$cmt_depth_level;
         if ($is_ai_comment) {
             $comment_class .= ' board-view__comment--ai is-talk-ai-message talk-ai-msg__comment';
         }
+        $cmt_plain_name = get_text(strip_tags($list[$i]['name']));
+        $cmt_parent_name = '';
+        if ($cmt_depth_level > 0) {
+            $parent_reply_key = substr($list[$i]['wr_comment_reply'], 0, -1);
+            for ($pj = $i - 1; $pj >= 0; $pj--) {
+                if (($list[$pj]['wr_comment_reply'] ?? '') === $parent_reply_key) {
+                    $cmt_parent_name = get_text(strip_tags($list[$pj]['name'] ?? ''));
+                    break;
+                }
+            }
+        }
+        $cmt_time_label = function_exists('eottae_community_relative_time')
+            ? eottae_community_relative_time($list[$i]['datetime'])
+            : $list[$i]['datetime'];
     ?>
-    <article id="c_<?php echo $comment_id ?>" class="<?php echo $comment_class; ?>" <?php if ($cmt_depth) { ?>style="margin-left:<?php echo $cmt_depth ?>px"<?php } ?>>
-        <div class="pf_img"><?php echo $is_ai_comment ? '<span class="talk-ai-msg__avatar" aria-hidden="true">🤖</span>' : get_member_profile_img($list[$i]['mb_id']); ?></div>
-        <div class="cm_wrap">
-            <header style="z-index:<?php echo $cmt_sv; ?>">
-                <h3 class="sound_only"><?php echo get_text($list[$i]['wr_name']); ?>님의 댓글</h3>
-                <?php if ($is_ai_comment) { ?>
-                <span class="talk-ai-msg__comment-head"><?php echo eottae_talkroom_ai_message_render_badge($list[$i], 'sm'); ?></span>
-                <?php } elseif (function_exists('eottae_member_growth_render_author_line') && !empty($list[$i]['mb_id'])) { ?>
-                <?php echo eottae_member_growth_render_author_line($list[$i]['mb_id'], $list[$i]['name'], array('inline' => true, 'badge_only' => true)); ?>
-                <?php } else { ?>
-                <?php echo $list[$i]['name'] ?>
-                <?php } ?>
-                <?php if ($is_ip_view) { ?><span class="sound_only">아이피</span><span>(<?php echo $list[$i]['ip']; ?>)</span><?php } ?>
-                <span class="bo_vc_hdinfo"><i class="fa fa-clock-o" aria-hidden="true"></i>
-                    <time datetime="<?php echo date('Y-m-d\TH:i:s+09:00', strtotime($list[$i]['datetime'])) ?>"><?php echo $list[$i]['datetime'] ?></time>
-                </span>
-                <?php include(G5_SNS_PATH.'/view_comment_list.sns.skin.php'); ?>
-            </header>
-            <div class="cmt_contents<?php echo $is_ai_comment ? ' talk-ai-msg__comment-body' : ''; ?>">
-                <p>
-                    <?php if (strstr($list[$i]['wr_option'], 'secret')) { ?><i class="fa fa-lock" aria-hidden="true" title="비밀댓글"></i><span class="sound_only">비밀글</span><?php } ?>
-                    <?php echo $comment ?>
-                </p>
+    <article id="c_<?php echo $comment_id ?>" class="<?php echo $comment_class; ?>" style="--cmt-depth:<?php echo (int) $cmt_depth_level; ?>">
+        <div class="board-view__comment-thread">
+            <?php if ($cmt_depth_level > 0) { ?><div class="board-view__comment-rail" aria-hidden="true"></div><?php } ?>
+            <div class="board-view__comment-main">
+                <div class="pf_img"><?php echo $is_ai_comment ? '<span class="talk-ai-msg__avatar" aria-hidden="true">🤖</span>' : get_member_profile_img($list[$i]['mb_id']); ?></div>
+                <div class="cm_wrap">
+                    <header class="board-view__comment-head" style="z-index:<?php echo $cmt_sv; ?>">
+                        <h3 class="sound_only"><?php echo get_text($list[$i]['wr_name']); ?>님의 댓글</h3>
+                        <?php if ($is_ai_comment) { ?>
+                        <span class="talk-ai-msg__comment-head"><?php echo eottae_talkroom_ai_message_render_badge($list[$i], 'sm'); ?></span>
+                        <?php } elseif (function_exists('eottae_member_growth_render_author_line') && !empty($list[$i]['mb_id'])) { ?>
+                        <?php echo eottae_member_growth_render_author_line($list[$i]['mb_id'], $cmt_plain_name, array('inline' => true)); ?>
+                        <?php } else { ?>
+                        <strong class="board-view__comment-author"><?php echo $list[$i]['name']; ?></strong>
+                        <?php } ?>
+                        <?php if ($is_ip_view) { ?><span class="sound_only">아이피</span><span>(<?php echo $list[$i]['ip']; ?>)</span><?php } ?>
+                        <time class="board-view__comment-time" datetime="<?php echo date('Y-m-d\TH:i:s+09:00', strtotime($list[$i]['datetime'])) ?>"><?php echo get_text($cmt_time_label); ?></time>
+                        <?php include(G5_SNS_PATH.'/view_comment_list.sns.skin.php'); ?>
+                    </header>
+                    <?php if ($cmt_parent_name !== '') { ?>
+                    <p class="board-view__comment-parent"><strong>@<?php echo get_text($cmt_parent_name); ?></strong>님에게 답글</p>
+                    <?php } ?>
+                    <div class="cmt_contents<?php echo $is_ai_comment ? ' talk-ai-msg__comment-body' : ''; ?>">
+                        <p>
+                            <?php if (strstr($list[$i]['wr_option'], 'secret')) { ?><i class="fa fa-lock" aria-hidden="true" title="비밀댓글"></i><span class="sound_only">비밀글</span><?php } ?>
+                            <?php echo $comment ?>
+                        </p>
+                    </div>
+                    <?php if ($is_comment_reply_edit) { ?>
+                    <footer class="board-view__comment-actions">
+                        <?php if ($list[$i]['is_reply']) { ?>
+                        <button type="button" class="board-view__comment-action board-view__comment-action--reply" onclick="comment_box('<?php echo $comment_id; ?>', 'c', <?php echo json_encode($cmt_plain_name, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE); ?>); return false;">
+                            <span class="board-view__comment-action-icon" aria-hidden="true">↩</span>댓글
+                        </button>
+                        <?php } ?>
+                        <?php if ($list[$i]['is_edit']) { ?>
+                        <button type="button" class="board-view__comment-action" onclick="comment_box('<?php echo $comment_id; ?>', 'cu'); return false;">수정</button>
+                        <?php } ?>
+                        <?php if ($list[$i]['is_del']) { ?>
+                        <a href="<?php echo $list[$i]['del_link']; ?>" class="board-view__comment-action" onclick="return comment_delete();">삭제</a>
+                        <?php } ?>
+                    </footer>
+                    <?php } ?>
+                    <span id="edit_<?php echo $comment_id ?>" class="bo_vc_w"></span>
+                    <span id="reply_<?php echo $comment_id ?>" class="bo_vc_w"></span>
+                    <input type="hidden" value="<?php echo strstr($list[$i]['wr_option'],'secret') ?>" id="secret_comment_<?php echo $comment_id ?>">
+                    <textarea id="save_comment_<?php echo $comment_id ?>" style="display:none"><?php echo get_text($list[$i]['content1'], 0) ?></textarea>
+                </div>
             </div>
-            <span id="edit_<?php echo $comment_id ?>" class="bo_vc_w"></span>
-            <span id="reply_<?php echo $comment_id ?>" class="bo_vc_w"></span>
-            <input type="hidden" value="<?php echo strstr($list[$i]['wr_option'],'secret') ?>" id="secret_comment_<?php echo $comment_id ?>">
-            <textarea id="save_comment_<?php echo $comment_id ?>" style="display:none"><?php echo get_text($list[$i]['content1'], 0) ?></textarea>
         </div>
-        <?php if ($is_comment_reply_edit) { ?>
-        <div class="bo_vl_opt">
-            <button type="button" class="btn_cm_opt btn_b01 btn"><i class="fa fa-ellipsis-v" aria-hidden="true"></i><span class="sound_only">댓글 옵션</span></button>
-            <ul class="bo_vc_act">
-                <?php if ($list[$i]['is_reply']) { ?><li><a href="<?php echo $c_reply_href; ?>" onclick="comment_box('<?php echo $comment_id ?>', 'c'); return false;">답변</a></li><?php } ?>
-                <?php if ($list[$i]['is_edit']) { ?><li><a href="<?php echo $c_edit_href; ?>" onclick="comment_box('<?php echo $comment_id ?>', 'cu'); return false;">수정</a></li><?php } ?>
-                <?php if ($list[$i]['is_del']) { ?><li><a href="<?php echo $list[$i]['del_link']; ?>" onclick="return comment_delete();">삭제</a></li><?php } ?>
-            </ul>
-        </div>
-        <script>
-        $(function() {
-            $(".btn_cm_opt").on("click", function(){
-                $(this).parent("div").children(".bo_vc_act").show();
-            });
-            $(document).mouseup(function (e){
-                var container = $(".bo_vc_act");
-                if (container.has(e.target).length === 0)
-                    container.hide();
-            });
-        });
-        </script>
-        <?php } ?>
     </article>
     <?php } ?>
     <?php if ($i == 0) { ?><p id="bo_vc_empty" class="board-view__comments-empty">등록된 댓글이 없습니다.</p><?php } ?>
@@ -95,6 +113,7 @@ var char_max = parseInt(<?php echo $comment_max ?>);
 ?>
 <aside id="bo_vc_w" class="bo_vc_w board-view__comment-form">
     <h2 class="board-view__section-title">댓글쓰기</h2>
+    <p id="comment_reply_target" class="board-view__comment-reply-target" hidden></p>
     <form name="fviewcomment" id="fviewcomment" action="<?php echo $comment_action_url; ?>" onsubmit="return fviewcomment_submit(this);" method="post" autocomplete="off">
     <input type="hidden" name="w" value="<?php echo $w ?>" id="w">
     <input type="hidden" name="bo_table" value="<?php echo $bo_table ?>">
@@ -219,9 +238,11 @@ function fviewcomment_submit(f)
     return true;
 }
 
-function comment_box(comment_id, work)
+function comment_box(comment_id, work, reply_name)
 {
     var el_id, form_el = 'fviewcomment', respond = document.getElementById(form_el);
+    var replyTarget = document.getElementById('comment_reply_target');
+    var contentInput = document.getElementById('wr_content');
     if (comment_id) {
         if (work == 'c')
             el_id = 'reply_' + comment_id;
@@ -231,13 +252,26 @@ function comment_box(comment_id, work)
         el_id = 'bo_vc_w';
     }
     if (save_before != el_id) {
-        if (save_before)
-            document.getElementById(save_before).style.display = 'none';
-        document.getElementById(el_id).style.display = '';
-        document.getElementById(el_id).appendChild(respond);
-        document.getElementById('wr_content').value = '';
-        if (work == 'cu') {
-            document.getElementById('wr_content').value = document.getElementById('save_comment_' + comment_id).value;
+        if (save_before) {
+            var prevHost = document.getElementById(save_before);
+            if (prevHost) {
+                prevHost.style.display = 'none';
+                prevHost.classList.remove('board-view__comment-form--inline');
+            }
+        }
+        var nextHost = document.getElementById(el_id);
+        if (nextHost) {
+            nextHost.style.display = '';
+            if (el_id !== 'bo_vc_w') {
+                nextHost.classList.add('board-view__comment-form--inline');
+            }
+            nextHost.appendChild(respond);
+        }
+        if (contentInput) {
+            contentInput.value = '';
+        }
+        if (work == 'cu' && contentInput) {
+            contentInput.value = document.getElementById('save_comment_' + comment_id).value;
             if (typeof char_count != 'undefined')
                 check_byte('wr_content', 'char_count');
             if (document.getElementById('secret_comment_'+comment_id).value)
@@ -247,9 +281,28 @@ function comment_box(comment_id, work)
         }
         document.getElementById('comment_id').value = comment_id;
         document.getElementById('w').value = work;
+        if (replyTarget) {
+            if (work == 'c' && comment_id && reply_name) {
+                replyTarget.textContent = reply_name + '님에게 답글';
+                replyTarget.hidden = false;
+            } else {
+                replyTarget.textContent = '';
+                replyTarget.hidden = true;
+            }
+        }
+        if (contentInput) {
+            if (work == 'c' && comment_id && reply_name) {
+                contentInput.placeholder = reply_name + '님에게 답글을 남겨보세요';
+            } else {
+                contentInput.placeholder = '댓글내용을 입력해주세요';
+            }
+        }
         if (save_before)
             $("#captcha_reload").trigger("click");
         save_before = el_id;
+        if (contentInput) {
+            contentInput.focus();
+        }
     }
 }
 

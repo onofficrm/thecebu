@@ -175,7 +175,7 @@ if (!function_exists('eottae_community_render_report_script')) {
             btn.addEventListener('click', function () {
               openReportModal({ targetType: item.target_type, targetId: item.target_id });
             });
-            var actions = host.querySelector('.bo_vc_act');
+            var actions = host.querySelector('.board-view__comment-actions') || host.querySelector('.bo_vc_act');
             if (actions) {
               var li = document.createElement('li');
               li.appendChild(btn);

@@ -17,6 +17,7 @@ $market_offer = eottae_market_offer_label($view['wr_8'] ?? '0');
 $market_map_show = (string) ($view['wr_9'] ?? '1') !== '0';
 $market_can_change = eottae_market_can_change_status($view, $member['mb_id'] ?? '', !empty($is_admin));
 $market_status_proc = G5_URL.'/proc/eottae-market-status.php';
+$market_is_free = eottae_market_is_free_giveaway($view);
 ?>
 
 <div class="market-view board-wrap board-wrap--eottae-market" id="bo_v" style="width:<?php echo $width; ?>">
@@ -43,10 +44,11 @@ $market_status_proc = G5_URL.'/proc/eottae-market-status.php';
         <section class="market-view__summary">
             <div class="market-view__badges">
                 <?php echo eottae_market_render_status_badge($market_status, 'market-status-badge--view'); ?>
-                <span class="market-offer-badge"><?php echo get_text($market_offer); ?></span>
+                <?php if ($market_is_free) { ?><span class="market-free-badge">무료나눔</span><?php } ?>
+                <?php if (!$market_is_free) { ?><span class="market-offer-badge"><?php echo get_text($market_offer); ?></span><?php } ?>
             </div>
             <h1 class="market-view__title"><?php echo get_text($view['wr_subject']); ?></h1>
-            <p class="market-view__price"><?php echo eottae_market_format_price($view['wr_1'] ?? 0); ?></p>
+            <p class="market-view__price<?php echo $market_is_free ? ' market-view__price--free' : ''; ?>"><?php echo eottae_market_format_price($view['wr_1'] ?? 0, $view['wr_10'] ?? ''); ?></p>
             <dl class="market-view__meta">
                 <div>
                     <dt>지역</dt>

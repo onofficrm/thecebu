@@ -58,6 +58,29 @@
   cursor: pointer;
 }
 
+.market-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.market-hero__write--free {
+  background: #f59e0b;
+}
+
+.market-hero__write--free:hover {
+  color: #fff;
+}
+
+.market-empty__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 0.75rem;
+}
+
 .market-map-actions {
   display: flex;
   flex-wrap: wrap;
@@ -84,6 +107,19 @@
   border-color: #0ea5e9;
   background: #0ea5e9;
   color: #fff;
+}
+
+.market-map-actions__btn--free.is-active,
+.market-map-actions__btn.is-active {
+  border-color: #0f172a;
+  background: #0f172a;
+  color: #fff;
+}
+
+.market-map-actions__btn--free {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #b45309;
 }
 
 .market-grid {
@@ -189,6 +225,11 @@
   color: #0f172a;
 }
 
+.market-card__price--free,
+.market-view__price--free {
+  color: #b45309;
+}
+
 .market-card__meta,
 .market-card__foot {
   display: flex;
@@ -261,6 +302,63 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
+}
+
+.market-price-mode {
+  display: grid;
+  gap: 0.45rem;
+  grid-column: 1 / -1;
+}
+
+.market-price-mode__label {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.market-price-mode__buttons {
+  display: inline-flex;
+  gap: 0.45rem;
+}
+
+.market-price-mode__btn {
+  min-height: 38px;
+  padding: 0 0.9rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #fff;
+  color: #475569;
+  font-size: 0.84rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.market-price-mode__btn.is-active {
+  border-color: #0f172a;
+  background: #0f172a;
+  color: #fff;
+}
+
+.market-price-mode__btn--free.is-active {
+  border-color: #f59e0b;
+  background: #f59e0b;
+  color: #fff;
+}
+
+.market-price-fields.is-hidden {
+  display: none;
+}
+
+.market-free-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 0.55rem;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 .market-field label {
@@ -599,6 +697,18 @@
     flex-direction: column;
     border-radius: 18px;
     padding: 1.05rem;
+  }
+
+  .market-hero__actions {
+    width: 100%;
+  }
+
+  .market-hero__write {
+    flex: 1 1 auto;
+  }
+
+  .market-field--split {
+    grid-template-columns: 1fr;
   }
 
   .market-grid {

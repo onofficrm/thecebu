@@ -163,7 +163,7 @@ if (!function_exists('cebu_map_market_markers')) {
             if (!$marker) {
                 continue;
             }
-            $marker['price'] = eottae_market_format_price($row['wr_1'] ?? 0);
+            $marker['price'] = eottae_market_format_price($row['wr_1'] ?? 0, $row['wr_10'] ?? '');
             $marker['price_num'] = (int) preg_replace('/[^0-9]/', '', (string) ($row['wr_1'] ?? ''));
             $marker['status_key'] = $status_key;
             $marker['status'] = eottae_market_status_label($status_key);

@@ -9,6 +9,7 @@ include_once(G5_LIB_PATH.'/eottae-community-hub.lib.php');
 include_once(G5_LIB_PATH.'/eottae-event-template.lib.php');
 include_once(G5_LIB_PATH.'/eottae-report.lib.php');
 include_once(G5_LIB_PATH.'/eottae-report-template.lib.php');
+include_once(G5_LIB_PATH.'/eottae-review-board.lib.php');
 include_once(G5_LIB_PATH.'/eottae-board-write-mobile.lib.php');
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
 if (function_exists('eottae_board_write_enqueue_mobile_css')) {
@@ -20,9 +21,13 @@ $is_estate_board_write = function_exists('eottae_is_estate_board') && eottae_is_
 $is_free_board_write = function_exists('eottae_is_free_board') && eottae_is_free_board($bo_table);
 $is_event_board_write = function_exists('eottae_is_event_board') && eottae_is_event_board($bo_table);
 $is_report_board_write = function_exists('eottae_is_report_board') && eottae_is_report_board($bo_table);
+$is_review_board_write = function_exists('eottae_is_review_board') && eottae_is_review_board($bo_table);
 $is_community_hub_write = function_exists('eottae_is_community_hub_board') && eottae_is_community_hub_board($bo_table);
 if ($is_report_board_write && function_exists('eottae_report_board_load_assets')) {
     eottae_report_board_load_assets();
+}
+if ($is_review_board_write && function_exists('eottae_review_board_load_assets')) {
+    eottae_review_board_load_assets();
 }
 $hub_board_def = $is_community_hub_write ? eottae_community_hub_board_def($bo_table) : null;
 $community_tabs = $is_community_hub_write ? array() : eottae_community_category_tabs($board);
@@ -143,6 +148,8 @@ $file_count = eottae_community_write_photo_count($board, $file_count);
         include G5_PATH.'/components/eottae/event-write-template.php';
     } elseif ($is_report_board_write) {
         include G5_PATH.'/components/eottae/report-write-template.php';
+    } elseif ($is_review_board_write) {
+        include G5_PATH.'/components/eottae/review-write-template.php';
     } else { ?>
     <div class="community-write-page__field">
         <label for="wr_subject">제목</label>

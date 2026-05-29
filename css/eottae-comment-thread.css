@@ -1,0 +1,192 @@
+@charset "utf-8";
+
+.board-view__comments--threaded .board-view__comment {
+  margin: 0;
+  padding: 0;
+  border-bottom: 0;
+}
+
+.board-view__comment-thread {
+  display: flex;
+  gap: 0;
+  margin-left: calc(var(--cmt-depth, 0) * 24px);
+}
+
+.board-view__comment-rail {
+  position: relative;
+  flex: 0 0 22px;
+  margin-right: 6px;
+}
+
+.board-view__comment-rail::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e2e8f0;
+}
+
+.board-view__comment-rail::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 24px;
+  width: 10px;
+  height: 10px;
+  border-left: 2px solid #e2e8f0;
+  border-bottom: 2px solid #e2e8f0;
+  border-bottom-left-radius: 8px;
+}
+
+.board-view__comment-main {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  padding: 12px 0;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.board-view__comments--threaded .board-view__comment:last-child .board-view__comment-main {
+  border-bottom: 0;
+}
+
+.board-view__comment .pf_img {
+  flex: 0 0 36px;
+}
+
+.board-view__comment .pf_img img,
+.board-view__comment .pf_img .talk-ai-msg__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.board-view__comment .cm_wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.board-view__comment-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.55rem;
+  margin-bottom: 0.35rem;
+}
+
+.board-view__comment-head .sebu-author-line {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.board-view__comment-head .sebu-author-line__level,
+.board-view__comment-head .sebu-level-chip {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.board-view__comment-time {
+  font-size: 0.76rem;
+  color: #94a3b8;
+}
+
+.board-view__comment-parent {
+  margin: 0 0 0.25rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.board-view__comment-parent strong {
+  color: #334155;
+}
+
+.board-view__comment .cmt_contents {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: #1e293b;
+  word-break: break-word;
+}
+
+.board-view__comment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.65rem;
+  margin-top: 0.55rem;
+}
+
+.board-view__comment-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.board-view__comment-action:hover,
+.board-view__comment-action:focus-visible {
+  color: #0f172a;
+}
+
+.board-view__comment-action--reply {
+  color: #0369a1;
+}
+
+.board-view__comment-action-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.board-view__comment .bo_vc_w {
+  display: block;
+  width: 100%;
+  margin-top: 0.55rem;
+}
+
+.board-view__comment-reply-target {
+  margin: 0 0 0.45rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0369a1;
+}
+
+.board-view__comment-form--inline {
+  margin-top: 0.35rem;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.board-view__comment-form--inline .board-view__section-title {
+  margin: 0 0 0.45rem;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 640px) {
+  .board-view__comment-thread {
+    margin-left: calc(var(--cmt-depth, 0) * 18px);
+  }
+
+  .board-view__comment-rail {
+    flex-basis: 16px;
+    margin-right: 4px;
+  }
+
+  .board-view__comment-main {
+    gap: 8px;
+  }
+}

@@ -1800,6 +1800,60 @@ if (!function_exists('eottae_on_event_write_before')) {
 }
 add_event('write_update_before', 'eottae_on_event_write_before', 14, 4);
 
+if (!function_exists('eottae_on_review_write_before')) {
+    function eottae_on_review_write_before($board, $wr_id, $w, $qstr)
+    {
+        if (empty($board['bo_table']) || !function_exists('eottae_is_review_board') || !eottae_is_review_board($board['bo_table'])) {
+            return;
+        }
+
+        if (!function_exists('eottae_review_board_validate_write_post')) {
+            include_once G5_LIB_PATH.'/eottae-review-board.lib.php';
+        }
+
+        global $member, $is_admin;
+
+        $check = eottae_review_board_validate_write_post($_POST, $member ?? array(), $is_admin ?? '', (int) $wr_id, (string) $w);
+        if (empty($check['ok'])) {
+            alert($check['message'] ?? '입력값을 확인해 주세요.');
+        }
+
+        eottae_review_board_apply_write_post($check['normalized'] ?? array());
+    }
+}
+add_event('write_update_before', 'eottae_on_review_write_before', 14, 4);
+
+if (!function_exists('eottae_review_on_write_update_after')) {
+    function eottae_review_on_write_update_after($board, $wr_id, $w, $qstr, $redirect_url)
+    {
+        if (empty($board['bo_table']) || !function_exists('eottae_is_review_board') || !eottae_is_review_board($board['bo_table'])) {
+            return;
+        }
+
+        if (!function_exists('eottae_review_board_after_write')) {
+            include_once G5_LIB_PATH.'/eottae-review-board.lib.php';
+        }
+
+        $write_table = get_write_table_name($board['bo_table']);
+        $row = get_write($write_table, (int) $wr_id, true);
+        if (!is_array($row) || empty($row['wr_id'])) {
+            return;
+        }
+
+        $normalized = eottae_review_board_normalize_write_post(array(
+            'eottae_review_shop_wr_id'     => $row['wr_1'] ?? 0,
+            'eottae_review_shop_bo_table'  => $row['wr_6'] ?? '',
+            'eottae_review_shop_name'      => $row['wr_3'] ?? '',
+            'wr_2'                         => $row['wr_2'] ?? 0,
+        ), true);
+
+        if (!empty($normalized['ok'])) {
+            eottae_review_board_after_write((int) $wr_id, $normalized);
+        }
+    }
+}
+add_event('write_update_after', 'eottae_review_on_write_update_after', 13, 5);
+
 if (!function_exists('eottae_on_report_write_before')) {
     function eottae_on_report_write_before($board, $wr_id, $w, $qstr)
     {

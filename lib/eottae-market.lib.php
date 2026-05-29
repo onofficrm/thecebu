@@ -19,7 +19,7 @@ if (!function_exists('sanitize_location_fields') && is_file(G5_LIB_PATH.'/eottae
  * wr_7  연락방법
  * wr_8  가격제안 가능 여부 1|0
  * wr_9  지도표시 여부 1|0
- * wr_10 예비
+ * wr_10 free = 무료나눔
  */
 
 if (!function_exists('eottae_market_board_table')) {
@@ -151,12 +151,82 @@ if (!function_exists('eottae_market_detect_region')) {
     }
 }
 
-if (!function_exists('eottae_market_format_price')) {
-    function eottae_market_format_price($price)
+if (!function_exists('eottae_market_free_flag')) {
+    function eottae_market_free_flag()
     {
+        return 'free';
+    }
+}
+
+if (!function_exists('eottae_market_is_free_giveaway')) {
+    /**
+     * @param array<string, mixed>|int|string $price_or_row
+     */
+    function eottae_market_is_free_giveaway($price_or_row, $wr_10 = '')
+    {
+        if (is_array($price_or_row)) {
+            $wr_10 = (string) ($price_or_row['wr_10'] ?? '');
+            $price_or_row = $price_or_row['wr_1'] ?? 0;
+        }
+
+        if ((string) $wr_10 === eottae_market_free_flag()) {
+            return true;
+        }
+
+        return (int) preg_replace('/[^0-9]/', '', (string) $price_or_row) < 1;
+    }
+}
+
+if (!function_exists('eottae_market_format_price')) {
+    function eottae_market_format_price($price, $wr_10 = '')
+    {
+        if (eottae_market_is_free_giveaway($price, $wr_10)) {
+            return '무료나눔';
+        }
+
         $price = (int) preg_replace('/[^0-9]/', '', (string) $price);
 
         return '₱'.number_format($price);
+    }
+}
+
+if (!function_exists('eottae_market_list_url')) {
+    function eottae_market_list_url(array $params = array())
+    {
+        $bo_table = eottae_market_board_table();
+        $url = function_exists('get_pretty_url')
+            ? get_pretty_url($bo_table)
+            : G5_BBS_URL.'/board.php?bo_table='.$bo_table;
+
+        if (empty($params)) {
+            return $url;
+        }
+
+        $query = http_build_query($params);
+
+        return $url.(strpos($url, '?') !== false ? '&' : '?').$query;
+    }
+}
+
+if (!function_exists('eottae_market_free_list_url')) {
+    function eottae_market_free_list_url()
+    {
+        return eottae_market_list_url(array(
+            'sfl' => 'wr_10',
+            'stx' => eottae_market_free_flag(),
+        ));
+    }
+}
+
+if (!function_exists('eottae_market_write_free_url')) {
+    function eottae_market_write_free_url($write_href = '')
+    {
+        $write_href = trim((string) $write_href);
+        if ($write_href === '') {
+            $write_href = G5_BBS_URL.'/write.php?bo_table='.eottae_market_board_table();
+        }
+
+        return $write_href.(strpos($write_href, '?') !== false ? '&' : '?').'free=1';
     }
 }
 
@@ -182,8 +252,11 @@ if (!function_exists('eottae_market_validate_write_post')) {
             return array('ok' => false, 'message' => '상품명을 입력해 주세요.');
         }
 
+        $is_free = !empty($post['market_free_giveaway'])
+            || (string) ($post['wr_10'] ?? '') === eottae_market_free_flag();
+
         $price = (int) preg_replace('/[^0-9]/', '', (string) ($post['wr_1'] ?? ''));
-        if ($price < 1) {
+        if (!$is_free && $price < 1) {
             return array('ok' => false, 'message' => '가격을 입력해 주세요.');
         }
 
@@ -209,8 +282,18 @@ if (!function_exists('eottae_market_validate_write_post')) {
 if (!function_exists('eottae_market_normalize_write_post')) {
     function eottae_market_normalize_write_post(array $post)
     {
+        $is_free = !empty($post['market_free_giveaway'])
+            || (string) ($post['wr_10'] ?? '') === eottae_market_free_flag();
+
         $out = array();
-        $out['wr_1'] = (string) max(0, (int) preg_replace('/[^0-9]/', '', (string) ($post['wr_1'] ?? '')));
+        if ($is_free) {
+            $out['wr_1'] = '0';
+            $out['wr_8'] = '0';
+            $out['wr_10'] = eottae_market_free_flag();
+        } else {
+            $out['wr_1'] = (string) max(0, (int) preg_replace('/[^0-9]/', '', (string) ($post['wr_1'] ?? '')));
+            $out['wr_10'] = '';
+        }
         $out['wr_2'] = eottae_market_normalize_status($post['wr_2'] ?? 'selling');
         $location = sanitize_location_fields($post, array(
             'auto_area'     => 'wr_3',
@@ -227,9 +310,10 @@ if (!function_exists('eottae_market_normalize_write_post')) {
         if (function_exists('cut_str') && $out['wr_7'] !== '') {
             $out['wr_7'] = cut_str($out['wr_7'], 200, '');
         }
-        $out['wr_8'] = !empty($post['wr_8']) && (string) $post['wr_8'] === '1' ? '1' : '0';
+        if (!$is_free) {
+            $out['wr_8'] = !empty($post['wr_8']) && (string) $post['wr_8'] === '1' ? '1' : '0';
+        }
         $out['wr_9'] = $location['map_visible'];
-        $out['wr_10'] = isset($post['wr_10']) ? trim(strip_tags((string) $post['wr_10'])) : '';
 
         return $out;
     }
@@ -375,7 +459,7 @@ if (!function_exists('eottae_market_board_def')) {
             'bo_7_subj'           => '연락방법',
             'bo_8_subj'           => '가격제안 가능 여부',
             'bo_9_subj'           => '지도표시 여부',
-            'bo_10_subj'          => '예비',
+            'bo_10_subj'          => '무료나눔 여부',
         );
     }
 }

@@ -10,6 +10,7 @@ include_once(G5_LIB_PATH.'/eottae-event-template.lib.php');
 include_once(G5_LIB_PATH.'/eottae-event.lib.php');
 include_once(G5_LIB_PATH.'/eottae-report.lib.php');
 include_once(G5_LIB_PATH.'/eottae-report-template.lib.php');
+include_once(G5_LIB_PATH.'/eottae-review-board.lib.php');
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
 
 $is_estate_board_view = function_exists('eottae_is_estate_board') && eottae_is_estate_board($bo_table);
@@ -44,6 +45,16 @@ if ($is_estate_board_view) {
 $is_job_board_view = function_exists('eottae_is_job_board') && eottae_is_job_board($bo_table);
 $is_event_board_view = function_exists('eottae_is_event_board') && eottae_is_event_board($bo_table);
 $is_report_board_view = function_exists('eottae_is_report_board') && eottae_is_report_board($bo_table);
+$is_review_board_view = function_exists('eottae_is_review_board') && eottae_is_review_board($bo_table);
+$review_shop = null;
+$review_rating = 0;
+if ($is_review_board_view) {
+    if (function_exists('eottae_review_board_load_assets')) {
+        eottae_review_board_load_assets();
+    }
+    $review_shop = eottae_review_board_shop_from_write($view);
+    $review_rating = (int) ($view['wr_2'] ?? 0);
+}
 $report_status = 'received';
 $report_type = 'other';
 $report_region_label = '';
@@ -266,6 +277,36 @@ if ($is_ai_post) {
             <button type="button" class="event-close-panel__btn" data-event-close-btn>이벤트 종료하기</button>
         </div>
         <?php } ?>
+        <?php } ?>
+
+        <?php if ($is_review_board_view && (is_array($review_shop) || ($review_rating >= 1 && $review_rating <= 5))) { ?>
+        <div class="review-info-panel">
+            <div class="review-info-panel__head">
+                <?php if (is_array($review_shop) && !empty($review_shop['name'])) { ?>
+                <p class="review-info-panel__shop-name"><?php echo get_text($review_shop['name']); ?></p>
+                <?php } ?>
+                <?php if ($review_rating >= 1 && $review_rating <= 5) { ?>
+                <span class="review-info-panel__stars" aria-label="<?php echo (int) $review_rating; ?>점"><?php echo str_repeat('★', $review_rating).str_repeat('☆', 5 - $review_rating); ?></span>
+                <?php } ?>
+            </div>
+            <?php if (is_array($review_shop)) {
+                $review_meta = array();
+                if (!empty($review_shop['board_label'])) {
+                    $review_meta[] = get_text($review_shop['board_label']);
+                }
+                if (!empty($review_shop['region'])) {
+                    $review_meta[] = get_text($review_shop['region']);
+                }
+                if (!empty($review_meta)) { ?>
+            <p class="review-info-panel__meta"><?php echo implode(' · ', $review_meta); ?></p>
+                <?php }
+                if (!empty($review_shop['view_url'])) { ?>
+            <div class="review-info-panel__actions">
+                <a href="<?php echo get_text($review_shop['view_url']); ?>" class="review-info-panel__btn">업체정보 바로가기</a>
+            </div>
+                <?php }
+            } ?>
+        </div>
         <?php } ?>
 
         <?php if ($is_estate_board_view && !empty($view['mb_id'])) {

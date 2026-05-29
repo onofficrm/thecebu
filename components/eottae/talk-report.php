@@ -197,7 +197,16 @@ if (!function_exists('eottae_talkroom_render_report_script')) {
             btn.addEventListener('click', function () {
               openReportModal(item);
             });
-            if (wrap.querySelector('.bo_vl_opt')) {
+            var actions = wrap.querySelector('.board-view__comment-actions') || wrap.querySelector('.bo_vc_act');
+            if (actions) {
+              if (actions.tagName === 'UL') {
+                var li = document.createElement('li');
+                li.appendChild(btn);
+                actions.appendChild(li);
+              } else {
+                actions.appendChild(btn);
+              }
+            } else if (wrap.querySelector('.bo_vl_opt')) {
               var ul = wrap.querySelector('.bo_vc_act');
               if (ul) {
                 var li = document.createElement('li');
