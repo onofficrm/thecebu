@@ -93,6 +93,8 @@ $site_config = array(
     /* 공개단톡 AI — 세부 날씨 자동 수집 (Open-Meteo) */
     'public_ai_weather_lat'     => '10.3157',
     'public_ai_weather_lon'     => '123.8854',
+    /* 공개단톡 AI — 내부 데이터에 답이 없을 때 외부 웹검색 보강(선택, SerpAPI) */
+    'life_qa_serpapi_key'       => '',
     /* 공개단톡 AI — 일반 호스팅용: 방문·폴링 트리거 (서버 crontab 불필요) */
     'public_ai_traffic_tick_enabled'  => true,
     'public_ai_traffic_tick_interval' => 90,

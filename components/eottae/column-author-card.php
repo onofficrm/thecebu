@@ -15,7 +15,7 @@ if (!function_exists('eottae_column_author_card_html')) {
         ?>
         <article class="sebu-author-card sebu-author-card--<?php echo get_text($variant); ?>">
             <a href="<?php echo get_text($author['profile_url'] ?? '#'); ?>" class="sebu-author-card__link">
-                <img src="<?php echo get_text($author['profile_image_url'] ?? ''); ?>" alt="" class="sebu-author-card__avatar" width="64" height="64" loading="lazy">
+                <?php echo eottae_column_render_avatar_html($author, 'md', 'sebu-author-card__avatar'); ?>
                 <div class="sebu-author-card__body">
                     <?php if (!empty($author['grade_label'])) { ?>
                     <span class="sebu-author-card__grade"><?php echo get_text($author['grade_label']); ?></span>
@@ -27,11 +27,12 @@ if (!function_exists('eottae_column_author_card_html')) {
                     <?php if (!empty($author['bio'])) { ?>
                     <p class="sebu-author-card__bio"><?php echo get_text(cut_str($author['bio'], 80, '…')); ?></p>
                     <?php } ?>
-                    <p class="sebu-author-card__stats">
-                        작성 <?php echo number_format((int) ($stats['column_count'] ?? 0)); ?>개
-                        · 조회 <?php echo number_format((int) ($stats['total_views'] ?? 0)); ?>
-                        · 공감 <?php echo number_format((int) ($stats['total_likes'] ?? 0)); ?>
-                    </p>
+                    <dl class="sebu-author-card__stats">
+                        <div><dt>작성</dt><dd><?php echo number_format((int) ($stats['column_count'] ?? 0)); ?>개</dd></div>
+                        <div><dt>조회</dt><dd><?php echo number_format((int) ($stats['total_views'] ?? 0)); ?></dd></div>
+                        <div><dt>공감</dt><dd><?php echo number_format((int) ($stats['total_likes'] ?? 0)); ?></dd></div>
+                    </dl>
+                    <span class="sebu-author-card__cta">프로필 보기</span>
                 </div>
             </a>
         </article>

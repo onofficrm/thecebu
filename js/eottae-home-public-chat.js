@@ -892,7 +892,7 @@
     if (form) {
       form.addEventListener('submit', function (event) {
         event.preventDefault();
-        sendMessage(section, form);
+        askLifeAi(section, form);
       });
 
       var input = form.querySelector('#eottae-public-chat-input');
@@ -900,7 +900,7 @@
         input.addEventListener('keydown', function (event) {
           if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
-            sendMessage(section, form);
+            askLifeAi(section, form);
           }
         });
       }

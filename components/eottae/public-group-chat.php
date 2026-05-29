@@ -44,8 +44,8 @@ if (!function_exists('eottae_public_group_chat_html')) {
                     <div class="public-group-chat__title-row">
                         <span class="public-group-chat__emoji" aria-hidden="true"><?php echo $payload['room_emoji']; ?></span>
                         <div class="public-group-chat__title-wrap">
-                            <h2 class="public-group-chat__title" id="public-group-chat-title"><?php echo get_text($payload['room_emoji'].' '.$payload['room_name']); ?></h2>
-                            <p class="public-group-chat__desc">회원 누구나 참여 · AI 도우미가 대화를 돕습니다</p>
+                            <h2 class="public-group-chat__title" id="public-group-chat-title">🤖 세부생활AI봇</h2>
+                            <p class="public-group-chat__desc">세부 생활정보를 질문하면 AI가 공개톡으로 답변합니다</p>
                         </div>
                     </div>
                     <div class="public-group-chat__head-actions">
@@ -81,7 +81,7 @@ if (!function_exists('eottae_public_group_chat_html')) {
                     </div>
                     <?php } elseif (empty($payload['is_member'])) { ?>
                     <div class="public-group-chat__composer public-group-chat__composer--login">
-                        <p class="public-group-chat__hint">회원가입 또는 로그인 후 실시간 대화에 참여할 수 있습니다.</p>
+                        <p class="public-group-chat__hint">회원가입 또는 로그인 후 세부 생활 질문을 남길 수 있습니다.</p>
                         <div class="public-group-chat__composer-actions">
                             <a href="<?php echo $payload['login_href']; ?>" class="public-group-chat__action">로그인</a>
                             <a href="<?php echo $payload['register_href']; ?>" class="public-group-chat__action public-group-chat__action--register">회원가입</a>
@@ -89,20 +89,19 @@ if (!function_exists('eottae_public_group_chat_html')) {
                     </div>
                     <?php } else { ?>
                     <form class="public-group-chat__composer" id="eottae-public-chat-form" action="#" method="post">
-                        <label class="sr-only" for="eottae-public-chat-input">메시지 입력</label>
+                        <label class="sr-only" for="eottae-public-chat-input">세부 생활 질문 입력</label>
                         <div class="public-group-chat__composer-field">
                             <textarea
                                 id="eottae-public-chat-input"
                                 class="public-group-chat__input"
                                 rows="2"
                                 maxlength="500"
-                                placeholder="세부 소식, 질문, 한마디를 남겨 보세요"
+                                placeholder="세부 생활, 여행, 병원, 환전, 교통 등 궁금한 점을 물어보세요"
                             ></textarea>
                             <div class="public-group-chat__quick-actions">
-                                <button type="button" class="public-group-chat__life-ai eottae-ai-btn" data-public-chat-life-ai>세부 생활 질문</button>
+                                <button type="button" class="public-group-chat__life-ai eottae-ai-btn" data-public-chat-life-ai>AI 세부생활질문</button>
                                 <span class="public-group-chat__life-ai-status" data-public-chat-life-ai-status aria-live="polite"></span>
                             </div>
-                            <button type="submit" class="public-group-chat__send" <?php echo empty($payload['can_send']) ? 'disabled' : ''; ?>>전송</button>
                         </div>
                     </form>
                     <?php } ?>

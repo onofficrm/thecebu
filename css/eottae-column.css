@@ -536,10 +536,77 @@
   text-decoration: none;
 }
 
+.sebu-author-card__avatar {
+  flex: 0 0 auto;
+}
+
 .sebu-author-card__name,
 .sebu-writer-monthly__name {
   font-family: var(--col-serif);
   font-weight: 700;
+}
+
+.sebu-author-card__grade {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: var(--col-gold-soft);
+  color: #92400e;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.sebu-author-card__title,
+.sebu-author-card__bio {
+  margin: 6px 0 0;
+  color: var(--col-ink-soft);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.sebu-author-card__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.sebu-author-card__stats div {
+  min-width: 68px;
+  padding: 8px 10px;
+  border: 1px solid rgba(231, 229, 228, 0.95);
+  border-radius: 12px;
+  background: rgba(250, 250, 249, 0.9);
+}
+
+.sebu-author-card__stats dt {
+  margin: 0 0 3px;
+  color: var(--col-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.sebu-author-card__stats dd {
+  margin: 0;
+  color: var(--col-ink);
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.sebu-author-card__cta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  margin-top: 12px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(15, 76, 92, 0.08);
+  color: var(--col-accent);
+  font-size: 0.78rem;
+  font-weight: 900;
 }
 
 .sebu-writer-monthly {
@@ -999,16 +1066,52 @@
 /* Author block on article */
 .sebu-article-author-card {
   margin-bottom: 40px;
-  padding: 32px 28px;
-  background: var(--col-surface);
-  border: 1px solid var(--col-line);
+  padding: 28px;
+  border: 1px solid rgba(231, 229, 228, 0.95);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(180, 83, 9, 0.08), transparent 32%),
+    linear-gradient(135deg, #fff 0%, #fafaf9 100%);
+  box-shadow: 0 18px 50px -40px rgba(28, 25, 23, 0.42);
 }
 
 .sebu-article-author-card__title {
-  margin: 0 0 20px;
+  margin: 0 0 16px;
   font-family: var(--col-serif);
   font-size: 1.25rem;
   font-weight: 700;
+}
+
+.sebu-article-author-card .sebu-author-card {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.sebu-article-author-card .sebu-author-card:hover {
+  box-shadow: none;
+}
+
+.sebu-article-author-card .sebu-author-card__link {
+  align-items: center;
+  gap: 18px;
+}
+
+.sebu-article-author-card .sebu-author-card__avatar {
+  width: 88px;
+  height: 88px;
+  font-size: 1.55rem;
+  box-shadow: 0 12px 34px -22px rgba(15, 76, 92, 0.58);
+}
+
+.sebu-article-author-card .sebu-author-card__name {
+  margin: 8px 0 0;
+  color: var(--col-ink);
+  font-size: 1.2rem;
+}
+
+.sebu-article-author-card .sebu-author-card__bio {
+  max-width: 720px;
 }
 
 /* Comments — subdued */
@@ -1122,12 +1225,66 @@
 }
 
 .sebu-column-social__link {
-  padding: 6px 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 11px 0 7px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 900;
   border: 1px solid var(--col-line);
   text-decoration: none;
   color: var(--col-ink-soft);
+  background: #fff;
+  box-shadow: 0 10px 24px -22px rgba(28, 25, 23, 0.45);
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.sebu-column-social__link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(15, 76, 92, 0.24);
+  box-shadow: 0 16px 30px -22px rgba(28, 25, 23, 0.55);
+}
+
+.sebu-column-social__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 0.68rem;
+  font-weight: 1000;
+  letter-spacing: -0.02em;
+}
+
+.sebu-column-social__link--youtube_url .sebu-column-social__icon {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.sebu-column-social__link--facebook_url .sebu-column-social__icon {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.sebu-column-social__link--instagram_url .sebu-column-social__icon {
+  background: linear-gradient(135deg, #fdf2f8, #ffedd5);
+  color: #c026d3;
+}
+
+.sebu-column-social__link--tiktok_url .sebu-column-social__icon {
+  background: #111827;
+  color: #fff;
+}
+
+.sebu-column-social__link--naver_blog_url .sebu-column-social__icon {
+  background: #dcfce7;
+  color: #16a34a;
 }
 
 /* ══════════════════════════════════════
@@ -1581,7 +1738,7 @@
 .sebu-writer-page__links {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
   margin-top: 22px;
 }
@@ -1590,21 +1747,38 @@
 .sebu-writer-page__social .sebu-column-social__link {
   display: inline-flex;
   align-items: center;
-  min-height: 36px;
-  padding: 0 13px;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px 0 8px;
   border: 1px solid rgba(15, 76, 92, 0.14);
   border-radius: 999px;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.9);
   color: var(--col-accent);
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   font-weight: 900;
   text-decoration: none;
+  box-shadow: 0 14px 30px -24px rgba(15, 76, 92, 0.5);
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+
+.sebu-writer-page__links > a:hover,
+.sebu-writer-page__social .sebu-column-social__link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(15, 76, 92, 0.3);
+  background: #fff;
+  box-shadow: 0 20px 38px -26px rgba(15, 76, 92, 0.62);
+}
+
+.sebu-writer-page__website .sebu-column-social__icon {
+  background: #e0f2fe;
+  color: #0369a1;
 }
 
 .sebu-writer-page__social {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
+  margin-top: 0;
 }
 
 .sebu-writer-page__stats {
@@ -2035,6 +2209,24 @@
 }
 
 @media (max-width: 520px) {
+  .sebu-article-author-card .sebu-author-card__link {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .sebu-article-author-card .sebu-author-card__avatar {
+    width: 72px;
+    height: 72px;
+  }
+
+  .sebu-author-card__stats {
+    width: 100%;
+  }
+
+  .sebu-author-card__stats div {
+    flex: 1 1 86px;
+  }
+
   .sebu-column-home {
     padding: 30px 14px 36px;
   }

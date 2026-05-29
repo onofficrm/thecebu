@@ -94,7 +94,10 @@ g5_page_start(get_text($author['display_name'] ?? '').' · 칼럼니스트');
             <?php } ?>
             <div class="sebu-writer-page__links">
                 <?php if (!empty($author['website_url'])) { ?>
-                <a href="<?php echo get_text($author['website_url']); ?>" target="_blank" rel="noopener noreferrer">홈페이지</a>
+                <a href="<?php echo get_text($author['website_url']); ?>" class="sebu-writer-page__website" target="_blank" rel="noopener noreferrer">
+                    <span class="sebu-column-social__icon" aria-hidden="true">WEB</span>
+                    <span class="sebu-column-social__text">홈페이지</span>
+                </a>
                 <?php } ?>
                 <?php echo eottae_column_render_social_links_html($author, 'sebu-writer-page__social'); ?>
             </div>

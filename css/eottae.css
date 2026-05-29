@@ -11704,10 +11704,10 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
 
 .public-group-chat__composer-field {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
-    "input send"
-    "actions send";
+    "input"
+    "actions";
   align-items: flex-end;
   gap: 8px;
   padding: 8px 8px 8px 12px;

@@ -25,6 +25,9 @@ $eottae_secrets_override = array(
     'ai_generate_model'         => 'gpt-4o-mini',
     'ai_generate_image_model'   => 'gpt-image-1',
 
+    /* 공개단톡 AI — 내부 데이터에 답이 없을 때 외부 웹검색 보강(선택, SerpAPI) */
+    'life_qa_serpapi_key'       => '',
+
     /*
      * Google 로그인 (선택) — Google Cloud Console OAuth 클라이언트
      * 승인된 리디렉션 URI 예:

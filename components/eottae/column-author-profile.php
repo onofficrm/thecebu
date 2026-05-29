@@ -40,8 +40,23 @@ if (!function_exists('eottae_column_render_social_links_html')) {
         <div class="<?php echo $class; ?>" role="list">
             <?php foreach ($links as $link) {
                 $key = preg_replace('/[^a-z_]/', '', (string) ($link['key'] ?? ''));
+                $icon = 'SNS';
+                if ($key === 'youtube_url') {
+                    $icon = 'YT';
+                } elseif ($key === 'facebook_url') {
+                    $icon = 'f';
+                } elseif ($key === 'instagram_url') {
+                    $icon = 'IG';
+                } elseif ($key === 'tiktok_url') {
+                    $icon = 'TT';
+                } elseif ($key === 'naver_blog_url') {
+                    $icon = 'BLOG';
+                }
                 ?>
-            <a href="<?php echo get_text($link['url'] ?? '#'); ?>" class="sebu-column-social__link sebu-column-social__link--<?php echo $key; ?>" target="_blank" rel="noopener noreferrer" role="listitem"><?php echo get_text($link['label'] ?? ''); ?></a>
+            <a href="<?php echo get_text($link['url'] ?? '#'); ?>" class="sebu-column-social__link sebu-column-social__link--<?php echo $key; ?>" target="_blank" rel="noopener noreferrer" role="listitem">
+                <span class="sebu-column-social__icon" aria-hidden="true"><?php echo get_text($icon); ?></span>
+                <span class="sebu-column-social__text"><?php echo get_text($link['label'] ?? ''); ?></span>
+            </a>
             <?php } ?>
         </div>
         <?php
