@@ -199,7 +199,7 @@ g5_page_start(get_text($post['wr_subject'] ?? '컬럼'));
     <?php if ($author) { ?>
     <section class="sebu-article-author-card" aria-labelledby="sebu-article-author-title">
         <h2 class="sebu-article-author-card__title" id="sebu-article-author-title">작성자 소개</h2>
-        <?php echo eottae_column_author_card_html($author); ?>
+        <?php echo eottae_column_author_card_html($author, 'article'); ?>
     </section>
     <?php } ?>
 

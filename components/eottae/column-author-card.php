@@ -11,6 +11,7 @@ if (!function_exists('eottae_column_author_card_html')) {
     function eottae_column_author_card_html(array $author, $variant = 'default')
     {
         $stats = $author['stats'] ?? array();
+        $bio_limit = ($variant === 'article') ? 180 : 80;
         ob_start();
         ?>
         <article class="sebu-author-card sebu-author-card--<?php echo get_text($variant); ?>">
@@ -19,7 +20,7 @@ if (!function_exists('eottae_column_author_card_html')) {
                     <?php echo eottae_column_render_avatar_html($author, 'md', 'sebu-author-card__avatar'); ?>
                     <a href="<?php echo get_text($author['profile_url'] ?? '#'); ?>" class="sebu-author-card__cta">프로필 보기</a>
                 </div>
-                <div class="sebu-author-card__body">
+                <div class="sebu-author-card__main">
                     <?php if (!empty($author['grade_label'])) { ?>
                     <span class="sebu-author-card__grade"><?php echo get_text($author['grade_label']); ?></span>
                     <?php } ?>
@@ -28,8 +29,10 @@ if (!function_exists('eottae_column_author_card_html')) {
                     <p class="sebu-author-card__title"><?php echo get_text($author['title']); ?></p>
                     <?php } ?>
                     <?php if (!empty($author['bio'])) { ?>
-                    <p class="sebu-author-card__bio"><?php echo get_text(cut_str($author['bio'], 80, '…')); ?></p>
+                    <p class="sebu-author-card__bio"><?php echo get_text(cut_str($author['bio'], $bio_limit, '…')); ?></p>
                     <?php } ?>
+                </div>
+                <div class="sebu-author-card__meta">
                     <dl class="sebu-author-card__stats">
                         <div><dt>작성</dt><dd><?php echo number_format((int) ($stats['column_count'] ?? 0)); ?>개</dd></div>
                         <div><dt>조회</dt><dd><?php echo number_format((int) ($stats['total_views'] ?? 0)); ?></dd></div>

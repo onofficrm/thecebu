@@ -595,14 +595,29 @@
 
 .market-view__article {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 20px;
+}
+
+.market-view__main {
+  display: flex;
+  flex-direction: column;
   gap: 1.25rem;
+  min-width: 0;
+}
+
+.market-view__aside {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-self: start;
+  position: sticky;
+  top: 80px;
 }
 
 .market-view__gallery,
 .market-view__summary,
-.market-view__content,
-.market-view__map {
+.market-view__content {
   border: 1px solid #e2e8f0;
   border-radius: 18px;
   background: #fff;
@@ -631,9 +646,7 @@
 }
 
 .market-view__summary {
-  align-self: start;
-  position: sticky;
-  top: 80px;
+  margin: 0;
 }
 
 .market-view__badges {
@@ -714,17 +727,22 @@
   color: #166534;
 }
 
-.market-view__content,
-.market-view__map {
-  grid-column: 1 / -1;
-}
-
-.market-view__content h2,
-.market-view__map h2 {
+.market-view__content h2 {
   margin: 0 0 0.75rem;
   font-size: 1rem;
   font-weight: 900;
   color: #334155;
+}
+
+.community-sidebar__icon--market {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.community-sidebar__shop-badge--price {
+  background: #f1f5f9;
+  color: #0f172a;
+  font-weight: 800;
 }
 
 /* g5b-board.css #bo_v_con { padding: 1.5rem 0 } 가 좌우 여백을 제거하므로 복구 */
@@ -757,7 +775,7 @@
     grid-template-columns: 1fr;
   }
 
-  .market-view__summary {
+  .market-view__aside {
     position: static;
   }
 }

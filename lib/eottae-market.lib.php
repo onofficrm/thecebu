@@ -651,6 +651,38 @@ if (!function_exists('eottae_market_view_url')) {
     }
 }
 
+if (!function_exists('eottae_market_recommended_items')) {
+    function eottae_market_recommended_items($exclude_wr_id = 0, $limit = 3)
+    {
+        global $g5;
+
+        $bo_table = eottae_market_board_table();
+        $write_table = $g5['write_prefix'].$bo_table;
+        $exclude_wr_id = (int) $exclude_wr_id;
+        $limit = max(1, min(6, (int) $limit));
+        $where = ' wr_is_comment = 0 ';
+        if ($exclude_wr_id > 0) {
+            $where .= " AND wr_id != '{$exclude_wr_id}' ";
+        }
+
+        $result = sql_query(" SELECT wr_id, wr_subject, wr_1, wr_2, wr_3, wr_10 FROM `{$write_table}` WHERE {$where} ORDER BY wr_id DESC LIMIT {$limit} ");
+        $items = array();
+        while ($row = sql_fetch_array($result)) {
+            $items[] = array(
+                'wr_id'   => (int) $row['wr_id'],
+                'subject' => get_text($row['wr_subject']),
+                'price'   => eottae_market_format_price($row['wr_1'] ?? 0, $row['wr_10'] ?? ''),
+                'region'  => eottae_market_region_label($row['wr_3'] ?? ''),
+                'status'  => eottae_market_status_label(eottae_market_normalize_status($row['wr_2'] ?? 'selling')),
+                'thumb'   => eottae_market_thumb_url($bo_table, (int) $row['wr_id'], 120, 120),
+                'url'     => eottae_market_view_url((int) $row['wr_id']),
+            );
+        }
+
+        return $items;
+    }
+}
+
 if (!function_exists('eottae_market_load_assets')) {
     function eottae_market_load_assets($with_js = false)
     {
