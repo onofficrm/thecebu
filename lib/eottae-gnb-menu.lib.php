@@ -138,10 +138,10 @@ if (!function_exists('eottae_gnb_nav_menu')) {
                 'emphasis' => 'accent',
                 'children' => array(
                     array('key' => 'cebu_map_all', 'label' => '전체지도', 'href' => $cebu_map_url),
-                    array('key' => 'cebu_cost_calculator', 'label' => '생활비 계산기', 'href' => $cost_calculator_url),
                     array('key' => 'cebu_map_job', 'label' => '구인구직', 'href' => $cebu_map_url.'?type=job'),
                     array('key' => 'cebu_map_market', 'label' => '중고장터', 'href' => $cebu_map_url.'?type=market'),
                     array('key' => 'cebu_map_estate', 'label' => '부동산', 'href' => $cebu_map_url.'?type=estate'),
+                    array('key' => 'cebu_cost_calculator', 'label' => '생활비 계산기', 'href' => $cost_calculator_url),
                 ),
             ),
             array(
