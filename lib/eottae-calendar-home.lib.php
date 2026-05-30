@@ -401,11 +401,12 @@ if (!function_exists('eottae_home_contribution_banner_payload')) {
 
 if (!function_exists('eottae_home_public_talkrooms_payload')) {
     /**
-     * 홈 커뮤니티 영역 — 공개 세부톡방 롤링 캐러셀 (최대 5건)
+     * 홈 커뮤니티 영역 — 공개 세부톡방 롤링 캐러셀
      *
+     * @param int $visible_count 화면에 동시에 보이는 카드 수 (기본 6)
      * @return array<string, mixed>
      */
-    function eottae_home_public_talkrooms_payload($limit = 5)
+    function eottae_home_public_talkrooms_payload($visible_count = 6)
     {
         if (!function_exists('eottae_talkroom_list_public_cards')) {
             include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';

@@ -188,6 +188,7 @@
     }
 
     return ''
+      + '<div class="eottae-gnb-header__wrap">'
       + '<div class="eottae-gnb-header__shell" data-eottae-gnb-shell="1" data-eottae-home-gnb-shell="1">'
       + '<div class="eottae-gnb-header__desktop-head" data-eottae-gnb-desktop-head="1">'
       + '<div class="eottae-gnb-header__inner">'
@@ -212,6 +213,7 @@
       + '</div>'
       + '</div>'
       + renderDesktopMegaPanel(menu.items || [])
+      + '</div>'
       + '</div>'
       + '</div>';
   }
@@ -298,6 +300,10 @@
       return false;
     }
 
+    if (header.querySelector('.eottae-gnb-header__wrap')) {
+      return false;
+    }
+
     if (header.getAttribute('data-eottae-home-header-rebuilt') !== '1') {
       return true;
     }
@@ -323,12 +329,16 @@
       return false;
     }
 
+    if (header.querySelector('.eottae-gnb-header__wrap')) {
+      return false;
+    }
+
     if (homeHeaderNeedsFullRebuild(header)) {
       header.innerHTML = renderHomeGnbShell(data);
       header.setAttribute('data-eottae-home-header-rebuilt', '1');
       mountHomeMobileMenu(data);
     } else {
-      var nav = header.querySelector('[data-eottae-home-gnb-nav="1"]');
+      var nav = header.querySelector('[data-eottae-home-gnb-nav="1"], [data-eottae-gnb-nav]');
       if (nav) {
         nav.innerHTML = renderDesktopNavLinks(data.mobile_menu.items);
       }
@@ -522,7 +532,7 @@
     var shell = ensureHomeGnbShell(header);
     var desktopHead = shell.querySelector('.eottae-gnb-header__desktop-head') || shell;
     var legacyNav = findLegacyBuilderNavContainer(header);
-    var nav = header.querySelector('[data-eottae-home-gnb-nav="1"]');
+    var nav = header.querySelector('[data-eottae-home-gnb-nav="1"], [data-eottae-gnb-nav]');
 
     if (!nav) {
       nav = document.createElement('nav');
@@ -543,6 +553,8 @@
         }
       }
     } else {
+      nav.setAttribute('data-eottae-gnb-nav', '1');
+      nav.setAttribute('data-eottae-home-gnb-nav', '1');
       nav.innerHTML = renderDesktopNavLinks(data.mobile_menu.items);
     }
 
