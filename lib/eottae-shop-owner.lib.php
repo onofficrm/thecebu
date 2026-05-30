@@ -236,6 +236,42 @@ if (!function_exists('eottae_shop_apply_manage_links')) {
     }
 }
 
+if (!function_exists('eottae_business_shop_posts_row')) {
+    function eottae_business_shop_posts_row(array $row, $bo_table, $list_delete_token = '')
+    {
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+        $wr_id = (int) ($row['wr_id'] ?? 0);
+        if ($bo_table === '' || $wr_id < 1) {
+            return null;
+        }
+
+        if (function_exists('eottae_review_board_resolve_shop_bo_for_row')) {
+            $bo_table = eottae_review_board_resolve_shop_bo_for_row($row, $bo_table);
+        }
+
+        $item = array(
+            'bo_table' => $bo_table,
+            'wr_id' => $wr_id,
+            'wr_subject' => $row['wr_subject'] ?? '',
+            'subject' => get_text($row['wr_subject'] ?? ''),
+            'datetime' => $row['wr_datetime'] ?? '',
+            'category' => get_text($row['ca_name'] ?? ''),
+            'update_url' => G5_BBS_URL.'/write.php?bo_table='.$bo_table.'&amp;wr_id='.$wr_id.'&amp;w=u',
+            'view_url' => function_exists('eottae_shop_view_url')
+                ? eottae_shop_view_url($wr_id, $bo_table)
+                : G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$wr_id,
+            'delete_url' => '',
+        );
+
+        if (function_exists('eottae_shop_manage_hrefs')) {
+            $manage = eottae_shop_manage_hrefs($row, $bo_table, 0, '', $list_delete_token);
+            $item['delete_url'] = $manage['delete_href'];
+        }
+
+        return $item;
+    }
+}
+
 if (!function_exists('eottae_business_shop_posts')) {
     function eottae_business_shop_posts($mb_id, $limit = 30)
     {
@@ -247,35 +283,52 @@ if (!function_exists('eottae_business_shop_posts')) {
         }
 
         $limit = max(1, min(100, (int) $limit));
+        $fetch_limit = max($limit, min(100, $limit * 3));
         $rows = array();
+        $seen = array();
         $list_delete_token = '';
         set_session('ss_delete_token', $list_delete_token = uniqid((string) time()));
 
+        $sources = array();
+        $master_bo = function_exists('eottae_shop_table') ? eottae_shop_table() : 'shop';
+        $sources[] = array('bo_table' => $master_bo, 'write_table' => $g5['write_prefix'].$master_bo);
+
         foreach (eottae_shop_board_tables() as $bo_table) {
-            $write_table = $g5['write_prefix'].$bo_table;
-            $result = sql_query(" select wr_id, wr_subject, wr_datetime, ca_name
+            if ($bo_table === $master_bo) {
+                continue;
+            }
+            $sources[] = array(
+                'bo_table' => $bo_table,
+                'write_table' => $g5['write_prefix'].$bo_table,
+            );
+        }
+
+        foreach ($sources as $source) {
+            $write_table = $source['write_table'];
+            $bo_table = $source['bo_table'];
+            $exists = sql_fetch(" show tables like '".sql_escape_string($write_table)."' ");
+            if (empty($exists)) {
+                continue;
+            }
+
+            $result = sql_query(" select wr_id, wr_subject, wr_datetime, ca_name, wr_1, wr_2, wr_3
                 from {$write_table}
                 where mb_id = '{$mb_id}' and wr_is_comment = 0
                 order by wr_id desc
-                limit {$limit} ");
+                limit {$fetch_limit} ");
             while ($row = sql_fetch_array($result)) {
-                $rows[] = array(
-                    'bo_table' => $bo_table,
-                    'wr_id' => (int) $row['wr_id'],
-                    'wr_subject' => $row['wr_subject'],
-                    'subject' => get_text($row['wr_subject']),
-                    'datetime' => $row['wr_datetime'],
-                    'category' => get_text($row['ca_name']),
-                    'update_url' => G5_BBS_URL.'/write.php?bo_table='.$bo_table.'&amp;wr_id='.(int) $row['wr_id'].'&amp;w=u',
-                    'view_url' => function_exists('eottae_shop_view_url')
-                        ? eottae_shop_view_url((int) $row['wr_id'], $bo_table)
-                        : G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.(int) $row['wr_id'],
-                    'delete_url' => '',
-                );
-                if (function_exists('eottae_shop_manage_hrefs')) {
-                    $manage = eottae_shop_manage_hrefs($row, $bo_table, 0, '', $list_delete_token);
-                    $rows[count($rows) - 1]['delete_url'] = $manage['delete_href'];
+                $wr_id = (int) ($row['wr_id'] ?? 0);
+                if ($wr_id < 1 || isset($seen[$wr_id])) {
+                    continue;
                 }
+
+                $item = eottae_business_shop_posts_row($row, $bo_table, $list_delete_token);
+                if (!$item) {
+                    continue;
+                }
+
+                $seen[$wr_id] = true;
+                $rows[] = $item;
             }
         }
 

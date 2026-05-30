@@ -1043,14 +1043,15 @@ img[data-eottae-logo] {
   }
 }
 
+/* 헤더 — 세부일정 버튼 제거(푸터 바로가기로 이동) */
+header .eottae-gnb-header__btn--calendar,
+header [data-eottae-home-calendar-btn],
+header [data-eottae-home-calendar-menu] {
+  display: none !important;
+}
+
 @media (max-width: 639px) {
   .eottae-gnb-header__btn--desktop {
-    display: none !important;
-  }
-
-  /* 모바일 헤더 바 — 세부일정은 햄버거 메뉴에서만 */
-  header .eottae-gnb-header__btn--calendar,
-  header [data-eottae-home-calendar-btn] {
     display: none !important;
   }
 }
@@ -1346,7 +1347,7 @@ html.onoff-chatbot-modal-open body {
 
 @media (min-width: 768px) {
   .eottae-gnb-footer__grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: minmax(19rem, 1.45fr) repeat(4, minmax(0, 1fr));
     gap: 24px;
   }
 
@@ -1383,10 +1384,17 @@ html.onoff-chatbot-modal-open body {
 
 .eottae-gnb-footer__desc {
   margin: 16px 0 0;
-  max-width: 24rem;
+  max-width: 31rem;
   font-size: 14px;
   line-height: 1.6;
   color: #94a3b8;
+  word-break: keep-all;
+}
+
+@media (max-width: 767px) {
+  .eottae-gnb-footer__desc {
+    max-width: none;
+  }
 }
 
 .eottae-gnb-footer__heading {

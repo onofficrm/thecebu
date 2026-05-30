@@ -10,6 +10,17 @@
     }).then(function (res) { return res.json(); });
   }
 
+  function syncColumnToken(scope, token) {
+    if (!scope || !token) {
+      return;
+    }
+
+    scope.setAttribute('data-member-token', token);
+    scope.querySelectorAll('[data-token]').forEach(function (el) {
+      el.setAttribute('data-token', token);
+    });
+  }
+
   var viewRoot = document.querySelector('[data-sebu-column-view]');
   if (viewRoot) {
     var wrId = viewRoot.getAttribute('data-wr-id');
@@ -29,6 +40,7 @@
             alert(res.message || '처리에 실패했습니다.');
             return;
           }
+          syncColumnToken(viewRoot, res.column_token);
           likeBtn.classList.toggle('is-liked', !!res.liked);
           var countEl = likeBtn.querySelector('[data-sebu-column-like-count]');
           if (countEl) {
@@ -52,6 +64,7 @@
             alert(res.message || '처리에 실패했습니다.');
             return;
           }
+          syncColumnToken(viewRoot, res.column_token);
           bookmarkBtn.classList.toggle('is-saved', !!res.bookmarked);
           bookmarkBtn.textContent = res.bookmarked ? '저장됨' : '저장하기';
         });

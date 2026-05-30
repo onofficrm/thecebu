@@ -299,15 +299,22 @@
     return { min: minTotal, max: maxTotal, total: total };
   }
 
-  function householdSummary(config) {
-    var parts = ['성인 ' + config.adults + '명'];
-    if (config.minors > 0) {
-      parts.push('미성년자 ' + config.minors + '명');
-    }
-    return parts.join(' · ');
+  var ICONS = {
+    adult: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"></circle><path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"></path></svg>',
+    minor: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="3"></circle><path d="M8 12h8"></path><path d="M5 20v-1.5a3.5 3.5 0 0 1 3.5-3.5h5a3.5 3.5 0 0 1 3.5 3.5V20"></path></svg>',
+    home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 10v10h14V10"></path><path d="M10 20v-6h4v6"></path></svg>',
+    zone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>'
+  };
+
+  function chip(type, text, extraClass) {
+    var className = 'cost-chip cost-chip--' + type + (extraClass ? ' ' + extraClass : '');
+    return '<span class="' + className + '">'
+      + '<span class="cost-chip__icon" aria-hidden="true">' + ICONS[type] + '</span>'
+      + '<span class="cost-chip__text">' + text + '</span>'
+      + '</span>';
   }
 
-  function housingSummary(config) {
+  function renderSummary(config) {
     var bedroomLabels = {
       studio: '스튜디오',
       bed1: '1베드',
@@ -316,7 +323,12 @@
       house: '하우스'
     };
     var zoneLabel = config.zone === 'central' ? '중심 생활권' : '일반 생활권';
-    return (bedroomLabels[config.bedroom] || config.bedroom) + ' · ' + zoneLabel;
+    return [
+      chip('adult', '성인 ' + config.adults + '명'),
+      chip('minor', '미성년자 ' + config.minors + '명', config.minors < 1 ? 'cost-chip--empty' : ''),
+      chip('home', bedroomLabels[config.bedroom] || config.bedroom),
+      chip('zone', zoneLabel)
+    ].join('');
   }
 
   function levelText(total, config) {
@@ -376,7 +388,14 @@
     var rows = Object.keys(LABELS).map(function (key) {
       var value = values[key] || 0;
       var percent = total > 0 ? Math.round((value / total) * 100) : 0;
-      return '<div><dt>' + LABELS[key] + '</dt><dd>' + money(value) + ' · ' + percent + '%</dd></div>';
+      return '<div class="cost-breakdown-row">'
+        + '<div class="cost-breakdown-row__head">'
+        + '<dt>' + LABELS[key] + '</dt>'
+        + '<dd>' + money(value) + '</dd>'
+        + '</div>'
+        + '<div class="cost-breakdown-row__track" aria-hidden="true"><span style="width:' + percent + '%"></span></div>'
+        + '<span class="cost-breakdown-row__pct">' + percent + '%</span>'
+        + '</div>';
     });
     target.innerHTML = rows.join('');
   }
@@ -399,6 +418,7 @@
     var topEl = root.querySelector('[data-cost-top]');
     var familyEl = root.querySelector('[data-cost-family-note]');
     var barEl = root.querySelector('[data-cost-bar]');
+    var breakdownTotalEl = root.querySelector('[data-cost-breakdown-total]');
 
     if (totalEl) totalEl.textContent = money(total);
     if (rangeEl) {
@@ -406,11 +426,10 @@
       rangeEl.textContent = money(range.min) + ' ~ ' + money(range.max);
     }
     if (krwEl) krwEl.textContent = krwRange(range.min, range.max);
-    if (summaryEl) {
-      summaryEl.textContent = householdSummary(config) + ' · ' + housingSummary(config);
-    }
+    if (summaryEl) summaryEl.innerHTML = renderSummary(config);
     if (levelEl) levelEl.textContent = levelText(total, config);
     if (topEl) topEl.textContent = topCategory(values, total);
+    if (breakdownTotalEl) breakdownTotalEl.textContent = money(total);
     if (familyEl) {
       var note = familyNote(config, values);
       familyEl.hidden = !note;
@@ -423,7 +442,9 @@
   function goToStep(step) {
     currentStep = step;
     root.querySelectorAll('[data-cost-step]').forEach(function (button) {
-      button.classList.toggle('is-active', parseInt(button.getAttribute('data-cost-step'), 10) === step);
+      var buttonStep = parseInt(button.getAttribute('data-cost-step'), 10);
+      button.classList.toggle('is-active', buttonStep === step);
+      button.classList.toggle('is-done', buttonStep < step);
     });
     root.querySelectorAll('[data-cost-step-panel]').forEach(function (panel) {
       var panelStep = parseInt(panel.getAttribute('data-cost-step-panel'), 10);

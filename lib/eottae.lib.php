@@ -1529,6 +1529,8 @@ if (!function_exists('eottae_builder_inject_site_footer_script')) {
 
         $payload = array(
             'talk_url'                  => G5_URL.'/talk/ai.php',
+            'calendar_url'              => function_exists('eottae_calendar_list_url') ? eottae_calendar_list_url() : G5_URL.'/calendar/',
+            'calendar_label'            => '세부일정',
             'coupon_guide_url'          => G5_URL.'/page/eottae-coupon-guide.php',
             'business_coupon_guide_url' => G5_URL.'/page/eottae-business-coupon-guide.php',
             'challenge_guide_url'       => G5_URL.'/page/eottae-challenge-guide.php',
@@ -6241,7 +6243,6 @@ if (!function_exists('eottae_gnb_nav_links')) {
         $menu = eottae_gnb_nav_menu();
         $action_links = array(
             array('key' => 'talk', 'label' => '세부톡', 'href' => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk', 'desktop_action' => true),
-            array('key' => 'calendar', 'label' => '세부일정', 'href' => function_exists('eottae_calendar_list_url') ? eottae_calendar_list_url() : G5_URL.'/calendar/', 'desktop_action' => true),
         );
 
         return array_merge($menu, $action_links);

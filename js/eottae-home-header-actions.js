@@ -1,5 +1,5 @@
 /**
- * 홈(빌더) — 헤더 액션 버튼(세부톡·세부일정)을 페이지 GNB와 동일하게 맞춤
+ * 홈(빌더) — 헤더 액션 버튼(세부톡)을 페이지 GNB와 동일하게 맞춤
  */
 (function (global) {
   'use strict';
@@ -205,7 +205,6 @@
       + authHtml
       + renderLanguageSelect('eottae-language--desktop')
       + (data && data.talk_url ? '<a href="' + esc(data.talk_url) + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--talk eottae-gnb-header__btn--desktop" data-eottae-home-talk-btn="1">' + esc(navLabel('home.talk', data.talk_label || '세부톡')) + '</a>' : '')
-      + (data && data.calendar_url ? '<a href="' + esc(data.calendar_url) + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--calendar eottae-gnb-header__btn--desktop" data-eottae-home-calendar-btn="1">' + esc(navLabel('home.calendar', data.calendar_label || '세부일정')) + '</a>' : '')
       + (menu.shop_write_url ? '<a href="' + esc(menu.shop_write_url) + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--register eottae-gnb-header__btn--desktop" data-i18n="button.shop_register">업소등록</a>' : '')
       + '<button type="button" class="eottae-gnb-header__icon-btn eottae-gnb-header__menu-btn site-header__menu-btn" data-eottae-home-menu-btn="1" aria-controls="siteMobileNav" aria-expanded="false" aria-label="메뉴 열기" data-i18n-aria-label="common.open_menu">'
       + '<svg class="eottae-gnb-header__icon eottae-gnb-header__icon--menu" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>'
@@ -829,16 +828,6 @@
     );
   }
 
-  function buildCalendarButton(data, extraClass) {
-    return buildActionButton(
-      data,
-      'eottae-gnb-header__btn--calendar ' + (extraClass || ''),
-      'data-eottae-home-calendar-btn',
-      data.calendar_url,
-      data.calendar_label || '세부일정'
-    );
-  }
-
   function normalizeShopWriteLink(link, isMobile) {
     if (!link) {
       return;
@@ -864,11 +853,6 @@
     }
 
     normalizeShopWriteLink(shopWrite, false);
-
-    if (!header.querySelector('[data-eottae-home-calendar-btn="1"]') && data.calendar_url) {
-      var calendarBtn = buildCalendarButton(data, 'eottae-gnb-header__btn--desktop hidden sm:inline-flex');
-      shopWrite.parentNode.insertBefore(calendarBtn, shopWrite);
-    }
 
     if (!header.querySelector('[data-eottae-home-talk-btn="1"]') && data.talk_url) {
       var talkBtn = buildTalkButton(data, 'eottae-gnb-header__btn--desktop hidden sm:inline-flex');
@@ -907,44 +891,16 @@
     return null;
   }
 
-  function removeMobileHeaderCalendarButtons(header) {
+  function removeHeaderCalendarButtons(header) {
     if (!header) {
       return;
     }
 
-    header.querySelectorAll('[data-eottae-home-calendar-btn]').forEach(function (node) {
+    header.querySelectorAll('[data-eottae-home-calendar-btn], [data-eottae-home-calendar-menu], .eottae-gnb-header__btn--calendar').forEach(function (node) {
       if (node.parentNode) {
         node.parentNode.removeChild(node);
       }
     });
-  }
-
-  function mountCalendarInMobileMenu(data) {
-    if (!data.calendar_url) {
-      return;
-    }
-
-    var menu = findMobileMenuNav();
-    if (!menu) {
-      return;
-    }
-
-    if (menu.querySelector('[data-eottae-home-calendar-menu="1"]')) {
-      return;
-    }
-
-    var link = document.createElement('a');
-    link.href = data.calendar_url;
-    link.className = 'eottae-gnb-header__mobile-link eottae-gnb-header__mobile-link--accent';
-    link.setAttribute('data-eottae-home-calendar-menu', '1');
-    link.textContent = data.calendar_label || '세부일정';
-
-    var talkMenu = menu.querySelector('[href*="/talk"]');
-    if (talkMenu && talkMenu.parentNode === menu) {
-      menu.insertBefore(link, talkMenu.nextSibling);
-    } else {
-      menu.appendChild(link);
-    }
   }
 
   function mountMobile(data) {
@@ -953,7 +909,12 @@
       return;
     }
 
-    removeMobileHeaderCalendarButtons(header);
+    removeHeaderCalendarButtons(header);
+
+    var menu = findMobileMenuNav();
+    if (menu) {
+      removeHeaderCalendarButtons(menu);
+    }
 
     var shopWrite = null;
     var links = header.querySelectorAll('a');
@@ -978,8 +939,6 @@
         shopWrite.parentNode.insertBefore(talkBtn, shopWrite);
       }
     }
-
-    mountCalendarInMobileMenu(data);
   }
 
   function normalizeNavLabel(text) {
@@ -1371,7 +1330,7 @@
     mountHomeMobileMenu(data);
     mountDesktop(data);
     mountMobile(data);
-    mountCalendarInMobileMenu(data);
+    removeHeaderCalendarButtons(document.querySelector('header'));
     mountColumnNav(data);
     mountColumnInMobileMenu(data);
     mountAdroomNav(data);

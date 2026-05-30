@@ -37,6 +37,7 @@ if (!function_exists('eottae_site_footer_html')) {
             ? eottae_ad_platform_register_url()
             : G5_URL.'/page/eottae-ad-register.php';
         $eottae_footer_cost_calculator = G5_URL.'/cost-calculator/';
+        $eottae_footer_calendar = function_exists('eottae_calendar_list_url') ? eottae_calendar_list_url() : G5_URL.'/calendar/';
         $eottae_footer_year = date('Y');
 
         ob_start();
@@ -62,6 +63,7 @@ if (!function_exists('eottae_site_footer_html')) {
                         <li><a href="<?php echo $eottae_footer_shop_url; ?>">내주변 업소</a></li>
                         <li><a href="<?php echo $eottae_footer_shop_write; ?>">업소등록 안내</a></li>
                         <li><a href="<?php echo $eottae_footer_community; ?>">커뮤니티</a></li>
+                        <li><a href="<?php echo get_text($eottae_footer_calendar); ?>" data-eottae-footer-calendar="1">세부일정</a></li>
                     </ul>
                 </nav>
 

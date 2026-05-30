@@ -21,14 +21,18 @@ if (!function_exists('eottae_adroom_render_shop_picker')) {
         ?>
         <section class="adroom-shop-picker" id="adroom-shop-picker">
             <h3 class="adroom-shop-picker__title">연동 업체<?php if ($shop_required) { ?> <span class="adroom-required">*</span><?php } else { ?> <span class="adroom-shop-picker__optional">선택</span><?php } ?></h3>
-            <p class="adroom-shop-picker__desc"><?php echo $promo_active ? '업체를 연동하면 지도·주소가 함께 노출됩니다. 업체가 없어도 광고만 먼저 등록할 수 있습니다.' : '광고와 함께 노출할 내 업체를 선택하세요. 업체명·지역·주소로 검색할 수 있습니다.'; ?></p>
+            <p class="adroom-shop-picker__desc"><?php echo $promo_active ? '내 계정에 연결된 업체 중에서 선택합니다. 업체가 없어도 광고만 먼저 등록할 수 있습니다.' : '내 계정에 연결된 업체 중에서 광고와 함께 노출할 업체를 선택하세요.'; ?></p>
 
             <?php if (empty($shops)) { ?>
             <div class="adroom-shop-picker__empty">
+                <p><strong>현재 로그인 계정에 연결된 업체가 없습니다.</strong></p>
+                <p>업체 목록·지도 검색에 보이는 업체와 광고방 연동 업체는 다릅니다. 광고방에서는 <strong>내 계정으로 등록했거나 관리 권한이 부여된 업체</strong>만 선택할 수 있습니다.</p>
+                <ul class="adroom-shop-picker__empty-list">
+                    <li>업체 등록 시 사용한 계정으로 로그인했는지 확인해 주세요.</li>
+                    <li>관리자가 대신 등록한 경우, 업체 수정 화면에서 <strong>업체 관리 회원</strong>으로 본인 계정을 지정해야 합니다.</li>
+                </ul>
                 <?php if ($promo_active) { ?>
-                <p>등록된 업체가 없어도 광고 등록은 가능합니다. 업체를 연동하면 지도·연락처가 함께 표시됩니다.</p>
-                <?php } else { ?>
-                <p>등록된 업체가 없습니다. 먼저 업체를 등록한 뒤 광고를 작성해 주세요.</p>
+                <p class="adroom-shop-picker__empty-note">업체 연동 없이도 광고 등록은 가능합니다. 연동하면 지도·연락처가 함께 표시됩니다.</p>
                 <?php } ?>
                 <a href="<?php echo G5_BBS_URL; ?>/write.php?bo_table=<?php echo defined('EOTTae_SHOP_TABLE') ? EOTTae_SHOP_TABLE : 'shop'; ?>" class="adroom-btn adroom-btn--primary">업체 등록하기</a>
             </div>
@@ -76,7 +80,7 @@ if (!function_exists('eottae_adroom_render_shop_picker')) {
                 </button>
                 <?php } ?>
             </div>
-            <p class="adroom-shop-picker__no-match" id="adroom-shop-picker-no-match" hidden>검색 결과가 없습니다.</p>
+            <p class="adroom-shop-picker__no-match" id="adroom-shop-picker-no-match" hidden>내 업체 중 검색어와 일치하는 항목이 없습니다. 업체 목록 전체 검색이 아니라, 현재 계정에 연결된 업체만 표시됩니다.</p>
             <?php } ?>
         </section>
         <?php

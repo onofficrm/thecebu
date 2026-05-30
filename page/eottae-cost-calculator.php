@@ -48,10 +48,10 @@ g5_page_start('세부 물가·생활비 계산기');
     </section>
 
     <nav class="cost-wizard-steps" aria-label="계산 단계" data-cost-steps-nav>
-        <button type="button" class="is-active" data-cost-step="1">1. 구성원</button>
-        <button type="button" data-cost-step="2">2. 주거</button>
-        <button type="button" data-cost-step="3">3. 생활 스타일</button>
-        <button type="button" data-cost-step="4">4. 결과</button>
+        <button type="button" class="is-active" data-cost-step="1">구성원</button>
+        <button type="button" data-cost-step="2">주거</button>
+        <button type="button" data-cost-step="3">생활 스타일</button>
+        <button type="button" data-cost-step="4">결과</button>
     </nav>
 
     <section class="cost-calculator-layout">
@@ -61,25 +61,37 @@ g5_page_start('세부 물가·생활비 계산기');
                     <h2 id="costStep1Title">누가 살 예정인가요?</h2>
                     <p class="cost-card-desc">성인·미성년자 수에 따라 식비, 통신, 교육, 의료비가 자동 반영됩니다.</p>
 
-                    <fieldset class="cost-choice-group">
-                        <legend>성인</legend>
-                        <div class="cost-choice-row" role="radiogroup" aria-label="성인 수">
-                            <label class="cost-choice"><input type="radio" name="adults" value="1" checked><span>1인</span></label>
-                            <label class="cost-choice"><input type="radio" name="adults" value="2"><span>2인</span></label>
-                            <label class="cost-choice"><input type="radio" name="adults" value="3"><span>3인</span></label>
-                        </div>
-                    </fieldset>
+                    <div class="cost-member-grid">
+                        <fieldset class="cost-choice-group cost-choice-group--member">
+                            <legend class="cost-choice-group__legend cost-choice-group__legend--adult">
+                                <span class="cost-choice-group__legend-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"></circle><path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"></path></svg>
+                                </span>
+                                <span class="cost-choice-group__legend-text">성인</span>
+                            </legend>
+                            <div class="cost-choice-row" role="radiogroup" aria-label="성인 수">
+                                <label class="cost-choice"><input type="radio" name="adults" value="1" checked><span>1인</span></label>
+                                <label class="cost-choice"><input type="radio" name="adults" value="2"><span>2인</span></label>
+                                <label class="cost-choice"><input type="radio" name="adults" value="3"><span>3인</span></label>
+                            </div>
+                        </fieldset>
 
-                    <fieldset class="cost-choice-group">
-                        <legend>미성년자</legend>
-                        <div class="cost-choice-row" role="radiogroup" aria-label="미성년자 수">
-                            <label class="cost-choice"><input type="radio" name="minors" value="0" checked><span>0명</span></label>
-                            <label class="cost-choice"><input type="radio" name="minors" value="1"><span>1명</span></label>
-                            <label class="cost-choice"><input type="radio" name="minors" value="2"><span>2명</span></label>
-                            <label class="cost-choice"><input type="radio" name="minors" value="3"><span>3명</span></label>
-                            <label class="cost-choice"><input type="radio" name="minors" value="4"><span>4명</span></label>
-                        </div>
-                    </fieldset>
+                        <fieldset class="cost-choice-group cost-choice-group--member">
+                            <legend class="cost-choice-group__legend cost-choice-group__legend--minor">
+                                <span class="cost-choice-group__legend-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="3"></circle><path d="M8 12h8"></path><path d="M5 20v-1.5a3.5 3.5 0 0 1 3.5-3.5h5a3.5 3.5 0 0 1 3.5 3.5V20"></path></svg>
+                                </span>
+                                <span class="cost-choice-group__legend-text">미성년자</span>
+                            </legend>
+                            <div class="cost-choice-row" role="radiogroup" aria-label="미성년자 수">
+                                <label class="cost-choice"><input type="radio" name="minors" value="0" checked><span>0명</span></label>
+                                <label class="cost-choice"><input type="radio" name="minors" value="1"><span>1명</span></label>
+                                <label class="cost-choice"><input type="radio" name="minors" value="2"><span>2명</span></label>
+                                <label class="cost-choice"><input type="radio" name="minors" value="3"><span>3명</span></label>
+                                <label class="cost-choice"><input type="radio" name="minors" value="4"><span>4명</span></label>
+                            </div>
+                        </fieldset>
+                    </div>
 
                     <label class="cost-field">
                         <span>체류 형태</span>
@@ -103,7 +115,7 @@ g5_page_start('세부 물가·생활비 계산기');
                     <p class="cost-card-desc">방 타입과 생활권, 지역에 따라 월세·공과금이 달라집니다.</p>
 
                     <fieldset class="cost-choice-group">
-                        <legend>방 타입</legend>
+                        <legend class="cost-choice-group__legend">방 타입</legend>
                         <div class="cost-choice-row cost-choice-row--wrap">
                             <label class="cost-choice"><input type="radio" name="bedroom" value="studio"><span>스튜디오</span></label>
                             <label class="cost-choice"><input type="radio" name="bedroom" value="bed1" checked><span>1베드</span></label>
@@ -114,7 +126,7 @@ g5_page_start('세부 물가·생활비 계산기');
                     </fieldset>
 
                     <fieldset class="cost-choice-group">
-                        <legend>생활권</legend>
+                        <legend class="cost-choice-group__legend">생활권</legend>
                         <div class="cost-choice-row">
                             <label class="cost-choice"><input type="radio" name="zone" value="central" checked><span>중심 생활권</span></label>
                             <label class="cost-choice"><input type="radio" name="zone" value="general"><span>일반 생활권</span></label>
@@ -122,35 +134,37 @@ g5_page_start('세부 물가·생활비 계산기');
                         <p class="cost-field-hint">중심 생활권: IT Park, Ayala, 세부시티 핵심부 · 일반 생활권: Banilad 외곽, Mandaue, Talisay 등</p>
                     </fieldset>
 
-                    <label class="cost-field">
-                        <span>지역</span>
-                        <select name="area" data-cost-select>
-                            <option value="itpark">IT Park</option>
-                            <option value="cebucity">세부시티</option>
-                            <option value="mandaue">만다웨</option>
-                            <option value="mactan">막탄</option>
-                            <option value="talisay">탈리사이</option>
-                            <option value="other">기타</option>
-                        </select>
-                    </label>
+                    <div class="cost-field-grid">
+                        <label class="cost-field">
+                            <span>지역</span>
+                            <select name="area" data-cost-select>
+                                <option value="itpark">IT Park</option>
+                                <option value="cebucity">세부시티</option>
+                                <option value="mandaue">만다웨</option>
+                                <option value="mactan">막탄</option>
+                                <option value="talisay">탈리사이</option>
+                                <option value="other">기타</option>
+                            </select>
+                        </label>
 
-                    <label class="cost-field">
-                        <span>건물 등급</span>
-                        <select name="grade" data-cost-select>
-                            <option value="local">로컬형</option>
-                            <option value="standard" selected>일반 콘도</option>
-                            <option value="premium">고급 콘도</option>
-                        </select>
-                    </label>
+                        <label class="cost-field">
+                            <span>건물 등급</span>
+                            <select name="grade" data-cost-select>
+                                <option value="local">로컬형</option>
+                                <option value="standard" selected>일반 콘도</option>
+                                <option value="premium">고급 콘도</option>
+                            </select>
+                        </label>
 
-                    <label class="cost-field">
-                        <span>계약 형태</span>
-                        <select name="contract" data-cost-select>
-                            <option value="monthly" selected>월세</option>
-                            <option value="shortstay">단기 숙소</option>
-                            <option value="airbnb">에어비앤비</option>
-                        </select>
-                    </label>
+                        <label class="cost-field">
+                            <span>계약 형태</span>
+                            <select name="contract" data-cost-select>
+                                <option value="monthly" selected>월세</option>
+                                <option value="shortstay">단기 숙소</option>
+                                <option value="airbnb">에어비앤비</option>
+                            </select>
+                        </label>
+                    </div>
                 </div>
                 <div class="cost-wizard-actions">
                     <button type="button" class="cost-wizard-prev" data-cost-prev="1">이전</button>
@@ -164,7 +178,7 @@ g5_page_start('세부 물가·생활비 계산기');
                     <p class="cost-card-desc">식비·여가·외식 빈도와 교통 방식, 아이 교육 조건을 반영합니다.</p>
 
                     <fieldset class="cost-choice-group">
-                        <legend>생활 수준</legend>
+                        <legend class="cost-choice-group__legend">생활 수준</legend>
                         <div class="cost-choice-row">
                             <label class="cost-choice"><input type="radio" name="lifestyle" value="budget"><span>절약형</span></label>
                             <label class="cost-choice"><input type="radio" name="lifestyle" value="normal" checked><span>일반형</span></label>
@@ -268,15 +282,25 @@ g5_page_start('세부 물가·생활비 계산기');
         </form>
 
         <aside class="cost-result-panel" aria-live="polite">
-            <p class="cost-result-panel__label">월 예상 생활비</p>
-            <strong data-cost-total>₱0</strong>
-            <span data-cost-total-range hidden></span>
-            <span data-cost-total-krw>약 0원</span>
-            <p data-cost-summary class="cost-result-panel__summary"></p>
-            <p data-cost-level class="cost-result-panel__level">생활비 수준을 계산 중입니다.</p>
-            <p data-cost-top class="cost-result-panel__top"></p>
-            <p data-cost-family-note class="cost-result-panel__family-note" hidden></p>
+            <div class="cost-result-panel__hero">
+                <p class="cost-result-panel__label">월 예상 생활비</p>
+                <strong data-cost-total>₱0</strong>
+                <div class="cost-result-panel__range">
+                    <span data-cost-total-range hidden></span>
+                    <span data-cost-total-krw>약 0원</span>
+                </div>
+            </div>
+            <div class="cost-result-panel__chips" data-cost-summary></div>
+            <div class="cost-result-panel__insights">
+                <p data-cost-level class="cost-result-panel__level">생활비 수준을 계산 중입니다.</p>
+                <p data-cost-top class="cost-result-panel__top"></p>
+                <p data-cost-family-note class="cost-result-panel__family-note" hidden></p>
+            </div>
             <div class="cost-result-panel__bar" aria-hidden="true"><span data-cost-bar></span></div>
+            <div class="cost-result-panel__breakdown-head">
+                <span>항목별 비중</span>
+                <span data-cost-breakdown-total></span>
+            </div>
             <dl class="cost-result-panel__breakdown" data-cost-breakdown></dl>
             <p class="cost-result-panel__note">환율은 간단 계산용으로 1페소=24원 기준입니다. 범위는 주거·식비 변동을 반영한 참고치입니다.</p>
         </aside>

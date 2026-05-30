@@ -122,17 +122,42 @@
     return true;
   }
 
+  function patchShortcutCol() {
+    var data = cfg();
+    var calendarUrl = data.calendar_url || '/calendar/';
+    var calendarLabel = data.calendar_label || '세부일정';
+    var cols = document.querySelectorAll('nav[aria-label="바로가기"]');
+
+    cols.forEach(function (col) {
+      if (col.querySelector('[data-eottae-footer-calendar="1"]')) {
+        return;
+      }
+
+      var list = col.querySelector('ul');
+      if (!list) {
+        return;
+      }
+
+      var li = document.createElement('li');
+      li.innerHTML = '<a href="' + esc(calendarUrl) + '" data-eottae-footer-calendar="1">' + esc(calendarLabel) + '</a>';
+      list.appendChild(li);
+    });
+  }
+
   function run() {
     if (document.getElementById('ft') && document.querySelector('.eottae-gnb-footer__col--service')) {
       hideReactFooter();
+      patchShortcutCol();
       return;
     }
 
     if (patchReactFooter()) {
+      patchShortcutCol();
       return;
     }
 
     hideReactFooter();
+    patchShortcutCol();
   }
 
   function schedule() {
