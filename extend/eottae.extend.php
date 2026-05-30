@@ -751,8 +751,11 @@ if (eottae_should_load_assets()) {
         eottae_list_translation_enqueue_assets();
     }
     add_javascript('<script src="'.G5_JS_URL.'/eottae.js'.($eottae_js_version !== '' ? '?v='.$eottae_js_version : '').'" defer></script>', 20);
+    if (!defined('_INDEX_') && function_exists('eottae_builder_inject_home_header_actions_script')) {
+        add_javascript(eottae_builder_inject_home_header_actions_script(), 21);
+    }
     if (defined('G5_IS_MOBILE') && G5_IS_MOBILE) {
-        add_javascript('<script src="'.G5_JS_URL.'/custom.js"></script>', 21);
+        add_javascript('<script src="'.G5_JS_URL.'/custom.js"></script>', 22);
     }
     if (function_exists('eottae_coupon_ensure_ready')) {
         eottae_coupon_ensure_ready();

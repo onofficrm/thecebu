@@ -220,6 +220,35 @@ if (function_exists('eottae_briefing_load_assets')) {
     eottae_briefing_load_assets();
 }
 
+$mypage_menu_html = '';
+ob_start();
+?>
+    <nav class="mypage-menu-groups mypage-menu-groups--top" aria-label="마이페이지 메뉴">
+        <?php foreach ($mypage_menu_groups as $menu_group) {
+            if (empty($menu_group['items'])) {
+                continue;
+            }
+            ?>
+        <section class="mypage-menu-group">
+            <?php if (!empty($menu_group['title'])) { ?>
+            <h2 class="mypage-menu-group__title"><?php echo get_text($menu_group['title']); ?></h2>
+            <?php } ?>
+            <div class="mypage-menu-group__grid">
+                <?php foreach ($menu_group['items'] as $menu_item) {
+                    $menu_tone = isset($menu_item['tone']) ? preg_replace('/[^a-z0-9-]/', '', (string) $menu_item['tone']) : 'default';
+                    if ($menu_tone === '') {
+                        $menu_tone = 'default';
+                    }
+                    ?>
+                <a href="<?php echo $menu_item['href']; ?>" class="mypage-menu-group__item mypage-menu-group__item--<?php echo $menu_tone; ?>"><?php echo get_text($menu_item['label']); ?></a>
+                <?php } ?>
+            </div>
+        </section>
+        <?php } ?>
+    </nav>
+<?php
+$mypage_menu_html = ob_get_clean();
+
 g5_page_start('마이페이지');
 ?>
 
@@ -236,6 +265,8 @@ g5_page_start('마이페이지');
         <?php } ?>
         <p><?php echo get_text($member['mb_email']); ?></p>
     </section>
+
+    <?php echo $mypage_menu_html; ?>
 
     <section class="mypage-language-card" id="mypage-language-card" aria-labelledby="mypage-language-title">
         <h2 class="mypage-language-card__title" id="mypage-language-title" data-i18n="member.mypage_language_title">언어 설정</h2>
@@ -388,30 +419,6 @@ g5_page_start('마이페이지');
         <?php } ?>
         <a href="<?php echo $mypage_talk_url; ?>" class="my-talk-hub-card__link">내 세부톡 대시보드 열기</a>
     </section>
-
-    <nav class="mypage-menu-groups" aria-label="마이페이지 메뉴">
-        <?php foreach ($mypage_menu_groups as $menu_group) {
-            if (empty($menu_group['items'])) {
-                continue;
-            }
-            ?>
-        <section class="mypage-menu-group">
-            <?php if (!empty($menu_group['title'])) { ?>
-            <h2 class="mypage-menu-group__title"><?php echo get_text($menu_group['title']); ?></h2>
-            <?php } ?>
-            <div class="mypage-menu-group__grid">
-                <?php foreach ($menu_group['items'] as $menu_item) {
-                    $menu_tone = isset($menu_item['tone']) ? preg_replace('/[^a-z0-9-]/', '', (string) $menu_item['tone']) : 'default';
-                    if ($menu_tone === '') {
-                        $menu_tone = 'default';
-                    }
-                    ?>
-                <a href="<?php echo $menu_item['href']; ?>" class="mypage-menu-group__item mypage-menu-group__item--<?php echo $menu_tone; ?>"><?php echo get_text($menu_item['label']); ?></a>
-                <?php } ?>
-            </div>
-        </section>
-        <?php } ?>
-    </nav>
 
     <?php if ($is_admin === 'super') {
         if (function_exists('eottae_column_render_mypage_super_admin_section')) {

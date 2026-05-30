@@ -79,7 +79,7 @@ foreach ($eottae_gnb_links as $link) {
                         <?php } ?>
                         <a href="<?php echo $eottae_shop_write_url; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--register eottae-gnb-header__btn--desktop" data-i18n="button.shop_register">업소등록</a>
 
-                        <button type="button" class="eottae-gnb-header__icon-btn eottae-gnb-header__menu-btn site-header__menu-btn" aria-controls="siteMobileNav" aria-expanded="false" aria-label="메뉴 열기" data-i18n-aria-label="common.open_menu">
+                        <button type="button" class="eottae-gnb-header__icon-btn eottae-gnb-header__menu-btn site-header__menu-btn" data-eottae-home-menu-btn="1" aria-controls="siteMobileNav" aria-expanded="false" aria-label="메뉴 열기" data-i18n-aria-label="common.open_menu">
                             <svg class="eottae-gnb-header__icon eottae-gnb-header__icon--menu" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
                         </button>
                     </div>
@@ -88,7 +88,7 @@ foreach ($eottae_gnb_links as $link) {
                 <?php eottae_gnb_render_desktop_mega_panel($eottae_gnb_menu_items); ?>
             </div>
 
-            <div id="siteMobileNav" class="eottae-gnb-header__mobile site-header__mobile-nav" aria-hidden="true">
+            <div id="siteMobileNav" class="eottae-gnb-header__mobile site-header__mobile-nav" data-eottae-home-mobile-nav="1" aria-hidden="true">
                 <nav class="eottae-gnb-header__mobile-nav">
                     <?php eottae_gnb_render_nav_items($eottae_gnb_menu_items, 'mobile'); ?>
                 </nav>
@@ -112,5 +112,5 @@ foreach ($eottae_gnb_links as $link) {
             </div>
         </div>
     </div>
-    <div class="site-header__overlay eottae-gnb-header__overlay" aria-hidden="true"></div>
+    <div class="site-header__overlay eottae-gnb-header__overlay" data-eottae-home-mobile-overlay="1" aria-hidden="true"></div>
 </header>
