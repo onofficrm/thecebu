@@ -891,17 +891,19 @@ if (!function_exists('eottae_ad_platform_maintain_if_due')) {
             }
         }
 
-        return eottae_ad_platform_maintain(true);
+        return eottae_ad_platform_maintain(true, false);
     }
 }
 
 if (!function_exists('eottae_ad_platform_maintain')) {
-    function eottae_ad_platform_maintain($write_cache = false)
+    function eottae_ad_platform_maintain($write_cache = false, $full = true)
     {
         eottae_ad_platform_expire_due();
         eottae_ad_platform_activate_scheduled();
-        eottae_ad_platform_process_expiry_reminders();
-        eottae_ad_platform_cleanup_event_dedupe();
+        if ($full) {
+            eottae_ad_platform_process_expiry_reminders();
+            eottae_ad_platform_cleanup_event_dedupe();
+        }
 
         if ($write_cache) {
             $cache_file = eottae_ad_platform_maintain_cache_file();
@@ -1946,7 +1948,7 @@ if (!function_exists('eottae_ad_platform_run_maintain_cron')) {
         }
 
         eottae_ad_platform_ensure_schema();
-        $result = eottae_ad_platform_maintain(true);
+        $result = eottae_ad_platform_maintain(true, true);
 
         return array_merge($result, array(
             'dry_run' => false,

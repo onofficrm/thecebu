@@ -91,9 +91,6 @@ if (function_exists('eottae_column_ensure_schema')) {
 if (function_exists('eottae_adroom_ensure_schema')) {
     eottae_adroom_ensure_schema();
 }
-if (function_exists('eottae_ad_platform_ensure_schema')) {
-    eottae_ad_platform_ensure_schema();
-}
 if (function_exists('eottae_report_ensure_schema')) {
     eottae_report_ensure_schema();
 }
