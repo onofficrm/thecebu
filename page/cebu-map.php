@@ -158,7 +158,6 @@ g5_page_start('세부생활지도');
                     <?php } ?>
                 </div>
             </div>
-            <div class="cebu-map-bottom-card" data-map-active-card hidden></div>
         </section>
     </div>
 </main>

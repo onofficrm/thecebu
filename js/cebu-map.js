@@ -174,7 +174,6 @@
     this.mapEl = qs('[data-map-canvas]', root);
     this.listEl = qs('[data-map-list]', root);
     this.countEl = qs('[data-map-count]', root);
-    this.activeCardEl = qs('[data-map-active-card]', root);
     this.statusEl = qs('[data-map-status]', root);
     this.nearBtn = qs('[data-map-near]', root);
     this.map = null;
@@ -502,10 +501,6 @@
       this.infoWindow.setContent(cardHtml(loc));
       this.infoWindow.open(this.map, marker);
     }
-    if (this.activeCardEl) {
-      this.activeCardEl.innerHTML = cardHtml(loc);
-      this.activeCardEl.hidden = false;
-    }
   };
 
   CebuLifeMap.prototype.focusMarker = function (loc) {
@@ -517,10 +512,6 @@
       this.map.setZoom(Math.max(this.map.getZoom() || 12, 15));
       this.openMarker(entry.marker, entry.loc);
       return;
-    }
-    if (this.activeCardEl) {
-      this.activeCardEl.innerHTML = cardHtml(loc);
-      this.activeCardEl.hidden = false;
     }
   };
 
