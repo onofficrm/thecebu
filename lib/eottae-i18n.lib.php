@@ -151,7 +151,6 @@ if (!function_exists('eottae_i18n_language_select_html')) {
         ob_start();
         ?>
         <div class="<?php echo get_text($class); ?>" data-eottae-language-control>
-            <label class="sound_only" for="<?php echo get_text($select_id); ?>" data-i18n="language.select_label">언어 선택</label>
             <div class="eottae-language__select-wrap">
                 <select
                     id="<?php echo get_text($select_id); ?>"

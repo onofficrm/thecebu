@@ -98,8 +98,8 @@ if (!function_exists('eottae_public_group_chat_html')) {
                                 maxlength="500"
                                 placeholder="세부 생활, 여행, 병원, 환전, 교통 등 궁금한 점을 물어보세요"
                             ></textarea>
-                            <button type="button" class="public-group-chat__life-ai public-group-chat__composer-action" data-public-chat-life-ai aria-label="AI 세부생활질문" title="AI 세부생활질문">
-                                <span class="public-group-chat__composer-action-text" aria-hidden="true">AI</span>
+                            <button type="button" class="public-group-chat__life-ai public-group-chat__composer-action public-group-chat__composer-action--wide" data-public-chat-life-ai aria-label="AI 세부생활답변" title="AI 세부생활답변">
+                                <span class="public-group-chat__composer-action-text" aria-hidden="true">AI 세부생활답변</span>
                             </button>
                         </div>
                         <p class="public-group-chat__life-ai-status" data-public-chat-life-ai-status aria-live="polite"></p>

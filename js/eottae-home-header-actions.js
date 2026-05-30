@@ -32,7 +32,6 @@
   function renderLanguageSelect(extraClass) {
     return ''
       + '<div class="eottae-language ' + esc(extraClass || '') + '" data-eottae-language-control="1">'
-      + '<label class="sound_only" data-i18n="language.select_label">언어 선택</label>'
       + '<div class="eottae-language__select-wrap">'
       + '<select class="eottae-language__select" data-eottae-language-select aria-label="언어 선택" data-i18n-aria-label="language.select_label">'
       + '<option value="ko">🇰🇷 한국어</option>'
@@ -115,7 +114,8 @@
 
     if (data.is_member) {
       authHtml = ''
-        + '<a href="' + esc(data.mypage_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost" data-i18n="menu.my">MY</a>';
+        + '<a href="' + esc(data.mypage_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost" data-i18n="menu.my">MY</a>'
+        + '<a href="' + esc(data.logout_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost" data-i18n="button.logout">로그아웃</a>';
     } else {
       authHtml = ''
         + '<a href="' + esc(data.login_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost" data-i18n="button.login">로그인</a>'
@@ -123,10 +123,6 @@
     }
 
     authHtml += renderLanguageSelect('eottae-language--mobile-header');
-
-    if (data.is_member) {
-      authHtml += '<a href="' + esc(data.logout_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost" data-i18n="button.logout">로그아웃</a>';
-    }
 
     return ''
       + '<div id="siteMobileNav" class="eottae-home-mobile-nav site-header__mobile-nav eottae-gnb-header__mobile" data-eottae-home-mobile-nav="1" aria-hidden="true">'
@@ -151,7 +147,8 @@
 
     if (menu.is_member) {
       authHtml = ''
-        + '<a href="' + esc(menu.mypage_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="menu.my">MY</a>';
+        + '<a href="' + esc(menu.mypage_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="menu.my">MY</a>'
+        + '<a href="' + esc(menu.logout_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="button.logout">로그아웃</a>';
     } else {
       authHtml = ''
         + '<a href="' + esc(menu.login_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="button.login">로그인</a>'
@@ -174,10 +171,9 @@
       + '</div>'
       + '<div class="eottae-gnb-header__actions">'
       + authHtml
+      + renderLanguageSelect('eottae-language--desktop')
       + (data && data.talk_url ? '<a href="' + esc(data.talk_url) + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--talk eottae-gnb-header__btn--desktop" data-eottae-home-talk-btn="1">' + esc(data.talk_label || '세부톡') + '</a>' : '')
       + (data && data.calendar_url ? '<a href="' + esc(data.calendar_url) + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--calendar eottae-gnb-header__btn--desktop" data-eottae-home-calendar-btn="1">' + esc(data.calendar_label || '세부일정') + '</a>' : '')
-      + renderLanguageSelect('eottae-language--desktop')
-      + (menu.is_member ? '<a href="' + esc(menu.logout_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="button.logout">로그아웃</a>' : '')
       + (menu.shop_write_url ? '<a href="' + esc(menu.shop_write_url) + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--register eottae-gnb-header__btn--desktop" data-i18n="button.shop_register">업소등록</a>' : '')
       + '<button type="button" class="eottae-gnb-header__icon-btn eottae-gnb-header__menu-btn site-header__menu-btn" data-eottae-home-menu-btn="1" aria-controls="siteMobileNav" aria-expanded="false" aria-label="메뉴 열기" data-i18n-aria-label="common.open_menu">'
       + '<svg class="eottae-gnb-header__icon eottae-gnb-header__icon--menu" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>'

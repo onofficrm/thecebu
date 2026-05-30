@@ -428,6 +428,23 @@
   white-space: nowrap;
 }
 
+.public-group-chat--kakao .public-group-chat__composer-action--wide {
+  width: auto;
+  min-width: 44px;
+  max-width: 108px;
+  height: 44px;
+  padding: 0 10px;
+  border-radius: 22px;
+}
+
+.public-group-chat--kakao .public-group-chat__composer-action--wide .public-group-chat__composer-action-text {
+  font-size: 9px;
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+  word-break: keep-all;
+}
+
 .public-group-chat--kakao .public-group-chat__send {
   border: 0;
   color: var(--kakao-send-text);
