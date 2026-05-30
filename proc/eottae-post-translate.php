@@ -43,7 +43,7 @@ $view = get_view($write, $board, G5_PATH.'/skin/board/'.$board['bo_skin']);
 $html = function_exists('eottae_translation_post_html_mode') ? eottae_translation_post_html_mode($view) : 0;
 
 $source_updated_at = eottae_translation_source_updated_at($write);
-$cached = eottae_translation_cache_get($bo_table, $wr_id, $target_language, $source_updated_at);
+$cached = eottae_translation_cache_get_fresh($bo_table, $write, $wr_id, $target_language, $source_updated_at);
 if ($cached) {
     $title = eottae_translation_sanitize_title($cached['translated_title']);
     $content = eottae_translation_sanitize_content($cached['translated_content'], $html);

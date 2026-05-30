@@ -697,6 +697,70 @@ if (!function_exists('eottae_translation_cache_get')) {
     }
 }
 
+if (!function_exists('eottae_translation_cache_row_extras_stale')) {
+    /**
+     * 필드별 번역(extras) 도입 전 캐시 — 제목만 있고 extras가 비어 있으면 stale
+     */
+    function eottae_translation_cache_row_extras_stale($bo_table, array $write, array $cached)
+    {
+        $expected = eottae_translation_extras_from_write($bo_table, $write);
+        if (!$expected) {
+            return false;
+        }
+
+        $cached_extras = eottae_translation_decode_extras($cached['translated_extras'] ?? '');
+        if (!$cached_extras) {
+            return true;
+        }
+
+        foreach (array_keys($expected) as $key) {
+            if (trim((string) ($cached_extras[$key] ?? '')) === '') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+if (!function_exists('eottae_translation_cache_delete_target')) {
+    function eottae_translation_cache_delete_target($bo_table, $wr_id, $target_language)
+    {
+        eottae_translation_ensure_schema();
+
+        $table = eottae_translation_table();
+        $bo_table_sql = sql_escape_string($bo_table);
+        $target_sql = sql_escape_string(eottae_translation_normalize_language($target_language, ''));
+        $wr_id = (int) $wr_id;
+        if ($bo_table_sql === '' || $wr_id < 1 || $target_sql === '') {
+            return;
+        }
+
+        sql_query(" delete from `{$table}`
+            where board_type = '{$bo_table_sql}'
+              and post_id = '{$wr_id}'
+              and target_language = '{$target_sql}' ", false);
+    }
+}
+
+if (!function_exists('eottae_translation_cache_get_fresh')) {
+    function eottae_translation_cache_get_fresh($bo_table, array $write, $wr_id, $target_language, $source_updated_at)
+    {
+        $cached = eottae_translation_cache_get($bo_table, $wr_id, $target_language, $source_updated_at);
+        if (!$cached) {
+            return null;
+        }
+
+        if (eottae_translation_cache_row_extras_stale($bo_table, $write, $cached)) {
+            eottae_translation_cache_delete_target($bo_table, $wr_id, $target_language);
+
+            return null;
+        }
+
+        return $cached;
+    }
+}
+
 if (!function_exists('eottae_translation_cache_save')) {
     function eottae_translation_cache_save($bo_table, $wr_id, $source_language, $target_language, $title, $content, $provider, $source_updated_at, array $extras = array())
     {
@@ -863,7 +927,7 @@ if (!function_exists('eottae_translation_pretranslate_post')) {
 
         @set_time_limit(240);
         foreach (eottae_translation_pretranslate_targets($source_language) as $target_language) {
-            if (eottae_translation_cache_get($bo_table, $wr_id, $target_language, $source_updated_at)) {
+            if (eottae_translation_cache_get_fresh($bo_table, $write, $wr_id, $target_language, $source_updated_at)) {
                 continue;
             }
 
@@ -933,7 +997,7 @@ if (!function_exists('eottae_translation_process_job')) {
             $source_updated_at = $job['source_updated_at'];
         }
 
-        if (eottae_translation_cache_get($bo_table, $wr_id, $target_language, $source_updated_at)) {
+        if (eottae_translation_cache_get_fresh($bo_table, $write, $wr_id, $target_language, $source_updated_at)) {
             sql_query(" update `{$job_table}` set status = 'done', last_error = '', updated_at = '".G5_TIME_YMDHIS."' where id = '{$id}' ", false);
             return array('success' => true, 'cached' => true);
         }
@@ -1106,7 +1170,7 @@ if (!function_exists('eottae_translation_enqueue_post')) {
         $source_updated_at = eottae_translation_source_updated_at($write);
         $queued = 0;
         foreach (eottae_translation_pretranslate_targets($source_language) as $target_language) {
-            if (eottae_translation_cache_get($bo_table, $wr_id, $target_language, $source_updated_at)) {
+            if (eottae_translation_cache_get_fresh($bo_table, $write, $wr_id, $target_language, $source_updated_at)) {
                 continue;
             }
             eottae_translation_job_enqueue($bo_table, $wr_id, $source_language, $target_language, $source_updated_at);
@@ -1217,7 +1281,11 @@ if (!function_exists('eottae_translation_openai_translate_post')) {
             $json_format .= ",\n  \"translatedExtras\": {\n    ".implode(",\n    ", $extra_json)."\n  }";
         }
         $json_format .= "\n}";
-        $prompt .= "\n반환 형식은 JSON으로만 해라.\n\n".$json_format;
+        $prompt .= "\n반환 형식은 JSON으로만 해라.\n";
+        if ($extras) {
+            $prompt .= "translatedExtras 객체의 모든 키에 번역된 값을 반드시 채워라. 키 이름은 바꾸지 마라.\n";
+        }
+        $prompt .= "\n".$json_format;
 
         $payload = array(
             'model' => $model,
