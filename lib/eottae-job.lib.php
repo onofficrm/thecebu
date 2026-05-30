@@ -1217,13 +1217,14 @@ if (!function_exists('eottae_job_view_should_hide_body')) {
      */
     function eottae_job_view_should_hide_body($view, $job_template_data)
     {
+        unset($view);
+
         if (!is_array($job_template_data)) {
             return false;
         }
 
-        if (function_exists('eottae_icrm_content_should_preserve_html')
-            && eottae_icrm_content_should_preserve_html($view['wr_content'] ?? '')) {
-            return false;
+        if (function_exists('eottae_job_template_view_rows')) {
+            return !empty(eottae_job_template_view_rows($job_template_data));
         }
 
         return true;

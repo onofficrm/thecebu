@@ -482,10 +482,12 @@ if ($is_ai_post) {
             || ($is_icrm_view_body && function_exists('eottae_event_row_has_panel_data') && eottae_event_row_has_panel_data($view))
         );
         $hide_plain_body = $job_hide_plain_body || $estate_hide_plain_body || $event_hide_plain_body;
+        if (!$hide_plain_body) {
         ?>
-        <section class="community-view-page__body talk-ai-msg__body<?php echo $is_ai_post ? ' talk-ai-msg__body--ai' : ''; ?><?php echo $hide_plain_body ? ' community-view-page__body--template' : ''; ?><?php echo $is_icrm_view_body ? ' community-view-page__body--icrm' : ''; ?>" id="bo_v_con"<?php echo $hide_plain_body ? ' hidden' : ''; ?>>
+        <section class="community-view-page__body talk-ai-msg__body<?php echo $is_ai_post ? ' talk-ai-msg__body--ai' : ''; ?><?php echo $is_icrm_view_body ? ' community-view-page__body--icrm' : ''; ?>" id="bo_v_con">
             <?php echo get_view_thumbnail($view['content']); ?>
         </section>
+        <?php } ?>
     </article>
 
     <?php include_once(G5_BBS_PATH.'/view_comment.php'); ?>
