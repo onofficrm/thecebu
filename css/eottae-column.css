@@ -1982,6 +1982,10 @@
   margin-top: 22px;
 }
 
+.sebu-writer-page__owner-actions {
+  margin-top: 16px;
+}
+
 .sebu-writer-page__links .sebu-column-profile-block__link-badges {
   display: flex;
   flex-wrap: wrap;

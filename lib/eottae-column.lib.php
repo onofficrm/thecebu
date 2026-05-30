@@ -427,6 +427,13 @@ if (!function_exists('eottae_column_mypage_url')) {
     }
 }
 
+if (!function_exists('eottae_column_profile_edit_url')) {
+    function eottae_column_profile_edit_url()
+    {
+        return G5_URL.'/column/profile.php';
+    }
+}
+
 if (!function_exists('eottae_column_proc_url')) {
     function eottae_column_proc_url()
     {
@@ -2129,6 +2136,47 @@ if (!function_exists('eottae_column_save_author')) {
         eottae_column_sync_author_badges($mb_id);
 
         return array('ok' => true, 'message' => '칼럼니스트 정보가 저장되었습니다.');
+    }
+}
+
+if (!function_exists('eottae_column_save_author_profile')) {
+    function eottae_column_save_author_profile(array $input, $member_mb_id)
+    {
+        $member_mb_id = trim((string) $member_mb_id);
+        if ($member_mb_id === '') {
+            return array('ok' => false, 'message' => '로그인이 필요합니다.');
+        }
+        if (!eottae_column_is_columnist($member_mb_id)) {
+            return array('ok' => false, 'message' => '승인된 칼럼니스트만 프로필을 수정할 수 있습니다.');
+        }
+
+        $existing = eottae_column_get_author($member_mb_id);
+        if (!$existing) {
+            return array('ok' => false, 'message' => '칼럼니스트 프로필을 찾을 수 없습니다.');
+        }
+
+        $pen_name = trim(strip_tags((string) ($input['pen_name'] ?? '')));
+        if ($pen_name === '') {
+            return array('ok' => false, 'message' => '필명을 입력해 주세요.');
+        }
+        if (trim(strip_tags((string) ($input['title'] ?? ''))) === '') {
+            return array('ok' => false, 'message' => '타이틀을 입력해 주세요.');
+        }
+        if (trim(strip_tags((string) ($input['specialty'] ?? ''))) === '') {
+            return array('ok' => false, 'message' => '전문 분야를 입력해 주세요.');
+        }
+        if (trim((string) ($input['bio'] ?? '')) === '') {
+            return array('ok' => false, 'message' => '소개글을 입력해 주세요.');
+        }
+
+        $input['mb_id'] = $member_mb_id;
+        $input['is_active'] = (int) ($existing['is_active'] ?? 1);
+        $input['is_visible'] = (int) ($existing['is_visible'] ?? 1);
+        if (empty($_FILES['profile_image']['tmp_name'])) {
+            $input['profile_image_keep'] = 1;
+        }
+
+        return eottae_column_save_author($input, false);
     }
 }
 

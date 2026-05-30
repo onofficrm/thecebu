@@ -39,6 +39,7 @@ if (!function_exists('eottae_column_mypage_section_html')) {
             </div>
             <p class="sebu-column-mypage__actions">
                 <a href="<?php echo eottae_column_write_url(); ?>" class="sebu-column-btn sebu-column-btn--primary">새 컬럼 작성</a>
+                <a href="<?php echo function_exists('eottae_column_profile_edit_url') ? eottae_column_profile_edit_url() : G5_URL.'/column/profile.php'; ?>" class="sebu-column-btn sebu-column-btn--outline">프로필 수정</a>
                 <a href="<?php echo eottae_column_mypage_url(); ?>" class="sebu-column-btn sebu-column-btn--ghost">내 컬럼 관리</a>
                 <a href="<?php echo eottae_column_author_url($mb_id); ?>" class="sebu-column-btn sebu-column-btn--ghost">프로필 보기</a>
             </p>

@@ -157,6 +157,11 @@ if (function_exists('eottae_column_is_columnist') && eottae_column_is_columnist(
         'href' => function_exists('eottae_column_mypage_url') ? eottae_column_mypage_url() : G5_URL.'/mypage/column.php',
         'tone' => 'content',
     );
+    $content_menu_items[] = array(
+        'label' => '프로필 설정',
+        'href' => function_exists('eottae_column_profile_edit_url') ? eottae_column_profile_edit_url() : G5_URL.'/column/profile.php',
+        'tone' => 'content',
+    );
 }
 $mypage_menu_groups[] = array('title' => '콘텐츠', 'items' => $content_menu_items);
 

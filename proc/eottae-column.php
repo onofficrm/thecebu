@@ -82,6 +82,23 @@ if ($action === 'apply_columnist') {
     alert($result['message'] ?? '신청 접수에 실패했습니다.', eottae_column_apply_url());
 }
 
+if ($action === 'update_author_profile') {
+    if (!eottae_column_verify_member_token($token)) {
+        alert('보안 토큰이 만료되었습니다. 페이지를 새로고침해 주세요.', eottae_column_profile_edit_url());
+    }
+    if (!$is_member) {
+        alert('로그인이 필요합니다.', eottae_column_profile_edit_url());
+    }
+
+    $result = eottae_column_save_author_profile($_POST, $member['mb_id'] ?? '');
+    eottae_column_member_token(true);
+
+    if (!empty($result['ok'])) {
+        alert($result['message'] ?? '프로필을 저장했습니다.', eottae_column_profile_edit_url());
+    }
+    alert($result['message'] ?? '프로필 저장에 실패했습니다.', eottae_column_profile_edit_url());
+}
+
 if (!eottae_column_verify_member_token($token)) {
     eottae_column_proc_json(false, '보안 토큰이 만료되었습니다. 페이지를 새로고침해 주세요.');
 }

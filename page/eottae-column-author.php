@@ -94,6 +94,11 @@ g5_page_start(get_text($author['display_name'] ?? '').' · 칼럼니스트');
             <div class="sebu-writer-page__links">
                 <?php echo eottae_column_render_author_profile_link_badges_html($author, 'sebu-writer-page__social'); ?>
             </div>
+            <?php if ($is_member && ($member['mb_id'] ?? '') === $mb_id) { ?>
+            <p class="sebu-writer-page__owner-actions">
+                <a href="<?php echo function_exists('eottae_column_profile_edit_url') ? eottae_column_profile_edit_url() : G5_URL.'/column/profile.php'; ?>" class="sebu-column-btn sebu-column-btn--outline sebu-column-btn--sm">프로필 수정</a>
+            </p>
+            <?php } ?>
         </div>
     </header>
 
