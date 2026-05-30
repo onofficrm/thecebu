@@ -61,7 +61,6 @@ foreach ($eottae_gnb_links as $link) {
 
                     <div class="eottae-gnb-header__actions">
                         <?php if ($is_member) { ?>
-                        <a href="<?php echo $eottae_mypage_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="menu.my">MY</a>
                         <a href="<?php echo $eottae_logout_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="button.logout">로그아웃</a>
                         <?php if ($is_admin) { ?>
                         <a href="<?php echo correct_goto_url(G5_ADMIN_URL); ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="common.admin">관리자</a>
@@ -95,7 +94,6 @@ foreach ($eottae_gnb_links as $link) {
                 </nav>
                 <div class="eottae-gnb-header__mobile-auth">
                     <?php if ($is_member) { ?>
-                    <a href="<?php echo $eottae_mypage_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost" data-i18n="menu.my">MY</a>
                     <a href="<?php echo $eottae_logout_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost" data-i18n="button.logout">로그아웃</a>
                     <?php } else { ?>
                     <a href="<?php echo $eottae_login_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost" data-i18n="button.login">로그인</a>

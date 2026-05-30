@@ -114,7 +114,6 @@
 
     if (data.is_member) {
       authHtml = ''
-        + '<a href="' + esc(data.mypage_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost" data-i18n="menu.my">MY</a>'
         + '<a href="' + esc(data.logout_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost" data-i18n="button.logout">로그아웃</a>';
     } else {
       authHtml = ''
@@ -147,7 +146,6 @@
 
     if (menu.is_member) {
       authHtml = ''
-        + '<a href="' + esc(menu.mypage_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="menu.my">MY</a>'
         + '<a href="' + esc(menu.logout_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="button.logout">로그아웃</a>';
     } else {
       authHtml = ''
@@ -438,6 +436,10 @@
     }
   }
 
+  function renderNavLinkInner(label) {
+    return '<span class="eottae-gnb-header__nav-caret" aria-hidden="true"></span>' + esc(label);
+  }
+
   function renderDesktopNavLinks(items) {
     if (!items || !items.length) {
       return '';
@@ -464,10 +466,7 @@
         + i18nAttrForText(item.label)
         + (hasChildren ? ' aria-haspopup="true"' : '')
         + '>'
-        + esc(item.label);
-      if (hasChildren) {
-        html += '<span class="eottae-gnb-header__nav-caret" aria-hidden="true"></span>';
-      }
+        + renderNavLinkInner(item.label);
       html += '</a>';
     }
 
@@ -1008,12 +1007,19 @@
     return null;
   }
 
+  function applyDesktopNavLinkLabel(link, label) {
+    if (!link) {
+      return;
+    }
+    link.innerHTML = renderNavLinkInner(label || '');
+  }
+
   function buildColumnNavLink(data, className, attrName) {
     var link = document.createElement('a');
     link.href = data.column_url;
     link.className = className || 'eottae-gnb-header__nav-link';
     link.setAttribute(attrName, '1');
-    link.textContent = data.column_label || '컬럼';
+    applyDesktopNavLinkLabel(link, data.column_label || '컬럼');
     return link;
   }
 
@@ -1022,7 +1028,7 @@
     link.href = data.adroom_url;
     link.className = className || 'eottae-gnb-header__nav-link';
     link.setAttribute(attrName, '1');
-    link.textContent = data.adroom_label || '광고방';
+    applyDesktopNavLinkLabel(link, data.adroom_label || '광고방');
     return link;
   }
 
@@ -1054,7 +1060,11 @@
     link.href = data.free_url;
     link.className = className || 'eottae-gnb-header__nav-link';
     link.setAttribute(attrName, '1');
-    link.textContent = data.free_label || '자유게시판';
+    if (className && className.indexOf('eottae-gnb-header__nav-link') !== -1) {
+      applyDesktopNavLinkLabel(link, data.free_label || '자유게시판');
+    } else {
+      link.textContent = data.free_label || '자유게시판';
+    }
     return link;
   }
 

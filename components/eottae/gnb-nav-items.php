@@ -82,10 +82,8 @@ if (!function_exists('eottae_gnb_render_desktop_nav_primary')) {
                 <?php echo $key !== '' ? ' data-mega-key="'.get_text($key).'"' : ''; ?>
                 <?php echo $children ? ' aria-haspopup="true"' : ''; ?>
             >
-                <?php echo get_text($label); ?>
-                <?php if ($children) { ?>
                 <span class="eottae-gnb-header__nav-caret" aria-hidden="true"></span>
-                <?php } ?>
+                <?php echo get_text($label); ?>
             </a>
             <?php
         }

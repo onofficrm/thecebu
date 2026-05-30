@@ -346,6 +346,7 @@ img[data-eottae-logo] {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
+  gap: 5px;
   padding: 8px 9px;
   border-radius: 0;
   font-size: 13px;
@@ -376,10 +377,6 @@ img[data-eottae-logo] {
   margin-left: auto;
 }
 
-.eottae-gnb-header__nav-link--parent {
-  gap: 4px;
-}
-
 @media (min-width: 1024px) {
   .eottae-gnb-header__nav-link {
     padding-left: 0;
@@ -389,9 +386,9 @@ img[data-eottae-logo] {
 
 .eottae-gnb-header__nav-caret {
   display: inline-block;
+  flex-shrink: 0;
   width: 0;
   height: 0;
-  margin-top: 2px;
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
   border-top: 5px solid currentColor;
@@ -814,13 +811,24 @@ img[data-eottae-logo] {
   display: none !important;
   align-items: center;
   gap: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  min-width: 0;
+  flex: 1;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+#root header [data-eottae-home-gnb-nav="1"]::-webkit-scrollbar {
+  display: none;
 }
 
 @media (min-width: 1024px) {
   #root header [data-eottae-home-gnb-nav="1"] {
     display: flex !important;
     gap: 18px;
+    overflow: visible;
+    flex-wrap: nowrap;
   }
 
   #root header [data-eottae-home-legacy-nav-hidden="1"] {
