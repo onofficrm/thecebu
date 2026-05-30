@@ -92,6 +92,10 @@ $mb_marketing_agree_default  = isset($_POST['mb_marketing_agree_default'])  ? tr
 $mb_mailling_default         = isset($_POST['mb_mailling_default'])         ? trim($_POST['mb_mailling_default'])         : null;
 $mb_sms_default              = isset($_POST['mb_sms_default'])              ? trim($_POST['mb_sms_default'])              : null;
 $mb_thirdparty_agree_default = isset($_POST['mb_thirdparty_agree_default']) ? trim($_POST['mb_thirdparty_agree_default']) : null;
+$mb_nick_default = isset($_POST['mb_nick_default']) ? trim($_POST['mb_nick_default']) : '';
+if ($w == 'u' && $mb_nick_default === '' && isset($member['mb_nick'])) {
+    $mb_nick_default = $member['mb_nick'];
+}
 
 // 폼에 수신설정 섹션이 없는 경우 기존 DB 값 유지 (회원정보 수정 시)
 if ($w == 'u') {
@@ -551,8 +555,8 @@ if (isset($_FILES['mb_icon']) && is_uploaded_file($_FILES['mb_icon']['tmp_name']
     }
 }
 
-// 회원 프로필 이미지
-if( $config['cf_member_img_size'] && $config['cf_member_img_width'] && $config['cf_member_img_height'] ){
+// 회원 프로필 이미지 (eottae 스킨은 tail.skin에서 처리)
+if( !$is_eottae_member_skin && $config['cf_member_img_size'] && $config['cf_member_img_width'] && $config['cf_member_img_height'] ){
     $mb_tmp_dir = G5_DATA_PATH.'/member_image/';
     $mb_dir = $mb_tmp_dir.substr($mb_id,0,2);
     if( !is_dir($mb_tmp_dir) ){

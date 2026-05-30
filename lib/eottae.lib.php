@@ -28,6 +28,103 @@ if (!function_exists('eottae_is_business_member')) {
     }
 }
 
+if (!function_exists('eottae_member_has_registered_shop')) {
+    function eottae_member_has_registered_shop($mb_id)
+    {
+        $mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $mb_id);
+        if ($mb_id === '') {
+            return false;
+        }
+
+        if (!function_exists('eottae_business_shop_posts')) {
+            include_once G5_LIB_PATH.'/eottae-shop-owner.lib.php';
+        }
+
+        if (!function_exists('eottae_business_shop_posts')) {
+            return false;
+        }
+
+        $posts = eottae_business_shop_posts($mb_id, 1);
+
+        return !empty($posts);
+    }
+}
+
+if (!function_exists('eottae_member_has_board_write')) {
+    function eottae_member_has_board_write($mb_id, $bo_table)
+    {
+        global $g5;
+
+        $mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $mb_id);
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+        if ($mb_id === '' || $bo_table === '') {
+            return false;
+        }
+
+        if (!function_exists('get_board_db')) {
+            return false;
+        }
+
+        $board = get_board_db($bo_table, true);
+        if (!$board || empty($board['bo_table'])) {
+            return false;
+        }
+
+        $write_table = $g5['write_prefix'].$bo_table;
+        $row = sql_fetch("
+            SELECT wr_id
+            FROM `{$write_table}`
+            WHERE mb_id = '".sql_escape_string($mb_id)."'
+              AND wr_is_comment = 0
+            LIMIT 1
+        ", false);
+
+        return !empty($row['wr_id']);
+    }
+}
+
+if (!function_exists('eottae_member_business_board_badges')) {
+    function eottae_member_business_board_badges($mb_id)
+    {
+        $mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $mb_id);
+        if ($mb_id === '' || !eottae_member_has_registered_shop($mb_id)) {
+            return array();
+        }
+
+        $boards = array(
+            array(
+                'table' => defined('EOTTae_MARKET_TABLE') ? EOTTae_MARKET_TABLE : 'market',
+                'label' => '중고물품',
+                'class' => 'business-market',
+            ),
+            array(
+                'table' => defined('EOTTae_JOB_TABLE') ? EOTTae_JOB_TABLE : 'job',
+                'label' => '구인구직',
+                'class' => 'business-job',
+            ),
+            array(
+                'table' => defined('EOTTae_ESTATE_TABLE') ? EOTTae_ESTATE_TABLE : 'estate',
+                'label' => '부동산',
+                'class' => 'business-estate',
+            ),
+        );
+
+        $badges = array();
+        foreach ($boards as $board) {
+            if (!eottae_member_has_board_write($mb_id, $board['table'])) {
+                continue;
+            }
+            $badges[] = array(
+                'type'  => 'info',
+                'label' => $board['label'],
+                'class' => $board['class'],
+            );
+        }
+
+        return $badges;
+    }
+}
+
 if (!function_exists('eottae_member_audience_options')) {
     function eottae_member_audience_options()
     {

@@ -1199,6 +1199,12 @@
   font-size: 1rem;
 }
 
+.sebu-column-profile-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .sebu-column-profile-block__main {
   display: flex;
   align-items: center;
@@ -1212,9 +1218,49 @@
   font-size: 0.95rem;
 }
 
-.sebu-column-profile-block__title {
-  font-size: 0.8rem;
+.sebu-column-profile-block__bio {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  line-height: 1.45;
   color: var(--col-muted);
+}
+
+.sebu-column-profile-block__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 0;
+  padding-left: 60px;
+}
+
+.sebu-column-profile-block__badges--post-view,
+.sebu-column-profile-block--compact .sebu-column-profile-block__badges {
+  padding-left: 0;
+}
+
+.sebu-column-profile-badge--info {
+  cursor: default;
+}
+
+.sebu-column-profile-badge--official {
+  border-color: rgba(15, 76, 92, 0.24);
+  background: rgba(15, 76, 92, 0.08);
+  color: var(--col-accent);
+}
+
+.sebu-column-profile-badge--grade {
+  border-color: rgba(180, 83, 9, 0.18);
+  background: rgba(251, 191, 36, 0.12);
+  color: #92400e;
+}
+
+.sebu-column-profile-badge--business-market,
+.sebu-column-profile-badge--business-job,
+.sebu-column-profile-badge--business-estate {
+  border-color: rgba(2, 132, 199, 0.2);
+  background: rgba(224, 242, 254, 0.85);
+  color: #0369a1;
 }
 
 .sebu-column-social {
@@ -2556,6 +2602,10 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
+  }
+
+  .sebu-column-profile-block__badges {
+    padding-left: 0;
   }
 
   .sebu-article__stats {

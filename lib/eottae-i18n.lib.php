@@ -119,27 +119,56 @@ if (!function_exists('eottae_i18n_label_html')) {
     }
 }
 
+if (!function_exists('eottae_i18n_language_definitions')) {
+    function eottae_i18n_language_definitions()
+    {
+        return array(
+            'ko' => array('flag' => '🇰🇷', 'label' => '한국어', 'i18n' => 'language.ko'),
+            'ja' => array('flag' => '🇯🇵', 'label' => '日本語', 'i18n' => 'language.ja'),
+            'zh' => array('flag' => '🇨🇳', 'label' => '中文', 'i18n' => 'language.zh'),
+            'en' => array('flag' => '🇺🇸', 'label' => 'English', 'i18n' => 'language.en'),
+        );
+    }
+}
+
 if (!function_exists('eottae_i18n_language_badge_html')) {
     function eottae_i18n_language_badge_html($class = '')
     {
-        $class = trim('eottae-language '.(string) $class);
-
-        ob_start();
-        ?>
-        <div class="<?php echo get_text($class); ?>" data-eottae-language-badge>
-            <span class="eottae-language__label">
-                <span class="eottae-language__icon" aria-hidden="true">🇰🇷</span>
-                <span class="eottae-language__text" data-i18n="language.ko">한국어</span>
-            </span>
-        </div>
-        <?php
-        return trim(ob_get_clean());
+        return eottae_i18n_language_select_html($class);
     }
 }
 
 if (!function_exists('eottae_i18n_language_select_html')) {
     function eottae_i18n_language_select_html($class = '')
     {
-        return eottae_i18n_language_badge_html($class);
+        static $select_seq = 0;
+        $select_seq += 1;
+
+        $class = trim('eottae-language '.(string) $class);
+        $languages = eottae_i18n_language_definitions();
+        $select_id = 'eottae-language-select-'.$select_seq;
+
+        ob_start();
+        ?>
+        <div class="<?php echo get_text($class); ?>" data-eottae-language-control>
+            <label class="sound_only" for="<?php echo get_text($select_id); ?>" data-i18n="language.select_label">언어 선택</label>
+            <div class="eottae-language__select-wrap">
+                <select
+                    id="<?php echo get_text($select_id); ?>"
+                    class="eottae-language__select"
+                    data-eottae-language-select
+                    aria-label="언어 선택"
+                    data-i18n-aria-label="language.select_label"
+                >
+                    <?php foreach ($languages as $code => $meta) { ?>
+                    <option value="<?php echo get_text($code); ?>">
+                        <?php echo get_text($meta['flag'].' '.$meta['label']); ?>
+                    </option>
+                    <?php } ?>
+                </select>
+            </div>
+        </div>
+        <?php
+        return trim(ob_get_clean());
     }
 }

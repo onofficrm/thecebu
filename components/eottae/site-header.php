@@ -61,10 +61,7 @@ foreach ($eottae_gnb_links as $link) {
 
                     <div class="eottae-gnb-header__actions">
                         <?php if ($is_member) { ?>
-                        <a href="<?php echo $eottae_logout_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="button.logout">로그아웃</a>
-                        <?php if ($is_admin) { ?>
-                        <a href="<?php echo correct_goto_url(G5_ADMIN_URL); ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="common.admin">관리자</a>
-                        <?php } ?>
+                        <a href="<?php echo $eottae_mypage_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="menu.my">MY</a>
                         <?php } else { ?>
                         <a href="<?php echo $eottae_login_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="button.login">로그인</a>
                         <a href="<?php echo $eottae_register_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="button.register">회원가입</a>
@@ -76,8 +73,14 @@ foreach ($eottae_gnb_links as $link) {
                             <?php echo get_text($link['label']); ?>
                         </a>
                         <?php } ?>
-                        <a href="<?php echo $eottae_shop_write_url; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--register eottae-gnb-header__btn--desktop" data-i18n="button.shop_register">업소등록</a>
                         <?php echo function_exists('eottae_i18n_language_select_html') ? eottae_i18n_language_select_html('eottae-language--desktop') : ''; ?>
+                        <?php if ($is_member) { ?>
+                        <a href="<?php echo $eottae_logout_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="button.logout">로그아웃</a>
+                        <?php if ($is_admin) { ?>
+                        <a href="<?php echo correct_goto_url(G5_ADMIN_URL); ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="common.admin">관리자</a>
+                        <?php } ?>
+                        <?php } ?>
+                        <a href="<?php echo $eottae_shop_write_url; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--register eottae-gnb-header__btn--desktop" data-i18n="button.shop_register">업소등록</a>
 
                         <button type="button" class="eottae-gnb-header__icon-btn eottae-gnb-header__menu-btn site-header__menu-btn" aria-controls="siteMobileNav" aria-expanded="false" aria-label="메뉴 열기" data-i18n-aria-label="common.open_menu">
                             <svg class="eottae-gnb-header__icon eottae-gnb-header__icon--menu" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -94,7 +97,7 @@ foreach ($eottae_gnb_links as $link) {
                 </nav>
                 <div class="eottae-gnb-header__mobile-auth">
                     <?php if ($is_member) { ?>
-                    <a href="<?php echo $eottae_logout_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost" data-i18n="button.logout">로그아웃</a>
+                    <a href="<?php echo $eottae_mypage_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost" data-i18n="menu.my">MY</a>
                     <?php } else { ?>
                     <a href="<?php echo $eottae_login_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost" data-i18n="button.login">로그인</a>
                     <a href="<?php echo $eottae_register_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost" data-i18n="button.register">회원가입</a>
@@ -105,6 +108,10 @@ foreach ($eottae_gnb_links as $link) {
                     <a href="<?php echo $link['href']; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--talk eottae-gnb-header__btn--mobile-action<?php echo $active ? ' is-active' : ''; ?>">
                         <?php echo get_text($link['label']); ?>
                     </a>
+                    <?php } ?>
+                    <?php echo function_exists('eottae_i18n_language_select_html') ? eottae_i18n_language_select_html('eottae-language--mobile-header') : ''; ?>
+                    <?php if ($is_member) { ?>
+                    <a href="<?php echo $eottae_logout_href; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost" data-i18n="button.logout">로그아웃</a>
                     <?php } ?>
                     <a href="<?php echo $eottae_shop_write_url; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--register" data-i18n="button.shop_register">업소등록</a>
                 </div>

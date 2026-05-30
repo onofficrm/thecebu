@@ -21,6 +21,9 @@ $member_role = (isset($member['mb_1']) && $member['mb_1'] === 'business') ? 'bus
         <input type="hidden" name="agree" value="<?php echo $agree ?>">
         <input type="hidden" name="agree2" value="<?php echo $agree2 ?>">
         <input type="hidden" name="mb_name" id="reg_mb_name" value="<?php echo isset($member['mb_name']) ? get_text($member['mb_name']) : ''; ?>">
+        <?php if ($w === 'u') { ?>
+        <input type="hidden" name="mb_nick_default" value="<?php echo isset($member['mb_nick']) ? get_text($member['mb_nick']) : ''; ?>">
+        <?php } ?>
 
         <?php
         if (is_file(G5_LIB_PATH.'/eottae-member-profile.lib.php')) {

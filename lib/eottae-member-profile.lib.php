@@ -3,16 +3,37 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
+if (!function_exists('eottae_member_profile_bootstrap_config')) {
+    function eottae_member_profile_bootstrap_config()
+    {
+        global $config;
+
+        if (!isset($config['cf_member_img_size']) || (int) $config['cf_member_img_size'] < 5242880) {
+            $config['cf_member_img_size'] = 5242880;
+        }
+        if (!isset($config['cf_member_img_width']) || (int) $config['cf_member_img_width'] < 512) {
+            $config['cf_member_img_width'] = 512;
+        }
+        if (!isset($config['cf_member_img_height']) || (int) $config['cf_member_img_height'] < 512) {
+            $config['cf_member_img_height'] = 512;
+        }
+    }
+}
+
 if (!function_exists('eottae_member_profile_enabled')) {
     function eottae_member_profile_enabled()
     {
         global $config;
+
+        eottae_member_profile_bootstrap_config();
 
         return !empty($config['cf_member_img_size'])
             && !empty($config['cf_member_img_width'])
             && !empty($config['cf_member_img_height']);
     }
 }
+
+eottae_member_profile_bootstrap_config();
 
 if (!function_exists('eottae_member_profile_image_path')) {
     function eottae_member_profile_image_path($mb_id)
@@ -318,7 +339,7 @@ if (!function_exists('eottae_render_member_profile_photo_field')) {
             : '?';
 
         $ai_enabled = eottae_member_profile_ai_enabled();
-        $max_kb = (int) ceil(((int) $config['cf_member_img_size']) / 1024);
+        $max_mb = max(1, (int) round(((int) $config['cf_member_img_size']) / 1048576));
         $max_w = (int) $config['cf_member_img_width'];
         $max_h = (int) $config['cf_member_img_height'];
 
@@ -354,7 +375,7 @@ if (!function_exists('eottae_render_member_profile_photo_field')) {
                         <span class="eottae-member-profile-field__pick-btn" data-profile-pick-label><?php echo get_text($file_label); ?></span>
                     </label>
                     <p class="eottae-member-profile-field__filename" data-profile-filename><?php echo $has_image ? '등록된 프로필 사진이 있습니다.' : '선택된 사진이 없습니다.'; ?></p>
-                    <p class="eottae-member-profile-field__hint">jpg, png, gif · <?php echo number_format($max_w); ?>×<?php echo number_format($max_h); ?>px 권장 · <?php echo number_format($max_kb); ?>KB 이하</p>
+                    <p class="eottae-member-profile-field__hint">jpg, png, gif · <?php echo number_format($max_w); ?>×<?php echo number_format($max_h); ?>px 권장 · <?php echo number_format($max_mb); ?>MB 이하</p>
 
                     <div class="eottae-member-profile-field__actions">
                         <?php if ($ai_enabled) { ?>
