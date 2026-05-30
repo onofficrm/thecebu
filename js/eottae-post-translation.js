@@ -122,8 +122,13 @@
     }
 
     Object.keys(extras).forEach(function (key) {
+      var value = extras[key];
+      if (value == null || String(value).trim() === '') {
+        return;
+      }
+
       qsa('[data-translation-extra="' + key + '"]', scope).forEach(function (el) {
-        el.textContent = extras[key];
+        el.textContent = value;
       });
     });
   }
