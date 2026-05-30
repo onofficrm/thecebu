@@ -1443,6 +1443,89 @@ if (!function_exists('eottae_column_get_post')) {
     }
 }
 
+if (!function_exists('eottae_column_neighbor_posts')) {
+    /**
+     * 컬럼 상세 — 목록(최신순) 기준 이전·다음 글
+     *
+     * @return array{prev: ?array<string, mixed>, next: ?array<string, mixed>}
+     */
+    function eottae_column_neighbor_posts($wr_id, array $opts = array())
+    {
+        global $g5;
+
+        $wr_id = (int) $wr_id;
+        if ($wr_id < 1) {
+            return array('prev' => null, 'next' => null);
+        }
+
+        $row = eottae_column_get_write_row($wr_id);
+        if (!$row) {
+            return array('prev' => null, 'next' => null);
+        }
+
+        $write_table = eottae_column_write_table();
+        $meta_table = $g5['sebu_columns_meta_table'];
+        $datetime = (string) ($row['wr_datetime'] ?? '');
+        $datetime_sql = sql_escape_string($datetime);
+        $include_hidden = !empty($opts['include_hidden']);
+        $status_where = $include_hidden ? '' : " AND m.status = 'published' ";
+
+        $prev_sql = "
+            SELECT w.wr_id, w.wr_subject, w.wr_datetime, m.category
+            FROM `{$write_table}` w
+            INNER JOIN `{$meta_table}` m ON m.wr_id = w.wr_id
+            WHERE w.wr_is_comment = 0
+            {$status_where}
+            AND (
+                w.wr_datetime > '{$datetime_sql}'
+                OR (w.wr_datetime = '{$datetime_sql}' AND w.wr_id > {$wr_id})
+            )
+            ORDER BY w.wr_datetime ASC, w.wr_id ASC
+            LIMIT 1
+        ";
+
+        $next_sql = "
+            SELECT w.wr_id, w.wr_subject, w.wr_datetime, m.category
+            FROM `{$write_table}` w
+            INNER JOIN `{$meta_table}` m ON m.wr_id = w.wr_id
+            WHERE w.wr_is_comment = 0
+            {$status_where}
+            AND (
+                w.wr_datetime < '{$datetime_sql}'
+                OR (w.wr_datetime = '{$datetime_sql}' AND w.wr_id < {$wr_id})
+            )
+            ORDER BY w.wr_datetime DESC, w.wr_id DESC
+            LIMIT 1
+        ";
+
+        $format_neighbor = function ($neighbor_row) {
+            if (!$neighbor_row) {
+                return null;
+            }
+
+            $neighbor_id = (int) ($neighbor_row['wr_id'] ?? 0);
+            if ($neighbor_id < 1) {
+                return null;
+            }
+
+            $category = (string) ($neighbor_row['category'] ?? '');
+
+            return array(
+                'wr_id'          => $neighbor_id,
+                'wr_subject'     => get_text($neighbor_row['wr_subject'] ?? ''),
+                'view_url'       => eottae_column_view_url($neighbor_id),
+                'date_label'     => substr((string) ($neighbor_row['wr_datetime'] ?? ''), 0, 10),
+                'category_label' => eottae_column_category_label($category),
+            );
+        };
+
+        return array(
+            'prev' => $format_neighbor(sql_fetch($prev_sql)),
+            'next' => $format_neighbor(sql_fetch($next_sql)),
+        );
+    }
+}
+
 if (!function_exists('eottae_column_increment_hit')) {
     function eottae_column_increment_hit($wr_id)
     {

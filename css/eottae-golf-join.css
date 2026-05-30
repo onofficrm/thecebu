@@ -294,24 +294,30 @@ body.golf-join-ui .golf-join-card {
 
 body.golf-join-ui .golf-join-card__inner {
   display: flex;
-  gap: 12px;
-  padding: 14px;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
   border-radius: var(--golf-radius);
   background: var(--golf-surface);
   border: 1px solid var(--golf-line);
   box-shadow: var(--golf-shadow);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+body.golf-join-ui .golf-join-card__inner:active {
+  transform: scale(0.995);
 }
 
 body.golf-join-ui .golf-join-card__venue {
-  flex: 0 0 84px;
-  width: 84px;
+  flex: 0 0 var(--eottae-list-thumb-size, 104px);
+  width: var(--eottae-list-thumb-size, 104px);
 }
 
 body.golf-join-ui .golf-join-card__shop-link {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
+  align-items: stretch;
+  gap: 8px;
   text-decoration: none;
   color: inherit;
 }
@@ -321,26 +327,20 @@ body.golf-join-ui .golf-join-card__shop-link:active {
 }
 
 body.golf-join-ui .golf-join-card__shop-caption {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
+  display: block;
   width: 100%;
-  text-align: center;
-}
-
-body.golf-join-ui .golf-join-card__shop-caption-line {
   font-size: 10px;
   font-weight: 800;
-  line-height: 1.25;
+  line-height: 1.35;
   letter-spacing: -0.02em;
+  text-align: left;
   color: var(--golf-primary-dark);
 }
 
 body.golf-join-ui .golf-join-card__thumb {
-  flex: 0 0 80px;
-  width: 80px;
-  height: 80px;
+  flex: 0 0 var(--eottae-list-thumb-size, 104px);
+  width: 100%;
+  height: var(--eottae-list-thumb-size, 104px);
   border-radius: 14px;
   overflow: hidden;
   background: #f1f5f9;
@@ -362,12 +362,17 @@ body.golf-join-ui .golf-join-card__thumb--empty {
 }
 
 body.golf-join-ui .golf-join-card__body {
+  display: flex;
   flex: 1;
+  flex-direction: column;
+  gap: 10px;
   min-width: 0;
 }
 
 body.golf-join-ui .golf-join-card__detail {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   text-decoration: none;
   color: inherit;
 }
@@ -378,9 +383,10 @@ body.golf-join-ui .golf-join-card__detail:active {
 
 body.golf-join-ui .golf-join-card__top {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 0;
 }
 
 body.golf-join-ui .golf-join-card__status {
@@ -417,12 +423,16 @@ body.golf-join-ui .golf-join-card__badge {
 }
 
 body.golf-join-ui .golf-join-card__course {
-  display: block;
-  margin: 0 0 8px;
-  font-size: 1.05rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  margin: 0;
+  font-size: 1.02rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  line-height: 1.35;
+  line-height: 1.4;
   color: var(--golf-text);
   text-decoration: none;
 }
@@ -432,10 +442,10 @@ body.golf-join-ui .golf-join-card__course:active {
 }
 
 body.golf-join-ui .golf-join-card__meta {
-  margin: 0 0 12px;
-  font-size: 13px;
+  margin: 0;
+  font-size: 12px;
   color: var(--golf-muted);
-  line-height: 1.5;
+  line-height: 1.45;
 }
 
 body.golf-join-ui .golf-join-card__dot {
@@ -447,54 +457,71 @@ body.golf-join-ui .golf-join-card__row {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 12px;
+  margin: 0;
 }
 
 body.golf-join-ui .golf-join-card__price {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 800;
   color: var(--golf-primary-dark);
+  letter-spacing: -0.02em;
 }
 
 body.golf-join-ui .golf-join-card__count {
-  font-size: 14px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid var(--golf-line);
+  font-size: 12px;
   color: var(--golf-muted);
   font-weight: 700;
+  white-space: nowrap;
 }
 
 body.golf-join-ui .golf-join-card__count strong {
   color: var(--golf-text);
-  font-size: 1.1rem;
+  font-size: 0.98rem;
+  font-weight: 900;
 }
 
 body.golf-join-ui .golf-join-card__tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin: 0 0 12px;
+  gap: 5px;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
 body.golf-join-ui .golf-join-card__tags li {
-  padding: 4px 10px;
+  padding: 3px 9px;
   border-radius: 999px;
   background: #f8fafc;
   border: 1px solid var(--golf-line);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: #475569;
+  line-height: 1.35;
 }
 
 body.golf-join-ui .golf-join-card__host {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 0;
-  font-size: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+  font-size: 11px;
   color: var(--golf-muted);
 }
 
 body.golf-join-ui .golf-join-card__host-label {
-  margin-right: 6px;
-  font-weight: 700;
+  flex-shrink: 0;
+  font-weight: 800;
   color: #94a3b8;
 }
 

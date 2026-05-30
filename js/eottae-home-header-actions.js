@@ -825,6 +825,24 @@
     return hrefMatch;
   }
 
+  function headerTalkButtonExists(header, mobileOnly) {
+    if (!header) {
+      return false;
+    }
+
+    if (mobileOnly) {
+      return !!header.querySelector(
+        '[data-eottae-home-talk-btn="mobile"], '
+        + '.eottae-gnb-header__btn--talk.eottae-gnb-header__btn--mobile-action'
+      );
+    }
+
+    return !!header.querySelector(
+      '[data-eottae-home-talk-btn="1"], '
+      + '.eottae-gnb-header__actions .eottae-gnb-header__btn--talk'
+    );
+  }
+
   function buildActionButton(data, extraClass, attrName, href, label) {
     var btn = document.createElement('a');
     btn.href = href;
@@ -870,7 +888,7 @@
 
     normalizeShopWriteLink(shopWrite, false);
 
-    if (!header.querySelector('[data-eottae-home-talk-btn="1"]') && data.talk_url) {
+    if (!headerTalkButtonExists(header, false) && data.talk_url) {
       var talkBtn = buildTalkButton(data, 'eottae-gnb-header__btn--desktop hidden sm:inline-flex');
       shopWrite.parentNode.insertBefore(talkBtn, shopWrite);
     }
@@ -949,7 +967,7 @@
     if (shopWrite && shopWrite.parentNode) {
       normalizeShopWriteLink(shopWrite, true);
 
-      if (!header.querySelector('[data-eottae-home-talk-btn="mobile"]') && data.talk_url) {
+      if (!headerTalkButtonExists(header, true) && data.talk_url) {
         var talkBtn = buildTalkButton(data, 'eottae-gnb-header__btn--mobile-action');
         talkBtn.setAttribute('data-eottae-home-talk-btn', 'mobile');
         shopWrite.parentNode.insertBefore(talkBtn, shopWrite);

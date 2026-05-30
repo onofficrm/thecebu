@@ -69,3 +69,56 @@ if (!function_exists('eottae_column_card_html')) {
         return (string) ob_get_clean();
     }
 }
+
+if (!function_exists('eottae_column_neighbor_nav_html')) {
+    /**
+     * @param array{prev?: ?array<string, mixed>, next?: ?array<string, mixed>} $neighbors
+     */
+    function eottae_column_neighbor_nav_html(array $neighbors)
+    {
+        $prev = $neighbors['prev'] ?? null;
+        $next = $neighbors['next'] ?? null;
+
+        if (!$prev && !$next) {
+            return '';
+        }
+
+        $single = (!$prev || !$next);
+
+        ob_start();
+        ?>
+        <nav class="sebu-article-nav<?php echo $single ? ' sebu-article-nav--single' : ''; ?>" aria-label="이전글·다음글">
+            <?php if ($prev) { ?>
+            <a href="<?php echo get_text($prev['view_url'] ?? '#'); ?>" class="sebu-article-nav__item sebu-article-nav__item--prev">
+                <span class="sebu-article-nav__label">이전글</span>
+                <strong class="sebu-article-nav__title"><?php echo get_text($prev['wr_subject'] ?? ''); ?></strong>
+                <span class="sebu-article-nav__meta">
+                    <?php if (!empty($prev['category_label'])) { ?>
+                    <span><?php echo get_text($prev['category_label']); ?></span>
+                    <?php } ?>
+                    <?php if (!empty($prev['date_label'])) { ?>
+                    <span><?php echo get_text($prev['date_label']); ?></span>
+                    <?php } ?>
+                </span>
+            </a>
+            <?php } ?>
+            <?php if ($next) { ?>
+            <a href="<?php echo get_text($next['view_url'] ?? '#'); ?>" class="sebu-article-nav__item sebu-article-nav__item--next">
+                <span class="sebu-article-nav__label">다음글</span>
+                <strong class="sebu-article-nav__title"><?php echo get_text($next['wr_subject'] ?? ''); ?></strong>
+                <span class="sebu-article-nav__meta">
+                    <?php if (!empty($next['category_label'])) { ?>
+                    <span><?php echo get_text($next['category_label']); ?></span>
+                    <?php } ?>
+                    <?php if (!empty($next['date_label'])) { ?>
+                    <span><?php echo get_text($next['date_label']); ?></span>
+                    <?php } ?>
+                </span>
+            </a>
+            <?php } ?>
+        </nav>
+        <?php
+
+        return (string) ob_get_clean();
+    }
+}

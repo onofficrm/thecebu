@@ -36,10 +36,7 @@ if (!function_exists('eottae_golf_join_card_html')) {
                             <span>⛳</span>
                         </span>
                         <?php } ?>
-                        <span class="golf-join-card__shop-caption">
-                            <span class="golf-join-card__shop-caption-line">업체정보</span>
-                            <span class="golf-join-card__shop-caption-line">상세보기 →</span>
-                        </span>
+                        <span class="golf-join-card__shop-caption">업체정보 상세보기 →</span>
                     </a>
                     <?php } elseif ($thumb_url !== '') { ?>
                     <a href="<?php echo $detail_url; ?>" class="golf-join-card__thumb" aria-hidden="true" tabindex="-1">
@@ -94,12 +91,12 @@ if (!function_exists('eottae_golf_join_card_html')) {
                             <?php } ?>
                         </ul>
                         <?php } ?>
-
-                        <p class="golf-join-card__host">
-                            <span class="golf-join-card__host-label">방장</span>
-                            <?php echo get_text($post['host_nickname'] ?? '회원'); ?>
-                        </p>
                     </a>
+
+                    <p class="golf-join-card__host">
+                        <span class="golf-join-card__host-label">방장</span>
+                        <?php echo get_text($post['host_nickname'] ?? '회원'); ?>
+                    </p>
                 </div>
             </div>
         </li>

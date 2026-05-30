@@ -46,6 +46,9 @@ if ($author) {
 $comments = eottae_column_list_comments($wr_id);
 $token = eottae_column_member_token();
 $is_super = ($is_admin === 'super');
+$column_neighbors = eottae_column_neighbor_posts($wr_id, array(
+    'include_hidden' => $is_super,
+));
 $can_edit = $is_member && eottae_column_can_edit($member['mb_id'] ?? '', $wr_id, $is_super);
 $can_delete = $is_member && eottae_column_can_delete($member['mb_id'] ?? '', $wr_id, $is_super);
 $thumb_url = trim((string) ($post['thumbnail_url'] ?? ''));
@@ -195,6 +198,8 @@ g5_page_start(get_text($post['wr_subject'] ?? '컬럼'));
             </div>
         </footer>
     </article>
+
+    <?php echo eottae_column_neighbor_nav_html($column_neighbors); ?>
 
     <?php if ($author) { ?>
     <section class="sebu-article-author-card" aria-labelledby="sebu-article-author-title">

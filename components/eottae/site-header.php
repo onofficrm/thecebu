@@ -73,7 +73,7 @@ foreach ($eottae_gnb_links as $link) {
                         <?php foreach ($eottae_talk_action_links as $link) {
                             $active = eottae_gnb_link_is_active($link['key']);
                             ?>
-                        <a href="<?php echo $link['href']; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--talk eottae-gnb-header__btn--desktop<?php echo $active ? ' is-active' : ''; ?>">
+                        <a href="<?php echo $link['href']; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--talk eottae-gnb-header__btn--desktop<?php echo $active ? ' is-active' : ''; ?>" data-eottae-home-talk-btn="1">
                             <?php echo get_text($link['label']); ?>
                         </a>
                         <?php } ?>
@@ -103,7 +103,7 @@ foreach ($eottae_gnb_links as $link) {
                     <?php foreach ($eottae_talk_action_links as $link) {
                         $active = eottae_gnb_link_is_active($link['key']);
                         ?>
-                    <a href="<?php echo $link['href']; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--talk eottae-gnb-header__btn--mobile-action<?php echo $active ? ' is-active' : ''; ?>">
+                    <a href="<?php echo $link['href']; ?>" class="eottae-gnb-header__btn eottae-gnb-header__btn--talk eottae-gnb-header__btn--mobile-action<?php echo $active ? ' is-active' : ''; ?>" data-eottae-home-talk-btn="mobile">
                         <?php echo get_text($link['label']); ?>
                     </a>
                     <?php } ?>
