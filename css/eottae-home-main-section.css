@@ -899,7 +899,7 @@ section[data-eottae-home-main-host="popular-hot"] > :not([data-eottae-home-popul
 
 .sebu-news-item__main {
   display: grid;
-  gap: 4px;
+  gap: 3px;
   min-width: 0;
   flex: 1 1 auto;
 }
@@ -947,12 +947,16 @@ section[data-eottae-home-main-host="popular-hot"] > :not([data-eottae-home-popul
   color: #0f172a;
 }
 
-.sebu-news-item__meta {
+.sebu-news-item__stats {
+  flex: 0 0 auto;
+  max-width: 34%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.73rem;
+  text-align: right;
+  font-size: 0.71rem;
   font-weight: 700;
+  line-height: 1.35;
   color: #94a3b8;
 }
 
@@ -1670,8 +1674,9 @@ section[data-eottae-home-main-host="popular-hot"] > :not([data-eottae-home-popul
     padding: 8px 11px;
   }
 
-  .sebu-news-item__meta {
-    max-width: 100%;
+  .sebu-news-item__stats {
+    max-width: 42%;
+    font-size: 0.68rem;
   }
 
   .sebu-news-empty__actions {

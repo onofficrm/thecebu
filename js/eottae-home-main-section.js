@@ -885,15 +885,15 @@
 
     var comments = Number(post.comments || 0);
     var views = Number(post.views || 0);
-    var meta = [];
+    var stats = [];
     if (comments > 0) {
-      meta.push('댓글 ' + formatCount(comments));
+      stats.push('댓글 ' + formatCount(comments));
     }
     if (views > 0) {
-      meta.push('조회 ' + formatCount(views));
+      stats.push('조회 ' + formatCount(views));
     }
     if (post.time) {
-      meta.push(post.time);
+      stats.push(post.time);
     }
 
     return ''
@@ -907,8 +907,8 @@
       + (post.is_hot ? '<span class="sebu-news-item__badge sebu-news-item__badge--hot">HOT</span>' : '')
       + '</span>'
       + '<strong class="sebu-news-item__title">' + esc(post.title) + '</strong>'
-      + (meta.length ? '<span class="sebu-news-item__meta">' + esc(meta.join(' · ')) + '</span>' : '')
       + '</span>'
+      + (stats.length ? '<span class="sebu-news-item__stats">' + esc(stats.join(' · ')) + '</span>' : '')
       + '<span class="sebu-news-item__arrow" aria-hidden="true">›</span>'
       + '</a>'
       + '</li>';
