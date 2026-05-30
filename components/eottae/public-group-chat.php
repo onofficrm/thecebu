@@ -39,6 +39,25 @@ if (!function_exists('eottae_public_group_chat_html')) {
         $initial_limit = $defer_history ? 1 : $total_limit;
         $payload = eottae_talkroom_public_group_chat_payload($initial_limit, $viewer_mb_id);
         $messages = $payload['messages'];
+        $has_more_history = false;
+        $oldest_wr_id = 0;
+
+        if (!empty($messages)) {
+            foreach ($messages as $message) {
+                $wr_id = (int) ($message['wr_id'] ?? 0);
+                if ($wr_id < 1) {
+                    continue;
+                }
+                if ($oldest_wr_id < 1 || $wr_id < $oldest_wr_id) {
+                    $oldest_wr_id = $wr_id;
+                }
+            }
+        }
+
+        if ($defer_history && $oldest_wr_id > 0 && (int) ($payload['room_id'] ?? 0) > 0) {
+            $older_rows = eottae_talkroom_public_group_list_messages_before((int) $payload['room_id'], $oldest_wr_id, 1);
+            $has_more_history = !empty($older_rows);
+        }
 
         ob_start();
         ?>
@@ -58,8 +77,14 @@ if (!function_exists('eottae_public_group_chat_html')) {
             data-needs-join="<?php echo !empty($payload['needs_join']) ? '1' : '0'; ?>"
             data-can-manage-ai="<?php echo !empty($payload['can_manage_ai']) ? '1' : '0'; ?>"
             <?php if ($defer_history) { ?>
+            data-home-preview="1"
             data-defer-history="1"
             data-history-total="<?php echo (int) $total_limit; ?>"
+            data-has-more-history="<?php echo $has_more_history ? '1' : '0'; ?>"
+            data-enter-url="<?php echo get_text($payload['enter_href']); ?>"
+            <?php if ($oldest_wr_id > 0) { ?>
+            data-oldest-wr-id="<?php echo (int) $oldest_wr_id; ?>"
+            <?php } ?>
             <?php } ?>
         >
             <div class="public-group-chat__inner">

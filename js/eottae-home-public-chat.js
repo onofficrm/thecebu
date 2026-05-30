@@ -5,6 +5,7 @@
   'use strict';
 
   var POLL_MS = 12000;
+  var HOME_PREVIEW_DEFAULT_LIMIT = 10;
 
   function esc(value) {
     return String(value == null ? '' : value)
@@ -413,6 +414,40 @@
       + '</article>';
   }
 
+  function trimHomePreviewMessages(section) {
+    var limit = homePreviewLimit(section);
+    if (limit < 1) {
+      return;
+    }
+
+    var messagesEl = getMessagesEl(section);
+    if (!messagesEl) {
+      return;
+    }
+
+    var nodes = messagesEl.querySelectorAll('[data-wr-id]');
+    var removeCount = nodes.length - limit;
+    var i;
+
+    if (removeCount < 1) {
+      return;
+    }
+
+    for (i = 0; i < removeCount; i += 1) {
+      if (nodes[i] && nodes[i].parentNode) {
+        nodes[i].parentNode.removeChild(nodes[i]);
+      }
+    }
+
+    var oldest = getOldestWrId(section);
+    if (oldest > 0) {
+      section.setAttribute('data-oldest-wr-id', String(oldest));
+    }
+
+    section.setAttribute('data-has-more-history', '1');
+    updateHistoryMoreState(section, true);
+  }
+
   function appendMessages(section, messages) {
     var messagesEl = getMessagesEl(section);
     if (!messagesEl || !messages || !messages.length) {
@@ -442,6 +477,11 @@
     removeEmptyState(messagesEl);
     messagesEl.insertAdjacentHTML('beforeend', html);
     section.setAttribute('data-last-wr-id', String(lastId));
+
+    if (isHomePreview(section)) {
+      trimHomePreviewMessages(section);
+    }
+
     messagesEl.scrollTop = messagesEl.scrollHeight;
 
     return lastId;
@@ -478,6 +518,81 @@
     return messagesEl.querySelectorAll('[data-wr-id]').length;
   }
 
+  function isHomePreview(section) {
+    return !!(section && section.getAttribute('data-home-preview') === '1');
+  }
+
+  function homePreviewLimit(section) {
+    if (!isHomePreview(section)) {
+      return 0;
+    }
+
+    return parseInt(section.getAttribute('data-history-total') || String(HOME_PREVIEW_DEFAULT_LIMIT), 10)
+      || HOME_PREVIEW_DEFAULT_LIMIT;
+  }
+
+  function enterUrl(section) {
+    if (!section) {
+      return '';
+    }
+
+    var url = section.getAttribute('data-enter-url') || '';
+    if (url) {
+      return url;
+    }
+
+    var link = section.querySelector('.public-group-chat__enter');
+    return link ? (link.getAttribute('href') || '') : '';
+  }
+
+  function showHistoryMoreLink(section, force) {
+    if (!section || section.dataset.historyMoreShown === '1') {
+      return;
+    }
+
+    if (!force && section.getAttribute('data-has-more-history') !== '1') {
+      return;
+    }
+
+    var messagesEl = getMessagesEl(section);
+    var url = enterUrl(section);
+    if (!messagesEl || !url) {
+      return;
+    }
+
+    section.dataset.historyMoreShown = '1';
+
+    var hint = document.createElement('p');
+    hint.className = 'public-group-chat__history-more';
+    hint.innerHTML = ''
+      + '<span class="public-group-chat__history-more-text">'
+      + esc(t('home.public_chat.history_more', '이전 대화는 전체보기에서 확인할 수 있습니다.'))
+      + '</span>'
+      + '<a href="' + esc(url) + '" class="public-group-chat__history-more-link">'
+      + esc(t('home.public_chat.view_all', '전체보기'))
+      + '</a>';
+
+    messagesEl.insertBefore(hint, messagesEl.firstChild);
+  }
+
+  function updateHistoryMoreState(section, hasMore) {
+    if (!section) {
+      return;
+    }
+
+    if (hasMore) {
+      section.setAttribute('data-has-more-history', '1');
+    }
+
+    var limit = homePreviewLimit(section);
+    if (limit > 0 && countRenderedMessages(section) >= limit) {
+      showHistoryMoreLink(section, true);
+      return;
+    }
+
+    showHistoryMoreLink(section, false);
+  }
+
   function prependMessages(section, messages) {
     var messagesEl = getMessagesEl(section);
     if (!messagesEl || !messages || !messages.length) {
@@ -488,8 +603,15 @@
     var i;
     var inserted = 0;
     var oldestId = getOldestWrId(section);
+    var previewLimit = homePreviewLimit(section);
+    var renderedCount = countRenderedMessages(section);
 
     for (i = 0; i < messages.length; i += 1) {
+      if (previewLimit > 0 && renderedCount >= previewLimit) {
+        section.setAttribute('data-has-more-history', '1');
+        break;
+      }
+
       var message = messages[i];
       var wrId = parseInt(message.wr_id, 10) || 0;
       if (wrId < 1 || messagesEl.querySelector('[data-wr-id="' + wrId + '"]')) {
@@ -497,18 +619,21 @@
       }
       html += renderMessage(message, section);
       inserted += 1;
+      renderedCount += 1;
       if (oldestId < 1 || wrId < oldestId) {
         oldestId = wrId;
       }
     }
 
     if (!html) {
+      updateHistoryMoreState(section, section.getAttribute('data-has-more-history') === '1');
       return 0;
     }
 
     removeEmptyState(messagesEl);
 
-    var stickToBottom = messagesEl.scrollTop + messagesEl.clientHeight >= messagesEl.scrollHeight - 24;
+    var stickToBottom = isHomePreview(section)
+      || messagesEl.scrollTop + messagesEl.clientHeight >= messagesEl.scrollHeight - 24;
     messagesEl.insertAdjacentHTML('afterbegin', html);
 
     if (oldestId > 0) {
@@ -518,6 +643,8 @@
     if (stickToBottom) {
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
+
+    updateHistoryMoreState(section, section.getAttribute('data-has-more-history') === '1');
 
     return inserted;
   }
@@ -563,19 +690,20 @@
       return;
     }
 
-    var totalLimit = parseInt(section.getAttribute('data-history-total') || '20', 10) || 20;
-    var batchSize = 3;
-    var delayMs = 140;
+    var totalLimit = homePreviewLimit(section) || HOME_PREVIEW_DEFAULT_LIMIT;
+    var batchSize = 4;
+    var delayMs = 120;
 
     section.dataset.historyLoading = '1';
     messagesElClass(section, true);
+    scheduleScrollMessagesToBottom(section);
 
-    function finish() {
+    function finish(hasMore) {
       section.dataset.historyDone = '1';
       section.dataset.historyLoading = '0';
       messagesElClass(section, false);
+      updateHistoryMoreState(section, !!hasMore || section.getAttribute('data-has-more-history') === '1');
       scheduleScrollMessagesToBottom(section);
-      dispatchChatLayout(section);
     }
 
     function step() {
@@ -583,7 +711,7 @@
       var oldest = getOldestWrId(section);
 
       if (loadedCount >= totalLimit || oldest < 1) {
-        finish();
+        finish(loadedCount >= totalLimit || section.getAttribute('data-has-more-history') === '1');
         return;
       }
 
@@ -592,15 +720,20 @@
 
       fetchHistory(section, oldest, limit).then(function (data) {
         if (!data || !data.success) {
-          finish();
+          finish(false);
           return;
+        }
+
+        var hasMore = parseInt(data.has_more, 10) === 1;
+        if (hasMore) {
+          section.setAttribute('data-has-more-history', '1');
         }
 
         var inserted = prependMessages(section, data.messages || []);
         loadedCount = countRenderedMessages(section);
 
         if (inserted < 1 || loadedCount >= totalLimit) {
-          finish();
+          finish(hasMore || loadedCount >= totalLimit);
           return;
         }
 
@@ -908,6 +1041,9 @@
     section.dataset.bound = '1';
 
     scheduleScrollMessagesToBottom(section);
+    if (isHomePreview(section)) {
+      updateHistoryMoreState(section, section.getAttribute('data-has-more-history') === '1');
+    }
     observeMessagesLayout(section);
 
     var form = section.querySelector('#eottae-public-chat-form');

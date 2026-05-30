@@ -76,6 +76,85 @@ body.eottae-page:has(.cebu-map-page) #hd .eottae-gnb-header {
   color: var(--cebu-map-muted);
 }
 
+.cebu-map-register {
+  margin-bottom: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(14, 165, 233, 0.14);
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.06) 0%, rgba(255, 255, 255, 0.96) 100%);
+}
+
+.cebu-map-register__label {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #0369a1;
+}
+
+.cebu-map-register__actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.cebu-map-register__btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 72px;
+  padding: 10px 8px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  text-align: center;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+}
+
+.cebu-map-register__btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+  filter: brightness(1.03);
+}
+
+.cebu-map-register__btn:focus-visible {
+  outline: 2px solid rgba(14, 165, 233, 0.45);
+  outline-offset: 2px;
+}
+
+.cebu-map-register__icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.cebu-map-register__text {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.cebu-map-register__btn--market {
+  background: linear-gradient(180deg, #fff7ed 0%, #ffedd5 100%);
+  border-color: rgba(249, 115, 22, 0.22);
+  color: #9a3412;
+}
+
+.cebu-map-register__btn--job {
+  background: linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%);
+  border-color: rgba(124, 58, 237, 0.2);
+  color: #5b21b6;
+}
+
+.cebu-map-register__btn--estate {
+  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-color: rgba(2, 132, 199, 0.22);
+  color: #075985;
+}
+
 .cebu-map-search__row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(108px, 34%);
@@ -186,7 +265,7 @@ body.eottae-page:has(.cebu-map-page) #hd .eottae-gnb-header {
 
 .cebu-map-results__head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 14px;
@@ -205,32 +284,6 @@ body.eottae-page:has(.cebu-map-page) #hd .eottae-gnb-header {
 .cebu-map-results__title strong {
   color: #0f172a;
   font-weight: 800;
-}
-
-.cebu-map-results__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 6px;
-}
-
-.cebu-map-results__actions a {
-  display: inline-flex;
-  align-items: center;
-  padding: 7px 11px;
-  border-radius: 999px;
-  border: 1px solid var(--cebu-map-border);
-  background: #fff;
-  color: #475569;
-  font-size: 11px;
-  font-weight: 700;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.cebu-map-results__actions a:hover {
-  border-color: rgba(15, 23, 42, 0.12);
-  color: #0f172a;
 }
 
 .cebu-map-list {
@@ -516,13 +569,12 @@ body.eottae-page:has(.cebu-map-page) #hd .eottae-gnb-header {
     grid-template-columns: 1fr;
   }
 
-  .cebu-map-results__head {
-    flex-direction: column;
-    align-items: stretch;
+  .cebu-map-register {
+    padding: 12px;
   }
 
-  .cebu-map-results__actions {
-    justify-content: flex-start;
+  .cebu-map-register__btn {
+    min-height: 64px;
   }
 
   .cebu-map-card {

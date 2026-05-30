@@ -146,5 +146,7 @@
   "home.public_chat.unread_aria": "읽지 않은 {count}명",
   "home.public_chat.ai_badge": "AI 도우미",
   "home.public_chat.anonymous": "익명",
-  "home.public_chat.ai_author": "어때봇 · AI 도우미"
+  "home.public_chat.ai_author": "어때봇 · AI 도우미",
+  "home.public_chat.history_more": "이전 대화는 전체보기에서 확인할 수 있습니다.",
+  "home.public_chat.view_all": "전체보기"
 }

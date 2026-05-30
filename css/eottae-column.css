@@ -528,7 +528,7 @@
   box-shadow: var(--col-shadow);
 }
 
-.sebu-author-card__link,
+.sebu-author-card__layout,
 .sebu-writer-monthly__link {
   display: flex;
   gap: 16px;
@@ -536,8 +536,22 @@
   text-decoration: none;
 }
 
+.sebu-author-card__aside {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 88px;
+}
+
 .sebu-author-card__avatar {
   flex: 0 0 auto;
+}
+
+.sebu-author-card__body {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .sebu-author-card__name,
@@ -599,14 +613,31 @@
 .sebu-author-card__cta {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: 100%;
   min-height: 30px;
-  margin-top: 12px;
-  padding: 0 12px;
+  padding: 0 10px;
   border-radius: 999px;
   background: rgba(15, 76, 92, 0.08);
   color: var(--col-accent);
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 900;
+  text-align: center;
+  text-decoration: none;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.sebu-author-card__cta:hover {
+  background: rgba(15, 76, 92, 0.14);
+  color: var(--col-accent);
+}
+
+.sebu-author-card__social {
+  margin-top: 12px;
+}
+
+.sebu-author-card__social:empty {
+  display: none;
 }
 
 .sebu-writer-monthly {
@@ -1092,9 +1123,13 @@
   box-shadow: none;
 }
 
-.sebu-article-author-card .sebu-author-card__link {
+.sebu-article-author-card .sebu-author-card__layout {
   align-items: center;
   gap: 18px;
+}
+
+.sebu-article-author-card .sebu-author-card__aside {
+  width: 96px;
 }
 
 .sebu-article-author-card .sebu-author-card__avatar {
@@ -2347,9 +2382,22 @@
 }
 
 @media (max-width: 520px) {
-  .sebu-article-author-card .sebu-author-card__link {
+  .sebu-article-author-card .sebu-author-card__layout {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .sebu-article-author-card .sebu-author-card__aside {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .sebu-article-author-card .sebu-author-card__cta {
+    width: auto;
+    flex: 1 1 auto;
+    justify-content: center;
   }
 
   .sebu-article-author-card .sebu-author-card__avatar {

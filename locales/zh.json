@@ -146,5 +146,7 @@
   "home.public_chat.unread_aria": "未读 {count} 人",
   "home.public_chat.ai_badge": "AI助手",
   "home.public_chat.anonymous": "匿名",
-  "home.public_chat.ai_author": "Eottae Bot · AI助手"
+  "home.public_chat.ai_author": "Eottae Bot · AI助手",
+  "home.public_chat.history_more": "更早的对话请在全部查看中浏览。",
+  "home.public_chat.view_all": "全部查看"
 }

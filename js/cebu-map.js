@@ -7,6 +7,16 @@
     estate: { label: '부동산', icon: '🏠', color: '#0284c7' },
   };
 
+  var DEFAULT_RADIUS_KM = 5;
+
+  function parseRadiusKm(value, fallback) {
+    var radius = parseFloat(value);
+    if (!isFinite(radius) || radius <= 0) {
+      return fallback;
+    }
+    return radius;
+  }
+
   function qs(sel, root) {
     return (root || document).querySelector(sel);
   }
@@ -168,14 +178,15 @@
     this.map = null;
     this.infoWindow = null;
     this.markers = [];
+    this.radiusCircle = null;
+    this.userMarker = null;
     this.userLocation = null;
-    this.filters = { type: 'all', area: 'all', status: 'all', radius: 'all', keyword: '', sort: 'latest' };
+    this.filters = { type: 'all', status: 'all', radius: String(DEFAULT_RADIUS_KM), keyword: '', sort: 'latest' };
     this.bind();
+    this.syncRadiusDefault();
     this.applyFilters();
     this.initMap();
-    if (this.nearBtn && this.nearBtn.getAttribute('data-auto-near') === '1') {
-      this.requestNearby();
-    }
+    this.bootstrapNearbyView();
   }
 
   CebuLifeMap.prototype.bind = function () {
@@ -195,8 +206,135 @@
     }
   };
 
+  CebuLifeMap.prototype.syncRadiusDefault = function () {
+    var cfg = global.__CEBU_LIFE_MAP_CONFIG__ || {};
+    var radiusKm = parseRadiusKm(cfg.defaultRadiusKm, DEFAULT_RADIUS_KM);
+    this.filters.radius = String(radiusKm);
+  };
+
+  CebuLifeMap.prototype.getActiveRadiusKm = function () {
+    return parseRadiusKm(this.filters.radius, DEFAULT_RADIUS_KM);
+  };
+
+  CebuLifeMap.prototype.getDefaultCenter = function () {
+    var cfg = global.__CEBU_LIFE_MAP_CONFIG__ || {};
+    return {
+      lat: parseFloat(cfg.defaultLat) || 10.313,
+      lng: parseFloat(cfg.defaultLng) || 123.9174
+    };
+  };
+
+  CebuLifeMap.prototype.clearRadiusOverlay = function () {
+    if (this.radiusCircle) {
+      this.radiusCircle.setMap(null);
+      this.radiusCircle = null;
+    }
+  };
+
+  CebuLifeMap.prototype.setUserMarkerAt = function (center) {
+    if (!this.map || !center || !global.google || !google.maps) {
+      return;
+    }
+    if (!this.userMarker) {
+      this.userMarker = new google.maps.Marker({
+        map: this.map,
+        title: '기준 위치',
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: '#0ea5e9',
+          fillOpacity: 1,
+          strokeColor: '#ffffff',
+          strokeWeight: 3
+        }
+      });
+    }
+    this.userMarker.setPosition(center);
+  };
+
+  CebuLifeMap.prototype.applyRadiusView = function (center) {
+    if (!this.map || !center || !global.google || !google.maps) {
+      return;
+    }
+
+    var radiusKm = this.getActiveRadiusKm() || DEFAULT_RADIUS_KM;
+    this.clearRadiusOverlay();
+    this.radiusCircle = new google.maps.Circle({
+      strokeColor: '#0ea5e9',
+      strokeOpacity: 0.85,
+      strokeWeight: 2,
+      fillColor: '#0ea5e9',
+      fillOpacity: 0.08,
+      map: this.map,
+      center: center,
+      radius: radiusKm * 1000
+    });
+
+    var bounds = this.radiusCircle.getBounds();
+    if (bounds) {
+      this.map.fitBounds(bounds, 48);
+    } else {
+      this.map.setCenter(center);
+      this.map.setZoom(14);
+    }
+
+    this.setUserMarkerAt(center);
+  };
+
+  CebuLifeMap.prototype.updateDistances = function () {
+    var self = this;
+    if (!this.userLocation) {
+      return;
+    }
+    this.data.forEach(function (loc) {
+      loc.distance_km = distanceKm(self.userLocation.lat, self.userLocation.lng, loc.lat, loc.lng);
+    });
+  };
+
+  CebuLifeMap.prototype.activateNearby = function (center, statusMessage, useNearSort) {
+    this.userLocation = center;
+    this.updateDistances();
+
+    var radiusKm = this.getActiveRadiusKm() || DEFAULT_RADIUS_KM;
+    this.filters.radius = String(radiusKm);
+
+    if (useNearSort) {
+      this.filters.sort = 'near';
+      var sortEl = qs('[data-map-filter="sort"]', this.root);
+      if (sortEl) {
+        sortEl.value = 'near';
+      }
+    }
+
+    this.setStatus(statusMessage);
+    this.applyFilters();
+  };
+
   CebuLifeMap.prototype.setStatus = function (message) {
     if (this.statusEl) this.statusEl.textContent = message || '';
+  };
+
+  CebuLifeMap.prototype.bootstrapNearbyView = function () {
+    var self = this;
+    var fallbackCenter = this.getDefaultCenter();
+    var radiusKm = this.getActiveRadiusKm() || DEFAULT_RADIUS_KM;
+    var fallbackMessage = '등록된 정보가 없어도 기본 위치 기준 ' + radiusKm + 'km 반경으로 지도를 표시합니다.';
+
+    if (!navigator.geolocation) {
+      this.activateNearby(fallbackCenter, fallbackMessage, false);
+      return;
+    }
+
+    this.setStatus('현재위치를 확인하는 중입니다.');
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      self.activateNearby(
+        { lat: pos.coords.latitude, lng: pos.coords.longitude },
+        '현재위치 기준 ' + radiusKm + 'km 반경의 생활정보를 보여줍니다.',
+        true
+      );
+    }, function () {
+      self.activateNearby(fallbackCenter, fallbackMessage, false);
+    }, { enableHighAccuracy: true, timeout: 10000 });
   };
 
   CebuLifeMap.prototype.matchesStatus = function (loc) {
@@ -210,10 +348,9 @@
   CebuLifeMap.prototype.applyFilters = function () {
     var self = this;
     var keyword = String(this.filters.keyword || '').trim().toLowerCase();
-    var radius = this.filters.radius === 'all' ? 0 : parseFloat(this.filters.radius);
+    var radius = this.getActiveRadiusKm();
     this.filtered = this.data.filter(function (loc) {
       if (self.filters.type !== 'all' && loc.type !== self.filters.type) return false;
-      if (self.filters.area !== 'all' && loc.area_key !== self.filters.area) return false;
       if (!self.matchesStatus(loc)) return false;
       if (radius > 0 && self.userLocation) {
         if (!self.userLocation || loc.distance_km == null || loc.distance_km > radius) return false;
@@ -249,34 +386,26 @@
 
   CebuLifeMap.prototype.requestNearby = function () {
     var self = this;
+    var radiusKm = this.getActiveRadiusKm() || DEFAULT_RADIUS_KM;
+
     if (!navigator.geolocation) {
-      this.setStatus('이 브라우저에서는 현재위치를 사용할 수 없습니다.');
+      this.activateNearby(this.getDefaultCenter(), '현재위치를 사용할 수 없어 기본 위치 기준 ' + radiusKm + 'km 반경으로 표시합니다.', false);
       return;
     }
+
     this.setStatus('현재위치를 확인하는 중입니다.');
     navigator.geolocation.getCurrentPosition(function (pos) {
-      var lat = pos.coords.latitude;
-      var lng = pos.coords.longitude;
-      self.userLocation = { lat: lat, lng: lng };
-      self.data.forEach(function (loc) {
-        loc.distance_km = distanceKm(lat, lng, loc.lat, loc.lng);
-      });
-      self.filters.sort = 'near';
-      var sortEl = qs('[data-map-filter="sort"]', self.root);
-      if (sortEl) sortEl.value = 'near';
-      var radiusEl = qs('[data-map-filter="radius"]', self.root);
-      if (radiusEl && radiusEl.value === 'all') {
-        radiusEl.value = '5';
-        self.filters.radius = '5';
-      }
-      if (self.map) {
-        self.map.setCenter({ lat: lat, lng: lng });
-        self.map.setZoom(14);
-      }
-      self.setStatus('현재위치 기준으로 반경 안의 생활정보를 가까운순으로 보여줍니다.');
-      self.applyFilters();
+      self.activateNearby(
+        { lat: pos.coords.latitude, lng: pos.coords.longitude },
+        '현재위치 기준 ' + radiusKm + 'km 반경의 생활정보를 가까운순으로 보여줍니다.',
+        true
+      );
     }, function () {
-      self.setStatus('현재위치 권한이 거부되었습니다. 검색 또는 지역 필터를 이용해 주세요.');
+      self.activateNearby(
+        self.getDefaultCenter(),
+        '현재위치 권한이 거부되어 기본 위치 기준 ' + radiusKm + 'km 반경으로 표시합니다.',
+        false
+      );
     }, { enableHighAccuracy: true, timeout: 10000 });
   };
 
@@ -322,6 +451,9 @@
     });
     this.infoWindow = new google.maps.InfoWindow({ maxWidth: 340 });
     this.renderMarkers();
+    if (this.userLocation) {
+      this.applyRadiusView(this.userLocation);
+    }
   };
 
   CebuLifeMap.prototype.clearMarkers = function () {
@@ -358,6 +490,8 @@
       this.map.setZoom(15);
     } else if (this.filtered.length > 1) {
       this.map.fitBounds(bounds, 48);
+    } else if (this.userLocation && this.getActiveRadiusKm() > 0) {
+      this.applyRadiusView(this.userLocation);
     }
   };
 
@@ -390,7 +524,13 @@
 
   function init() {
     qsa('[data-cebu-map-page]').forEach(function (root) {
-      if (!root.__cebuLifeMap) root.__cebuLifeMap = new CebuLifeMap(root);
+      if (!root.__cebuLifeMap) {
+        root.__cebuLifeMap = new CebuLifeMap(root);
+        return;
+      }
+      if (!root.__cebuLifeMap.map) {
+        root.__cebuLifeMap.initMap();
+      }
     });
   }
 

@@ -1426,7 +1426,7 @@ if (!function_exists('eottae_builder_inject_home_public_chat')) {
             return $html;
         }
 
-        $chat_html = eottae_public_group_chat_html(20, true);
+        $chat_html = eottae_public_group_chat_html(10, true);
         if ($chat_html === '') {
             return $html;
         }

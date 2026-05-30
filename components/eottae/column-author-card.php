@@ -14,8 +14,11 @@ if (!function_exists('eottae_column_author_card_html')) {
         ob_start();
         ?>
         <article class="sebu-author-card sebu-author-card--<?php echo get_text($variant); ?>">
-            <a href="<?php echo get_text($author['profile_url'] ?? '#'); ?>" class="sebu-author-card__link">
-                <?php echo eottae_column_render_avatar_html($author, 'md', 'sebu-author-card__avatar'); ?>
+            <div class="sebu-author-card__layout">
+                <div class="sebu-author-card__aside">
+                    <?php echo eottae_column_render_avatar_html($author, 'md', 'sebu-author-card__avatar'); ?>
+                    <a href="<?php echo get_text($author['profile_url'] ?? '#'); ?>" class="sebu-author-card__cta">프로필 보기</a>
+                </div>
                 <div class="sebu-author-card__body">
                     <?php if (!empty($author['grade_label'])) { ?>
                     <span class="sebu-author-card__grade"><?php echo get_text($author['grade_label']); ?></span>
@@ -32,9 +35,9 @@ if (!function_exists('eottae_column_author_card_html')) {
                         <div><dt>조회</dt><dd><?php echo number_format((int) ($stats['total_views'] ?? 0)); ?></dd></div>
                         <div><dt>공감</dt><dd><?php echo number_format((int) ($stats['total_likes'] ?? 0)); ?></dd></div>
                     </dl>
-                    <span class="sebu-author-card__cta">프로필 보기</span>
+                    <?php echo eottae_column_render_author_profile_link_badges_html($author, 'sebu-author-card__social sebu-column-social'); ?>
                 </div>
-            </a>
+            </div>
         </article>
         <?php
 

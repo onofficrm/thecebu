@@ -146,5 +146,7 @@
   "home.public_chat.unread_aria": "{count} unread",
   "home.public_chat.ai_badge": "AI assistant",
   "home.public_chat.anonymous": "Anonymous",
-  "home.public_chat.ai_author": "Eottae Bot · AI assistant"
+  "home.public_chat.ai_author": "Eottae Bot · AI assistant",
+  "home.public_chat.history_more": "View earlier messages in the full chat.",
+  "home.public_chat.view_all": "View all"
 }

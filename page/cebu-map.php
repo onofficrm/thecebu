@@ -35,7 +35,7 @@ $initial_type = isset($_GET['type']) ? preg_replace('/[^a-z_]/', '', (string) $_
 if (!in_array($initial_type, array('all', 'market', 'job', 'estate'), true)) {
     $initial_type = 'all';
 }
-$request_near = !empty($_GET['near']) && (string) $_GET['near'] === '1';
+
 $market_write_url = G5_BBS_URL.'/write.php?bo_table='.(function_exists('eottae_market_board_table') ? eottae_market_board_table() : 'market');
 $job_write_url = G5_BBS_URL.'/write.php?bo_table='.(function_exists('eottae_job_board_table') ? eottae_job_board_table() : 'job');
 $estate_write_url = G5_BBS_URL.'/write.php?bo_table='.(function_exists('eottae_estate_board_table') ? eottae_estate_board_table() : 'estate');
@@ -49,7 +49,8 @@ g5_page_start('세부생활지도');
         hasApiKey: <?php echo $cebu_map_has_key ? 'true' : 'false'; ?>,
         defaultLat: <?php echo json_encode((float) ($cebu_map_cfg['default_lat'] ?? 10.313)); ?>,
         defaultLng: <?php echo json_encode((float) ($cebu_map_cfg['default_lng'] ?? 123.9174)); ?>,
-        defaultZoom: <?php echo json_encode((int) ($cebu_map_cfg['default_zoom'] ?? 12)); ?>
+        defaultZoom: <?php echo json_encode((int) ($cebu_map_cfg['default_zoom'] ?? 12)); ?>,
+        defaultRadiusKm: <?php echo json_encode((float) ($cebu_map_cfg['default_radius_km'] ?? 5)); ?>
     };
     </script>
 
@@ -64,6 +65,23 @@ g5_page_start('세부생활지도');
                     <h1 class="cebu-map-search__title">세부생활지도</h1>
                     <p class="cebu-map-search__desc">부동산 · 구인구직 · 중고장터를 지도에서 한눈에</p>
                 </div>
+                <div class="cebu-map-register" aria-label="생활정보 등록">
+                    <p class="cebu-map-register__label">내 정보 등록하기</p>
+                    <div class="cebu-map-register__actions">
+                        <a href="<?php echo get_text($market_write_url); ?>" class="cebu-map-register__btn cebu-map-register__btn--market">
+                            <span class="cebu-map-register__icon" aria-hidden="true">🛍</span>
+                            <span class="cebu-map-register__text">물품등록</span>
+                        </a>
+                        <a href="<?php echo get_text($job_write_url); ?>" class="cebu-map-register__btn cebu-map-register__btn--job">
+                            <span class="cebu-map-register__icon" aria-hidden="true">💼</span>
+                            <span class="cebu-map-register__text">구인등록</span>
+                        </a>
+                        <a href="<?php echo get_text($estate_write_url); ?>" class="cebu-map-register__btn cebu-map-register__btn--estate">
+                            <span class="cebu-map-register__icon" aria-hidden="true">🏠</span>
+                            <span class="cebu-map-register__text">부동산등록</span>
+                        </a>
+                    </div>
+                </div>
                 <div class="cebu-map-search__row">
                     <label class="sound_only" for="cebuMapKeyword">검색</label>
                     <input type="search" id="cebuMapKeyword" class="cebu-map-search__input" data-map-filter="keyword" placeholder="냉장고, IT Park, 홀직원, 콘도">
@@ -75,20 +93,11 @@ g5_page_start('세부생활지도');
                         <option value="estate"<?php echo $initial_type === 'estate' ? ' selected' : ''; ?>>부동산</option>
                     </select>
                 </div>
-                <button type="button" class="cebu-map-search__geo" data-map-near<?php echo $request_near ? ' data-auto-near="1"' : ''; ?>>📍 현재 위치 기준으로 내 주변 찾기</button>
+                <button type="button" class="cebu-map-search__geo" data-map-near data-auto-near="1">📍 현재 위치 기준으로 내 주변 찾기</button>
             </section>
 
             <section class="cebu-map-filters" aria-label="세부생활지도 필터">
                 <div class="cebu-map-filters__grid">
-                    <div class="cebu-map-filter">
-                        <label for="cebuMapArea">지역</label>
-                        <select id="cebuMapArea" data-map-filter="area">
-                            <option value="all">전체</option>
-                            <?php foreach (eottae_location_area_options() as $area_key => $area_label) { ?>
-                            <option value="<?php echo get_text($area_key); ?>"><?php echo get_text($area_label); ?></option>
-                            <?php } ?>
-                        </select>
-                    </div>
                     <div class="cebu-map-filter">
                         <label for="cebuMapStatus">상태</label>
                         <select id="cebuMapStatus" data-map-filter="status">
@@ -110,16 +119,6 @@ g5_page_start('세부생활지도');
                         </select>
                     </div>
                     <div class="cebu-map-filter">
-                        <label for="cebuMapRadius">반경</label>
-                        <select id="cebuMapRadius" data-map-filter="radius">
-                            <option value="all">전체</option>
-                            <option value="1">1km</option>
-                            <option value="3">3km</option>
-                            <option value="5">5km</option>
-                            <option value="10">10km</option>
-                        </select>
-                    </div>
-                    <div class="cebu-map-filter">
                         <label for="cebuMapSort">정렬</label>
                         <select id="cebuMapSort" data-map-filter="sort">
                             <option value="latest">최신순</option>
@@ -135,11 +134,6 @@ g5_page_start('세부생활지도');
             <div class="cebu-map-results">
                 <header class="cebu-map-results__head">
                     <h2 class="cebu-map-results__title">총 <strong data-map-count><?php echo number_format(count($cebu_map_markers)); ?></strong>개의 결과</h2>
-                    <div class="cebu-map-results__actions">
-                        <a href="<?php echo get_text($market_write_url); ?>">+ 중고등록</a>
-                        <a href="<?php echo get_text($job_write_url); ?>">+ 구인등록</a>
-                        <a href="<?php echo get_text($estate_write_url); ?>">+ 매물등록</a>
-                    </div>
                 </header>
                 <div class="cebu-map-list" data-map-list>
                     <p class="cebu-map-empty">위치가 등록된 생활정보가 없습니다.</p>

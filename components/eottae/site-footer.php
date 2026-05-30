@@ -62,14 +62,18 @@ if (!function_exists('eottae_site_footer_html')) {
                 <nav class="eottae-gnb-footer__col eottae-gnb-footer__col--service" aria-label="서비스 안내">
                     <h3 class="eottae-gnb-footer__heading">서비스 안내</h3>
                     <ul class="eottae-gnb-footer__links">
-                        <li class="eottae-gnb-footer__subheading">[이용 안내]</li>
                         <li><a href="<?php echo $eottae_footer_talk_landing; ?>">세부톡 AI 도우미</a></li>
                         <li><a href="<?php echo $eottae_footer_coupon_guide; ?>">쿠폰사용방법</a></li>
                         <li><a href="<?php echo $eottae_footer_challenge_guide; ?>">챌린지 참여 안내</a></li>
                         <li><a href="<?php echo $eottae_footer_member_growth_guide; ?>">활동 등급·뱃지 안내</a></li>
                         <li><a href="<?php echo $eottae_footer_badge_book; ?>">뱃지 도감</a></li>
                         <li><a href="<?php echo $eottae_footer_cost_calculator; ?>">세부 생활비 계산기</a></li>
-                        <li class="eottae-gnb-footer__subheading eottae-gnb-footer__subheading--spaced">[참여·제휴 안내]</li>
+                    </ul>
+                </nav>
+
+                <nav class="eottae-gnb-footer__col eottae-gnb-footer__col--partner" aria-label="참여·제휴 안내">
+                    <h3 class="eottae-gnb-footer__heading">참여·제휴 안내</h3>
+                    <ul class="eottae-gnb-footer__links">
                         <li><a href="<?php echo $eottae_footer_business_coupon_guide; ?>">쿠폰발행방법</a></li>
                         <li><a href="<?php echo $eottae_footer_columnist_recruit; ?>">컬럼리스트 모집</a></li>
                         <li><a href="<?php echo $eottae_footer_briefing; ?>">오늘의 세부 브리핑</a></li>

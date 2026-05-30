@@ -146,5 +146,7 @@
   "home.public_chat.unread_aria": "未読 {count}名",
   "home.public_chat.ai_badge": "AIアシスタント",
   "home.public_chat.anonymous": "匿名",
-  "home.public_chat.ai_author": "Eottae Bot · AIアシスタント"
+  "home.public_chat.ai_author": "Eottae Bot · AIアシスタント",
+  "home.public_chat.history_more": "以前の会話は全体表示で確認できます。",
+  "home.public_chat.view_all": "全体表示"
 }

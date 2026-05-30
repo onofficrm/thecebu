@@ -637,6 +637,38 @@
   background: var(--kakao-chat-bg);
 }
 
+.public-group-chat__history-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 10px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px dashed rgba(15, 76, 92, 0.18);
+  text-align: center;
+}
+
+.public-group-chat__history-more-text {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.public-group-chat__history-more-link {
+  color: var(--col-accent, #0f4c5c);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.public-group-chat__history-more-link:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 1023px) {
   .eottae-home-hero-grid--3col > .home-hero-chat-column,
   .home-hero-chat-column.public-group-chat--hero.public-group-chat--kakao,
