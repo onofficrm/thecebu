@@ -658,6 +658,10 @@
       return true;
     }
 
+    if (header.id === 'siteHeader' || header.classList.contains('eottae-gnb-header')) {
+      return true;
+    }
+
     var root = document.getElementById('root');
     return !!(root && root.contains(header));
   }

@@ -191,6 +191,22 @@ if (!function_exists('eottae_home_latest_news_table_exists')) {
     }
 }
 
+if (!function_exists('eottae_home_latest_news_initial')) {
+    function eottae_home_latest_news_initial($title)
+    {
+        $text = trim(strip_tags(get_text((string) $title)));
+        if ($text === '') {
+            return '?';
+        }
+
+        if (function_exists('mb_substr')) {
+            return mb_substr($text, 0, 1, 'UTF-8');
+        }
+
+        return substr($text, 0, 1);
+    }
+}
+
 if (!function_exists('eottae_home_latest_news_format_row')) {
     function eottae_home_latest_news_format_row(array $row, array $board)
     {
@@ -204,12 +220,18 @@ if (!function_exists('eottae_home_latest_news_format_row')) {
         $ts = strtotime($datetime);
         $comments = (int) ($row['wr_comment'] ?? 0);
         $views = (int) ($row['wr_hit'] ?? 0);
+        $title = get_text($row['wr_subject'] ?? '');
+        $thumb = '';
+
+        if (function_exists('eottae_community_list_thumb')) {
+            $thumb = (string) eottae_community_list_thumb($bo_table, $wr_id);
+        }
 
         return array(
             'id'       => $wr_id,
             'boardKey' => (string) ($board['key'] ?? ''),
             'board'    => (string) ($board['label'] ?? $bo_table),
-            'title'    => get_text($row['wr_subject'] ?? ''),
+            'title'    => $title,
             'comments' => $comments,
             'views'    => $views,
             'time'     => function_exists('eottae_api_relative_time_label') ? eottae_api_relative_time_label($datetime) : '',
@@ -217,6 +239,8 @@ if (!function_exists('eottae_home_latest_news_format_row')) {
             'is_new'   => $ts ? (G5_SERVER_TIME - $ts) < 86400 : false,
             'is_hot'   => $views >= 100 || $comments >= 10,
             'url'      => G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$wr_id,
+            'thumb'    => $thumb,
+            'initial'  => eottae_home_latest_news_initial($title),
         );
     }
 }
@@ -390,9 +414,9 @@ if (!function_exists('eottae_home_public_talkrooms_payload')) {
             include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
         }
 
-        $limit = max(1, min(10, (int) $limit));
+        $visible_count = max(1, min(8, (int) $visible_count));
         $pool = eottae_talkroom_list_public_cards(array(
-            'limit' => max(24, $limit),
+            'limit' => max(24, $visible_count + 12),
             'page'  => 1,
         ));
 
@@ -407,15 +431,14 @@ if (!function_exists('eottae_home_public_talkrooms_payload')) {
             });
         }
 
-        $rooms = array_slice($pool, 0, $limit);
-
         return array(
-            'title'      => '공개 세부톡방',
-            'desc'       => '관심 주제별 공개 톡방에 참여하고 세부 생활 정보를 나눠 보세요.',
-            'rooms'      => $rooms,
-            'list_url'   => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk',
-            'create_url' => function_exists('eottae_talkroom_create_url') ? eottae_talkroom_create_url() : G5_URL.'/page/eottae-talk-create.php',
-            'total'      => count($rooms),
+            'title'         => '공개 세부톡방',
+            'desc'          => '관심 주제별 공개 톡방에 참여하고 세부 생활 정보를 나눠 보세요.',
+            'rooms'         => $pool,
+            'visible_count' => $visible_count,
+            'list_url'      => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk',
+            'create_url'    => function_exists('eottae_talkroom_create_url') ? eottae_talkroom_create_url() : G5_URL.'/page/eottae-talk-create.php',
+            'total'         => count($pool),
         );
     }
 }
@@ -434,7 +457,7 @@ if (!function_exists('eottae_home_main_section_payload')) {
             'popular'       => eottae_home_popular_payload(5),
             'latest_news'   => eottae_home_latest_news_payload(6),
             'contribution_banner' => eottae_home_contribution_banner_payload(),
-            'talk_rooms'    => eottae_home_public_talkrooms_payload(5),
+            'talk_rooms'    => eottae_home_public_talkrooms_payload(6),
             'community_url' => G5_BBS_URL.'/board.php?bo_table='.$community_table,
         );
     }

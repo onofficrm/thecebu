@@ -69,7 +69,9 @@ if (!function_exists('eottae_talkroom_admin_page_assets')) {
     }
 }
 
-eottae_talkroom_admin_page_assets();
+if (function_exists('eottae_talkroom_is_admin_shell_request') && eottae_talkroom_is_admin_shell_request()) {
+    eottae_talkroom_admin_page_assets();
+}
 
 if (!function_exists('eottae_talkroom_render_admin_nav')) {
     function eottae_talkroom_render_admin_nav($active = 'rooms')

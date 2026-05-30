@@ -851,15 +851,44 @@ section[data-eottae-home-main-host="popular-hot"] > :not([data-eottae-home-popul
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
-  padding: 10px 12px;
+  min-height: 56px;
+  max-height: 56px;
+  padding: 8px 12px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.86);
   border: 1px solid rgba(226, 232, 240, 0.78);
   color: inherit;
   text-decoration: none;
   transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.sebu-news-item__thumb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  overflow: hidden;
+}
+
+.sebu-news-item__thumb--image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sebu-news-item__thumb--initial {
+  background: linear-gradient(145deg, #0ea5e9, #0284c7);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.03em;
 }
 
 .sebu-news-item__link:hover {
@@ -870,8 +899,9 @@ section[data-eottae-home-main-host="popular-hot"] > :not([data-eottae-home-popul
 
 .sebu-news-item__main {
   display: grid;
-  gap: 5px;
+  gap: 4px;
   min-width: 0;
+  flex: 1 1 auto;
 }
 
 .sebu-news-item__head {
@@ -1176,7 +1206,7 @@ section[data-eottae-home-main-host="popular-hot"] > :not([data-eottae-home-popul
     flex: 0 0 auto;
     flex-direction: column;
     justify-content: flex-start;
-    gap: 10px;
+    gap: 12px;
     min-height: 0;
     height: auto;
   }
@@ -1184,24 +1214,24 @@ section[data-eottae-home-main-host="popular-hot"] > :not([data-eottae-home-popul
   .sebu-talkrooms-col__desktop .sebu-talkrooms-col__item {
     display: flex;
     flex: 0 0 auto;
-    min-height: 68px;
+    min-height: 72px;
   }
 
   .sebu-talkrooms-col__desktop .sebu-talkrooms-col__link {
     flex: 1 1 auto;
     width: 100%;
-    min-height: 68px;
-    padding: 12px 14px;
-    border-radius: 14px;
-    gap: 10px;
+    min-height: 72px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    gap: 12px;
     align-items: center;
   }
 
   .sebu-talkrooms-col__desktop .sebu-talkrooms-col__emoji {
-    width: 46px;
-    height: 46px;
-    font-size: 1.35rem;
-    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    font-size: 1.4rem;
+    border-radius: 14px;
   }
 
   .sebu-talkrooms-col__desktop .sebu-talkrooms-col__body {
@@ -1272,7 +1302,7 @@ section[data-eottae-home-main-host="popular-hot"] > :not([data-eottae-home-popul
   }
 }
 
-/* ── 홈 — 커뮤니티: 공개 세부톡방 (PC 5행 / 모바일 스와이프) ── */
+/* ── 홈 — 커뮤니티: 공개 세부톡방 (PC 6행 / 초과 시 세로 롤링 / 모바일 스와이프) ── */
 .sebu-community-col--talkrooms {
   display: flex;
   flex-direction: column;
@@ -1289,20 +1319,40 @@ section[data-eottae-home-main-host="popular-hot"] > :not([data-eottae-home-popul
 .sebu-talkrooms-col__desktop .sebu-talkrooms-col__list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.sebu-talkrooms-col__desktop .sebu-talkrooms-col__item {
-  min-width: 0;
+.sebu-talkrooms-col__desktop .sebu-talkrooms-col__link {
+  min-height: 72px;
+  padding: 14px 16px;
+  border-radius: 16px;
 }
 
-.sebu-talkrooms-col__desktop .sebu-talkrooms-col__link {
-  min-height: 60px;
-  padding: 10px 12px;
-  border-radius: 14px;
+.sebu-talkrooms-col__desktop--vertical .sebu-talkrooms-col__v-viewport {
+  --sebu-talkrooms-item-height: 72px;
+  --sebu-talkrooms-item-gap: 12px;
+  --sebu-talkrooms-visible: 6;
+  overflow: hidden;
+  height: calc(
+    (var(--sebu-talkrooms-item-height) * var(--sebu-talkrooms-visible))
+    + (var(--sebu-talkrooms-item-gap) * (var(--sebu-talkrooms-visible) - 1))
+  );
+}
+
+.sebu-talkrooms-col__desktop--vertical .sebu-talkrooms-col__v-track {
+  will-change: transform;
+  transition: transform 0.45s ease;
+}
+
+.sebu-talkrooms-col__desktop--vertical .sebu-talkrooms-col__item {
+  min-height: var(--sebu-talkrooms-item-height);
+}
+
+.sebu-talkrooms-col__desktop--vertical .sebu-talkrooms-col__link {
+  min-height: var(--sebu-talkrooms-item-height);
 }
 
 .sebu-talkrooms-col__link {
@@ -1615,7 +1665,9 @@ section[data-eottae-home-main-host="popular-hot"] > :not([data-eottae-home-popul
   }
 
   .sebu-news-item__link {
-    padding: 11px;
+    min-height: 56px;
+    max-height: 56px;
+    padding: 8px 11px;
   }
 
   .sebu-news-item__meta {

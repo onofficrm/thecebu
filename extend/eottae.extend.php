@@ -1073,8 +1073,28 @@ if (!function_exists('eottae_talkroom_admin_shell_scripts')) {
             'eottae-admin-public-ai.php',
             'eottae-admin-public-ai-candidates.php',
             'eottae-admin-public-ai-logs.php',
+            'eottae-admin-public-ai-news.php',
+            'eottae-admin-public-ai-weather.php',
             'eottae-admin-golf-join.php',
         );
+    }
+}
+
+if (!function_exists('eottae_talkroom_is_admin_shell_request')) {
+    /**
+     * 세부톡·플라자 등 관리자 전용 셸 페이지 URL/스크립트 판별 (상수 정의 전에도 사용)
+     */
+    function eottae_talkroom_is_admin_shell_request()
+    {
+        $script = basename($_SERVER['SCRIPT_FILENAME'] ?? '');
+        if (function_exists('eottae_talkroom_admin_shell_scripts')
+            && in_array($script, eottae_talkroom_admin_shell_scripts(), true)) {
+            return true;
+        }
+
+        $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
+
+        return (bool) preg_match('#/page/eottae-admin-(?:talk|plaza|promo|review|challenge|member-growth|golf|public-ai)#', $uri);
     }
 }
 
@@ -1085,14 +1105,8 @@ if (!function_exists('eottae_talkroom_is_admin_shell_page')) {
             return (bool) EOTTAE_TALK_ADMIN_SHELL;
         }
 
-        $script = basename($_SERVER['SCRIPT_FILENAME'] ?? '');
-        if (in_array($script, eottae_talkroom_admin_shell_scripts(), true)) {
-            return true;
-        }
-
-        $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
-
-        return (bool) preg_match('#/page/eottae-admin-(?:talk|plaza|promo|review|challenge|member-growth|golf)#', $uri);
+        return function_exists('eottae_talkroom_is_admin_shell_request')
+            && eottae_talkroom_is_admin_shell_request();
     }
 }
 

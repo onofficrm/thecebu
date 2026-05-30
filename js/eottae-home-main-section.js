@@ -855,6 +855,29 @@
       + '</div>';
   }
 
+  function renderNewsThumb(post) {
+    var thumb = post && (post.thumb || post.thumb_url) ? String(post.thumb || post.thumb_url) : '';
+    var initial = post && post.initial ? String(post.initial) : '';
+    if (!initial && post && post.title) {
+      initial = String(post.title).charAt(0) || '?';
+    }
+    if (!initial) {
+      initial = '?';
+    }
+
+    if (thumb) {
+      return ''
+        + '<span class="sebu-news-item__thumb sebu-news-item__thumb--image">'
+        + '<img src="' + esc(thumb) + '" alt="" loading="lazy" decoding="async">'
+        + '</span>';
+    }
+
+    return ''
+      + '<span class="sebu-news-item__thumb sebu-news-item__thumb--initial" aria-hidden="true">'
+      + esc(initial)
+      + '</span>';
+  }
+
   function renderNewsPost(post) {
     if (!post || !post.title) {
       return '';
@@ -876,6 +899,7 @@
     return ''
       + '<li class="sebu-news-item">'
       + '<a href="' + esc(post.url || '#') + '" class="sebu-news-item__link">'
+      + renderNewsThumb(post)
       + '<span class="sebu-news-item__main">'
       + '<span class="sebu-news-item__head">'
       + (post.board ? '<span class="sebu-news-item__board">' + esc(post.board) + '</span>' : '')
@@ -1126,9 +1150,15 @@
       + '</li>';
   }
 
-  function renderTalkRoomsColumn(talkRooms) {
-    var listUrl = (talkRooms && talkRooms.list_url) ? talkRooms.list_url : talkListUrl();
-    var rooms = talkRooms && talkRooms.rooms ? talkRooms.rooms.slice(0, 5) : [];
+  function talkRoomsVisibleCount(talkRooms) {
+    var count = talkRooms && talkRooms.visible_count != null ? Number(talkRooms.visible_count) : 6;
+    if (!count || count < 1) {
+      count = 6;
+    }
+    return Math.min(8, count);
+  }
+
+  function renderTalkRoomsDesktopList(rooms, visibleCount, enableVertical) {
     var listHtml = '';
     var i;
 
@@ -1136,13 +1166,38 @@
       listHtml += renderTalkRoomItem(rooms[i]);
     }
 
-    var bodyHtml = rooms.length
-      ? ''
-        + '<div class="sebu-talkrooms-col__desktop">'
-        + '<ul class="sebu-talkrooms-col__list">' + listHtml + '</ul>'
+    if (enableVertical) {
+      return ''
+        + '<div class="sebu-talkrooms-col__desktop sebu-talkrooms-col__desktop--vertical"'
+        + ' data-eottae-talkrooms-vertical="1"'
+        + ' data-visible-count="' + esc(String(visibleCount)) + '">'
+        + '<div class="sebu-talkrooms-col__v-viewport">'
+        + '<ul class="sebu-talkrooms-col__list sebu-talkrooms-col__v-track">' + listHtml + '</ul>'
         + '</div>'
-        + renderTalkRoomsMobileCarousel(rooms)
-      : '<p class="sebu-community-col__empty">표시할 공개 톡방이 없습니다.</p>';
+        + '</div>';
+    }
+
+    return ''
+      + '<div class="sebu-talkrooms-col__desktop">'
+      + '<ul class="sebu-talkrooms-col__list">' + listHtml + '</ul>'
+      + '</div>';
+  }
+
+  function renderTalkRoomsColumn(talkRooms) {
+    var listUrl = (talkRooms && talkRooms.list_url) ? talkRooms.list_url : talkListUrl();
+    var rooms = talkRooms && talkRooms.rooms ? talkRooms.rooms : [];
+    var visibleCount = talkRoomsVisibleCount(talkRooms);
+    var staticRooms = rooms.slice(0, visibleCount);
+    var enableVertical = rooms.length > visibleCount;
+    var bodyHtml = '';
+
+    if (rooms.length) {
+      bodyHtml = ''
+        + renderTalkRoomsDesktopList(enableVertical ? rooms : staticRooms, visibleCount, enableVertical)
+        + renderTalkRoomsMobileCarousel(rooms);
+    } else {
+      bodyHtml = '<p class="sebu-community-col__empty">표시할 공개 톡방이 없습니다.</p>';
+    }
 
     return ''
       + '<article class="sebu-community-col sebu-community-col--talkrooms" aria-label="공개 세부톡방">'
@@ -1173,7 +1228,7 @@
 
     var active = 0;
     var timer = null;
-    var intervalMs = 4000;
+    var intervalMs = 3000;
     var touchStartX = 0;
     var touchStartY = 0;
 
@@ -1284,9 +1339,94 @@
     startAuto();
   }
 
+  function bindTalkRoomsVerticalCarousel(root) {
+    if (!root || root.dataset.verticalBound === '1') {
+      return;
+    }
+
+    var viewport = root.querySelector('.sebu-talkrooms-col__v-viewport');
+    var track = root.querySelector('.sebu-talkrooms-col__v-track');
+    var items = track ? track.querySelectorAll('.sebu-talkrooms-col__item') : [];
+    var visibleCount = parseInt(root.getAttribute('data-visible-count') || '6', 10);
+    if (!viewport || !track || !items.length || items.length <= visibleCount) {
+      return;
+    }
+
+    root.dataset.verticalBound = '1';
+
+    var active = 0;
+    var timer = null;
+    var intervalMs = 3000;
+    var stepPx = 0;
+
+    function measureStep() {
+      if (!items[0]) {
+        return 0;
+      }
+      var style = global.getComputedStyle(track);
+      var gap = parseFloat(style.rowGap || style.gap || '0') || 0;
+      stepPx = items[0].offsetHeight + gap;
+      return stepPx;
+    }
+
+    function applyTransform() {
+      if (!stepPx) {
+        measureStep();
+      }
+      track.style.transform = 'translate3d(0, -' + (active * stepPx) + 'px, 0)';
+    }
+
+    function nextSlide() {
+      active += 1;
+      if (active > items.length - visibleCount) {
+        active = 0;
+        track.style.transition = 'none';
+        applyTransform();
+        global.requestAnimationFrame(function () {
+          global.requestAnimationFrame(function () {
+            track.style.transition = '';
+          });
+        });
+        return;
+      }
+      applyTransform();
+    }
+
+    function stopAuto() {
+      if (timer) {
+        global.clearInterval(timer);
+        timer = null;
+      }
+    }
+
+    function startAuto() {
+      stopAuto();
+      if (items.length <= visibleCount) {
+        return;
+      }
+      timer = global.setInterval(nextSlide, intervalMs);
+    }
+
+    measureStep();
+    viewport.style.setProperty('--sebu-talkrooms-visible', String(visibleCount));
+    applyTransform();
+    startAuto();
+
+    root.addEventListener('mouseenter', stopAuto);
+    root.addEventListener('mouseleave', startAuto);
+    root.addEventListener('focusin', stopAuto);
+    root.addEventListener('focusout', startAuto);
+
+    global.addEventListener('resize', function () {
+      measureStep();
+      applyTransform();
+    }, { passive: true });
+  }
+
   function initTalkRoomsCarousels(scope) {
     var host = scope || document;
     host.querySelectorAll('[data-eottae-talkrooms-carousel="1"]').forEach(bindTalkRoomsCarousel);
+    host.querySelectorAll('[data-eottae-talkrooms-vertical="1"]').forEach(bindTalkRoomsVerticalCarousel);
   }
 
   function renderCommunityBlock(talkRooms) {

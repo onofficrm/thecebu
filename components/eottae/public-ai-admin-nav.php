@@ -3,7 +3,7 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
-if (function_exists('eottae_talkroom_admin_page_assets')) {
+if (function_exists('eottae_talkroom_is_admin_shell_request') && eottae_talkroom_is_admin_shell_request()) {
     eottae_talkroom_admin_page_assets();
 }
 
