@@ -25,6 +25,39 @@
     return global.__EOTTae_HOME_HERO_SIDEBAR__ || {};
   }
 
+  function findMemberLoginTarget(sidebar) {
+    if (!sidebar) {
+      return null;
+    }
+
+    return sidebar.querySelector('.community-sidebar__login')
+      || sidebar.querySelector('section.community-login-box')
+      || sidebar.querySelector('.community-login-box--member')
+      || sidebar.querySelector('.community-login-box:not(.community-login-box--guest)');
+  }
+
+  function upgradeMemberLoginBox(sidebar) {
+    var templateRoot = document.getElementById('eottae-home-login-box-template');
+    if (!templateRoot || !sidebar) {
+      return false;
+    }
+
+    var source = templateRoot.querySelector('.community-sidebar__login');
+    if (!source || !source.querySelector('.community-login-box--member')) {
+      return false;
+    }
+
+    var target = findMemberLoginTarget(sidebar);
+    if (!target || target.getAttribute('data-eottae-login-upgraded') === '1') {
+      return false;
+    }
+
+    var clone = source.cloneNode(true);
+    clone.setAttribute('data-eottae-login-upgraded', '1');
+    target.replaceWith(clone);
+    return true;
+  }
+
   function enrichGuestLoginBox(guestBox) {
     if (!guestBox || guestBox.getAttribute('data-eottae-guest-enriched') === '1') {
       return;
@@ -89,6 +122,13 @@
 
     sidebar.classList.add('home-hero-sidebar-column');
 
+    if (upgradeMemberLoginBox(sidebar)) {
+      if (typeof global.scheduleEottaeHeroColumnHeights === 'function') {
+        global.scheduleEottaeHeroColumnHeights(40);
+        global.scheduleEottaeHeroColumnHeights(200);
+      }
+    }
+
     var guestBox = sidebar.querySelector('.community-login-box--guest');
     if (guestBox) {
       patchGuestLoginUrls(guestBox);
@@ -127,10 +167,18 @@
       mount();
     };
 
+    var schedule = function () {
+      run();
+      global.setTimeout(run, 400);
+      global.setTimeout(run, 1200);
+      global.setTimeout(run, 2800);
+    };
+
     if (typeof global.eottaeHomeAfterReactReady === 'function') {
-      global.eottaeHomeAfterReactReady(run);
+      global.eottaeHomeAfterReactReady(schedule);
+      global.setTimeout(schedule, 4000);
     } else {
-      global.setTimeout(run, 1500);
+      schedule();
     }
 
     if (typeof MutationObserver === 'undefined') {
@@ -152,8 +200,11 @@
         scheduled = false;
         var sidebar = findHeroSidebar();
         if (!sidebar || sidebar.getAttribute(MOUNTED_ATTR) === '1') {
-          if (sidebar && sidebar.querySelector('.community-login-box--guest:not([data-eottae-guest-enriched])')) {
-            layoutSidebar(sidebar);
+          if (sidebar) {
+            upgradeMemberLoginBox(sidebar);
+            if (sidebar.querySelector('.community-login-box--guest:not([data-eottae-guest-enriched])')) {
+              layoutSidebar(sidebar);
+            }
           }
           return;
         }

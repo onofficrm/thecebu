@@ -29,6 +29,25 @@
     return key ? ' data-i18n="' + esc(key) + '"' : '';
   }
 
+  function applyHomeI18n() {
+    if (!global.EottaeI18N) {
+      return;
+    }
+
+    var apply = function () {
+      if (typeof global.EottaeI18N.apply === 'function') {
+        global.EottaeI18N.apply();
+      }
+    };
+
+    if (typeof global.EottaeI18N.ready === 'function') {
+      global.EottaeI18N.ready().then(apply).catch(apply);
+      return;
+    }
+
+    apply();
+  }
+
   function renderLanguageSelect(extraClass) {
     return ''
       + '<div class="eottae-language ' + esc(extraClass || '') + '" data-eottae-language-control="1">'
@@ -303,9 +322,7 @@
 
     header.classList.add('eottae-gnb-header');
     header.setAttribute('data-eottae-home-gnb-injected', '1');
-    if (global.EottaeI18N && typeof global.EottaeI18N.apply === 'function') {
-      global.EottaeI18N.apply();
-    }
+    applyHomeI18n();
     return true;
   }
 
@@ -436,9 +453,9 @@
     }
   }
 
-  function renderNavLinkInner(label) {
+  function renderNavLinkInner(label, hasChildren) {
     return ''
-      + '<span class="eottae-gnb-header__nav-caret" aria-hidden="true"></span>'
+      + (hasChildren ? '<span class="eottae-gnb-header__nav-caret" aria-hidden="true"></span>' : '')
       + '<span class="eottae-gnb-header__nav-label"' + i18nAttrForText(label) + '>' + esc(label) + '</span>';
   }
 
@@ -467,7 +484,7 @@
         + (item.key ? ' data-mega-key="' + esc(item.key) + '"' : '')
         + (hasChildren ? ' aria-haspopup="true"' : '')
         + '>'
-        + renderNavLinkInner(item.label);
+        + renderNavLinkInner(item.label, hasChildren);
       html += '</a>';
     }
 
@@ -520,9 +537,7 @@
     header.setAttribute('data-eottae-home-gnb-injected', '1');
     tagHomeNavMegaKeys(header, data.mobile_menu.items);
     mountDesktopMegaPanel(data);
-    if (global.EottaeI18N && typeof global.EottaeI18N.apply === 'function') {
-      global.EottaeI18N.apply();
-    }
+    applyHomeI18n();
   }
 
   function mountDesktopMegaPanel(data) {
@@ -740,9 +755,7 @@
     }
 
     ensureHomeMobileMenuControls();
-    if (global.EottaeI18N && typeof global.EottaeI18N.apply === 'function') {
-      global.EottaeI18N.apply();
-    }
+    applyHomeI18n();
   }
 
   function isShopWriteLabel(text) {
@@ -1011,11 +1024,15 @@
     return null;
   }
 
-  function applyDesktopNavLinkLabel(link, label) {
+  function applyDesktopNavLinkLabel(link, label, hasChildren) {
     if (!link) {
       return;
     }
-    link.innerHTML = renderNavLinkInner(label || '');
+
+    var showCaret = typeof hasChildren === 'boolean'
+      ? hasChildren
+      : link.classList.contains('eottae-gnb-header__nav-link--parent');
+    link.innerHTML = renderNavLinkInner(label || '', showCaret);
   }
 
   function buildColumnNavLink(data, className, attrName) {
@@ -1023,7 +1040,7 @@
     link.href = data.column_url;
     link.className = className || 'eottae-gnb-header__nav-link';
     link.setAttribute(attrName, '1');
-    applyDesktopNavLinkLabel(link, data.column_label || '컬럼');
+    applyDesktopNavLinkLabel(link, data.column_label || '컬럼', true);
     return link;
   }
 
@@ -1032,7 +1049,7 @@
     link.href = data.adroom_url;
     link.className = className || 'eottae-gnb-header__nav-link';
     link.setAttribute(attrName, '1');
-    applyDesktopNavLinkLabel(link, data.adroom_label || '광고방');
+    applyDesktopNavLinkLabel(link, data.adroom_label || '광고방', false);
     return link;
   }
 
@@ -1065,7 +1082,7 @@
     link.className = className || 'eottae-gnb-header__nav-link';
     link.setAttribute(attrName, '1');
     if (className && className.indexOf('eottae-gnb-header__nav-link') !== -1) {
-      applyDesktopNavLinkLabel(link, data.free_label || '자유게시판');
+      applyDesktopNavLinkLabel(link, data.free_label || '자유게시판', false);
     } else {
       link.textContent = data.free_label || '자유게시판';
     }
@@ -1267,7 +1284,7 @@
           link.href = data.golf_join_url;
           link.setAttribute('data-eottae-home-golf-nav', '1');
           if (link.classList.contains('eottae-gnb-header__nav-link')) {
-            applyDesktopNavLinkLabel(link, data.golf_join_label || '골프조인');
+            applyDesktopNavLinkLabel(link, data.golf_join_label || '골프조인', true);
           } else {
             link.textContent = data.golf_join_label || '골프조인';
           }
@@ -1343,9 +1360,7 @@
     hideMassageMenuLinks();
     hideCommunityHubMenuLinks();
     replaceTourNavWithGolfJoin(data);
-    if (global.EottaeI18N && typeof global.EottaeI18N.apply === 'function') {
-      global.EottaeI18N.apply();
-    }
+    applyHomeI18n();
   }
 
   function init() {

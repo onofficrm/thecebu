@@ -8,6 +8,7 @@
   var localesBaseUrl = config.localesBaseUrl || '/locales';
   var dictionaries = {};
   var currentLanguage = defaultLanguage;
+  var readyPromise = null;
   var staticKoDictionary = {
     'menu.home': '홈',
     'menu.nearby': '내주변',
@@ -214,7 +215,7 @@
       } catch (error) { /* ignore */ }
     }
 
-    return Promise.all([
+    readyPromise = Promise.all([
       loadDictionary(defaultLanguage),
       loadDictionary(nextLanguage)
     ]).then(function () {
@@ -231,6 +232,8 @@
       applyTranslations();
       return defaultLanguage;
     });
+
+    return readyPromise;
   }
 
   function initSelectors() {
@@ -249,6 +252,9 @@
     },
     setLanguage: function (language) {
       return setLanguage(language, true);
+    },
+    ready: function () {
+      return readyPromise || setLanguage(currentLanguage, false);
     },
     t: translate,
     apply: applyTranslations,

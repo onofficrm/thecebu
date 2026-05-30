@@ -794,6 +794,12 @@ body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat.public-group-chat-
   color: #fff;
 }
 
+@media (min-width: 768px) {
+  .public-group-chat__fullscreen {
+    display: none !important;
+  }
+}
+
 @media (max-width: 767px) {
   html.public-group-chat-fullscreen-open,
   body.public-group-chat-fullscreen-open {

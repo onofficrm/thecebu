@@ -3,49 +3,58 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
-$eottae_auth = function_exists('eottae_auth_context') ? eottae_auth_context() : array('is_member' => false, 'member' => array('mb_id' => '', 'mb_level' => 1, 'mb_point' => 0));
-$is_member = !empty($eottae_auth['is_member']);
-$member = isset($eottae_auth['member']) ? $eottae_auth['member'] : array('mb_id' => '', 'mb_level' => 1, 'mb_point' => 0);
+if (!function_exists('eottae_community_login_box_html')) {
+    function eottae_community_login_box_html()
+    {
+        $eottae_auth = function_exists('eottae_auth_context') ? eottae_auth_context() : array('is_member' => false, 'member' => array('mb_id' => '', 'mb_level' => 1, 'mb_point' => 0));
+        $is_member = !empty($eottae_auth['is_member']);
+        $member = isset($eottae_auth['member']) ? $eottae_auth['member'] : array('mb_id' => '', 'mb_level' => 1, 'mb_point' => 0);
 
-$eottae_login_return = function_exists('eottae_current_url') ? eottae_current_url() : G5_URL;
-$eottae_login_url = function_exists('eottae_login_url') ? eottae_login_url($eottae_login_return) : G5_BBS_URL.'/login.php';
-$eottae_register_url = function_exists('eottae_register_url') ? eottae_register_url() : G5_BBS_URL.'/register.php';
-$eottae_password_url = function_exists('eottae_password_lost_url') ? eottae_password_lost_url() : G5_BBS_URL.'/password_lost.php';
-$eottae_mypage_url = function_exists('eottae_mypage_url') ? eottae_mypage_url() : G5_URL.'/page/eottae-mypage.php';
-$eottae_profile_url = G5_BBS_URL.'/member_confirm.php?url='.urlencode(G5_BBS_URL.'/register_form.php');
-$eottae_logout_url = G5_BBS_URL.'/logout.php';
+        $eottae_login_return = function_exists('eottae_current_url') ? eottae_current_url() : G5_URL;
+        $eottae_login_url = function_exists('eottae_login_url') ? eottae_login_url($eottae_login_return) : G5_BBS_URL.'/login.php';
+        $eottae_register_url = function_exists('eottae_register_url') ? eottae_register_url() : G5_BBS_URL.'/register.php';
+        $eottae_password_url = function_exists('eottae_password_lost_url') ? eottae_password_lost_url() : G5_BBS_URL.'/password_lost.php';
+        $eottae_mypage_url = function_exists('eottae_mypage_url') ? eottae_mypage_url() : G5_URL.'/page/eottae-mypage.php';
+        $eottae_profile_url = G5_BBS_URL.'/member_confirm.php?url='.urlencode(G5_BBS_URL.'/register_form.php');
+        $eottae_logout_url = G5_BBS_URL.'/logout.php';
 
-if ($is_member && is_array($member)) {
-    $eottae_member_nick = isset($member['mb_nick']) ? get_text($member['mb_nick']) : '회원';
-    $eottae_member_point = isset($member['mb_point']) ? (int) $member['mb_point'] : 0;
-    $eottae_member_is_biz = function_exists('eottae_is_business_member') && eottae_is_business_member($member);
-    $eottae_member_type = function_exists('eottae_member_profile_type_label')
-        ? eottae_member_profile_type_label($member)
-        : ($eottae_member_is_biz ? '사업자회원' : '일반회원');
-    $eottae_coupon_count = 0;
-    if (is_file(G5_LIB_PATH.'/eottae-coupon.lib.php')) {
-        include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
-        if (function_exists('eottae_coupon_count_active') && !empty($member['mb_id'])) {
-            $eottae_coupon_count = (int) eottae_coupon_count_active($member['mb_id']);
-        }
-    }
-    $eottae_initial = function_exists('mb_substr') ? mb_substr($eottae_member_nick, 0, 1, 'UTF-8') : substr($eottae_member_nick, 0, 1);
-    $eottae_profile_photo_url = '';
-    if (!empty($member['mb_id']) && function_exists('eottae_member_profile_image_url')) {
-        $eottae_profile_photo_url = eottae_member_profile_image_url($member['mb_id']);
-    }
-    $eottae_profile_badge_html = '';
-    if (!empty($member['mb_id'])) {
-        if (!function_exists('eottae_member_growth_login_badge_html') && is_file(G5_LIB_PATH.'/eottae-member-growth.lib.php')) {
-            include_once G5_LIB_PATH.'/eottae-member-growth.lib.php';
-        }
-        if (function_exists('eottae_member_growth_login_badge_html')) {
-            $eottae_profile_badge_html = eottae_member_growth_login_badge_html($member);
-        }
-    }
-}
-?>
+        $eottae_member_nick = '회원';
+        $eottae_member_point = 0;
+        $eottae_member_type = '일반회원';
+        $eottae_coupon_count = 0;
+        $eottae_initial = '회';
+        $eottae_profile_photo_url = '';
+        $eottae_profile_badge_html = '';
 
+        if ($is_member && is_array($member)) {
+            $eottae_member_nick = isset($member['mb_nick']) ? get_text($member['mb_nick']) : '회원';
+            $eottae_member_point = isset($member['mb_point']) ? (int) $member['mb_point'] : 0;
+            $eottae_member_is_biz = function_exists('eottae_is_business_member') && eottae_is_business_member($member);
+            $eottae_member_type = function_exists('eottae_member_profile_type_label')
+                ? eottae_member_profile_type_label($member)
+                : ($eottae_member_is_biz ? '사업자회원' : '일반회원');
+            if (is_file(G5_LIB_PATH.'/eottae-coupon.lib.php')) {
+                include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
+                if (function_exists('eottae_coupon_count_active') && !empty($member['mb_id'])) {
+                    $eottae_coupon_count = (int) eottae_coupon_count_active($member['mb_id']);
+                }
+            }
+            $eottae_initial = function_exists('mb_substr') ? mb_substr($eottae_member_nick, 0, 1, 'UTF-8') : substr($eottae_member_nick, 0, 1);
+            if (!empty($member['mb_id']) && function_exists('eottae_member_profile_image_url')) {
+                $eottae_profile_photo_url = eottae_member_profile_image_url($member['mb_id']);
+            }
+            if (!empty($member['mb_id'])) {
+                if (!function_exists('eottae_member_growth_login_badge_html') && is_file(G5_LIB_PATH.'/eottae-member-growth.lib.php')) {
+                    include_once G5_LIB_PATH.'/eottae-member-growth.lib.php';
+                }
+                if (function_exists('eottae_member_growth_login_badge_html')) {
+                    $eottae_profile_badge_html = eottae_member_growth_login_badge_html($member);
+                }
+            }
+        }
+
+        ob_start();
+        ?>
 <section class="community-sidebar__card community-sidebar__login" aria-label="회원 로그인">
     <?php if ($is_member) { ?>
     <div class="community-login-box community-login-box--member">
@@ -112,3 +121,12 @@ if ($is_member && is_array($member)) {
     </div>
     <?php } ?>
 </section>
+        <?php
+
+        return trim(ob_get_clean());
+    }
+}
+
+if (!defined('EOTTAE_COMMUNITY_LOGIN_BOX_SILENT')) {
+    echo eottae_community_login_box_html();
+}

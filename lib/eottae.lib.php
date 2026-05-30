@@ -1290,6 +1290,70 @@ if (!function_exists('eottae_builder_inject_home_map_categories_script')) {
     }
 }
 
+if (!function_exists('eottae_builder_inject_home_member_login_template')) {
+    function eottae_builder_inject_home_member_login_template($html)
+    {
+        global $is_member;
+
+        if (empty($is_member) || !is_string($html) || $html === '') {
+            return $html;
+        }
+
+        if (!is_file(G5_PATH.'/components/eottae/community-login-box.php')) {
+            return $html;
+        }
+
+        if (!function_exists('eottae_community_login_box_html')) {
+            if (!defined('EOTTAE_COMMUNITY_LOGIN_BOX_SILENT')) {
+                define('EOTTAE_COMMUNITY_LOGIN_BOX_SILENT', true);
+            }
+            include_once G5_PATH.'/components/eottae/community-login-box.php';
+        }
+        if (!function_exists('eottae_community_login_box_html')) {
+            return $html;
+        }
+
+        $box_html = eottae_community_login_box_html();
+        if ($box_html === '' || strpos($box_html, 'community-login-box--member') === false) {
+            return $html;
+        }
+
+        $snippet = '<div id="eottae-home-login-box-template" hidden style="display:none" data-eottae-home-login-template="1">'
+            .$box_html
+            .'</div>';
+
+        if (preg_match('#</body>#i', $html)) {
+            return preg_replace('#</body>#i', $snippet.'</body>', $html, 1);
+        }
+
+        return $html.$snippet;
+    }
+}
+
+if (!function_exists('eottae_builder_inject_home_i18n_script')) {
+    function eottae_builder_inject_home_i18n_script()
+    {
+        $config_json = json_encode(array(
+            'defaultLanguage' => 'ko',
+            'storageKey' => 'cebuatteLanguage',
+            'supportedLanguages' => array('ko', 'en', 'ja', 'zh'),
+            'localesBaseUrl' => G5_URL.'/locales',
+        ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+        if ($config_json === false) {
+            return '';
+        }
+
+        $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-i18n.js' : '/js/eottae-i18n.js';
+        $js_path = defined('G5_PATH') ? G5_PATH.'/js/eottae-i18n.js' : '';
+        if ($js_path !== '' && is_file($js_path)) {
+            $js .= '?ver='.(int) filemtime($js_path);
+        }
+
+        return '<script>window.__EOTTaeI18N__='.$config_json.';</script>'
+            .'<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
+    }
+}
+
 if (!function_exists('eottae_builder_inject_home_header_actions_script')) {
     function eottae_builder_inject_home_header_actions_script()
     {
@@ -1567,6 +1631,7 @@ if (!function_exists('eottae_builder_inject_html')) {
         $html = eottae_builder_inject_home_map($html);
         $html = eottae_builder_inject_home_column_feed($html);
         $html = eottae_builder_inject_home_public_chat($html);
+        $html = eottae_builder_inject_home_member_login_template($html);
 
         $head_script = eottae_builder_inject_logo_head_script();
         if ($head_script !== '') {
@@ -1588,6 +1653,7 @@ if (!function_exists('eottae_builder_inject_html')) {
         $body_scripts .= eottae_builder_inject_home_public_chat_script();
         $body_scripts .= eottae_builder_inject_home_events_banner_script();
         $body_scripts .= eottae_builder_inject_home_hero_sidebar_script();
+        $body_scripts .= eottae_builder_inject_home_i18n_script();
         $body_scripts .= eottae_builder_inject_home_header_actions_script();
         $body_scripts .= eottae_builder_inject_home_map_categories_script();
 
