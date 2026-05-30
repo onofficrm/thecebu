@@ -77,12 +77,17 @@ $site_config = array(
     /* 세부어때 캘린더 — Google Calendar ID·동기화 크론 키 */
     'calendar_google_id'        => '4932d5025ebdd69d35ff4827f24d5fe976d7ac73a6020d89dd8fdc380b30c99c@group.calendar.google.com',
     'calendar_sync_cron_key'    => '',
+    /* 광고 플랫폼 — 만료·연장 알림 크론 (talkroom_ai_cron_key 공용 가능) */
+    'ad_platform_cron_key'      => '',
     'talkroom_ai_summary_start_time' => '21:00:00',
     'talkroom_ai_summary_end_time'   => '23:00:00',
     'talkroom_ai_summary_min_activity' => 5,
-    /* 온오프챗봇 (components/onoff-chatbot.php) */
+    /* 온오프챗봇 (components/onoff-chatbot.php) — iCRM 관리자에서 허용 도메인(G5_URL) 등록 필요 */
     'onoff_chatbot_enabled'     => true,
     'onoff_chatbot_site_key'    => '967314350ee8ce35058ed2c5d0ed9039b10f200a829089af',
+    'onoff_chatbot_page_url'    => '',  /* 비우면 G5_URL 사용 — iCRM origin 검사용 */
+    'onoff_chatbot_origin_check_ttl' => 300,
+    'onoff_chatbot_skip_origin_check' => false,
     'map_default_lat'           => '10.313',
     'map_default_lng'           => '123.9174',
     'map_default_zoom'          => 12,

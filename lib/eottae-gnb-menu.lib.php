@@ -86,6 +86,7 @@ if (!function_exists('eottae_gnb_nav_menu')) {
             ? eottae_column_apply_url()
             : G5_URL.'/page/eottae-column-apply.php';
         $mypage_url = function_exists('eottae_mypage_url') ? eottae_mypage_url() : G5_URL.'/page/eottae-mypage.php';
+        $adroom_list_url = function_exists('eottae_adroom_list_url') ? eottae_adroom_list_url() : G5_URL.'/ad-room/';
         $message_url = function_exists('eottae_message_url') ? eottae_message_url() : G5_URL.'/page/eottae-messages.php';
         $message_label = '쪽지';
         if (!empty($is_member) && !empty($member['mb_id']) && is_file(G5_LIB_PATH.'/eottae-message.lib.php')) {
@@ -172,6 +173,11 @@ if (!function_exists('eottae_gnb_nav_menu')) {
                     array('key' => 'media_gallery', 'label' => '갤러리', 'href' => eottae_board_list_url($gallery_table)),
                     array('key' => 'media_youtube', 'label' => '유튜브', 'href' => eottae_board_list_url($youtube_table)),
                 ),
+            ),
+            array(
+                'key'   => 'adroom',
+                'label' => '광고방',
+                'href'  => $adroom_list_url,
             ),
             array(
                 'key'      => 'mypage',

@@ -1272,6 +1272,50 @@ body.eottae-page hr {
     opacity: 0 !important;
     pointer-events: none !important;
   }
+
+  .onoff-chatbot-fallback__launcher {
+    right: 12px;
+    bottom: calc(var(--eottae-bottom-nav-h, 64px) + 12px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* iCRM 연결 실패·모바일 — 상담 폴백 FAB */
+.onoff-chatbot-fallback__launcher {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 2147483646;
+  display: grid;
+  place-items: center;
+  width: 70px;
+  height: 70px;
+  padding: 0;
+  border: 0;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #2563eb, #14b8a6);
+  color: #fff;
+  box-shadow: 0 18px 42px rgba(37, 99, 235, 0.34);
+  cursor: pointer;
+  font-family: "Malgun Gothic", "Apple SD Gothic Neo", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-weight: 900;
+}
+
+.onoff-chatbot-fallback__icon {
+  display: block;
+  font-size: 25px;
+  line-height: 1;
+}
+
+.onoff-chatbot-fallback__text {
+  display: block;
+  margin-top: -10px;
+  font-size: 11px;
+  letter-spacing: -0.02em;
+}
+
+html.onoff-chatbot-modal-open,
+html.onoff-chatbot-modal-open body {
+  overflow: hidden;
 }
 
 @media (min-width: 640px) {
@@ -1296,26 +1340,17 @@ body.eottae-page hr {
 
 @media (min-width: 768px) {
   .eottae-gnb-footer__grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 24px;
   }
 
-  .eottae-gnb-footer__brand {
-    grid-column: span 2;
-  }
-
-  .eottae-gnb-footer__col--service,
-  .eottae-gnb-footer__col--partner {
+  .eottae-gnb-footer__brand,
+  .eottae-gnb-footer__col {
     min-width: 0;
   }
-}
 
-@media (min-width: 768px) and (max-width: 1023px) {
-  .eottae-gnb-footer__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .eottae-gnb-footer__brand {
-    grid-column: span 2;
+  .eottae-gnb-footer__desc {
+    max-width: none;
   }
 }
 
@@ -13942,5 +13977,389 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
 
   .community-login-box {
     width: 100%;
+  }
+}
+
+/* ── 광고 플랫폼 ── */
+.eottae-ad-platform {
+  margin: 16px 0 20px;
+}
+
+.eottae-ad-platform__card,
+.eottae-ad-platform__placeholder {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 22px 22px 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #334155 100%);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+}
+
+.eottae-ad-platform__card--premium,
+.eottae-ad-platform__card--image {
+  min-height: 180px;
+  background-size: cover;
+  background-position: center;
+}
+
+.eottae-ad-platform__card--premium::before,
+.eottae-ad-platform__card--image::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.82), rgba(15, 23, 42, 0.45));
+}
+
+.eottae-ad-platform__card--premium {
+  background-color: #0f172a;
+}
+
+.eottae-ad-platform__badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.eottae-ad-platform__body {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+}
+
+.eottae-ad-platform__title {
+  display: block;
+  margin: 0 0 8px;
+  font-size: clamp(18px, 2.2vw, 24px);
+  line-height: 1.35;
+}
+
+.eottae-ad-platform__desc {
+  margin: 0 0 16px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.eottae-ad-platform__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: #fff;
+  color: #0f172a;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.eottae-ad-platform__btn--ghost {
+  background: #fff;
+  color: #0f172a;
+}
+
+.ad-platform-admin__slot-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.ad-platform-admin__campaign-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ad-platform-admin__sub {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.ad-platform-admin__summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.ad-platform-admin__summary-card {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.ad-platform-admin__summary-label {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.ad-platform-admin__summary-card strong {
+  font-size: 1.25rem;
+  color: #0f172a;
+}
+
+.ad-platform-admin__report-link {
+  display: inline-block;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  color: #0284c7;
+  text-decoration: none;
+}
+
+.ad-platform-admin__table--stats td,
+.ad-platform-admin__table--stats th {
+  white-space: nowrap;
+}
+
+.ad-platform-admin__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ad-platform-admin__filters .event-promo-page__admin-link.is-active {
+  background: rgba(37, 99, 235, 0.12);
+  color: #1d4ed8;
+}
+
+.ad-platform-admin__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ad-platform-register__lead,
+.ad-platform-register__point {
+  margin: 8px 0 0;
+  color: #64748b;
+}
+
+.ad-platform-register__quote {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.ad-platform-register__list {
+  display: grid;
+  gap: 12px;
+}
+
+.ad-platform-register__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.ad-platform-register__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.ad-platform-register__status {
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.ad-platform-register__stats {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.ad-platform-register__manage-link {
+  color: #0f172a;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.ad-platform-ai-panel {
+  margin-bottom: 18px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #f8fafc;
+}
+
+.ad-platform-ai-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ad-platform-ai-panel__preview {
+  margin-top: 12px;
+}
+
+.ad-platform-ai-panel__preview img {
+  display: block;
+  width: min(100%, 420px);
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+}
+
+.ad-platform-edit__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ad-platform-expiry-banner {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.ad-platform-expiry-banner__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border: 1px solid #fdba74;
+}
+
+.ad-platform-expiry-banner__item p {
+  margin: 0;
+  color: #9a3412;
+}
+
+.ad-platform-expiry-banner__link {
+  font-weight: 700;
+  color: #c2410c;
+  text-decoration: none;
+}
+
+.ad-platform-register__target {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.ad-platform-report__summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ad-platform-report__metric {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.ad-platform-report__metric-label {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.ad-platform-report__metric strong {
+  font-size: 1.35rem;
+  color: #0f172a;
+}
+
+.ad-platform-report__chart {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(28px, 1fr));
+  align-items: end;
+  gap: 8px;
+  min-height: 180px;
+  padding: 12px 0 0;
+}
+
+.ad-platform-report__bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 160px;
+  justify-content: flex-end;
+}
+
+.ad-platform-report__bar-fill {
+  display: block;
+  width: 100%;
+  max-width: 28px;
+  height: var(--bar-height, 8%);
+  min-height: 4px;
+  border-radius: 8px 8px 4px 4px;
+  background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+}
+
+.ad-platform-report__bar-label {
+  font-size: 0.7rem;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.ad-platform-report__table-wrap {
+  overflow-x: auto;
+}
+
+.ad-platform-report__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ad-platform-report__table th,
+.ad-platform-report__table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.ad-platform-report__table th {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.ad-platform-report__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.promo-admin-form__status.is-error {
+  color: #dc2626;
+}
+
+@media (min-width: 768px) {
+  .ad-platform-admin__slot-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ad-platform-report__summary {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .ad-platform-admin__summary-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }

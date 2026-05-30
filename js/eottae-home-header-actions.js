@@ -1113,7 +1113,12 @@
   }
 
   function findAdroomInsertAfter(scope) {
-    return findFreeInsertAfter(scope) || findNavLinkByLabel(scope, '커뮤니티');
+    var media = findNavLinkByLabel(scope, '미디어');
+    if (media) {
+      return media;
+    }
+
+    return findNavLinkByLabel(scope, 'MY');
   }
 
   function mountAdroomNav(data) {

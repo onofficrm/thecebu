@@ -366,6 +366,10 @@
   display: none !important;
 }
 
+section[data-eottae-home-main-host="popular-hot"] > :not([data-eottae-home-popular-hot-mounted="1"]) {
+  display: none !important;
+}
+
 .sebu-contribute-banner {
   position: relative;
   overflow: hidden;
@@ -1086,12 +1090,12 @@
 
   .sebu-community-popular__triple {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    align-items: stretch;
+    align-items: start;
   }
 
   .sebu-community-popular__grid {
     grid-template-columns: minmax(0, 1.85fr) minmax(280px, 0.85fr);
-    align-items: stretch;
+    align-items: start;
     gap: 16px;
   }
 
@@ -1110,7 +1114,7 @@
 @media (min-width: 1024px) {
   .sebu-community-popular__grid {
     grid-template-columns: minmax(0, 2fr) minmax(300px, 0.82fr);
-    align-items: stretch;
+    align-items: start;
   }
 
   .sebu-cal-summary--compact {
@@ -1123,9 +1127,9 @@
 
   .sebu-community-col--news,
   .sebu-community-col--talkrooms {
-    align-self: stretch;
+    align-self: start;
     height: auto;
-    min-height: 100%;
+    min-height: 0;
   }
 
   .sebu-community-col--news {
@@ -1134,25 +1138,19 @@
   }
 
   .sebu-news-panels {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    min-height: 0;
+    display: block;
   }
 
   .sebu-news-panel.is-active {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    min-height: 0;
+    display: block;
   }
 
   .sebu-news-panel__list {
-    flex: 1 1 auto;
+    flex: none;
   }
 
   .sebu-news-panel__more {
-    margin-top: auto;
+    margin-top: 12px;
     flex-shrink: 0;
   }
 
@@ -1167,25 +1165,25 @@
 
   .sebu-talkrooms-col__desktop {
     display: flex;
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     flex-direction: column;
     min-height: 0;
-    height: 100%;
+    height: auto;
   }
 
   .sebu-talkrooms-col__desktop .sebu-talkrooms-col__list {
     display: flex;
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     flex-direction: column;
-    justify-content: stretch;
+    justify-content: flex-start;
     gap: 10px;
     min-height: 0;
-    height: 100%;
+    height: auto;
   }
 
   .sebu-talkrooms-col__desktop .sebu-talkrooms-col__item {
     display: flex;
-    flex: 1 1 0;
+    flex: 0 0 auto;
     min-height: 68px;
   }
 

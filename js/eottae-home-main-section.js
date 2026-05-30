@@ -648,21 +648,26 @@
 
     var mounted = root.querySelector('[data-eottae-home-main-mounted="1"]');
     if (mounted) {
-      return mounted.closest('[data-eottae-home-main-host]') || mounted.parentElement;
+      var mountHost = mounted.closest('[data-eottae-home-community-mount="1"]');
+      if (mountHost) {
+        return mountHost;
+      }
+
+      return mounted.parentElement;
     }
 
-    var legacyBlock = findLegacyBoardsBlock();
-    if (legacyBlock) {
-      return legacyBlock;
-    }
+    return ensureCommunityMountHost();
+  }
 
+  function hideLegacyBuilderCommunitySections() {
+    var root = document.getElementById('root') || document;
     var markers = [
-      '오늘의세부커뮤니티',
-      '세부최신소식',
+      '전체실시간',
+      '실시간인기글',
       '커뮤니티최신글',
       '세부생활정보',
-      '공개세부톡방',
-      '오늘의세부톡',
+      '자유게시판',
+      '이번',
     ];
     var headings = root.querySelectorAll('h2, h3');
     var i;
@@ -670,33 +675,34 @@
     var text;
     var section;
 
-    for (m = 0; m < markers.length; m += 1) {
-      for (i = 0; i < headings.length; i += 1) {
-        text = normalizeText(headings[i].textContent);
+    for (i = 0; i < headings.length; i += 1) {
+      if (isInsideHomeMainHost(headings[i])) {
+        continue;
+      }
+
+      text = normalizeText(headings[i].textContent);
+
+      for (m = 0; m < markers.length; m += 1) {
         if (text.indexOf(markers[m]) === -1) {
           continue;
         }
 
-        section = resolveCommunitySectionRoot(headings[i]);
-        if (section) {
-          return section;
+        if (markers[m] === '이번' && text.indexOf('세부일정') === -1) {
+          continue;
         }
+
+        section = findLegacySectionContainer(headings[i])
+          || headings[i].closest('section')
+          || resolveCommunitySectionRoot(headings[i]);
+
+        if (!section || isInsideHomeMainHost(section)) {
+          continue;
+        }
+
+        section.classList.add('sebu-home-legacy-hidden');
+        break;
       }
     }
-
-    for (i = 0; i < headings.length; i += 1) {
-      text = normalizeText(headings[i].textContent);
-      if (!headingMatchesPopularSection(text)) {
-        continue;
-      }
-
-      section = findLegacySectionContainer(headings[i]);
-      if (section && section.parentNode && !isUnsafeHomeRemovalTarget(section.parentNode, headings[i])) {
-        return section.parentNode;
-      }
-    }
-
-    return ensureCommunityMountHost();
   }
 
   function findBuilderPopularHotSection() {
@@ -751,6 +757,7 @@
         builderHot.removeChild(builderHot.firstChild);
       }
       builderHot.appendChild(hotWrap);
+      hideLegacyBuilderCommunitySections();
       return hotWrap;
     }
 
@@ -814,12 +821,13 @@
       }
 
       removed[sectionRoot] = true;
-      sectionRoot.parentNode.removeChild(sectionRoot);
+      sectionRoot.classList.add('sebu-home-legacy-hidden');
     }
   }
 
   function watchLegacyHomeSectionsRemoval() {
     removeLegacyHomeSections();
+    hideLegacyBuilderCommunitySections();
   }
 
   function renderTodayOverview(latestNews) {
@@ -1332,8 +1340,10 @@
     mountRoot.setAttribute('data-eottae-home-main-mounted', '1');
     mountRoot.innerHTML = renderCommunityBlock(data.talk_rooms || {});
 
-    section.classList.add('sebu-home-main-host');
-    section.setAttribute('data-eottae-home-main-host', 'community');
+    if (!section.hasAttribute('data-eottae-home-community-mount')) {
+      section.classList.add('sebu-home-main-host');
+      section.setAttribute('data-eottae-home-main-host', 'community');
+    }
 
     while (section.firstChild) {
       section.removeChild(section.firstChild);
@@ -1341,6 +1351,7 @@
     section.appendChild(mountRoot);
     mountDone = true;
 
+    hideLegacyBuilderCommunitySections();
     initTalkRoomsCarousels(mountRoot);
     bindLatestNewsTabs(mountRoot.querySelector('[data-eottae-news-tabs="1"]'));
 

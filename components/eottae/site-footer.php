@@ -13,7 +13,10 @@ if (!function_exists('eottae_site_footer_html')) {
         $eottae_footer_shop_url = function_exists('eottae_shop_list_url') ? eottae_shop_list_url() : G5_BBS_URL.'/board.php?bo_table='.EOTTae_SHOP_TABLE;
         $eottae_footer_shop_write = G5_BBS_URL.'/write.php?bo_table='.EOTTae_SHOP_TABLE;
         $eottae_footer_community = function_exists('eottae_community_list_url') ? eottae_community_list_url() : G5_BBS_URL.'/board.php?bo_table='.EOTTae_COMMUNITY_TABLE;
+        $eottae_footer_admin_name = '리차드김';
         $eottae_footer_admin_email = 'jong8040@gmail.com';
+        $eottae_footer_admin_phone_kr = '010-5227-8040';
+        $eottae_footer_admin_phone_ph = '0927-623-0390';
         $eottae_footer_talk_landing = G5_URL.'/talk/ai.php';
         $eottae_footer_coupon_guide = G5_URL.'/page/eottae-coupon-guide.php';
         $eottae_footer_business_coupon_guide = G5_URL.'/page/eottae-business-coupon-guide.php';
@@ -30,6 +33,9 @@ if (!function_exists('eottae_site_footer_html')) {
         $eottae_footer_briefing = function_exists('eottae_briefing_url')
             ? eottae_briefing_url()
             : G5_URL.'/briefing/';
+        $eottae_footer_ad_register = function_exists('eottae_ad_platform_register_url')
+            ? eottae_ad_platform_register_url()
+            : G5_URL.'/page/eottae-ad-register.php';
         $eottae_footer_cost_calculator = G5_URL.'/cost-calculator/';
         $eottae_footer_year = date('Y');
 
@@ -47,7 +53,7 @@ if (!function_exists('eottae_site_footer_html')) {
                         <?php echo get_text($eottae_footer_title); ?>
                         <?php } ?>
                     </p>
-                    <p class="eottae-gnb-footer__desc">필리핀 세부 교민, 사업자, 관광객을 위한 최고의 위치기반 생활정보 커뮤니티 플랫폼.</p>
+                    <p class="eottae-gnb-footer__desc">필리핀 세부 교민, 사업자, 관광객을 위한<br>최고의 위치기반 생활정보 커뮤니티 플랫폼.</p>
                 </div>
 
                 <nav class="eottae-gnb-footer__col" aria-label="바로가기">
@@ -77,6 +83,7 @@ if (!function_exists('eottae_site_footer_html')) {
                         <li><a href="<?php echo $eottae_footer_business_coupon_guide; ?>">쿠폰발행방법</a></li>
                         <li><a href="<?php echo $eottae_footer_columnist_recruit; ?>">컬럼리스트 모집</a></li>
                         <li><a href="<?php echo $eottae_footer_briefing; ?>">오늘의 세부 브리핑</a></li>
+                        <li><a href="<?php echo $eottae_footer_ad_register; ?>">광고 등록</a></li>
                     </ul>
                 </nav>
 
@@ -84,7 +91,10 @@ if (!function_exists('eottae_site_footer_html')) {
                     <h3 class="eottae-gnb-footer__heading">고객지원</h3>
                     <ul class="eottae-gnb-footer__links">
                         <li><span>사이트관리자</span></li>
+                        <li><span><?php echo get_text($eottae_footer_admin_name); ?></span></li>
                         <li><a href="mailto:<?php echo get_text($eottae_footer_admin_email); ?>"><?php echo get_text($eottae_footer_admin_email); ?></a></li>
+                        <li><a href="tel:<?php echo preg_replace('/[^0-9+]/', '', $eottae_footer_admin_phone_kr); ?>"><?php echo get_text($eottae_footer_admin_phone_kr); ?></a></li>
+                        <li><a href="tel:+63<?php echo ltrim(preg_replace('/[^0-9]/', '', $eottae_footer_admin_phone_ph), '0'); ?>"><?php echo get_text($eottae_footer_admin_phone_ph); ?></a></li>
                     </ul>
                 </div>
             </div>

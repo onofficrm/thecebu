@@ -271,6 +271,8 @@ if (!function_exists('eottae_community_hub_today_count')) {
     {
         global $g5;
 
+        eottae_community_hub_prepare_board_schemas();
+
         $today = G5_TIME_YMD.' 00:00:00';
         $total = 0;
 
@@ -325,16 +327,128 @@ if (!function_exists('eottae_community_hub_union_order_sql')) {
     }
 }
 
+if (!function_exists('eottae_community_hub_prepare_board_schemas')) {
+    /**
+     * 허브 통합 목록 — 게시판별 write 테이블 스키마( language 등 )를 맞춤
+     */
+    function eottae_community_hub_prepare_board_schemas()
+    {
+        static $prepared = false;
+        if ($prepared) {
+            return;
+        }
+        $prepared = true;
+
+        foreach (eottae_community_hub_board_tables() as $bo_table) {
+            if (!eottae_community_hub_write_table_exists($bo_table)) {
+                continue;
+            }
+            if (function_exists('eottae_lang_ensure_board_columns')) {
+                eottae_lang_ensure_board_columns($bo_table);
+            }
+        }
+    }
+}
+
+if (!function_exists('eottae_community_hub_list_filter_sql')) {
+    function eottae_community_hub_list_filter_sql($search_sql = '')
+    {
+        $sql = trim((string) $search_sql);
+
+        if (function_exists('eottae_lang_post_list_segment_sql')) {
+            $lang_sql = trim(eottae_lang_post_list_segment_sql());
+            if ($lang_sql !== '') {
+                $sql .= ' '.$lang_sql;
+            }
+        }
+
+        return $sql;
+    }
+}
+
+if (!function_exists('eottae_community_hub_sort_merged_rows')) {
+    /**
+     * @param array<int, array<string, mixed>> $rows
+     */
+    function eottae_community_hub_sort_merged_rows(array &$rows, $sst, $sod)
+    {
+        $sst = preg_replace('/[^a-z_]/', '', (string) $sst);
+        if (!in_array($sst, array('wr_datetime', 'wr_hit', 'wr_comment'), true)) {
+            $sst = 'wr_datetime';
+        }
+
+        $desc = strtolower((string) $sod) !== 'asc';
+
+        usort($rows, function ($left, $right) use ($sst, $desc) {
+            if ($sst === 'wr_datetime') {
+                $cmp = strcmp((string) ($left['wr_datetime'] ?? ''), (string) ($right['wr_datetime'] ?? ''));
+            } else {
+                $cmp = (int) ($left[$sst] ?? 0) <=> (int) ($right[$sst] ?? 0);
+            }
+
+            if ($cmp === 0) {
+                $cmp = strcmp((string) ($left['hub_bo_table'] ?? ''), (string) ($right['hub_bo_table'] ?? ''));
+            }
+            if ($cmp === 0) {
+                $cmp = (int) ($left['wr_id'] ?? 0) <=> (int) ($right['wr_id'] ?? 0);
+            }
+
+            return $desc ? -$cmp : $cmp;
+        });
+    }
+}
+
+if (!function_exists('eottae_community_hub_fetch_merged_rows')) {
+    /**
+     * UNION 대신 게시판별 조회 후 PHP 병합 (스키마 차이·UNION 실패 방지)
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    function eottae_community_hub_fetch_merged_rows($search_sql = '')
+    {
+        global $g5;
+
+        eottae_community_hub_prepare_board_schemas();
+
+        $filter_sql = eottae_community_hub_list_filter_sql($search_sql);
+        $rows = array();
+
+        foreach (eottae_community_hub_board_tables() as $bo_table) {
+            if (!eottae_community_hub_write_table_exists($bo_table)) {
+                continue;
+            }
+
+            $write_table = $g5['write_prefix'].$bo_table;
+            $sql = " SELECT * FROM `{$write_table}` WHERE wr_is_comment = 0 {$filter_sql} ";
+            $result = sql_query($sql, false);
+            if (!$result) {
+                continue;
+            }
+
+            while ($row = sql_fetch_array($result)) {
+                $row['hub_bo_table'] = $bo_table;
+                $rows[] = $row;
+            }
+        }
+
+        return $rows;
+    }
+}
+
 if (!function_exists('eottae_community_hub_build_union_sql')) {
     /**
      * @return array{sql:string, tables:array<int, string>}
+     * @deprecated eottae_community_hub_fetch_merged_rows() 사용
      */
     function eottae_community_hub_build_union_sql($search_sql = '')
     {
         global $g5;
 
+        eottae_community_hub_prepare_board_schemas();
+
         $parts = array();
         $tables = array();
+        $filter_sql = eottae_community_hub_list_filter_sql($search_sql);
 
         foreach (eottae_community_hub_board_tables() as $bo_table) {
             if (!eottae_community_hub_write_table_exists($bo_table)) {
@@ -346,7 +460,7 @@ if (!function_exists('eottae_community_hub_build_union_sql')) {
             $parts[] = "
                 SELECT '".sql_escape_string($bo_table)."' AS hub_bo_table, w.*
                 FROM `{$write_table}` w
-                WHERE w.wr_is_comment = 0 {$search_sql}
+                WHERE w.wr_is_comment = 0 {$filter_sql}
             ";
         }
 
@@ -380,16 +494,6 @@ if (!function_exists('eottae_community_hub_apply_merged_list')) {
         $sop = isset($ctx['sop']) ? trim((string) $ctx['sop']) : 'and';
 
         $search_sql = eottae_community_hub_union_search_sql($stx, $sfl, $sop);
-        $union = eottae_community_hub_build_union_sql($search_sql);
-        if ($union['sql'] === '') {
-            return array(
-                'list'         => array(),
-                'total_count'  => 0,
-                'total_page'   => 0,
-                'write_pages'  => '',
-                'today_count'  => 0,
-            );
-        }
 
         $page_rows = G5_IS_MOBILE
             ? (int) ($board['bo_mobile_page_rows'] ?? 15)
@@ -398,14 +502,13 @@ if (!function_exists('eottae_community_hub_apply_merged_list')) {
             $page_rows = 15;
         }
 
-        $count_row = sql_fetch(' SELECT COUNT(*) AS cnt FROM ( '.$union['sql'].' ) hub ');
-        $total_count = isset($count_row['cnt']) ? (int) $count_row['cnt'] : 0;
+        $merged_rows = eottae_community_hub_fetch_merged_rows($search_sql);
+        eottae_community_hub_sort_merged_rows($merged_rows, $sst, $sod);
+
+        $total_count = count($merged_rows);
         $total_page = $total_count > 0 ? (int) ceil($total_count / $page_rows) : 0;
         $from_record = ($page - 1) * $page_rows;
-
-        $order_sql = eottae_community_hub_union_order_sql($sst, $sod);
-        $sql = ' SELECT * FROM ( '.$union['sql'].' ) hub '.$order_sql.' LIMIT '.(int) $from_record.', '.(int) $page_rows.' ';
-        $result = sql_query($sql);
+        $page_rows_slice = array_slice($merged_rows, $from_record, $page_rows);
 
         $subject_len = G5_IS_MOBILE
             ? (int) ($board['bo_mobile_subject_len'] ?? 60)
@@ -413,7 +516,7 @@ if (!function_exists('eottae_community_hub_apply_merged_list')) {
 
         $list = array();
         $num = $total_count - $from_record;
-        while ($row = sql_fetch_array($result)) {
+        foreach ($page_rows_slice as $row) {
             $item_bo_table = preg_replace('/[^a-z0-9_]/', '', (string) ($row['hub_bo_table'] ?? ''));
             if ($item_bo_table === '') {
                 continue;
@@ -443,6 +546,7 @@ if (!function_exists('eottae_community_hub_apply_merged_list')) {
 
             $list[] = $item;
         }
+        unset($row);
 
         $list_qstr = 'hub=all';
         if ($stx !== '') {
@@ -820,6 +924,10 @@ if (!function_exists('eottae_community_hub_apply_runtime')) {
     {
         if (!eottae_is_community_hub_board($bo_table)) {
             return;
+        }
+
+        if (eottae_community_hub_is_all_view($bo_table)) {
+            eottae_community_hub_prepare_board_schemas();
         }
 
         eottae_community_hub_ensure_board_skin($bo_table);

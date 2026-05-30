@@ -28,6 +28,7 @@ include_once G5_LIB_PATH.'/eottae-board-editor.lib.php';
 include_once G5_LIB_PATH.'/eottae-business-snippet.lib.php';
 include_once G5_LIB_PATH.'/eottae-shop-owner.lib.php';
 include_once G5_LIB_PATH.'/eottae-shop-spot.lib.php';
+include_once G5_LIB_PATH.'/eottae-ad-platform.lib.php';
 
 include_once G5_LIB_PATH.'/eottae-business-coupon.lib.php';
 include_once G5_LIB_PATH.'/eottae-promo-coupon.lib.php';
@@ -89,6 +90,9 @@ if (function_exists('eottae_column_ensure_schema')) {
 }
 if (function_exists('eottae_adroom_ensure_schema')) {
     eottae_adroom_ensure_schema();
+}
+if (function_exists('eottae_ad_platform_ensure_schema')) {
+    eottae_ad_platform_ensure_schema();
 }
 if (function_exists('eottae_report_ensure_schema')) {
     eottae_report_ensure_schema();

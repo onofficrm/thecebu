@@ -83,6 +83,7 @@
       + '<li><a href="' + esc(data.business_coupon_guide_url || '/page/eottae-business-coupon-guide.php') + '">쿠폰발행방법</a></li>'
       + '<li><a href="' + esc(data.columnist_recruit_url || '/columnist/') + '">컬럼리스트 모집</a></li>'
       + '<li><a href="' + esc(data.briefing_url || '/briefing/') + '">오늘의 세부 브리핑</a></li>'
+      + '<li><a href="' + esc(data.ad_register_url || '/page/eottae-ad-register.php') + '">광고 등록</a></li>'
       + '</ul>';
     return col;
   }

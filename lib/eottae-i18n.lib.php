@@ -40,6 +40,7 @@ if (!function_exists('eottae_i18n_key_for_text')) {
                 '미디어' => 'menu.media',
                 '갤러리' => 'menu.gallery',
                 '유튜브' => 'menu.youtube',
+                '광고방' => 'home.adroom',
                 'MY' => 'menu.my',
                 '내 프로필' => 'menu.my_profile',
                 '내가 쓴 글' => 'menu.my_posts',

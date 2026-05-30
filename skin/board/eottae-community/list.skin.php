@@ -130,6 +130,21 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
     include G5_PATH.'/components/eottae/community-hero.php';
     ?>
 
+    <?php
+    if (function_exists('eottae_ad_platform_slot_code_for_board')) {
+        include_once G5_PATH.'/components/eottae/ad-platform-banner.php';
+        $ad_slot_code = eottae_ad_platform_slot_code_for_board($bo_table);
+        if ($ad_slot_code !== '') {
+            echo eottae_ad_platform_render_banner($ad_slot_code, array(
+                'context' => array(
+                    'category' => isset($sca) ? trim((string) $sca) : '',
+                    'region'   => $current_region !== '' ? $current_region : ((isset($stx) && trim((string) $stx) !== '') ? trim((string) $stx) : ''),
+                ),
+            ));
+        }
+    }
+    ?>
+
     <?php if ($is_job_board_list || $is_estate_board_list) {
         $map_type = $is_job_board_list ? 'job' : 'estate';
         $map_primary_label = '지도에서 보기';

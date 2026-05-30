@@ -34,6 +34,11 @@ $market_all_list_url = eottae_market_list_url();
         <?php } ?>
     </header>
 
+    <?php
+    include_once G5_PATH.'/components/eottae/ad-platform-banner.php';
+    echo eottae_ad_platform_render_for_board($bo_table);
+    ?>
+
     <nav class="market-map-actions" aria-label="중고장터 보기">
         <a href="<?php echo get_text($cebu_map_url); ?>" class="market-map-actions__btn market-map-actions__btn--primary">지도에서 보기</a>
         <a href="<?php echo get_text($cebu_map_near_url); ?>" class="market-map-actions__btn">내 주변 중고물품 보기</a>

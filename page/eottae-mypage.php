@@ -306,6 +306,7 @@ g5_page_start('마이페이지');
             <a href="<?php echo G5_BBS_URL; ?>/write.php?bo_table=<?php echo EOTTae_SHOP_TABLE; ?>" class="business-dashboard__btn">업체 등록</a>
             <a href="<?php echo G5_URL; ?>/page/eottae-business-snippets.php" class="business-dashboard__btn business-dashboard__btn--secondary">홍보 문구 관리</a>
             <a href="<?php echo G5_URL; ?>/page/eottae-business-coupons.php" class="business-dashboard__btn business-dashboard__btn--coupon">쿠폰 발행 관리</a>
+            <a href="<?php echo G5_URL; ?>/page/eottae-ad-register.php" class="business-dashboard__btn business-dashboard__btn--secondary">광고 등록</a>
             <a href="<?php echo G5_URL; ?>/page/eottae-business-coupon-guide.php" class="business-dashboard__btn business-dashboard__btn--guide">쿠폰 발행 안내</a>
             <a href="<?php echo G5_BBS_URL; ?>/write.php?bo_table=<?php echo EOTTae_COMMUNITY_TABLE; ?>" class="business-dashboard__btn business-dashboard__btn--secondary">커뮤니티 글쓰기</a>
         </div>

@@ -1541,6 +1541,9 @@ if (!function_exists('eottae_builder_inject_site_footer_script')) {
             'briefing_url'                => function_exists('eottae_briefing_url')
                 ? eottae_briefing_url()
                 : G5_URL.'/briefing/',
+            'ad_register_url'             => function_exists('eottae_ad_platform_register_url')
+                ? eottae_ad_platform_register_url()
+                : G5_URL.'/page/eottae-ad-register.php',
             'badge_book_url'            => function_exists('eottae_member_growth_badge_book_url')
                 ? eottae_member_growth_badge_book_url()
                 : G5_URL.'/badges/',

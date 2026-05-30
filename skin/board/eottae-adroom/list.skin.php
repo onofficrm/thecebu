@@ -57,6 +57,17 @@ if ($adroom_show_guide_btn) {
         </div>
     </section>
 
+    <?php
+    include_once G5_LIB_PATH.'/eottae-ad-platform.lib.php';
+    include_once G5_PATH.'/components/eottae/ad-platform-banner.php';
+    echo eottae_ad_platform_render_banner(EOTTae_AD_PLATFORM_SLOT_PREMIUM, array(
+        'context' => array(
+            'category' => isset($sca) ? trim((string) $sca) : '',
+            'region'   => '',
+        ),
+    ));
+    ?>
+
     <?php echo $adroom_promo_notice; ?>
 
     <?php echo $adroom_write_guide; ?>

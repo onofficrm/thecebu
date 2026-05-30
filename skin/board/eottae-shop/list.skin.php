@@ -161,6 +161,11 @@ function eottae_shop_build_list_url($bo_table, $params = array())
             <?php } ?>
         </header>
 
+        <?php
+        include_once G5_PATH.'/components/eottae/ad-platform-banner.php';
+        echo eottae_ad_platform_render_for_board($bo_table);
+        ?>
+
         <div class="shop-near-results__list"
              id="shopNearResultsList"
              data-shop-infinite-list
