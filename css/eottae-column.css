@@ -1205,12 +1205,44 @@
   gap: 10px;
 }
 
+.sebu-column-profile-block__grid {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 12px;
+  row-gap: 10px;
+  align-items: center;
+}
+
 .sebu-column-profile-block__main {
+  grid-column: 1;
+  grid-row: 1;
   display: flex;
   align-items: center;
   gap: 12px;
   text-decoration: none;
   color: inherit;
+  min-width: 0;
+}
+
+.sebu-column-profile-block__info-badges {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sebu-column-profile-block__link-badges {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 0;
+  padding-left: 0;
 }
 
 .sebu-column-profile-block__name {
@@ -1306,6 +1338,24 @@
   font-size: 0.68rem;
   font-weight: 1000;
   letter-spacing: -0.02em;
+}
+
+.sebu-column-social__icon--svg {
+  min-width: 28px;
+  width: 28px;
+  padding: 0;
+}
+
+.sebu-column-social__icon--svg svg {
+  display: block;
+  width: 15px;
+  height: 15px;
+}
+
+.sebu-column-social__link--website_url .sebu-column-social__icon,
+.sebu-column-social__link--website .sebu-column-social__icon {
+  background: #e0f2fe;
+  color: #0369a1;
 }
 
 .sebu-column-social__link--youtube_url .sebu-column-social__icon {
@@ -1712,6 +1762,41 @@
   align-items: center;
 }
 
+.sebu-writer-page__headline .sebu-column-profile-block__info-badges,
+.sebu-writer-page__info-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+
+.sebu-writer-page__growth-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.sebu-writer-page__headline .sebu-column-profile-badge--info {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 900;
+  box-shadow: 0 8px 20px -18px rgba(15, 23, 42, 0.35);
+}
+
+.sebu-writer-page__headline .sebu-column-profile-badge--grade {
+  border-color: rgba(180, 83, 9, 0.26);
+  background: rgba(254, 243, 199, 0.86);
+  color: #92400e;
+}
+
 .sebu-writer-page__grade {
   display: inline-flex;
   align-items: center;
@@ -1787,6 +1872,13 @@
   gap: 10px;
   align-items: center;
   margin-top: 22px;
+}
+
+.sebu-writer-page__links .sebu-column-profile-block__link-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
 }
 
 .sebu-writer-page__links > a,

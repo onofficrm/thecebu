@@ -46,6 +46,50 @@ $viewer_mb_id = !empty($member['mb_id']) ? (string) $member['mb_id'] : '';
 $is_super = ($is_admin === 'super');
 $can_manage_ai = eottae_talkroom_public_group_can_manage_ai($room_id, $viewer_mb_id, $is_super);
 
+if ($action === 'history') {
+    $ctx = eottae_talkroom_build_detail_context($room_id, $viewer_mb_id);
+    if (!$ctx || empty($ctx['can_view_posts'])) {
+        eottae_talkroom_room_chat_json(false, '대화를 볼 수 없습니다.', array(
+            'room_id'  => $room_id,
+            'messages' => array(),
+        ));
+    }
+
+    $before_wr_id = isset($_REQUEST['before_wr_id']) ? (int) $_REQUEST['before_wr_id'] : 0;
+    $history_limit = isset($_REQUEST['limit']) ? (int) $_REQUEST['limit'] : 15;
+    $history_limit = max(1, min(20, $history_limit));
+
+    if ($before_wr_id < 1) {
+        eottae_talkroom_room_chat_json(false, '이전 메시지 기준이 없습니다.', array(
+            'room_id'  => $room_id,
+            'messages' => array(),
+        ));
+    }
+
+    $rows = eottae_talkroom_public_group_list_messages_before($room_id, $before_wr_id, $history_limit);
+    $messages = eottae_talkroom_public_group_format_messages_for_viewer($rows, $viewer_mb_id, $can_manage_ai, $room_id, $is_super);
+    $oldest_wr_id = $before_wr_id;
+
+    foreach ($messages as $message) {
+        $wr_id = (int) ($message['wr_id'] ?? 0);
+        if ($wr_id > 0) {
+            $oldest_wr_id = min($oldest_wr_id, $wr_id);
+        }
+    }
+
+    $has_more = 0;
+    if ($oldest_wr_id > 0) {
+        $has_more = eottae_talkroom_public_group_has_older_messages($room_id, $oldest_wr_id) ? 1 : 0;
+    }
+
+    eottae_talkroom_room_chat_json(true, '', array(
+        'room_id'      => $room_id,
+        'messages'     => $messages,
+        'oldest_wr_id' => $oldest_wr_id,
+        'has_more'     => $has_more,
+    ));
+}
+
 if ($method === 'GET' || $action === 'poll') {
     $ctx = eottae_talkroom_build_detail_context($room_id, $viewer_mb_id);
     if (!$ctx || empty($ctx['can_view_posts'])) {
@@ -123,6 +167,38 @@ if ($action === 'ai_speak') {
         'message_row'  => $result['message_row'] ?? null,
         'last_wr_id'   => (int) ($result['wr_id'] ?? 0),
         'member_token' => eottae_talkroom_member_token(),
+    ));
+}
+
+if ($action === 'life_qa') {
+    if ((int) eottae_talkroom_public_group_room_id() !== $room_id) {
+        eottae_talkroom_room_chat_json(false, '공개 단체톡방에서만 AI 질문을 사용할 수 있습니다.');
+    }
+
+    include_once G5_LIB_PATH.'/eottae-public-chat-life-qa.lib.php';
+    $question = isset($_POST['question']) ? (string) $_POST['question'] : '';
+    $result = eottae_public_chat_life_qa_send($room_id, $member['mb_id'], $question);
+
+    eottae_talkroom_room_chat_json(!empty($result['ok']), $result['message'] ?? '', array(
+        'room_id'        => $room_id,
+        'wr_id'          => (int) ($result['wr_id'] ?? 0),
+        'question_wr_id' => (int) ($result['question_wr_id'] ?? 0),
+        'message_row'    => eottae_talkroom_public_group_enrich_message_row(
+            $result['message_row'] ?? null,
+            $room_id,
+            $member['mb_id'],
+            $is_super,
+            $can_manage_ai
+        ),
+        'question_row'   => eottae_talkroom_public_group_enrich_message_row(
+            $result['question_row'] ?? null,
+            $room_id,
+            $member['mb_id'],
+            $is_super,
+            $can_manage_ai
+        ),
+        'last_wr_id'     => (int) ($result['wr_id'] ?? 0),
+        'member_token'   => eottae_talkroom_member_token(),
     ));
 }
 

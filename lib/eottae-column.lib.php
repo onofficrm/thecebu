@@ -1054,6 +1054,49 @@ if (!function_exists('eottae_column_get_author')) {
     }
 }
 
+if (!function_exists('eottae_column_resolve_author_profile_image')) {
+    /**
+     * 칼럼니스트 프로필 — 회원 정보수정 사진 우선, 칼럼 전용 이미지는 보조
+     *
+     * @return array{has_profile_image:bool,profile_image_url:string}
+     */
+    function eottae_column_resolve_author_profile_image(array $author)
+    {
+        $mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) ($author['mb_id'] ?? ''));
+
+        if ($mb_id !== '') {
+            if (!function_exists('eottae_member_profile_image_url')) {
+                include_once G5_LIB_PATH.'/eottae-member-profile.lib.php';
+            }
+            if (function_exists('eottae_member_profile_image_url')) {
+                $member_url = eottae_member_profile_image_url($mb_id);
+                if ($member_url !== '') {
+                    return array(
+                        'has_profile_image' => true,
+                        'profile_image_url' => $member_url,
+                    );
+                }
+            }
+        }
+
+        $column_path = trim((string) ($author['profile_image'] ?? ''));
+        if ($column_path !== '') {
+            $column_url = eottae_column_profile_image_url($column_path, $mb_id);
+            if ($column_url !== '') {
+                return array(
+                    'has_profile_image' => true,
+                    'profile_image_url' => $column_url,
+                );
+            }
+        }
+
+        return array(
+            'has_profile_image' => false,
+            'profile_image_url'   => '',
+        );
+    }
+}
+
 if (!function_exists('eottae_column_enrich_author')) {
     function eottae_column_enrich_author(array $author)
     {
@@ -1065,10 +1108,9 @@ if (!function_exists('eottae_column_enrich_author')) {
         $author['grade'] = eottae_column_author_grade($stats, !empty($author['is_official']));
         $author['grade_label'] = eottae_column_grade_label($author['grade']);
         $author['profile_url'] = eottae_column_author_url($author['mb_id'] ?? '');
-        $author['has_profile_image'] = trim((string) ($author['profile_image'] ?? '')) !== '';
-        $author['profile_image_url'] = $author['has_profile_image']
-            ? eottae_column_profile_image_url($author['profile_image'] ?? '')
-            : '';
+        $profile_image = eottae_column_resolve_author_profile_image($author);
+        $author['has_profile_image'] = !empty($profile_image['has_profile_image']);
+        $author['profile_image_url'] = (string) ($profile_image['profile_image_url'] ?? '');
         $author['profile_initials'] = eottae_column_initials_from_name($author['display_name'] ?? '');
         $author['social_links'] = eottae_column_author_social_links($author);
         $author['area_label'] = eottae_column_area_label($author['area'] ?? '');
@@ -2284,10 +2326,9 @@ if (!function_exists('eottae_column_list_applications')) {
                 $area_label = eottae_columnist_recruit_interest_label($row['area'] ?? '');
             }
             $row['area_label'] = $area_label;
-            $row['has_profile_image'] = trim((string) ($row['profile_image'] ?? '')) !== '';
-            $row['profile_image_url'] = $row['has_profile_image']
-                ? eottae_column_profile_image_url($row['profile_image'] ?? '')
-                : '';
+            $profile_image = eottae_column_resolve_author_profile_image($row);
+            $row['has_profile_image'] = !empty($profile_image['has_profile_image']);
+            $row['profile_image_url'] = (string) ($profile_image['profile_image_url'] ?? '');
             $row['profile_initials'] = eottae_column_initials_from_name($row['pen_name'] ?? $row['mb_nick'] ?? '');
             $row['social_links'] = eottae_column_author_social_links($row);
             $items[] = $row;

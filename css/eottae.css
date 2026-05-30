@@ -385,14 +385,28 @@ img[data-eottae-logo] {
 }
 
 .eottae-gnb-header__nav-caret {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+}
+
+.eottae-gnb-header__nav-caret::before {
+  content: '';
+  display: block;
   width: 0;
   height: 0;
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
   border-top: 5px solid currentColor;
   opacity: 0.55;
+}
+
+.eottae-gnb-header__nav-label {
+  display: inline-block;
+  line-height: 1.2;
 }
 
 /* 데스크톱 메가 메뉴 — 메인메뉴 호버 시 전체 서브메뉴 표시 */
@@ -9978,7 +9992,19 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
   margin-bottom: 4px;
 }
 
+.community-view-page__author-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.community-view-page__author-wrap .sebu-column-profile-block__info-badges,
 .community-view-page__author-wrap .sebu-column-profile-block__badges {
+  padding-left: 0;
+}
+
+.community-view-page__author-wrap .sebu-column-profile-block__link-badges {
   padding-left: 0;
 }
 
@@ -9988,6 +10014,8 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
   margin-top: 8px;
 }
 
+.community-view-page .sebu-column-profile-block__info-badges,
+.community-view-page .sebu-column-profile-block__link-badges,
 .community-view-page .sebu-column-profile-block__badges,
 .community-view-page__estate-profile-meta .sebu-column-profile-block__badges,
 .community-view-page__job-profile-meta .sebu-column-profile-block__badges {
@@ -10030,6 +10058,18 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
   font-size: 0.68rem;
   font-weight: 900;
   letter-spacing: -0.02em;
+}
+
+.community-view-page .sebu-column-social__icon--svg svg {
+  display: block;
+  width: 15px;
+  height: 15px;
+}
+
+.community-view-page .sebu-column-social__link--website_url .sebu-column-social__icon,
+.community-view-page .sebu-column-social__link--website .sebu-column-social__icon {
+  background: #e0f2fe;
+  color: #0369a1;
 }
 
 .community-view-page .sebu-column-social__link--youtube_url .sebu-column-social__icon {

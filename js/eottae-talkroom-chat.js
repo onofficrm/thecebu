@@ -5,6 +5,8 @@
   'use strict';
 
   var POLL_MS = 12000;
+  var SCROLL_BOTTOM_THRESHOLD = 48;
+  var SCROLL_TOP_THRESHOLD = 72;
 
   function esc(value) {
     return String(value == null ? '' : value)
@@ -264,7 +266,7 @@
       + '</article>';
   }
 
-  function appendMessages(section, messages) {
+  function appendMessages(section, messages, forceScroll) {
     var messagesEl = getMessagesEl(section);
     if (!messagesEl || !messages || !messages.length) {
       return;
@@ -273,6 +275,8 @@
     var html = '';
     var i;
     var lastId = parseInt(section.getAttribute('data-last-wr-id') || '0', 10) || 0;
+    var stickToBottom = forceScroll
+      || messagesEl.scrollTop + messagesEl.clientHeight >= messagesEl.scrollHeight - SCROLL_BOTTOM_THRESHOLD;
 
     for (i = 0; i < messages.length; i += 1) {
       var message = messages[i];
@@ -280,7 +284,7 @@
       if (wrId < 1 || messagesEl.querySelector('[data-wr-id="' + wrId + '"]')) {
         continue;
       }
-      html += renderMessage(message);
+      html += renderMessage(message, section);
       if (wrId > lastId) {
         lastId = wrId;
       }
@@ -293,7 +297,174 @@
     removeEmptyState(messagesEl);
     messagesEl.insertAdjacentHTML('beforeend', html);
     section.setAttribute('data-last-wr-id', String(lastId));
-    messagesEl.scrollTop = messagesEl.scrollHeight;
+    if (stickToBottom) {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+  }
+
+  function getOldestWrId(section) {
+    var stored = parseInt(section.getAttribute('data-first-wr-id') || '0', 10) || 0;
+    var messagesEl = getMessagesEl(section);
+    if (!messagesEl) {
+      return stored;
+    }
+
+    var nodes = messagesEl.querySelectorAll('[data-wr-id]');
+    var oldest = stored;
+    var i;
+    for (i = 0; i < nodes.length; i += 1) {
+      var wrId = parseInt(nodes[i].getAttribute('data-wr-id'), 10) || 0;
+      if (wrId < 1) {
+        continue;
+      }
+      if (oldest < 1 || wrId < oldest) {
+        oldest = wrId;
+      }
+    }
+
+    return oldest;
+  }
+
+  function syncFirstWrId(section) {
+    var oldest = getOldestWrId(section);
+    if (oldest > 0) {
+      section.setAttribute('data-first-wr-id', String(oldest));
+    }
+  }
+
+  function prependMessages(section, messages) {
+    var messagesEl = getMessagesEl(section);
+    if (!messagesEl || !messages || !messages.length) {
+      return 0;
+    }
+
+    var html = '';
+    var i;
+    var inserted = 0;
+    var oldestId = getOldestWrId(section);
+
+    for (i = 0; i < messages.length; i += 1) {
+      var message = messages[i];
+      var wrId = parseInt(message.wr_id, 10) || 0;
+      if (wrId < 1 || messagesEl.querySelector('[data-wr-id="' + wrId + '"]')) {
+        continue;
+      }
+      html += renderMessage(message, section);
+      inserted += 1;
+      if (oldestId < 1 || wrId < oldestId) {
+        oldestId = wrId;
+      }
+    }
+
+    if (!html) {
+      return 0;
+    }
+
+    removeEmptyState(messagesEl);
+
+    var prevHeight = messagesEl.scrollHeight;
+    var prevTop = messagesEl.scrollTop;
+    var topNode = messagesEl.querySelector('[data-chat-history-top]');
+    if (topNode && topNode.nextSibling) {
+      topNode.insertAdjacentHTML('afterend', html);
+    } else {
+      messagesEl.insertAdjacentHTML('afterbegin', html);
+    }
+    messagesEl.scrollTop = prevTop + (messagesEl.scrollHeight - prevHeight);
+
+    if (oldestId > 0) {
+      section.setAttribute('data-first-wr-id', String(oldestId));
+    }
+
+    return inserted;
+  }
+
+  function setHistoryLoading(section, loading) {
+    var messagesEl = getMessagesEl(section);
+    var topNode = messagesEl ? messagesEl.querySelector('[data-chat-history-top]') : null;
+    if (messagesEl) {
+      messagesEl.classList.toggle('public-group-chat__messages--history-loading', !!loading);
+    }
+    if (topNode) {
+      topNode.hidden = !loading;
+    }
+  }
+
+  function fetchHistory(section, beforeWrId, limit) {
+    var pollUrl = section.getAttribute('data-poll-url');
+    var roomId = section.getAttribute('data-room-id');
+    if (!pollUrl || !roomId || beforeWrId < 1) {
+      return Promise.resolve({ success: false, messages: [] });
+    }
+
+    var url = pollUrl
+      + (pollUrl.indexOf('?') >= 0 ? '&' : '?')
+      + 'action=history'
+      + '&room_id=' + encodeURIComponent(roomId)
+      + '&before_wr_id=' + encodeURIComponent(String(beforeWrId))
+      + '&limit=' + encodeURIComponent(String(limit || 15));
+
+    return fetch(url, {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' },
+    })
+      .then(parseJsonResponse)
+      .catch(function () {
+        return { success: false, messages: [] };
+      });
+  }
+
+  function loadOlderMessages(section) {
+    if (!section || section.getAttribute('data-has-older') !== '1') {
+      return Promise.resolve();
+    }
+    if (section.dataset.historyLoading === '1') {
+      return Promise.resolve();
+    }
+
+    var oldest = getOldestWrId(section);
+    if (oldest < 1) {
+      section.setAttribute('data-has-older', '0');
+      return Promise.resolve();
+    }
+
+    var batch = parseInt(section.getAttribute('data-history-batch') || '15', 10) || 15;
+    section.dataset.historyLoading = '1';
+    setHistoryLoading(section, true);
+
+    return fetchHistory(section, oldest, batch).then(function (data) {
+      if (!data || !data.success) {
+        return;
+      }
+
+      prependMessages(section, data.messages || []);
+
+      if (!data.has_more) {
+        section.setAttribute('data-has-older', '0');
+      } else if (data.oldest_wr_id) {
+        section.setAttribute('data-first-wr-id', String(parseInt(data.oldest_wr_id, 10) || oldest));
+      }
+    }).finally(function () {
+      section.dataset.historyLoading = '0';
+      setHistoryLoading(section, false);
+    });
+  }
+
+  function bindScrollHistory(section) {
+    var messagesEl = getMessagesEl(section);
+    if (!messagesEl || messagesEl.dataset.historyScrollBound === '1') {
+      return;
+    }
+    messagesEl.dataset.historyScrollBound = '1';
+
+    messagesEl.addEventListener('scroll', function () {
+      if (section.getAttribute('data-has-older') !== '1') {
+        return;
+      }
+      if (messagesEl.scrollTop <= SCROLL_TOP_THRESHOLD) {
+        loadOlderMessages(section);
+      }
+    }, { passive: true });
   }
 
   function poll(section) {
@@ -336,6 +507,90 @@
       return;
     }
     section.setAttribute('data-member-token', token);
+  }
+
+  function isLifeQaSection(section) {
+    return section && section.getAttribute('data-life-qa') === '1';
+  }
+
+  function askLifeAi(section, form) {
+    var input = form.querySelector('#eottae-talkroom-chat-input, #eottae-public-chat-input');
+    var sendBtn = form.querySelector('.public-group-chat__send, [data-public-chat-life-ai]');
+    var sendUrl = section.getAttribute('data-send-url');
+    var roomId = section.getAttribute('data-room-id');
+    var token = section.getAttribute('data-member-token') || '';
+    var question = input ? input.value.trim() : '';
+    var body = new FormData();
+
+    if (!sendUrl || !roomId || question === '') {
+      return;
+    }
+
+    if (requiresAuth(section)) {
+      handleAuthRequired(section, '회원가입 또는 로그인 후 AI 질문을 사용할 수 있습니다.');
+      return;
+    }
+
+    if (form.dataset.lifeAiSending === '1') {
+      return;
+    }
+
+    form.dataset.lifeAiSending = '1';
+    if (sendBtn) {
+      sendBtn.disabled = true;
+    }
+
+    clearAuthNotice(section);
+
+    body.append('action', 'life_qa');
+    body.append('room_id', roomId);
+    body.append('question', question);
+    body.append('eottae_talkroom_member_token', token);
+
+    fetch(sendUrl, {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: body,
+      headers: { Accept: 'application/json' },
+    })
+      .then(parseJsonResponse)
+      .then(function (data) {
+        if (data && data.auth_required) {
+          handleAuthRequired(section, data.message, data);
+          return;
+        }
+        if (!data || !data.success) {
+          throw new Error((data && data.message) || 'AI 질문 요청에 실패했습니다.');
+        }
+
+        syncMemberToken(section, data.member_token);
+
+        if (input) {
+          input.value = '';
+          input.style.height = '';
+        }
+
+        if (data.question_row) {
+          appendMessages(section, [data.question_row], true);
+        }
+        if (data.message_row) {
+          appendMessages(section, [data.message_row], true);
+        }
+      })
+      .catch(function (err) {
+        var errMessage = err && err.message ? err.message : 'AI 질문 요청에 실패했습니다.';
+        if (/로그인|회원가입/.test(errMessage)) {
+          handleAuthRequired(section, errMessage);
+          return;
+        }
+        global.alert(errMessage);
+      })
+      .then(function () {
+        form.dataset.lifeAiSending = '0';
+        if (sendBtn) {
+          sendBtn.disabled = section.getAttribute('data-can-send') !== '1';
+        }
+      });
   }
 
   function sendMessage(section, form) {
@@ -396,7 +651,7 @@
         }
 
         if (data.message_row) {
-          appendMessages(section, [data.message_row]);
+          appendMessages(section, [data.message_row], true);
         }
       })
       .catch(function (err) {
@@ -424,6 +679,10 @@
 
     form.addEventListener('submit', function (event) {
       event.preventDefault();
+      if (isLifeQaSection(section)) {
+        askLifeAi(section, form);
+        return;
+      }
       sendMessage(section, form);
     });
 
@@ -432,6 +691,10 @@
       input.addEventListener('keydown', function (event) {
         if (event.key === 'Enter' && !event.shiftKey) {
           event.preventDefault();
+          if (isLifeQaSection(section)) {
+            askLifeAi(section, form);
+            return;
+          }
           sendMessage(section, form);
         }
       });
@@ -443,12 +706,29 @@
     }
   }
 
-  function scrollMessagesToEnd() {
+  function scrollMessagesToEnd(force) {
     var section = getSection();
     var messagesEl = getMessagesEl(section);
-    if (messagesEl) {
-      messagesEl.scrollTop = messagesEl.scrollHeight;
+    if (!messagesEl) {
+      return;
     }
+    if (!force) {
+      var nearBottom = messagesEl.scrollTop + messagesEl.clientHeight >= messagesEl.scrollHeight - SCROLL_BOTTOM_THRESHOLD;
+      if (!nearBottom) {
+        return;
+      }
+    }
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function scheduleScrollMessagesToEnd(force) {
+    scrollMessagesToEnd(force);
+    global.requestAnimationFrame(function () {
+      scrollMessagesToEnd(force);
+    });
+    global.setTimeout(function () {
+      scrollMessagesToEnd(force);
+    }, 80);
   }
 
   function bindSection(section) {
@@ -458,7 +738,9 @@
     section.dataset.chatBound = '1';
 
     bindComposer(section);
-    scrollMessagesToEnd();
+    syncFirstWrId(section);
+    bindScrollHistory(section);
+    scheduleScrollMessagesToEnd(true);
 
     poll(section);
     global.setInterval(function () {
@@ -573,7 +855,7 @@
     global.setTimeout(scheduleLayoutUpdate, 80);
     global.setTimeout(function () {
       scheduleLayoutUpdate();
-      scrollMessagesToEnd();
+      scheduleScrollMessagesToEnd(true);
     }, 320);
 
     if (drawer) {
@@ -616,6 +898,77 @@
     }
   }
 
+  function bindDesktopChatLayout(section) {
+    if (!section || !global.matchMedia) {
+      return;
+    }
+
+    var mq = global.matchMedia('(min-width: 768px)');
+    var page = section.closest('.talk-room-detail-page--chat');
+    var layoutScheduled = false;
+
+    function updateChatHeight() {
+      if (!mq.matches) {
+        section.style.removeProperty('--talkroom-chat-height');
+        section.style.removeProperty('height');
+        section.style.removeProperty('max-height');
+        section.style.removeProperty('min-height');
+        return;
+      }
+
+      var viewportH = global.innerHeight;
+      var header = document.getElementById('hd');
+      if (header && header.getBoundingClientRect) {
+        document.documentElement.style.setProperty(
+          '--eottae-header-h',
+          Math.ceil(header.getBoundingClientRect().height) + 'px'
+        );
+      }
+
+      var chatTop = section.getBoundingClientRect().top;
+      var available = Math.max(420, Math.floor(viewportH - chatTop - 16));
+      section.style.setProperty('--talkroom-chat-height', available + 'px');
+      section.style.height = available + 'px';
+      section.style.maxHeight = available + 'px';
+      section.style.minHeight = '0';
+
+      var inner = section.querySelector('.public-group-chat__inner');
+      if (inner) {
+        inner.style.height = '100%';
+        inner.style.maxHeight = '100%';
+      }
+
+      scheduleScrollMessagesToEnd(true);
+    }
+
+    function scheduleLayoutUpdate() {
+      if (layoutScheduled) {
+        return;
+      }
+      layoutScheduled = true;
+      global.requestAnimationFrame(function () {
+        layoutScheduled = false;
+        updateChatHeight();
+      });
+    }
+
+    scheduleLayoutUpdate();
+    mq.addEventListener('change', scheduleLayoutUpdate);
+    global.addEventListener('resize', scheduleLayoutUpdate);
+    global.addEventListener('orientationchange', function () {
+      global.setTimeout(scheduleLayoutUpdate, 120);
+    });
+
+    if (global.ResizeObserver && page) {
+      var ro = new global.ResizeObserver(scheduleLayoutUpdate);
+      var drawer = page.querySelector('.talk-room-detail__drawer');
+      if (drawer) {
+        ro.observe(drawer);
+      }
+      ro.observe(section);
+    }
+  }
+
   function collapseStrayHeaderMenu() {
     var menu = document.getElementById('siteMobileNav');
     if (menu) {
@@ -649,6 +1002,7 @@
     if (section) {
       bindSection(section);
       bindMobileChatLayout(section);
+      bindDesktopChatLayout(section);
       if (typeof global.bindEottaePublicChatFullscreen === 'function') {
         global.bindEottaePublicChatFullscreen(section);
       } else if (typeof global.initEottaeChatFullscreen === 'function') {

@@ -437,7 +437,9 @@
   }
 
   function renderNavLinkInner(label) {
-    return '<span class="eottae-gnb-header__nav-caret" aria-hidden="true"></span>' + esc(label);
+    return ''
+      + '<span class="eottae-gnb-header__nav-caret" aria-hidden="true"></span>'
+      + '<span class="eottae-gnb-header__nav-label"' + i18nAttrForText(label) + '>' + esc(label) + '</span>';
   }
 
   function renderDesktopNavLinks(items) {
@@ -463,7 +465,6 @@
         + (hasChildren ? ' eottae-gnb-header__nav-link--parent' : '')
         + '"'
         + (item.key ? ' data-mega-key="' + esc(item.key) + '"' : '')
-        + i18nAttrForText(item.label)
         + (hasChildren ? ' aria-haspopup="true"' : '')
         + '>'
         + renderNavLinkInner(item.label);
@@ -519,6 +520,9 @@
     header.setAttribute('data-eottae-home-gnb-injected', '1');
     tagHomeNavMegaKeys(header, data.mobile_menu.items);
     mountDesktopMegaPanel(data);
+    if (global.EottaeI18N && typeof global.EottaeI18N.apply === 'function') {
+      global.EottaeI18N.apply();
+    }
   }
 
   function mountDesktopMegaPanel(data) {
@@ -1260,9 +1264,13 @@
         var label = normalizeNavLabel(link.textContent);
         var href = link.getAttribute('href') || '';
         if (label === '투어' || href.indexOf('bo_table=tour') !== -1 || href.indexOf('bo_table%3Dtour') !== -1) {
-          link.textContent = data.golf_join_label || '골프조인';
           link.href = data.golf_join_url;
           link.setAttribute('data-eottae-home-golf-nav', '1');
+          if (link.classList.contains('eottae-gnb-header__nav-link')) {
+            applyDesktopNavLinkLabel(link, data.golf_join_label || '골프조인');
+          } else {
+            link.textContent = data.golf_join_label || '골프조인';
+          }
         }
       }
     }
@@ -1335,6 +1343,9 @@
     hideMassageMenuLinks();
     hideCommunityHubMenuLinks();
     replaceTourNavWithGolfJoin(data);
+    if (global.EottaeI18N && typeof global.EottaeI18N.apply === 'function') {
+      global.EottaeI18N.apply();
+    }
   }
 
   function init() {

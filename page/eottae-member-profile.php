@@ -36,7 +36,16 @@ g5_page_start($title);
         $stats = $public['stats'] ?? array();
         ?>
     <div class="sebu-member-profile__hero">
-        <?php echo get_member_profile_img($mb_id, 72, 72); ?>
+        <?php
+        $profile_photo_url = function_exists('eottae_member_profile_image_url')
+            ? eottae_member_profile_image_url($mb_id)
+            : '';
+        if ($profile_photo_url !== '') {
+            echo '<img src="'.get_text($profile_photo_url).'" alt="" class="sebu-member-profile__avatar" width="72" height="72" loading="lazy">';
+        } else {
+            echo get_member_profile_img($mb_id, 72, 72);
+        }
+        ?>
         <p class="sebu-member-profile__name"><?php echo get_text($public['display_nick']); ?>님</p>
         <div class="sebu-rank-list__meta" style="justify-content:center">
             <?php if (!empty($profile['main_badge'])) {

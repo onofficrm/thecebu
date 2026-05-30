@@ -71,9 +71,8 @@ g5_page_start(get_text($author['display_name'] ?? '').' · 칼럼니스트');
         <div class="sebu-writer-page__intro">
             <p class="sebu-writer-page__eyebrow">Columnist Profile</p>
             <div class="sebu-writer-page__headline">
-                <?php if (!empty($author['grade_label'])) { ?>
-                <span class="sebu-writer-page__grade"><?php echo get_text($author['grade_label']); ?></span>
-                <?php } ?>
+                <?php echo eottae_column_render_author_profile_info_badges_html($author, 'sebu-writer-page__info-badges'); ?>
+                <?php echo eottae_column_render_author_growth_badges_html($mb_id, eottae_column_author_profile_info_labels($author)); ?>
             </div>
             <h1 class="sebu-writer-page__name"><?php echo get_text($author['display_name'] ?? ''); ?></h1>
             <?php if (!empty($author['title'])) { ?>
@@ -93,7 +92,7 @@ g5_page_start(get_text($author['display_name'] ?? '').' · 칼럼니스트');
             </dl>
             <?php } ?>
             <div class="sebu-writer-page__links">
-                <?php echo eottae_column_render_author_profile_badges_html($author, 'sebu-writer-page__social'); ?>
+                <?php echo eottae_column_render_author_profile_link_badges_html($author, 'sebu-writer-page__social'); ?>
             </div>
         </div>
     </header>
@@ -133,26 +132,6 @@ g5_page_start(get_text($author['display_name'] ?? '').' · 칼럼니스트');
             <?php } ?>
         </ul>
         <?php } ?>
-    </section>
-
-    <section class="sebu-writer-page__badges" aria-labelledby="sebu-writer-badges-title">
-        <h2 class="sebu-column-section__title" id="sebu-writer-badges-title">뱃지</h2>
-        <ul class="sebu-writer-badges">
-            <?php
-            if (!empty($author['grade_label'])) {
-                echo '<li class="sebu-writer-badges__item"><span class="sebu-writer-badges__icon">🏅</span>'.get_text($author['grade_label']).'</li>';
-            }
-            if (function_exists('eottae_member_growth_list_member_badges')) {
-                include_once G5_LIB_PATH.'/eottae-member-growth.lib.php';
-                foreach (eottae_member_growth_list_member_badges($mb_id) as $badge) {
-                    if (($badge['badge_group'] ?? '') !== 'column') {
-                        continue;
-                    }
-                    echo '<li class="sebu-writer-badges__item"><span class="sebu-writer-badges__icon">'.get_text($badge['badge_icon'] ?? '🏷').'</span>'.get_text($badge['badge_name'] ?? '').'</li>';
-                }
-            }
-            ?>
-        </ul>
     </section>
 </main>
 

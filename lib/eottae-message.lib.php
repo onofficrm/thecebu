@@ -402,6 +402,14 @@ if (!function_exists('eottae_message_thread_context_label')) {
 
             return '골프조인';
         }
+        if ($type === 'market') {
+            $subject = trim((string) ($thread['subject'] ?? ''));
+            if ($subject !== '') {
+                return $subject;
+            }
+
+            return '중고장터';
+        }
         if ($type === 'report') {
             $subject = trim((string) ($thread['subject'] ?? ''));
             if ($subject !== '') {
@@ -582,6 +590,77 @@ if (!function_exists('eottae_message_send_golf_join_inquiry')) {
     }
 }
 
+if (!function_exists('eottae_message_market_context')) {
+    /**
+     * @return array{bo_table:string, wr_id:int, seller_mb_id:string, subject:string, item_title:string}
+     */
+    function eottae_message_market_context($wr_id, $bo_table = '')
+    {
+        $wr_id = (int) $wr_id;
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+        if ($bo_table === '' && function_exists('eottae_market_board_table')) {
+            include_once G5_LIB_PATH.'/eottae-market.lib.php';
+            $bo_table = eottae_market_board_table();
+        }
+
+        $context = array(
+            'bo_table'    => $bo_table,
+            'wr_id'       => $wr_id,
+            'seller_mb_id'=> '',
+            'subject'     => '',
+            'item_title'  => '',
+        );
+        if ($wr_id < 1 || $bo_table === '') {
+            return $context;
+        }
+
+        if (!function_exists('eottae_is_market_board')) {
+            include_once G5_LIB_PATH.'/eottae-market.lib.php';
+        }
+        if (!eottae_is_market_board($bo_table)) {
+            return $context;
+        }
+
+        global $g5;
+        $write_table = $g5['write_prefix'].$bo_table;
+        $row = sql_fetch("
+            SELECT wr_id, mb_id, wr_subject
+            FROM `{$write_table}`
+            WHERE wr_id = '{$wr_id}'
+              AND wr_is_comment = 0
+            LIMIT 1
+        ", false);
+        if (!is_array($row) || empty($row['wr_id'])) {
+            return $context;
+        }
+
+        $context['seller_mb_id'] = eottae_message_sanitize_member_id($row['mb_id'] ?? '');
+        $context['item_title'] = trim((string) ($row['wr_subject'] ?? ''));
+        $context['subject'] = '[중고장터] '.($context['item_title'] !== '' ? $context['item_title'] : '구매 문의');
+
+        return $context;
+    }
+}
+
+if (!function_exists('eottae_message_send_market_inquiry')) {
+    function eottae_message_send_market_inquiry($sender, $wr_id, $body, $bo_table = '')
+    {
+        $context = eottae_message_market_context($wr_id, $bo_table);
+        if ($context['seller_mb_id'] === '') {
+            return array('ok' => false, 'message' => '판매자를 찾을 수 없습니다.');
+        }
+
+        return eottae_message_send_to_member(
+            $sender,
+            $context['seller_mb_id'],
+            $body,
+            'market',
+            (int) $context['wr_id'],
+            (string) $context['subject']
+        );
+    }
+}
+
 if (!function_exists('eottae_message_report_context')) {
     /**
      * @return array{bo_table:string, wr_id:int, reporter_mb_id:string, subject:string, report_title:string}
@@ -712,6 +791,7 @@ if (!function_exists('eottae_message_filter_options')) {
             'direct'    => '일반',
             'shop'      => '업체문의',
             'golf_join' => '골프조인',
+            'market'    => '중고장터',
             'report'    => '제보함',
             'operator'  => '운영진',
         );
@@ -741,6 +821,7 @@ if (!function_exists('eottae_message_empty_state')) {
             'direct'    => array('title' => '일반 쪽지가 없습니다', 'desc' => '회원과 주고받은 일반 쪽지가 이곳에 표시됩니다.'),
             'shop'      => array('title' => '업체 문의 대화가 없습니다', 'desc' => '업체 상세의 문의하기로 시작한 대화가 이곳에 표시됩니다.'),
             'golf_join' => array('title' => '골프조인 문의가 없습니다', 'desc' => '골프조인 작성자와 주고받은 문의가 이곳에 표시됩니다.'),
+            'market'    => array('title' => '중고장터 문의가 없습니다', 'desc' => '중고장터 판매자와 주고받은 구매 문의가 이곳에 표시됩니다.'),
             'report'    => array('title' => '제보함 답변이 없습니다', 'desc' => '제보함 운영진 답변 대화가 이곳에 표시됩니다.'),
             'operator'  => array('title' => '운영진 대화가 없습니다', 'desc' => '운영진에게 문의하거나 답변을 받으면 이곳에 표시됩니다.'),
         );

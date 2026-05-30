@@ -813,3 +813,174 @@
     height: 220px;
   }
 }
+
+.market-field__label {
+  display: block;
+  margin-bottom: 0.45rem;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #334155;
+}
+
+.market-field__label span {
+  color: #ef4444;
+}
+
+.market-contact-fields__options {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.market-contact-option {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.market-contact-fields__detail {
+  margin: -0.2rem 0 0.35rem 1.65rem;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.market-contact-fields__detail.is-hidden {
+  display: none;
+}
+
+.market-contact-fields__detail label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.market-contact-fields__legacy,
+.market-contact-fields__message-help {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: #64748b;
+}
+
+.market-contact-fields__legacy {
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.market-contact-view {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.market-contact-view__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  text-decoration: none;
+  color: inherit;
+}
+
+.market-contact-view__item--phone:hover,
+.market-contact-view__item--message:hover {
+  border-color: #22c55e;
+  background: #f0fdf4;
+}
+
+.market-contact-view__label {
+  min-width: 3.5rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.market-contact-view__value {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.market-contact-view__legacy,
+.market-contact-view__self,
+.market-contact-view__empty {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #334155;
+}
+
+.market-contact-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0 0;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.market-contact-bar__btn {
+  flex: 1 1 8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.market-contact-bar__btn--phone {
+  background: #0ea5e9;
+  color: #fff;
+}
+
+.market-contact-bar__btn--kakao {
+  background: #fee500;
+  color: #3c1e1e;
+}
+
+.market-contact-bar__btn--message {
+  background: #22c55e;
+  color: #fff;
+}
+
+@media (max-width: 767px) {
+  .market-contact-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    border-radius: 16px 16px 0 0;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .market-view {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}

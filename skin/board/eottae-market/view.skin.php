@@ -12,7 +12,16 @@ $market_region = eottae_market_region_label($view['wr_3'] ?? '');
 $market_location = get_text($view['wr_4'] ?? '');
 $market_lat = trim((string) ($view['wr_5'] ?? ''));
 $market_lng = trim((string) ($view['wr_6'] ?? ''));
-$market_contact = get_text($view['wr_7'] ?? '');
+$market_contact_raw = get_text($view['wr_7'] ?? '');
+$market_contact = eottae_market_parse_contact($market_contact_raw);
+$market_seller_mb_id = trim((string) ($view['mb_id'] ?? ''));
+$market_contact_opts = array(
+    'seller_mb_id' => $market_seller_mb_id,
+    'viewer_mb_id' => $member['mb_id'] ?? '',
+    'wr_id'        => (int) ($view['wr_id'] ?? 0),
+    'bo_table'     => $bo_table,
+    'is_member'    => !empty($is_member),
+);
 $market_offer = eottae_market_offer_label($view['wr_8'] ?? '0');
 $market_map_show = (string) ($view['wr_9'] ?? '1') !== '0';
 $market_can_change = eottae_market_can_change_status($view, $member['mb_id'] ?? '', !empty($is_admin));
@@ -60,7 +69,7 @@ $market_is_free = eottae_market_is_free_giveaway($view);
                 </div>
                 <div>
                     <dt>연락방법</dt>
-                    <dd><?php echo $market_contact; ?></dd>
+                    <dd><?php echo eottae_market_render_contact_html($market_contact, $market_contact_opts); ?></dd>
                 </div>
                 <div>
                     <dt>등록일</dt>
@@ -100,6 +109,8 @@ $market_is_free = eottae_market_is_free_giveaway($view);
             echo '</section>';
         } ?>
     </article>
+
+    <?php echo eottae_market_render_contact_actions($market_contact, $market_contact_opts); ?>
 
     <footer class="market-view__footer">
         <ul class="board-actions btn_bo_user market-view__actions">

@@ -174,7 +174,7 @@
     this.applyFilters();
     this.initMap();
     if (this.nearBtn && this.nearBtn.getAttribute('data-auto-near') === '1') {
-      this.setStatus('내 주변 보기를 누르면 현재위치 기준으로 지도가 이동합니다.');
+      this.requestNearby();
     }
   }
 

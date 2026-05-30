@@ -13,7 +13,7 @@ $market_region = eottae_market_normalize_region($write['wr_3'] ?? '');
 $market_location = get_text($write['wr_4'] ?? '');
 $market_lat = get_text($write['wr_5'] ?? '');
 $market_lng = get_text($write['wr_6'] ?? '');
-$market_contact = get_text($write['wr_7'] ?? '');
+$market_contact_raw = get_text($write['wr_7'] ?? '');
 $market_offer = (string) ($write['wr_8'] ?? '1') === '1';
 $market_map_show = (string) ($write['wr_9'] ?? '1') !== '0';
 $market_price = preg_replace('/[^0-9]/', '', (string) ($write['wr_1'] ?? ''));
@@ -120,9 +120,11 @@ $market_price_ai_url = G5_URL.'/proc/eottae-market-price-ai.php';
     <section class="market-write-card">
         <h2 class="market-write-card__title">거래 조건</h2>
         <div class="market-field">
-            <label for="wr_7">연락방법 <span>*</span></label>
-            <input type="text" name="wr_7" id="wr_7" value="<?php echo $market_contact; ?>" required class="market-input" maxlength="200" placeholder="카카오톡 ID / 전화번호 / 댓글문의 / 오픈채팅 링크">
-            <p class="market-field__help">연락방법은 현재 상세페이지에 표시됩니다. 추후 회원전용 노출로 변경할 수 있습니다.</p>
+            <span class="market-field__label">연락방법 <span>*</span></span>
+            <?php
+            $market_contact_raw = $market_contact_raw ?? '';
+            include G5_PATH.'/components/eottae/market-contact-fields.php';
+            ?>
         </div>
         <label class="market-check" data-market-offer-wrap<?php echo $market_free_mode ? ' hidden' : ''; ?>>
             <input type="checkbox" name="wr_8" value="1" id="wr_8"<?php echo $market_offer ? ' checked' : ''; ?><?php echo $market_free_mode ? ' disabled' : ''; ?>>
@@ -189,9 +191,28 @@ function market_write_submit(f) {
         f.wr_content.focus();
         return false;
     }
-    if (!f.wr_7.value.trim()) {
-        alert('연락방법을 입력해 주세요.');
-        f.wr_7.focus();
+    var usePhone = f.market_contact_use_phone && f.market_contact_use_phone.checked;
+    var useKakao = f.market_contact_use_kakao && f.market_contact_use_kakao.checked;
+    var useMessage = f.market_contact_use_message && f.market_contact_use_message.checked;
+    if (!usePhone && !useKakao && !useMessage) {
+        alert('연락 방법을 하나 이상 선택해 주세요.');
+        if (f.market_contact_use_phone) {
+            f.market_contact_use_phone.focus();
+        }
+        return false;
+    }
+    if (usePhone && (!f.market_contact_phone || !f.market_contact_phone.value.trim())) {
+        alert('전화번호를 입력해 주세요.');
+        if (f.market_contact_phone) {
+            f.market_contact_phone.focus();
+        }
+        return false;
+    }
+    if (useKakao && (!f.market_contact_kakao || !f.market_contact_kakao.value.trim())) {
+        alert('카카오톡 ID를 입력해 주세요.');
+        if (f.market_contact_kakao) {
+            f.market_contact_kakao.focus();
+        }
         return false;
     }
 

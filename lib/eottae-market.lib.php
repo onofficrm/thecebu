@@ -244,6 +244,245 @@ if (!function_exists('eottae_market_normalize_coord')) {
     }
 }
 
+if (!function_exists('eottae_market_contact_defaults')) {
+    /**
+     * @return array{legacy:string,phone:string,kakao:string,use_phone:bool,use_kakao:bool,use_message:bool}
+     */
+    function eottae_market_contact_defaults()
+    {
+        return array(
+            'legacy'       => '',
+            'phone'        => '',
+            'kakao'        => '',
+            'use_phone'    => false,
+            'use_kakao'    => false,
+            'use_message'  => true,
+        );
+    }
+}
+
+if (!function_exists('eottae_market_parse_contact')) {
+    /**
+     * @return array{legacy:string,phone:string,kakao:string,use_phone:bool,use_kakao:bool,use_message:bool}
+     */
+    function eottae_market_parse_contact($raw)
+    {
+        $contact = eottae_market_contact_defaults();
+        $raw = trim((string) $raw);
+        if ($raw === '') {
+            return $contact;
+        }
+
+        if ($raw[0] === '{') {
+            $decoded = json_decode($raw, true);
+            if (is_array($decoded)) {
+                $contact['phone'] = trim(strip_tags((string) ($decoded['phone'] ?? '')));
+                $contact['kakao'] = trim(strip_tags((string) ($decoded['kakao'] ?? '')));
+                $contact['use_phone'] = !empty($decoded['use_phone']);
+                $contact['use_kakao'] = !empty($decoded['use_kakao']);
+                $contact['use_message'] = !empty($decoded['use_message']) || !empty($decoded['message']);
+                if (!$contact['use_phone'] && !$contact['use_kakao'] && !$contact['use_message']) {
+                    if ($contact['phone'] !== '') {
+                        $contact['use_phone'] = true;
+                    } elseif ($contact['kakao'] !== '') {
+                        $contact['use_kakao'] = true;
+                    } else {
+                        $contact['use_message'] = true;
+                    }
+                }
+
+                return $contact;
+            }
+        }
+
+        $contact['legacy'] = $raw;
+
+        return $contact;
+    }
+}
+
+if (!function_exists('eottae_market_contact_from_post')) {
+    function eottae_market_contact_from_post(array $post)
+    {
+        $contact = eottae_market_contact_defaults();
+        $contact['use_phone'] = !empty($post['market_contact_use_phone']);
+        $contact['use_kakao'] = !empty($post['market_contact_use_kakao']);
+        $contact['use_message'] = !empty($post['market_contact_use_message']);
+        $contact['phone'] = trim(strip_tags((string) ($post['market_contact_phone'] ?? '')));
+        $contact['kakao'] = trim(strip_tags((string) ($post['market_contact_kakao'] ?? '')));
+
+        if (!$contact['use_phone']) {
+            $contact['phone'] = '';
+        }
+        if (!$contact['use_kakao']) {
+            $contact['kakao'] = '';
+        }
+
+        return $contact;
+    }
+}
+
+if (!function_exists('eottae_market_validate_contact')) {
+    function eottae_market_validate_contact(array $contact)
+    {
+        if (!$contact['use_phone'] && !$contact['use_kakao'] && !$contact['use_message']) {
+            return array('ok' => false, 'message' => '연락 방법을 하나 이상 선택해 주세요.');
+        }
+        if ($contact['use_phone'] && $contact['phone'] === '') {
+            return array('ok' => false, 'message' => '전화번호를 입력해 주세요.');
+        }
+        if ($contact['use_kakao'] && $contact['kakao'] === '') {
+            return array('ok' => false, 'message' => '카카오톡 ID를 입력해 주세요.');
+        }
+
+        return array('ok' => true, 'message' => '');
+    }
+}
+
+if (!function_exists('eottae_market_encode_contact')) {
+    function eottae_market_encode_contact(array $contact)
+    {
+        $payload = array(
+            'v'           => 1,
+            'use_phone'   => !empty($contact['use_phone']) ? 1 : 0,
+            'use_kakao'   => !empty($contact['use_kakao']) ? 1 : 0,
+            'use_message' => !empty($contact['use_message']) ? 1 : 0,
+            'phone'       => !empty($contact['use_phone']) ? trim((string) ($contact['phone'] ?? '')) : '',
+            'kakao'       => !empty($contact['use_kakao']) ? trim((string) ($contact['kakao'] ?? '')) : '',
+        );
+
+        $json = json_encode($payload, JSON_UNESCAPED_UNICODE);
+        if (!is_string($json) || $json === '') {
+            return '';
+        }
+        if (function_exists('cut_str')) {
+            return cut_str($json, 200, '');
+        }
+
+        return substr($json, 0, 200);
+    }
+}
+
+if (!function_exists('eottae_market_message_url')) {
+    function eottae_market_message_url($wr_id, $bo_table = '')
+    {
+        $wr_id = (int) $wr_id;
+        if ($wr_id < 1) {
+            return function_exists('eottae_message_url') ? eottae_message_url() : G5_URL.'/page/eottae-messages.php';
+        }
+
+        $params = array('market' => $wr_id);
+        if ($bo_table !== '') {
+            $params['bo_table'] = preg_replace('/[^a-z0-9_]/', '', (string) $bo_table);
+        }
+
+        return function_exists('eottae_message_url')
+            ? eottae_message_url($params)
+            : G5_URL.'/page/eottae-messages.php?'.http_build_query($params);
+    }
+}
+
+if (!function_exists('eottae_market_render_contact_html')) {
+    function eottae_market_render_contact_html(array $contact, array $opts = array())
+    {
+        $seller_mb_id = trim((string) ($opts['seller_mb_id'] ?? ''));
+        $viewer_mb_id = trim((string) ($opts['viewer_mb_id'] ?? ''));
+        $wr_id = (int) ($opts['wr_id'] ?? 0);
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) ($opts['bo_table'] ?? eottae_market_board_table()));
+        $is_member = !empty($opts['is_member']);
+        $legacy = trim((string) ($contact['legacy'] ?? ''));
+
+        if ($legacy !== '') {
+            return '<p class="market-contact-view__legacy">'.get_text($legacy).'</p>';
+        }
+
+        $items = array();
+        if (!empty($contact['use_phone']) && trim((string) ($contact['phone'] ?? '')) !== '') {
+            $phone = get_text($contact['phone']);
+            $tel_href = function_exists('eottae_tel_href') ? eottae_tel_href($contact['phone']) : '#';
+            $items[] = '<a href="'.htmlspecialchars($tel_href, ENT_QUOTES, 'UTF-8').'" class="market-contact-view__item market-contact-view__item--phone">'
+                .'<span class="market-contact-view__label">전화</span>'
+                .'<span class="market-contact-view__value">'.$phone.'</span>'
+                .'</a>';
+        }
+        if (!empty($contact['use_kakao']) && trim((string) ($contact['kakao'] ?? '')) !== '') {
+            $kakao = get_text($contact['kakao']);
+            $items[] = '<div class="market-contact-view__item market-contact-view__item--kakao">'
+                .'<span class="market-contact-view__label">카카오톡</span>'
+                .'<span class="market-contact-view__value">'.$kakao.'</span>'
+                .'</div>';
+        }
+        if (!empty($contact['use_message']) && $seller_mb_id !== '' && $seller_mb_id !== $viewer_mb_id) {
+            $message_url = eottae_market_message_url($wr_id, $bo_table).'#message-compose';
+            if ($is_member) {
+                $items[] = '<a href="'.htmlspecialchars($message_url, ENT_QUOTES, 'UTF-8').'" class="market-contact-view__item market-contact-view__item--message">'
+                    .'<span class="market-contact-view__label">쪽지</span>'
+                    .'<span class="market-contact-view__value">판매자에게 메시지 보내기</span>'
+                    .'</a>';
+            } else {
+                $login_url = function_exists('eottae_login_url')
+                    ? eottae_login_url($message_url)
+                    : G5_BBS_URL.'/login.php?url='.urlencode($message_url);
+                $items[] = '<a href="'.htmlspecialchars($login_url, ENT_QUOTES, 'UTF-8').'" class="market-contact-view__item market-contact-view__item--message">'
+                    .'<span class="market-contact-view__label">쪽지</span>'
+                    .'<span class="market-contact-view__value">로그인 후 메시지 보내기</span>'
+                    .'</a>';
+            }
+        } elseif (!empty($contact['use_message']) && $seller_mb_id !== '' && $seller_mb_id === $viewer_mb_id) {
+            $items[] = '<p class="market-contact-view__self">구매자는 쪽지로 문의할 수 있습니다.</p>';
+        }
+
+        if (!$items) {
+            return '<p class="market-contact-view__empty">등록된 연락 방법이 없습니다.</p>';
+        }
+
+        return '<div class="market-contact-view">'.implode('', $items).'</div>';
+    }
+}
+
+if (!function_exists('eottae_market_render_contact_actions')) {
+    function eottae_market_render_contact_actions(array $contact, array $opts = array())
+    {
+        $seller_mb_id = trim((string) ($opts['seller_mb_id'] ?? ''));
+        $viewer_mb_id = trim((string) ($opts['viewer_mb_id'] ?? ''));
+        $wr_id = (int) ($opts['wr_id'] ?? 0);
+        $bo_table = preg_replace('/[^a-z0-9_]/', '', (string) ($opts['bo_table'] ?? eottae_market_board_table()));
+        $is_member = !empty($opts['is_member']);
+        $legacy = trim((string) ($contact['legacy'] ?? ''));
+
+        if ($legacy !== '' || ($seller_mb_id !== '' && $seller_mb_id === $viewer_mb_id)) {
+            return '';
+        }
+
+        $buttons = array();
+        if (!empty($contact['use_phone']) && trim((string) ($contact['phone'] ?? '')) !== '') {
+            $tel_href = function_exists('eottae_tel_href') ? eottae_tel_href($contact['phone']) : '#';
+            $buttons[] = '<a href="'.htmlspecialchars($tel_href, ENT_QUOTES, 'UTF-8').'" class="market-contact-bar__btn market-contact-bar__btn--phone">전화하기</a>';
+        }
+        if (!empty($contact['use_kakao']) && trim((string) ($contact['kakao'] ?? '')) !== '') {
+            $kakao = htmlspecialchars(get_text($contact['kakao']), ENT_QUOTES, 'UTF-8');
+            $buttons[] = '<button type="button" class="market-contact-bar__btn market-contact-bar__btn--kakao" data-copy-text="'.$kakao.'" data-copy-message="카카오톡 ID가 복사되었습니다.">카카오톡 ID 복사</button>';
+        }
+        if (!empty($contact['use_message']) && $seller_mb_id !== '' && $seller_mb_id !== $viewer_mb_id) {
+            $message_url = eottae_market_message_url($wr_id, $bo_table).'#message-compose';
+            if ($is_member) {
+                $buttons[] = '<a href="'.htmlspecialchars($message_url, ENT_QUOTES, 'UTF-8').'" class="market-contact-bar__btn market-contact-bar__btn--message">쪽지 보내기</a>';
+            } else {
+                $login_url = function_exists('eottae_login_url')
+                    ? eottae_login_url($message_url)
+                    : G5_BBS_URL.'/login.php?url='.urlencode($message_url);
+                $buttons[] = '<a href="'.htmlspecialchars($login_url, ENT_QUOTES, 'UTF-8').'" class="market-contact-bar__btn market-contact-bar__btn--message">쪽지 보내기</a>';
+            }
+        }
+
+        if (!$buttons) {
+            return '';
+        }
+
+        return '<nav class="market-contact-bar" aria-label="판매자 연락">'.implode('', $buttons).'</nav>';
+    }
+}
+
 if (!function_exists('eottae_market_validate_write_post')) {
     function eottae_market_validate_write_post(array $post)
     {
@@ -270,9 +509,10 @@ if (!function_exists('eottae_market_validate_write_post')) {
             return array('ok' => false, 'message' => '상품설명을 입력해 주세요.');
         }
 
-        $contact = trim(strip_tags((string) ($post['wr_7'] ?? '')));
-        if ($contact === '') {
-            return array('ok' => false, 'message' => '연락방법을 입력해 주세요.');
+        $contact = eottae_market_contact_from_post($post);
+        $contact_check = eottae_market_validate_contact($contact);
+        if (empty($contact_check['ok'])) {
+            return $contact_check;
         }
 
         return array('ok' => true, 'message' => '');
@@ -306,10 +546,8 @@ if (!function_exists('eottae_market_normalize_write_post')) {
         $out['wr_4'] = $location['location_text'];
         $out['wr_5'] = $location['latitude'];
         $out['wr_6'] = $location['longitude'];
-        $out['wr_7'] = trim(strip_tags((string) ($post['wr_7'] ?? '')));
-        if (function_exists('cut_str') && $out['wr_7'] !== '') {
-            $out['wr_7'] = cut_str($out['wr_7'], 200, '');
-        }
+        $contact = eottae_market_contact_from_post($post);
+        $out['wr_7'] = eottae_market_encode_contact($contact);
         if (!$is_free) {
             $out['wr_8'] = !empty($post['wr_8']) && (string) $post['wr_8'] === '1' ? '1' : '0';
         }

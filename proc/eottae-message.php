@@ -86,6 +86,22 @@ if ($action === 'golf_join_inquiry') {
     ));
 }
 
+if ($action === 'market_inquiry') {
+    include_once G5_LIB_PATH.'/eottae-market.lib.php';
+
+    $wr_id = isset($_POST['wr_id']) ? (int) $_POST['wr_id'] : 0;
+    $bo_table = isset($_POST['bo_table']) ? preg_replace('/[^a-z0-9_]/', '', (string) $_POST['bo_table']) : eottae_market_board_table();
+    $body = isset($_POST['body']) ? (string) $_POST['body'] : '';
+    $result = eottae_message_send_market_inquiry($member, $wr_id, $body, $bo_table);
+    if (!empty($result['ok'])) {
+        eottae_message_token(true);
+    }
+    eottae_message_json(!empty($result['ok']), $result['message'] ?? '', array(
+        'thread_id' => (int) ($result['thread_id'] ?? 0),
+        'redirect' => !empty($result['thread_id']) ? eottae_message_url(array('thread_id' => (int) $result['thread_id'])) : '',
+    ));
+}
+
 if ($action === 'report_reply') {
     include_once G5_LIB_PATH.'/eottae-report.lib.php';
 

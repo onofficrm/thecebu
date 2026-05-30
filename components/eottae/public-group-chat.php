@@ -3,6 +3,29 @@ if (!defined('_GNUBOARD_')) {
     exit;
 }
 
+if (!function_exists('eottae_public_group_chat_life_ai_icon_html')) {
+    function eottae_public_group_chat_life_ai_icon_html()
+    {
+        return '<span class="public-group-chat__composer-action-icon" aria-hidden="true">'
+            .'<svg viewBox="0 0 24 24" focusable="false"><path fill="currentColor" d="M9 3a1 1 0 011 1v1h4V4a1 1 0 112 0v1h1.5A2.5 2.5 0 0119 7.5V11a7 7 0 11-14 0V7.5A2.5 2.5 0 018.5 4H9V4a1 1 0 011-1zm-1 9a5 5 0 1010 0v-4.5a.5.5 0 00-.5-.5h-9a.5.5 0 00-.5.5V12zM8 18h8v2H8v-2z"></path></svg>'
+            .'</span>';
+    }
+}
+
+if (!function_exists('eottae_public_group_chat_life_ai_button_html')) {
+    function eottae_public_group_chat_life_ai_button_html($extra_class = '', $tag = 'button', $attrs = '')
+    {
+        $class = trim('public-group-chat__life-ai public-group-chat__composer-action public-group-chat__composer-action--wide '.$extra_class);
+        $label = 'AI 세부생활답변';
+
+        return '<'.$tag.' type="'.($tag === 'button' ? 'button' : 'submit').'" class="'.$class.'" '.$attrs
+            .' aria-label="'.$label.'" title="'.$label.'">'
+            .eottae_public_group_chat_life_ai_icon_html()
+            .'<span class="public-group-chat__composer-action-text" aria-hidden="true">'.$label.'</span>'
+            .'</'.$tag.'>';
+    }
+}
+
 if (!function_exists('eottae_public_group_chat_html')) {
     function eottae_public_group_chat_html($limit = 20, $defer_history = false)
     {
@@ -99,6 +122,7 @@ if (!function_exists('eottae_public_group_chat_html')) {
                                 placeholder="세부 생활, 여행, 병원, 환전, 교통 등 궁금한 점을 물어보세요"
                             ></textarea>
                             <button type="button" class="public-group-chat__life-ai public-group-chat__composer-action public-group-chat__composer-action--wide" data-public-chat-life-ai aria-label="AI 세부생활답변" title="AI 세부생활답변">
+                                <?php echo eottae_public_group_chat_life_ai_icon_html(); ?>
                                 <span class="public-group-chat__composer-action-text" aria-hidden="true">AI 세부생활답변</span>
                             </button>
                         </div>

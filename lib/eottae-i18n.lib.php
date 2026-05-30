@@ -113,9 +113,11 @@ if (!function_exists('eottae_i18n_text_attrs')) {
 }
 
 if (!function_exists('eottae_i18n_label_html')) {
-    function eottae_i18n_label_html($text, $attrs = array())
+    function eottae_i18n_label_html($text, $attrs = array(), $class = '')
     {
-        return '<span'.eottae_i18n_text_attrs($text, $attrs).'>'.get_text($text).'</span>';
+        $class_attr = $class !== '' ? ' class="'.get_text($class).'"' : '';
+
+        return '<span'.$class_attr.eottae_i18n_text_attrs($text, $attrs).'>'.get_text($text).'</span>';
     }
 }
 

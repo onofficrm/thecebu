@@ -2436,7 +2436,7 @@ body.talk-admin-shell .talk-admin-applies__table td:last-child {
 body.talkroom-ui .talk-room-detail-page--chat {
   display: flex;
   flex-direction: column;
-  max-width: 640px;
+  max-width: 720px;
   min-height: 0;
   padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
@@ -2587,6 +2587,77 @@ body.talkroom-ui .talk-room-detail-page--chat .talk-room-chat .public-group-chat
 @media (max-width: 639px) {
   body.talkroom-ui .talk-room-detail__drawer-meta {
     display: none;
+  }
+}
+
+.public-group-chat__history-top {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 4px;
+  margin-bottom: 4px;
+  pointer-events: none;
+}
+
+.public-group-chat__history-top[hidden] {
+  display: none !important;
+}
+
+.public-group-chat__history-spinner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.public-group-chat__messages--history-loading {
+  scroll-behavior: auto;
+}
+
+@media (min-width: 768px) {
+  html.talk-room-chat-page {
+    height: 100%;
+  }
+
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #wrapper,
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #container_wr,
+  body.talkroom-ui.talk-room-chat-active:not(.talk-admin-shell) #container {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 720px;
+    min-height: 0;
+    margin-left: auto;
+    margin-right: auto;
+    padding-bottom: 16px;
+  }
+
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: var(--talkroom-chat-height, calc(100vh - var(--eottae-header-h, 72px) - 120px));
+  }
+
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__inner,
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__panel,
+  body.talkroom-ui.talk-room-chat-active .talk-room-detail-page--chat .talk-room-chat .public-group-chat__messages {
+    min-height: 0;
   }
 }
 

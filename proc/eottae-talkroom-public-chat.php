@@ -171,21 +171,30 @@ if ($action === 'ai_speak') {
 }
 
 if ($action === 'life_qa') {
+    include_once G5_LIB_PATH.'/eottae-public-chat-life-qa.lib.php';
     $question = isset($_POST['question']) ? (string) $_POST['question'] : '';
-    $result = eottae_public_chat_life_qa_send($room_id, $question);
+    $result = eottae_public_chat_life_qa_send($room_id, $member['mb_id'], $question);
 
     eottae_talkroom_public_chat_json(!empty($result['ok']), $result['message'] ?? '', array(
-        'room_id'      => $room_id,
-        'wr_id'        => (int) ($result['wr_id'] ?? 0),
-        'message_row'  => eottae_talkroom_public_group_enrich_message_row(
+        'room_id'        => $room_id,
+        'wr_id'          => (int) ($result['wr_id'] ?? 0),
+        'question_wr_id' => (int) ($result['question_wr_id'] ?? 0),
+        'message_row'    => eottae_talkroom_public_group_enrich_message_row(
             $result['message_row'] ?? null,
             $room_id,
             $member['mb_id'],
             $is_super,
             $can_manage_ai
         ),
-        'last_wr_id'   => (int) ($result['wr_id'] ?? 0),
-        'member_token' => eottae_talkroom_member_token(),
+        'question_row'   => eottae_talkroom_public_group_enrich_message_row(
+            $result['question_row'] ?? null,
+            $room_id,
+            $member['mb_id'],
+            $is_super,
+            $can_manage_ai
+        ),
+        'last_wr_id'     => (int) ($result['wr_id'] ?? 0),
+        'member_token'   => eottae_talkroom_member_token(),
     ));
 }
 

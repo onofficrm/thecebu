@@ -35,6 +35,21 @@ if ($golf_join_compose_mode) {
         ? '안녕하세요. '.$golf_label.' 골프조인 문의드립니다.'."\n\n"
         : '안녕하세요. 골프조인 문의드립니다.'."\n\n";
 }
+$market_wr_id = isset($_GET['market']) ? (int) $_GET['market'] : 0;
+$market_bo_table = isset($_GET['bo_table']) ? preg_replace('/[^a-z0-9_]/', '', (string) $_GET['bo_table']) : '';
+if ($market_bo_table === '' && function_exists('eottae_market_board_table')) {
+    include_once G5_LIB_PATH.'/eottae-market.lib.php';
+    $market_bo_table = eottae_market_board_table();
+}
+$market_context = $market_wr_id > 0 ? eottae_message_market_context($market_wr_id, $market_bo_table) : array();
+$market_compose_mode = !empty($market_context['seller_mb_id']);
+$market_compose_body = '';
+if ($market_compose_mode) {
+    $market_label = trim((string) ($market_context['item_title'] ?? ''));
+    $market_compose_body = $market_label !== ''
+        ? '안녕하세요. '.$market_label.' 구매 문의드립니다.'."\n\n"
+        : '안녕하세요. 중고물품 구매 문의드립니다.'."\n\n";
+}
 $message_filter_options = eottae_message_filter_options();
 $message_filter_counts = eottae_message_filter_counts($member['mb_id']);
 $message_empty_state = eottae_message_empty_state($current_filter);
@@ -77,6 +92,8 @@ g5_page_start('쪽지');
                 echo get_text(($shop_context['shop_name'] ?? '업체').' 쪽지 문의');
             } elseif ($golf_join_compose_mode) {
                 echo '골프조인 작성자 문의';
+            } elseif ($market_compose_mode) {
+                echo '중고장터 판매자 문의';
             } elseif ($operator_compose_mode) {
                 echo '운영진에게 문의';
             } else {
@@ -113,6 +130,22 @@ g5_page_start('쪽지');
             <label class="eottae-message-form__label" for="message_body">문의 내용</label>
             <textarea id="message_body" name="body" class="eottae-message-form__textarea" rows="5" maxlength="3000" required placeholder="문의 내용을 입력해 주세요."><?php echo get_text($golf_join_compose_body); ?></textarea>
             <button type="submit" class="eottae-message-btn">작성자에게 보내기</button>
+        </form>
+        <?php } elseif ($market_wr_id > 0 && !$market_compose_mode) { ?>
+        <div class="empty-state">
+            <p class="empty-state__title">판매자에게 쪽지를 보낼 수 없습니다</p>
+            <p>물품 글이 삭제되었거나 판매자 정보를 확인할 수 없습니다.</p>
+        </div>
+        <?php } elseif ($market_compose_mode) { ?>
+        <p class="eottae-message-compose__hint">중고장터 판매자에게 직접 메시지를 보냅니다.</p>
+        <form class="eottae-message-form" method="post" action="<?php echo eottae_message_proc_url(); ?>" data-message-form>
+            <input type="hidden" name="eottae_message_token" value="<?php echo get_text($token); ?>">
+            <input type="hidden" name="action" value="market_inquiry">
+            <input type="hidden" name="wr_id" value="<?php echo (int) $market_context['wr_id']; ?>">
+            <input type="hidden" name="bo_table" value="<?php echo get_text($market_context['bo_table']); ?>">
+            <label class="eottae-message-form__label" for="message_body">문의 내용</label>
+            <textarea id="message_body" name="body" class="eottae-message-form__textarea" rows="5" maxlength="3000" required placeholder="구매 문의 내용을 입력해 주세요."><?php echo get_text($market_compose_body); ?></textarea>
+            <button type="submit" class="eottae-message-btn">판매자에게 보내기</button>
         </form>
         <?php } elseif ($operator_compose_mode) { ?>
         <p class="eottae-message-compose__hint">세부어때 운영진에게 문의·제안을 남깁니다.</p>

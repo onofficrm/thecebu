@@ -498,21 +498,37 @@ if ($is_ai_post) {
             <span class="community-view-page__author talk-ai-msg__author-line"><?php echo eottae_talkroom_ai_message_display_name($view); ?></span>
             <?php } elseif (!$is_estate_board_view && !$is_job_board_view && function_exists('eottae_member_growth_render_author_line') && !empty($view['mb_id'])) { ?>
             <div class="community-view-page__author-wrap">
-                <span class="community-view-page__author"><?php echo eottae_member_growth_render_author_line($view['mb_id'], $view['name'], array('inline' => true, 'badge_only' => true)); ?></span>
+                <div class="community-view-page__author-head">
+                    <span class="community-view-page__author"><?php echo eottae_member_growth_render_author_line($view['mb_id'], $view['name'], array('inline' => true, 'badge_only' => true)); ?></span>
+                    <?php
+                    if (function_exists('eottae_post_view_author_profile_info_badges_html')) {
+                        include_once G5_PATH.'/components/eottae/column-author-profile.php';
+                        echo eottae_post_view_author_profile_info_badges_html($view['mb_id']);
+                    }
+                    ?>
+                </div>
                 <?php
-                if (function_exists('eottae_post_view_author_profile_badges_html')) {
+                if (function_exists('eottae_post_view_author_profile_link_badges_html')) {
                     include_once G5_PATH.'/components/eottae/column-author-profile.php';
-                    echo eottae_post_view_author_profile_badges_html($view['mb_id']);
+                    echo eottae_post_view_author_profile_link_badges_html($view['mb_id']);
                 }
                 ?>
             </div>
             <?php } else { ?>
             <div class="community-view-page__author-wrap">
-                <span class="community-view-page__author"><?php echo $view['name']; ?></span>
+                <div class="community-view-page__author-head">
+                    <span class="community-view-page__author"><?php echo $view['name']; ?></span>
+                    <?php
+                    if (!empty($view['mb_id']) && function_exists('eottae_post_view_author_profile_info_badges_html')) {
+                        include_once G5_PATH.'/components/eottae/column-author-profile.php';
+                        echo eottae_post_view_author_profile_info_badges_html($view['mb_id']);
+                    }
+                    ?>
+                </div>
                 <?php
-                if (!empty($view['mb_id']) && function_exists('eottae_post_view_author_profile_badges_html')) {
+                if (!empty($view['mb_id']) && function_exists('eottae_post_view_author_profile_link_badges_html')) {
                     include_once G5_PATH.'/components/eottae/column-author-profile.php';
-                    echo eottae_post_view_author_profile_badges_html($view['mb_id']);
+                    echo eottae_post_view_author_profile_link_badges_html($view['mb_id']);
                 }
                 ?>
             </div>

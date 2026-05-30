@@ -365,11 +365,25 @@ if (!function_exists('eottae_public_chat_life_qa_answer')) {
 }
 
 if (!function_exists('eottae_public_chat_life_qa_send')) {
-    function eottae_public_chat_life_qa_send($room_id, $question)
+    function eottae_public_chat_life_qa_send($room_id, $mb_id, $question)
     {
         $question = eottae_public_chat_life_qa_clean($question, 300);
         if ($question === '') {
             return array('ok' => false, 'message' => '질문을 입력해 주세요.');
+        }
+
+        $mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $mb_id);
+        if ($mb_id === '') {
+            return array('ok' => false, 'message' => '로그인이 필요합니다.');
+        }
+
+        if (!function_exists('eottae_talkroom_public_group_send_message')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom-public-chat.lib.php';
+        }
+
+        $question_send = eottae_talkroom_public_group_send_message((int) $room_id, $mb_id, $question);
+        if (empty($question_send['ok'])) {
+            return $question_send;
         }
 
         $answer = eottae_public_chat_life_qa_answer($question);
@@ -379,8 +393,20 @@ if (!function_exists('eottae_public_chat_life_qa_send')) {
 
         $content = "세부 생활 질문에 답변드릴게요.\n\n".$answer;
 
-        return eottae_talkroom_public_group_send_ai_message((int) $room_id, $content, array(
+        $ai_send = eottae_talkroom_public_group_send_ai_message((int) $room_id, $content, array(
             'trigger_type' => 'life_qa',
         ));
+        if (empty($ai_send['ok'])) {
+            return $ai_send;
+        }
+
+        return array(
+            'ok'            => true,
+            'message'       => 'AI 답변이 등록되었습니다.',
+            'wr_id'         => (int) ($ai_send['wr_id'] ?? 0),
+            'message_row'   => $ai_send['message_row'] ?? null,
+            'question_wr_id'=> (int) ($question_send['wr_id'] ?? 0),
+            'question_row'  => $question_send['message_row'] ?? null,
+        );
     }
 }

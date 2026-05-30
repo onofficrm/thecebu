@@ -191,6 +191,30 @@
     });
   }
 
+  function initContactFields() {
+    var wrap = qs('[data-market-contact-fields]');
+    if (!wrap || wrap.dataset.bound === '1') {
+      return;
+    }
+    wrap.dataset.bound = '1';
+
+    function syncPanel(name, enabled) {
+      var panel = qs('[data-market-contact-panel="' + name + '"]', wrap);
+      if (!panel) {
+        return;
+      }
+      panel.classList.toggle('is-hidden', !enabled);
+    }
+
+    wrap.querySelectorAll('[data-market-contact-toggle]').forEach(function (checkbox) {
+      var name = checkbox.getAttribute('data-market-contact-toggle');
+      syncPanel(name, checkbox.checked);
+      checkbox.addEventListener('change', function () {
+        syncPanel(name, checkbox.checked);
+      });
+    });
+  }
+
   function initPriceMode() {
     var wrap = qs('[data-market-price-mode]');
     if (!wrap || wrap.dataset.bound === '1') {
@@ -213,6 +237,7 @@
   function init() {
     document.querySelectorAll('[data-market-status-panel]').forEach(initStatusPanel);
     initPhotoPreviews();
+    initContactFields();
     initPriceMode();
     initPriceAi();
   }

@@ -53,14 +53,15 @@ if (!function_exists('eottae_public_group_chat_attach_profile_fields')) {
             : '';
         $message['profile_image_url'] = '';
 
-        if (!function_exists('eottae_estate_member_thumb_url')) {
-            include_once G5_LIB_PATH.'/eottae-estate.lib.php';
-        }
-        if (function_exists('eottae_estate_member_thumb_url')) {
-            $message['profile_image_url'] = eottae_estate_member_thumb_url($mb_id);
-        } elseif (function_exists('eottae_member_profile_image_url')) {
+        if (!function_exists('eottae_member_profile_image_url')) {
             include_once G5_LIB_PATH.'/eottae-member-profile.lib.php';
+        }
+        if (function_exists('eottae_member_profile_image_url')) {
             $message['profile_image_url'] = eottae_member_profile_image_url($mb_id);
+        }
+        if ($message['profile_image_url'] === '' && function_exists('eottae_estate_member_thumb_url')) {
+            include_once G5_LIB_PATH.'/eottae-estate.lib.php';
+            $message['profile_image_url'] = eottae_estate_member_thumb_url($mb_id);
         }
 
         $message['profile_initial'] = eottae_public_group_chat_member_initial($message['author'] ?? '');

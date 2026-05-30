@@ -12,11 +12,14 @@ if (!function_exists('eottae_talkroom_chat_html')) {
     {
         include_once G5_LIB_PATH.'/eottae-talkroom-public-chat.lib.php';
         include_once G5_PATH.'/components/eottae/public-group-chat-message.php';
+        if (!function_exists('eottae_public_group_chat_life_ai_icon_html')) {
+            include_once G5_PATH.'/components/eottae/public-group-chat.php';
+        }
 
         global $member;
 
         $viewer_mb_id = !empty($member['mb_id']) ? (string) $member['mb_id'] : '';
-        $payload = eottae_talkroom_room_chat_payload((int) $room_id, $viewer_mb_id, $ctx);
+        $payload = eottae_talkroom_room_chat_payload((int) $room_id, $viewer_mb_id, $ctx, 25);
         $messages = $payload['messages'];
         $api_url = G5_URL.'/proc/eottae-talkroom-room-chat.php';
         $is_public_group_chat = function_exists('eottae_talkroom_public_group_room_id')
@@ -32,6 +35,9 @@ if (!function_exists('eottae_talkroom_chat_html')) {
             aria-label="<?php echo get_text($payload['room_name']); ?> 대화"
             data-room-id="<?php echo (int) $payload['room_id']; ?>"
             data-last-wr-id="<?php echo (int) $payload['last_wr_id']; ?>"
+            data-first-wr-id="<?php echo (int) ($payload['first_wr_id'] ?? 0); ?>"
+            data-has-older="<?php echo !empty($payload['has_older']) ? '1' : '0'; ?>"
+            data-history-batch="15"
             data-poll-url="<?php echo get_text($api_url); ?>"
             data-send-url="<?php echo get_text($api_url); ?>"
             data-member-token="<?php echo get_text($payload['member_token']); ?>"
@@ -41,6 +47,9 @@ if (!function_exists('eottae_talkroom_chat_html')) {
             data-register-url="<?php echo get_text($payload['register_href']); ?>"
             data-needs-join="<?php echo !empty($payload['needs_join']) ? '1' : '0'; ?>"
             data-can-manage-ai="<?php echo !empty($payload['can_manage_ai']) ? '1' : '0'; ?>"
+            <?php if ($is_public_group_chat) { ?>
+            data-life-qa="1"
+            <?php } ?>
         >
             <div class="public-group-chat__inner">
                 <header class="public-group-chat__head talk-room-chat__head">
@@ -74,6 +83,9 @@ if (!function_exists('eottae_talkroom_chat_html')) {
                     </div>
                     <?php } else { ?>
                     <div class="public-group-chat__messages talk-room-chat__messages" id="eottae-talkroom-chat-messages" aria-live="polite">
+                        <div class="public-group-chat__history-top" data-chat-history-top hidden>
+                            <span class="public-group-chat__history-spinner">이전 대화 불러오는 중…</span>
+                        </div>
                         <?php if (empty($messages)) { ?>
                         <p class="public-group-chat__empty">아직 대화가 없습니다. 첫 메시지를 남겨 보세요.</p>
                         <?php } else {
@@ -137,7 +149,12 @@ if (!function_exists('eottae_talkroom_chat_html')) {
                                 placeholder="메시지를 입력하세요"
                                 <?php echo empty($payload['can_send']) ? 'disabled' : ''; ?>
                             ></textarea>
-                            <button type="submit" class="public-group-chat__send public-group-chat__composer-action<?php echo $send_action_class; ?>" <?php echo empty($payload['can_send']) ? 'disabled' : ''; ?> aria-label="<?php echo get_text($send_action_label); ?>"><span class="public-group-chat__composer-action-text" aria-hidden="true"><?php echo get_text($send_action_label); ?></span></button>
+                            <button type="submit" class="public-group-chat__send public-group-chat__life-ai public-group-chat__composer-action<?php echo $send_action_class; ?>" <?php echo empty($payload['can_send']) ? 'disabled' : ''; ?> aria-label="<?php echo get_text($send_action_label); ?>">
+                                <?php if ($is_public_group_chat && function_exists('eottae_public_group_chat_life_ai_icon_html')) {
+                                    echo eottae_public_group_chat_life_ai_icon_html();
+                                } ?>
+                                <span class="public-group-chat__composer-action-text" aria-hidden="true"><?php echo get_text($send_action_label); ?></span>
+                            </button>
                         </div>
                     </form>
                     <?php } ?>

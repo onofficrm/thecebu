@@ -809,6 +809,12 @@
         if (data.member_token) {
           section.setAttribute('data-member-token', data.member_token);
         }
+        if (input) {
+          input.value = '';
+        }
+        if (data.question_row) {
+          appendMessages(section, [data.question_row]);
+        }
         if (data.message_row) {
           appendMessages(section, [data.message_row]);
         }

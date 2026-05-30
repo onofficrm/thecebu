@@ -519,6 +519,40 @@ if (!function_exists('eottae_talkroom_public_group_list_messages_before')) {
     }
 }
 
+if (!function_exists('eottae_talkroom_public_group_has_older_messages')) {
+    function eottae_talkroom_public_group_has_older_messages($room_id, $before_wr_id)
+    {
+        $room_id = (int) $room_id;
+        $before_wr_id = (int) $before_wr_id;
+        if ($room_id < 1 || $before_wr_id < 2) {
+            return false;
+        }
+
+        if (!function_exists('eottae_talkroom_write_table')) {
+            include_once G5_LIB_PATH.'/eottae-talkroom.lib.php';
+        }
+
+        $write_table = eottae_talkroom_write_table();
+        if ($write_table === '') {
+            return false;
+        }
+
+        $visible = eottae_talkroom_post_visible_sql();
+        $row = sql_fetch("
+            SELECT wr_id
+            FROM `{$write_table}`
+            WHERE wr_is_comment = 0
+              AND wr_1 = '{$room_id}'
+              AND {$visible}
+              AND wr_id < '{$before_wr_id}'
+            ORDER BY wr_id DESC
+            LIMIT 1
+        ", false);
+
+        return is_array($row) && !empty($row['wr_id']);
+    }
+}
+
 if (!function_exists('eottae_talkroom_public_group_chat_payload')) {
     function eottae_talkroom_public_group_chat_payload($limit = 20, $viewer_mb_id = '')
     {
@@ -867,7 +901,7 @@ if (!function_exists('eottae_talkroom_room_chat_payload')) {
      * @param array<string, mixed>|null $ctx eottae_talkroom_build_detail_context()
      * @return array<string, mixed>
      */
-    function eottae_talkroom_room_chat_payload($room_id, $viewer_mb_id = '', ?array $ctx = null)
+    function eottae_talkroom_room_chat_payload($room_id, $viewer_mb_id = '', ?array $ctx = null, $initial_limit = 25)
     {
         global $is_member, $is_admin;
 
@@ -877,6 +911,7 @@ if (!function_exists('eottae_talkroom_room_chat_payload')) {
 
         $room_id = (int) $room_id;
         $viewer_mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $viewer_mb_id);
+        $initial_limit = max(1, min(50, (int) $initial_limit));
 
         if ($ctx === null) {
             $ctx = eottae_talkroom_build_detail_context($room_id, $viewer_mb_id);
@@ -887,17 +922,21 @@ if (!function_exists('eottae_talkroom_room_chat_payload')) {
                 'room_id'    => 0,
                 'messages'   => array(),
                 'last_wr_id' => 0,
+                'first_wr_id'=> 0,
+                'has_older'  => 0,
             );
         }
 
         $room = $ctx['room'];
         $messages = array();
         $last_wr_id = 0;
+        $first_wr_id = 0;
+        $has_older = 0;
         $is_super = ($is_admin === 'super');
         $can_manage_ai = eottae_talkroom_public_group_can_manage_ai($room_id, $viewer_mb_id, $is_super);
 
         if (!empty($ctx['can_view_posts'])) {
-            $rows = eottae_talkroom_public_group_list_messages($room_id, 50);
+            $rows = eottae_talkroom_public_group_list_messages($room_id, $initial_limit);
             $messages = eottae_talkroom_public_group_format_messages_for_viewer(
                 $rows,
                 $viewer_mb_id,
@@ -906,7 +945,17 @@ if (!function_exists('eottae_talkroom_room_chat_payload')) {
                 $is_super
             );
             foreach ($messages as $message) {
-                $last_wr_id = max($last_wr_id, (int) ($message['wr_id'] ?? 0));
+                $wr_id = (int) ($message['wr_id'] ?? 0);
+                if ($wr_id < 1) {
+                    continue;
+                }
+                if ($first_wr_id < 1 || $wr_id < $first_wr_id) {
+                    $first_wr_id = $wr_id;
+                }
+                $last_wr_id = max($last_wr_id, $wr_id);
+            }
+            if ($first_wr_id > 0) {
+                $has_older = eottae_talkroom_public_group_has_older_messages($room_id, $first_wr_id) ? 1 : 0;
             }
         }
 
@@ -935,6 +984,9 @@ if (!function_exists('eottae_talkroom_room_chat_payload')) {
             'room_desc'     => get_text($room['room_description'] ?? ''),
             'messages'      => $messages,
             'last_wr_id'    => $last_wr_id,
+            'first_wr_id'   => $first_wr_id,
+            'has_older'     => $has_older,
+            'initial_limit' => $initial_limit,
             'is_member'     => !empty($is_member) ? 1 : 0,
             'can_send'      => $can_send ? 1 : 0,
             'can_view'      => !empty($ctx['can_view_posts']) ? 1 : 0,
