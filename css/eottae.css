@@ -235,14 +235,14 @@ body.eottae-page .eottae-gnb-header {
 .eottae-gnb-header__left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 20px;
   min-width: 0;
   flex: 1;
 }
 
 @media (min-width: 1024px) {
   .eottae-gnb-header__left {
-    gap: 18px;
+    gap: 40px;
   }
 }
 
@@ -252,6 +252,12 @@ body.eottae-page .eottae-gnb-header {
   flex-shrink: 0;
   color: var(--eottae-gnb-primary);
   text-decoration: none;
+}
+
+@media (min-width: 1024px) {
+  .eottae-gnb-header__logo {
+    padding-right: 8px;
+  }
 }
 
 header a[data-eottae-logo-link] {
