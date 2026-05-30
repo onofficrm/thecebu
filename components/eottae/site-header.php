@@ -89,7 +89,6 @@ foreach ($eottae_gnb_links as $link) {
             </div>
 
             <div id="siteMobileNav" class="eottae-gnb-header__mobile site-header__mobile-nav" aria-hidden="true">
-                <?php echo function_exists('eottae_i18n_language_select_html') ? eottae_i18n_language_select_html('eottae-language--mobile') : ''; ?>
                 <nav class="eottae-gnb-header__mobile-nav">
                     <?php eottae_gnb_render_nav_items($eottae_gnb_menu_items, 'mobile'); ?>
                 </nav>

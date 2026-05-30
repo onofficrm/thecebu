@@ -119,31 +119,27 @@ if (!function_exists('eottae_i18n_label_html')) {
     }
 }
 
-if (!function_exists('eottae_i18n_language_select_html')) {
-    function eottae_i18n_language_select_html($class = '')
+if (!function_exists('eottae_i18n_language_badge_html')) {
+    function eottae_i18n_language_badge_html($class = '')
     {
         $class = trim('eottae-language '.(string) $class);
-        $options = array(
-            'ko' => '한국어',
-            'en' => 'English',
-            'ja' => '日本語',
-            'zh' => '中文',
-        );
 
         ob_start();
         ?>
-        <div class="<?php echo get_text($class); ?>" data-eottae-language>
-            <label class="eottae-language__label">
-                <span class="eottae-language__icon" aria-hidden="true">🌐</span>
-                <span class="sound_only" data-i18n="language.select_label">언어 선택</span>
-                <select class="eottae-language__select" data-eottae-language-select aria-label="언어 선택" data-i18n-aria-label="language.select_label">
-                    <?php foreach ($options as $value => $label) { ?>
-                    <option value="<?php echo $value; ?>" data-i18n="language.<?php echo $value; ?>"><?php echo $label; ?></option>
-                    <?php } ?>
-                </select>
-            </label>
+        <div class="<?php echo get_text($class); ?>" data-eottae-language-badge>
+            <span class="eottae-language__label">
+                <span class="eottae-language__icon" aria-hidden="true">🇰🇷</span>
+                <span class="eottae-language__text" data-i18n="language.ko">한국어</span>
+            </span>
         </div>
         <?php
         return trim(ob_get_clean());
+    }
+}
+
+if (!function_exists('eottae_i18n_language_select_html')) {
+    function eottae_i18n_language_select_html($class = '')
+    {
+        return eottae_i18n_language_badge_html($class);
     }
 }

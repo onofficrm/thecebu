@@ -101,7 +101,7 @@ if (!function_exists('eottae_talkroom_chat_html')) {
                                     placeholder="참여 후 메시지를 입력하세요"
                                     disabled
                                 ></textarea>
-                                <button type="button" class="public-group-chat__send" disabled>전송</button>
+                                <button type="button" class="public-group-chat__send public-group-chat__composer-action" disabled aria-label="전송"><span class="public-group-chat__composer-action-text" aria-hidden="true">전송</span></button>
                             </div>
                         </div>
                     </div>
@@ -110,7 +110,7 @@ if (!function_exists('eottae_talkroom_chat_html')) {
                         <p class="public-group-chat__hint">참여 승인 대기 중입니다. 승인 후 메시지를 보낼 수 있습니다.</p>
                         <div class="public-group-chat__composer-field">
                             <textarea class="public-group-chat__input" rows="1" placeholder="메시지를 입력하세요" disabled></textarea>
-                            <button type="button" class="public-group-chat__send" disabled>전송</button>
+                            <button type="button" class="public-group-chat__send public-group-chat__composer-action" disabled aria-label="전송"><span class="public-group-chat__composer-action-text" aria-hidden="true">전송</span></button>
                         </div>
                     </div>
                     <?php } elseif (!empty($payload['join_blocked'])) { ?>
@@ -118,7 +118,7 @@ if (!function_exists('eottae_talkroom_chat_html')) {
                         <p class="public-group-chat__hint"><?php echo $payload['join_hint'] !== '' ? get_text($payload['join_hint']) : '이 톡방에 참여할 수 없습니다.'; ?></p>
                         <div class="public-group-chat__composer-field">
                             <textarea class="public-group-chat__input" rows="1" placeholder="메시지를 입력하세요" disabled></textarea>
-                            <button type="button" class="public-group-chat__send" disabled>전송</button>
+                            <button type="button" class="public-group-chat__send public-group-chat__composer-action" disabled aria-label="전송"><span class="public-group-chat__composer-action-text" aria-hidden="true">전송</span></button>
                         </div>
                     </div>
                     <?php } else { ?>
@@ -133,7 +133,7 @@ if (!function_exists('eottae_talkroom_chat_html')) {
                                 placeholder="메시지를 입력하세요"
                                 <?php echo empty($payload['can_send']) ? 'disabled' : ''; ?>
                             ></textarea>
-                            <button type="submit" class="public-group-chat__send" <?php echo empty($payload['can_send']) ? 'disabled' : ''; ?>>전송</button>
+                            <button type="submit" class="public-group-chat__send public-group-chat__composer-action" <?php echo empty($payload['can_send']) ? 'disabled' : ''; ?> aria-label="전송"><span class="public-group-chat__composer-action-text" aria-hidden="true">전송</span></button>
                         </div>
                     </form>
                     <?php } ?>

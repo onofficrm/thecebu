@@ -235,7 +235,6 @@ if (function_exists('eottae_filter_menu_datas')) {
                     <span class="sound_only" data-i18n="common.close_menu">메뉴 닫기</span>
                 </button>
             </div>
-            <?php echo function_exists('eottae_i18n_language_select_html') ? eottae_i18n_language_select_html('eottae-language--mobile') : ''; ?>
             <ul class="site-header__mobile-list">
                 <?php
                 $mnb_i = 0;

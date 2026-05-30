@@ -1686,17 +1686,11 @@
   line-height: 1;
 }
 
-.site-header .eottae-language__select {
-  min-width: 112px;
-  height: 34px;
-  padding: 0 28px 0 10px;
-  border: 1px solid var(--color-line);
-  border-radius: 999px;
-  background: var(--color-bg);
-  color: var(--color-text);
+.site-header .eottae-language__text {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  cursor: pointer;
+  color: var(--color-text);
+  white-space: nowrap;
 }
 
 .site-header .btn-primary.site-header__cta {
@@ -1756,17 +1750,6 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-lg);
-}
-
-.site-header__mobile-nav .eottae-language--mobile {
-  display: flex;
-  width: 100%;
-  margin-bottom: var(--space-md);
-}
-
-.site-header__mobile-nav .eottae-language__label,
-.site-header__mobile-nav .eottae-language__select {
-  width: 100%;
 }
 
 .site-header__mobile-nav-title {

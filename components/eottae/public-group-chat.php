@@ -59,7 +59,7 @@ if (!function_exists('eottae_public_group_chat_html')) {
                         <?php if (!empty($payload['can_manage_ai'])) { ?>
                         <button type="button" class="public-group-chat__ai-speak" data-public-chat-ai-speak aria-label="AI 말걸기">🤖 AI 말걸기</button>
                         <?php } ?>
-                        <a href="<?php echo $payload['enter_href']; ?>" class="public-group-chat__enter">단체톡방 입장</a>
+                        <a href="<?php echo $payload['enter_href']; ?>" class="public-group-chat__enter">전체보기</a>
                     </div>
                 </header>
 
@@ -98,11 +98,11 @@ if (!function_exists('eottae_public_group_chat_html')) {
                                 maxlength="500"
                                 placeholder="세부 생활, 여행, 병원, 환전, 교통 등 궁금한 점을 물어보세요"
                             ></textarea>
-                            <div class="public-group-chat__quick-actions">
-                                <button type="button" class="public-group-chat__life-ai eottae-ai-btn" data-public-chat-life-ai>AI 세부생활질문</button>
-                                <span class="public-group-chat__life-ai-status" data-public-chat-life-ai-status aria-live="polite"></span>
-                            </div>
+                            <button type="button" class="public-group-chat__life-ai public-group-chat__composer-action" data-public-chat-life-ai aria-label="AI 세부생활질문" title="AI 세부생활질문">
+                                <span class="public-group-chat__composer-action-text" aria-hidden="true">AI</span>
+                            </button>
                         </div>
+                        <p class="public-group-chat__life-ai-status" data-public-chat-life-ai-status aria-live="polite"></p>
                     </form>
                     <?php } ?>
                 </div>
