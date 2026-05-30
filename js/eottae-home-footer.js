@@ -60,14 +60,17 @@
     col.innerHTML =
       '<h3 class="eottae-gnb-footer__heading">서비스 안내</h3>'
       + '<ul class="eottae-gnb-footer__links">'
+      + '<li class="eottae-gnb-footer__subheading">[이용 안내]</li>'
       + '<li><a href="' + esc(data.talk_url || '/talk/ai.php') + '">세부톡 AI 도우미</a></li>'
-      + '<li><a href="' + esc(data.coupon_guide_url || '/page/eottae-coupon-guide.php') + '">쿠폰사용방법(사용자용)</a></li>'
-      + '<li><a href="' + esc(data.business_coupon_guide_url || '/page/eottae-business-coupon-guide.php') + '">쿠폰발행방법(사업자용)</a></li>'
+      + '<li><a href="' + esc(data.coupon_guide_url || '/page/eottae-coupon-guide.php') + '">쿠폰사용방법</a></li>'
       + '<li><a href="' + esc(data.challenge_guide_url || '/page/eottae-challenge-guide.php') + '">챌린지 참여 안내</a></li>'
       + '<li><a href="' + esc(data.member_growth_guide_url || '/page/eottae-member-growth-guide.php') + '">활동 등급·뱃지 안내</a></li>'
+      + '<li><a href="' + esc(data.badge_book_url || '/badges/') + '">뱃지 도감</a></li>'
+      + '<li><a href="' + esc(data.cost_calculator_url || '/cost-calculator/') + '">세부 생활비 계산기</a></li>'
+      + '<li class="eottae-gnb-footer__subheading eottae-gnb-footer__subheading--spaced">[참여·제휴 안내]</li>'
+      + '<li><a href="' + esc(data.business_coupon_guide_url || '/page/eottae-business-coupon-guide.php') + '">쿠폰발행방법</a></li>'
       + '<li><a href="' + esc(data.columnist_recruit_url || '/columnist/') + '">컬럼리스트 모집</a></li>'
       + '<li><a href="' + esc(data.briefing_url || '/briefing/') + '">오늘의 세부 브리핑</a></li>'
-      + '<li><a href="' + esc(data.badge_book_url || '/badges/') + '">뱃지 도감</a></li>'
       + '</ul>';
     return col;
   }

@@ -1350,6 +1350,16 @@ body.eottae-page hr {
   margin-top: 12px;
 }
 
+.eottae-gnb-footer__subheading {
+  color: #e2e8f0;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.eottae-gnb-footer__subheading--spaced {
+  padding-top: 8px;
+}
+
 .eottae-gnb-footer__links a,
 .eottae-gnb-footer__links span {
   font-size: 14px;
