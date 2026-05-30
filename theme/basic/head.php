@@ -20,6 +20,14 @@ include_once(G5_LIB_PATH.'/connect.lib.php');
 include_once(G5_LIB_PATH.'/popular.lib.php');
 ?>
 
+<?php if (function_exists('eottae_talkroom_is_admin_shell_page') && eottae_talkroom_is_admin_shell_page()) { ?>
+<!-- 세부톡방 관리자: 사이트 GNB 생략 -->
+<?php } else { ?>
+<?php if (function_exists('eottae_use_site_chrome') && eottae_use_site_chrome() && function_exists('eottae_render_site_header')) { ?>
+<div id="hd">
+<?php eottae_render_site_header(); ?>
+</div>
+<?php } else { ?>
 <!-- 상단 시작 { -->
 <div id="hd">
     <h1 id="hd_h1"><?php echo $g5['title'] ?></h1>
@@ -208,9 +216,9 @@ include_once(G5_LIB_PATH.'/popular.lib.php');
     </script>
 </div>
 <!-- } 상단 끝 -->
-
-
+<?php } ?>
 <hr>
+<?php } ?>
 
 <!-- 콘텐츠 시작 { -->
 <div id="wrapper">
