@@ -42,6 +42,7 @@ if ($is_community_hub_all_list) {
 $sort_options = eottae_community_sort_options(isset($sst) ? $sst : '', isset($sod) ? $sod : 'desc');
 $region_options = eottae_community_region_options();
 $current_region = isset($_GET['region']) ? trim($_GET['region']) : '';
+$current_lang = function_exists('eottae_lang_from_request') ? eottae_lang_from_request('lang') : '';
 $list_base = get_pretty_url($bo_table);
 $hero = $is_community_hub_list
     ? eottae_community_hub_hero($board)
@@ -177,6 +178,7 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
                 <input type="hidden" name="bo_table" value="<?php echo $bo_table; ?>">
                 <?php if ($is_community_hub_all_list) { ?><input type="hidden" name="hub" value="all"><?php } ?>
                 <?php if (!$is_community_hub_list && $sca) { ?><input type="hidden" name="sca" value="<?php echo get_text($sca); ?>"><?php } ?>
+                <?php if ($current_lang !== '') { ?><input type="hidden" name="lang" value="<?php echo $current_lang; ?>"><?php } ?>
                 <?php if (!empty($stx)) { ?><input type="hidden" name="stx" value="<?php echo get_text($stx); ?>"><input type="hidden" name="sfl" value="wr_subject||wr_content"><?php } ?>
                 <label class="sound_only" for="community_region">구역</label>
                 <select id="community_region" name="stx" class="community-filter__select" onchange="this.form.sfl.value='wr_subject||wr_content'; if(this.value){this.form.submit();}">
@@ -190,6 +192,7 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
                 <input type="hidden" name="bo_table" value="<?php echo $bo_table; ?>">
                 <?php if ($is_community_hub_all_list) { ?><input type="hidden" name="hub" value="all"><?php } ?>
                 <?php if (!$is_community_hub_list && $sca) { ?><input type="hidden" name="sca" value="<?php echo get_text($sca); ?>"><?php } ?>
+                <?php if ($current_lang !== '') { ?><input type="hidden" name="lang" value="<?php echo $current_lang; ?>"><?php } ?>
                 <?php if (!empty($stx)) { ?><input type="hidden" name="stx" value="<?php echo get_text($stx); ?>"><input type="hidden" name="sfl" value="wr_subject||wr_content"><?php } ?>
                 <label class="sound_only" for="community_sort">정렬</label>
                 <select id="community_sort" name="sst" class="community-filter__select" onchange="this.form.submit();">
@@ -199,6 +202,25 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
                 </select>
                 <input type="hidden" name="sod" value="<?php echo isset($sod) && $sod ? $sod : 'desc'; ?>">
             </form>
+            <nav class="community-filter community-lang-filter" aria-label="게시글 언어">
+                <?php
+                $lang_extra = array();
+                if ($is_community_hub_all_list) {
+                    $lang_extra['hub'] = 'all';
+                }
+                if (!$is_community_hub_list && $sca) {
+                    $lang_extra['sca'] = $sca;
+                }
+                if (!empty($stx)) {
+                    $lang_extra['stx'] = $stx;
+                    $lang_extra['sfl'] = 'wr_subject||wr_content';
+                }
+                ?>
+                <a href="<?php echo eottae_lang_filter_url($bo_table, '', $lang_extra); ?>" class="community-lang-filter__item<?php echo $current_lang === '' ? ' is-active' : ''; ?>">전체</a>
+                <?php foreach (eottae_lang_supported() as $lang_code => $lang_meta) { ?>
+                <a href="<?php echo eottae_lang_filter_url($bo_table, $lang_code, $lang_extra); ?>" class="community-lang-filter__item<?php echo $current_lang === $lang_code ? ' is-active' : ''; ?>"><?php echo get_text($lang_meta['label']); ?></a>
+                <?php } ?>
+            </nav>
         </div>
     </section>
     <?php } ?>
@@ -316,6 +338,7 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
             $is_new = !$is_notice && eottae_community_is_new(isset($item['wr_datetime']) ? $item['wr_datetime'] : '');
             $is_hot = !$is_notice && eottae_community_is_hot($hit_num, $comment_num, $board);
             $is_ai_post = $is_talkroom_board && function_exists('eottae_talkroom_ai_message_is_ai') && eottae_talkroom_ai_message_is_ai($item);
+            $post_language = function_exists('eottae_lang_from_row') ? eottae_lang_from_row($item) : 'ko';
             $item_class = 'community-post'.($is_notice ? ' community-post--notice' : '');
             if ($thumb !== '') {
                 $item_class .= ' community-post--has-thumb';

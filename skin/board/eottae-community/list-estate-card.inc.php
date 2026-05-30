@@ -21,6 +21,7 @@ $member_thumb = '';
 if (!empty($card['mb_id']) && function_exists('eottae_estate_member_thumb_url')) {
     $member_thumb = eottae_estate_member_thumb_url($card['mb_id']);
 }
+$post_language = function_exists('eottae_lang_normalize') ? eottae_lang_normalize($post_language ?? ($item['language'] ?? 'ko')) : 'ko';
 ?>
 <article class="estate-list-card<?php echo ($card['deal_status'] ?? '') === 'completed' ? ' estate-list-card--completed' : ''; ?>">
     <a href="<?php echo get_text($card['href']); ?>" class="estate-list-card__link">
@@ -56,6 +57,7 @@ if (!empty($card['mb_id']) && function_exists('eottae_estate_member_thumb_url'))
             <?php } ?>
         </div>
         <div class="estate-list-card__body">
+            <?php echo function_exists('eottae_lang_badge_html') ? eottae_lang_badge_html($post_language, 'estate-list-card__lang-badge') : ''; ?>
             <?php if ($card['price'] !== '') { ?>
             <p class="estate-list-card__price"><?php echo get_text($card['price']); ?></p>
             <?php } ?>

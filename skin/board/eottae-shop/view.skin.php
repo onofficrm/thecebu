@@ -75,7 +75,12 @@ if (function_exists('eottae_shop_apply_manage_links')) {
                     <?php if ($shop['region']) { ?><span class="shop-detail-page__badge shop-detail-page__badge--muted"><?php echo $shop['region']; ?></span><?php } ?>
                     <?php if ($shop['status']) { ?><span class="shop-detail-page__badge shop-detail-page__badge--status"><?php echo $shop['status']; ?></span><?php } ?>
                 </div>
-                <h1 class="shop-detail-page__title"><?php echo get_text($view['wr_subject']); ?></h1>
+                <h1 class="shop-detail-page__title" data-translation-title><?php echo get_text($view['wr_subject']); ?></h1>
+                <?php
+                if (function_exists('eottae_post_translation_panel_html')) {
+                    echo eottae_post_translation_panel_html($bo_table, $view, 'ko');
+                }
+                ?>
                 <p class="shop-detail-page__rating">
                     <span class="shop-detail-page__stars">★ <?php echo number_format($summary['average'], 1); ?></span>
                     <span class="shop-detail-page__reviews">리뷰 <?php echo number_format($summary['count']); ?></span>
@@ -96,6 +101,7 @@ if (function_exists('eottae_shop_apply_manage_links')) {
                 <dl class="shop-detail-page__info-list">
                     <?php if ($shop['address']) { ?><div><dt>주소</dt><dd><?php echo $shop['address']; ?></dd></div><?php } ?>
                     <?php if ($shop['phone']) { ?><div><dt>전화</dt><dd><a href="<?php echo eottae_tel_href($shop['phone']); ?>"><?php echo $shop['phone']; ?></a></dd></div><?php } ?>
+                    <div><dt>사용 가능 언어</dt><dd><?php echo implode(' / ', array_map('eottae_lang_label', $shop['available_languages'])); ?></dd></div>
                     <?php if ($shop['hours']) { ?><div><dt>영업시간</dt><dd><?php echo $shop['hours']; ?></dd></div><?php } ?>
                     <?php if ($shop['closed']) { ?><div><dt>휴무일</dt><dd><?php echo $shop['closed']; ?></dd></div><?php } ?>
                     <?php if ($shop['website']) { ?><div><dt>홈페이지</dt><dd><a href="<?php echo $shop['website']; ?>" target="_blank" rel="noopener noreferrer">바로가기</a></dd></div><?php } ?>

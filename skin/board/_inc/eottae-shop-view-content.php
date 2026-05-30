@@ -28,7 +28,7 @@ $shop_has_content = $shop_content_plain !== '';
             <?php echo g5b_youtube_embed_html($shop_youtube_id, $shop['name'].' 소개 영상'); ?>
         </div>
         <?php } ?>
-        <div class="shop-detail-page__content-body" id="shopContentBody">
+        <div class="shop-detail-page__content-body" id="shopContentBody" data-translation-content>
             <?php if ($shop_has_content) {
                 echo $shop_content_html;
             } else { ?>

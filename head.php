@@ -161,7 +161,7 @@ if (function_exists('eottae_filter_menu_datas')) {
                         $has_sub = !empty($row['sub']);
                     ?>
                     <li class="site-header__gnb-item<?php echo $has_sub ? ' has-sub' : ''; ?>">
-                        <a href="<?php echo $row['me_link']; ?>" target="_<?php echo $row['me_target']; ?>" class="site-header__gnb-link"><?php echo $row['me_name']; ?></a>
+                        <a href="<?php echo $row['me_link']; ?>" target="_<?php echo $row['me_target']; ?>" class="site-header__gnb-link"<?php echo function_exists('eottae_i18n_text_attrs') ? eottae_i18n_text_attrs($row['me_name']) : ''; ?>><?php echo $row['me_name']; ?></a>
                         <?php if ($has_sub) { ?>
                         <ul class="site-header__gnb-sub">
                             <?php foreach ((array) $row['sub'] as $row2) {
@@ -170,7 +170,7 @@ if (function_exists('eottae_filter_menu_datas')) {
                                 }
                             ?>
                             <li class="site-header__gnb-sub-item">
-                                <a href="<?php echo $row2['me_link']; ?>" target="_<?php echo $row2['me_target']; ?>" class="site-header__gnb-sub-link"><?php echo $row2['me_name']; ?></a>
+                                <a href="<?php echo $row2['me_link']; ?>" target="_<?php echo $row2['me_target']; ?>" class="site-header__gnb-sub-link"<?php echo function_exists('eottae_i18n_text_attrs') ? eottae_i18n_text_attrs($row2['me_name']) : ''; ?>><?php echo $row2['me_name']; ?></a>
                             </li>
                             <?php } ?>
                         </ul>
@@ -182,7 +182,7 @@ if (function_exists('eottae_filter_menu_datas')) {
                     if ($gnb_i === 0) {
                     ?>
                     <li class="site-header__gnb-item site-header__gnb-item--empty">
-                        <span class="site-header__gnb-empty">메뉴 준비 중입니다.<?php if ($is_admin) { ?> <a href="<?php echo G5_ADMIN_URL; ?>/menu_list.php">메뉴설정</a><?php } ?></span>
+                        <span class="site-header__gnb-empty"><span data-i18n="common.empty_menu">메뉴 준비 중입니다.</span><?php if ($is_admin) { ?> <a href="<?php echo G5_ADMIN_URL; ?>/menu_list.php">메뉴설정</a><?php } ?></span>
                     </li>
                     <?php } ?>
                 </ul>
@@ -196,9 +196,9 @@ if (function_exists('eottae_filter_menu_datas')) {
                             <input type="hidden" name="sfl" value="wr_subject||wr_content">
                             <input type="hidden" name="sop" value="and">
                             <label for="sch_stx" class="sound_only">검색어 필수</label>
-                            <input type="text" name="stx" id="sch_stx" maxlength="20" placeholder="검색" class="site-header__search-input">
+                            <input type="text" name="stx" id="sch_stx" maxlength="20" placeholder="검색" class="site-header__search-input" data-i18n-placeholder="common.search_placeholder">
                             <button type="submit" id="sch_submit" value="검색" class="site-header__search-btn">
-                                <i class="fa fa-search" aria-hidden="true"></i><span class="sound_only">검색</span>
+                                <i class="fa fa-search" aria-hidden="true"></i><span class="sound_only" data-i18n="button.search">검색</span>
                             </button>
                         </form>
                     </fieldset>
@@ -206,34 +206,36 @@ if (function_exists('eottae_filter_menu_datas')) {
 
                 <ul class="site-header__account hd_login">
                     <?php if ($is_member) { ?>
-                    <li><a href="<?php echo G5_URL; ?>/page/eottae-mypage.php">MY</a></li>
-                    <li><a href="<?php echo G5_BBS_URL; ?>/logout.php">로그아웃</a></li>
+                    <li><a href="<?php echo G5_URL; ?>/page/eottae-mypage.php" data-i18n="menu.my">MY</a></li>
+                    <li><a href="<?php echo G5_BBS_URL; ?>/logout.php" data-i18n="button.logout">로그아웃</a></li>
                     <?php if ($is_admin) { ?>
-                    <li class="tnb_admin"><a href="<?php echo correct_goto_url(G5_ADMIN_URL); ?>">관리자</a></li>
+                    <li class="tnb_admin"><a href="<?php echo correct_goto_url(G5_ADMIN_URL); ?>" data-i18n="common.admin">관리자</a></li>
                     <?php } ?>
                     <?php } else { ?>
-                    <li><a href="<?php echo G5_BBS_URL; ?>/register.php">회원가입</a></li>
-                    <li><a href="<?php echo G5_BBS_URL; ?>/login.php">로그인</a></li>
+                    <li><a href="<?php echo G5_BBS_URL; ?>/register.php" data-i18n="button.register">회원가입</a></li>
+                    <li><a href="<?php echo G5_BBS_URL; ?>/login.php" data-i18n="button.login">로그인</a></li>
                     <?php } ?>
                 </ul>
 
-                <a href="<?php echo $g5_inquiry_url; ?>" class="btn btn-primary site-header__cta"><?php echo get_text($g5_consult_label); ?></a>
+                <a href="<?php echo $g5_inquiry_url; ?>" class="btn btn-primary site-header__cta"<?php echo function_exists('eottae_i18n_text_attrs') ? eottae_i18n_text_attrs($g5_consult_label) : ''; ?>><?php echo get_text($g5_consult_label); ?></a>
+                <?php echo function_exists('eottae_i18n_language_select_html') ? eottae_i18n_language_select_html('eottae-language--desktop') : ''; ?>
 
-                <button type="button" class="site-header__menu-btn" aria-controls="siteMobileNav" aria-expanded="false" title="전체메뉴">
+                <button type="button" class="site-header__menu-btn" aria-controls="siteMobileNav" aria-expanded="false" title="전체메뉴" data-i18n-title="common.all_menu">
                     <i class="fa fa-bars" aria-hidden="true"></i>
-                    <span class="sound_only">전체메뉴열기</span>
+                    <span class="sound_only" data-i18n="common.open_all_menu">전체메뉴열기</span>
                 </button>
             </div>
         </div>
 
         <div id="siteMobileNav" class="site-header__mobile-nav" aria-hidden="true">
             <div class="site-header__mobile-nav-head">
-                <strong class="site-header__mobile-nav-title">전체메뉴</strong>
-                <button type="button" class="site-header__mobile-close" title="메뉴 닫기">
+                <strong class="site-header__mobile-nav-title" data-i18n="common.all_menu">전체메뉴</strong>
+                <button type="button" class="site-header__mobile-close" title="메뉴 닫기" data-i18n-title="common.close_menu">
                     <i class="fa fa-times" aria-hidden="true"></i>
-                    <span class="sound_only">메뉴 닫기</span>
+                    <span class="sound_only" data-i18n="common.close_menu">메뉴 닫기</span>
                 </button>
             </div>
+            <?php echo function_exists('eottae_i18n_language_select_html') ? eottae_i18n_language_select_html('eottae-language--mobile') : ''; ?>
             <ul class="site-header__mobile-list">
                 <?php
                 $mnb_i = 0;
@@ -243,7 +245,7 @@ if (function_exists('eottae_filter_menu_datas')) {
                     }
                 ?>
                 <li class="site-header__mobile-item">
-                    <a href="<?php echo $row['me_link']; ?>" target="_<?php echo $row['me_target']; ?>" class="site-header__mobile-link"><?php echo $row['me_name']; ?></a>
+                    <a href="<?php echo $row['me_link']; ?>" target="_<?php echo $row['me_target']; ?>" class="site-header__mobile-link"<?php echo function_exists('eottae_i18n_text_attrs') ? eottae_i18n_text_attrs($row['me_name']) : ''; ?>><?php echo $row['me_name']; ?></a>
                     <?php
                     $mnb_k = 0;
                     foreach ((array) $row['sub'] as $row2) {
@@ -254,7 +256,7 @@ if (function_exists('eottae_filter_menu_datas')) {
                             echo '<ul class="site-header__mobile-sub">'.PHP_EOL;
                         }
                     ?>
-                    <li><a href="<?php echo $row2['me_link']; ?>" target="_<?php echo $row2['me_target']; ?>"><?php echo $row2['me_name']; ?></a></li>
+                    <li><a href="<?php echo $row2['me_link']; ?>" target="_<?php echo $row2['me_target']; ?>"<?php echo function_exists('eottae_i18n_text_attrs') ? eottae_i18n_text_attrs($row2['me_name']) : ''; ?>><?php echo $row2['me_name']; ?></a></li>
                     <?php
                         $mnb_k++;
                     }
@@ -269,31 +271,31 @@ if (function_exists('eottae_filter_menu_datas')) {
                 if ($mnb_i === 0) {
                 ?>
                 <li class="site-header__mobile-item site-header__mobile-item--empty">
-                    <span>메뉴 준비 중입니다.<?php if ($is_admin) { ?> <a href="<?php echo G5_ADMIN_URL; ?>/menu_list.php">메뉴설정</a><?php } ?></span>
+                    <span><span data-i18n="common.empty_menu">메뉴 준비 중입니다.</span><?php if ($is_admin) { ?> <a href="<?php echo G5_ADMIN_URL; ?>/menu_list.php">메뉴설정</a><?php } ?></span>
                 </li>
                 <?php } ?>
             </ul>
             <ul class="site-header__mobile-utils">
                 <li><a href="<?php echo G5_BBS_URL; ?>/faq.php">FAQ</a></li>
                 <li><a href="<?php echo G5_BBS_URL; ?>/qalist.php">Q&amp;A</a></li>
-                <li><a href="<?php echo G5_BBS_URL; ?>/new.php">새글</a></li>
+                <li><a href="<?php echo G5_BBS_URL; ?>/new.php" data-i18n="common.new_posts">새글</a></li>
                 <?php if (defined('G5_USE_SHOP') && G5_USE_SHOP) { ?>
-                <li><a href="<?php echo G5_SHOP_URL; ?>">쇼핑몰</a></li>
+                <li><a href="<?php echo G5_SHOP_URL; ?>" data-i18n="common.shopping_mall">쇼핑몰</a></li>
                 <?php } ?>
             </ul>
             <div class="site-header__mobile-account">
                 <?php if ($is_member) { ?>
-                <a href="<?php echo G5_BBS_URL; ?>/member_confirm.php?url=<?php echo G5_BBS_URL; ?>/register_form.php">정보수정</a>
-                <a href="<?php echo G5_BBS_URL; ?>/logout.php">로그아웃</a>
+                <a href="<?php echo G5_BBS_URL; ?>/member_confirm.php?url=<?php echo G5_BBS_URL; ?>/register_form.php" data-i18n="common.profile_edit">정보수정</a>
+                <a href="<?php echo G5_BBS_URL; ?>/logout.php" data-i18n="button.logout">로그아웃</a>
                 <?php if ($is_admin) { ?>
-                <a href="<?php echo correct_goto_url(G5_ADMIN_URL); ?>">관리자</a>
+                <a href="<?php echo correct_goto_url(G5_ADMIN_URL); ?>" data-i18n="common.admin">관리자</a>
                 <?php } ?>
                 <?php } else { ?>
-                <a href="<?php echo G5_BBS_URL; ?>/register.php">회원가입</a>
-                <a href="<?php echo G5_BBS_URL; ?>/login.php">로그인</a>
+                <a href="<?php echo G5_BBS_URL; ?>/register.php" data-i18n="button.register">회원가입</a>
+                <a href="<?php echo G5_BBS_URL; ?>/login.php" data-i18n="button.login">로그인</a>
                 <?php } ?>
             </div>
-            <a href="<?php echo $g5_inquiry_url; ?>" class="btn btn-primary site-header__mobile-cta"><?php echo get_text($g5_consult_label); ?></a>
+            <a href="<?php echo $g5_inquiry_url; ?>" class="btn btn-primary site-header__mobile-cta"<?php echo function_exists('eottae_i18n_text_attrs') ? eottae_i18n_text_attrs($g5_consult_label) : ''; ?>><?php echo get_text($g5_consult_label); ?></a>
         </div>
         <div class="site-header__overlay" aria-hidden="true"></div>
     </header>
@@ -305,7 +307,7 @@ function fsearchbox_submit(f)
 {
     var stx = f.stx.value.trim();
     if (stx.length < 2) {
-        alert("검색어는 두글자 이상 입력하십시오.");
+        alert(window.EottaeI18N ? window.EottaeI18N.t('common.search_min_alert') || "검색어는 두글자 이상 입력하십시오." : "검색어는 두글자 이상 입력하십시오.");
         f.stx.select();
         f.stx.focus();
         return false;
@@ -315,7 +317,7 @@ function fsearchbox_submit(f)
         if (stx.charAt(i) == ' ') cnt++;
     }
     if (cnt > 1) {
-        alert("빠른 검색을 위하여 검색어에 공백은 한개만 입력할 수 있습니다.");
+        alert(window.EottaeI18N ? window.EottaeI18N.t('common.search_space_alert') || "빠른 검색을 위하여 검색어에 공백은 한개만 입력할 수 있습니다." : "빠른 검색을 위하여 검색어에 공백은 한개만 입력할 수 있습니다.");
         f.stx.select();
         f.stx.focus();
         return false;

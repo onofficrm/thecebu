@@ -20,6 +20,7 @@ $event_display_name = $event_display_name ?? '';
 $event_benefit = $event_benefit ?? '';
 $event_period_label = $event_period_label ?? '';
 $event_shop = $event_shop ?? null;
+$post_language = function_exists('eottae_lang_normalize') ? eottae_lang_normalize($post_language ?? ($item['language'] ?? 'ko')) : 'ko';
 
 $card_class = 'event-post';
 if ($event_status === 'ended') {
@@ -39,6 +40,7 @@ if (is_array($event_shop) && function_exists('eottae_event_shop_list_thumb_html'
         <div class="event-post__main">
     <a href="<?php echo $item['href']; ?>" class="event-post__link">
         <div class="event-post__head">
+            <?php echo function_exists('eottae_lang_badge_html') ? eottae_lang_badge_html($post_language, 'event-post__lang-badge') : ''; ?>
             <?php echo eottae_event_render_status_badge($event_status); ?>
             <?php echo eottae_event_render_type_badge($event_type); ?>
         </div>

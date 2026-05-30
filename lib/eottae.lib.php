@@ -361,6 +361,7 @@ if (!function_exists('eottae_shop_from_write')) {
             'website'       => isset($wr['wr_link1']) ? get_text($wr['wr_link1']) : '',
             'youtube'       => eottae_shop_sns_value($sns_raw, 'youtube'),
             'sns'           => $sns_raw,
+            'available_languages' => function_exists('eottae_shop_available_languages_from_row') ? eottae_shop_available_languages_from_row($wr) : array('ko'),
             'content'       => isset($wr['wr_content']) ? $wr['wr_content'] : '',
             'wr_id'         => isset($wr['wr_id']) ? (int) $wr['wr_id'] : 0,
             'bo_table'      => $bo_table !== '' ? preg_replace('/[^a-z0-9_]/', '', (string) $bo_table) : '',
@@ -4484,6 +4485,7 @@ if (!function_exists('eottae_shop_list_filters_from_request')) {
             'stx'        => $stx,
             'sst'        => isset($_GET['sst']) ? trim((string) $_GET['sst']) : '',
             'sod'        => isset($_GET['sod']) ? trim((string) $_GET['sod']) : '',
+            'lang'       => function_exists('eottae_lang_from_request') ? eottae_lang_from_request('lang') : '',
             'eottae_lat' => isset($_GET['eottae_lat']) ? trim((string) $_GET['eottae_lat']) : '',
             'eottae_lng' => isset($_GET['eottae_lng']) ? trim((string) $_GET['eottae_lng']) : '',
         );
@@ -4543,6 +4545,12 @@ if (!function_exists('eottae_shop_list_where_parts')) {
             } elseif (in_array($sfl, array('wr_subject', 'wr_content', 'wr_1', 'wr_2', 'wr_3'), true)) {
                 $where[] = "{$sfl} like '%{$stx_sql}%'";
             }
+        }
+
+        $lang = isset($args['lang']) ? trim((string) $args['lang']) : '';
+        if ($lang !== '' && function_exists('eottae_lang_supported') && isset(eottae_lang_supported()[$lang])) {
+            $lang_sql = sql_escape_string($lang);
+            $where[] = "available_languages like '%\"{$lang_sql}\"%'";
         }
 
         return $where;

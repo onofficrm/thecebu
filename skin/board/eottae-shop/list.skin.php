@@ -9,6 +9,7 @@ $quick_categories = eottae_shop_quick_categories($board);
 $sort_links = eottae_shop_sort_links(isset($sst) ? $sst : '');
 $list_base = eottae_shop_build_list_url($bo_table);
 $current_keyword = ($sfl === 'wr_subject||wr_content' && !empty($stx)) ? get_text(stripslashes($stx)) : '';
+$current_lang = function_exists('eottae_lang_from_request') ? eottae_lang_from_request('lang') : '';
 $eottae_user_coords = eottae_shop_user_coords_from_request();
 if (empty($eottae_shop_list_ready)) {
     $eottae_list_filters = eottae_shop_list_filters_from_request();
@@ -70,6 +71,7 @@ function eottae_shop_build_list_url($bo_table, $params = array())
                 <option value="<?php echo get_text($cat['slug']); ?>"<?php echo ($sca === $cat['slug']) ? ' selected' : ''; ?>><?php echo get_text($cat['label']); ?></option>
                 <?php } ?>
             </select>
+            <?php if ($current_lang !== '') { ?><input type="hidden" name="lang" value="<?php echo $current_lang; ?>"><?php } ?>
             <label class="sound_only" for="shop_search_keyword">검색어</label>
             <input type="search" id="shop_search_keyword" name="stx" value="<?php echo $current_keyword; ?>" class="shop-near-search__input" placeholder="업체명, 키워드 검색">
             <button type="submit" class="shop-near-search__submit">검색</button>
@@ -91,6 +93,28 @@ function eottae_shop_build_list_url($bo_table, $params = array())
             </div>
         </div>
 
+        <div class="shop-near-filters__group">
+            <p class="shop-near-filters__label">사용 가능 언어</p>
+            <div class="shop-near-pills eottae-lang-filter">
+                <?php
+                $lang_base_params = array();
+                if ($sca) {
+                    $lang_base_params['sca'] = $sca;
+                }
+                if ($current_keyword !== '') {
+                    $lang_base_params['sfl'] = 'wr_subject||wr_content';
+                    $lang_base_params['stx'] = $current_keyword;
+                }
+                ?>
+                <a href="<?php echo eottae_shop_build_list_url($bo_table, $lang_base_params); ?>" class="shop-near-pill<?php echo $current_lang === '' ? ' is-active' : ''; ?>">전체</a>
+                <?php foreach (eottae_lang_supported() as $lang_code => $lang_meta) {
+                    $params = array_merge($lang_base_params, array('lang' => $lang_code));
+                    ?>
+                <a href="<?php echo eottae_shop_build_list_url($bo_table, $params); ?>" class="shop-near-pill<?php echo $current_lang === $lang_code ? ' is-active' : ''; ?>"><?php echo get_text($lang_meta['shop_filter']); ?></a>
+                <?php } ?>
+            </div>
+        </div>
+
         <nav class="shop-near-sort" aria-label="정렬">
             <?php foreach ($sort_links as $link) {
                 if (!empty($link['disabled']) && $link['sst'] !== 'near') {
@@ -106,6 +130,9 @@ function eottae_shop_build_list_url($bo_table, $params = array())
                 if ($current_keyword !== '') {
                     $params['sfl'] = 'wr_subject||wr_content';
                     $params['stx'] = $current_keyword;
+                }
+                if ($current_lang !== '') {
+                    $params['lang'] = $current_lang;
                 }
                 $params = eottae_shop_append_coords_query($params);
                 $href = eottae_shop_build_list_url($bo_table, $params);

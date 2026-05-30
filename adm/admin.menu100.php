@@ -21,4 +21,5 @@ if (version_compare(phpversion(), '5.3.0', '>=') && defined('G5_BROWSCAP_USE') &
 }
 
 $menu['menu100'][] = array('100410', 'DB업그레이드', G5_ADMIN_URL . '/dbupgrade.php', 'db_upgrade');
+$menu['menu100'][] = array('100950', '번역 캐시 관리', G5_ADMIN_URL . '/eottae_translation_cache.php', 'eottae_translation_cache');
 $menu['menu100'][] = array('100400', '부가서비스', G5_ADMIN_URL . '/service.php', 'cf_service');

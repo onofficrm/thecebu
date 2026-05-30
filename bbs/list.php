@@ -46,6 +46,9 @@ if ($sca || $stx || $stx === '0') {     //검색이면
     if (function_exists('eottae_report_list_segment_sql')) {
         $sql_search .= eottae_report_list_segment_sql();
     }
+        if (function_exists('eottae_lang_post_list_segment_sql')) {
+            $sql_search .= eottae_lang_post_list_segment_sql();
+        }
 
     // 가장 작은 번호를 얻어서 변수에 저장 (하단의 페이징에서 사용)
     $sql = " select MIN(wr_num) as min_wr_num from {$write_table} ";
@@ -249,6 +252,9 @@ if ($page_rows > 0) {
         }
         if (function_exists('eottae_report_list_segment_sql')) {
             $sql .= trim(eottae_report_list_segment_sql());
+        }
+        if (function_exists('eottae_lang_post_list_segment_sql')) {
+            $sql .= trim(eottae_lang_post_list_segment_sql());
         }
         if(!empty($notice_array))
             $sql .= " and wr_id not in (".implode(', ', $notice_array).") ";

@@ -16,6 +16,35 @@
       .replace(/"/g, '&quot;');
   }
 
+  function i18nKeyForText(text) {
+    if (global.EottaeI18N && typeof global.EottaeI18N.keyForText === 'function') {
+      return global.EottaeI18N.keyForText(text);
+    }
+
+    return '';
+  }
+
+  function i18nAttrForText(text) {
+    var key = i18nKeyForText(text);
+    return key ? ' data-i18n="' + esc(key) + '"' : '';
+  }
+
+  function renderLanguageSelect(extraClass) {
+    return ''
+      + '<div class="eottae-language ' + esc(extraClass || '') + '" data-eottae-language="1">'
+      + '<label class="eottae-language__label">'
+      + '<span class="eottae-language__icon" aria-hidden="true">🌐</span>'
+      + '<span class="sound_only" data-i18n="language.select_label">언어 선택</span>'
+      + '<select class="eottae-language__select" data-eottae-language-select="1" aria-label="언어 선택" data-i18n-aria-label="language.select_label">'
+      + '<option value="ko" data-i18n="language.ko">한국어</option>'
+      + '<option value="en" data-i18n="language.en">English</option>'
+      + '<option value="ja" data-i18n="language.ja">日本語</option>'
+      + '<option value="zh" data-i18n="language.zh">中文</option>'
+      + '</select>'
+      + '</label>'
+      + '</div>';
+  }
+
   function findHeaderActionsRow(header) {
     var shopWrite = findShopWriteLink(header);
     if (shopWrite && shopWrite.parentNode) {
@@ -56,7 +85,7 @@
         html += ''
           + '<details class="eottae-gnb-header__mobile-group">'
           + '<summary class="eottae-gnb-header__mobile-link eottae-gnb-header__mobile-summary">'
-          + '<span>' + esc(item.label) + '</span>'
+          + '<span' + i18nAttrForText(item.label) + '>' + esc(item.label) + '</span>'
           + '</summary>'
           + '<div class="eottae-gnb-header__mobile-children">';
         for (j = 0; j < item.children.length; j += 1) {
@@ -66,14 +95,14 @@
           }
           html += ''
             + '<a href="' + esc(child.href || '#') + '" class="eottae-gnb-header__mobile-child-link">'
-            + esc(child.label)
+            + '<span' + i18nAttrForText(child.label) + '>' + esc(child.label) + '</span>'
             + '</a>';
         }
         html += '</div></details>';
       } else {
         html += ''
           + '<a href="' + esc(item.href || '#') + '" class="eottae-gnb-header__mobile-link">'
-          + esc(item.label)
+          + '<span' + i18nAttrForText(item.label) + '>' + esc(item.label) + '</span>'
           + '</a>';
       }
     }
@@ -87,22 +116,23 @@
 
     if (data.is_member) {
       authHtml = ''
-        + '<a href="' + esc(data.mypage_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost">MY</a>'
-        + '<a href="' + esc(data.logout_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost">로그아웃</a>';
+        + '<a href="' + esc(data.mypage_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost" data-i18n="menu.my">MY</a>'
+        + '<a href="' + esc(data.logout_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost" data-i18n="button.logout">로그아웃</a>';
     } else {
       authHtml = ''
-        + '<a href="' + esc(data.login_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost">로그인</a>'
-        + '<a href="' + esc(data.register_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost">회원가입</a>';
+        + '<a href="' + esc(data.login_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost" data-i18n="button.login">로그인</a>'
+        + '<a href="' + esc(data.register_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--ghost" data-i18n="button.register">회원가입</a>';
     }
 
     return ''
       + '<div id="siteMobileNav" class="eottae-home-mobile-nav site-header__mobile-nav eottae-gnb-header__mobile" data-eottae-home-mobile-nav="1" aria-hidden="true">'
       + '<div class="eottae-home-mobile-nav__head">'
-      + '<strong class="eottae-home-mobile-nav__title">' + esc(data.title || '전체메뉴') + '</strong>'
-      + '<button type="button" class="site-header__mobile-close eottae-home-mobile-nav__close" aria-label="메뉴 닫기">'
+      + '<strong class="eottae-home-mobile-nav__title" data-i18n="common.all_menu">' + esc(data.title || '전체메뉴') + '</strong>'
+      + '<button type="button" class="site-header__mobile-close eottae-home-mobile-nav__close" aria-label="메뉴 닫기" data-i18n-aria-label="common.close_menu">'
       + '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
       + '</button>'
       + '</div>'
+      + renderLanguageSelect('eottae-language--mobile')
       + '<nav class="eottae-gnb-header__mobile-nav" aria-label="전체메뉴">'
       + renderMobileMenuItems(data.items || [])
       + '</nav>'
@@ -118,12 +148,12 @@
 
     if (menu.is_member) {
       authHtml = ''
-        + '<a href="' + esc(menu.mypage_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop">MY</a>'
-        + '<a href="' + esc(menu.logout_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop">로그아웃</a>';
+        + '<a href="' + esc(menu.mypage_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="menu.my">MY</a>'
+        + '<a href="' + esc(menu.logout_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="button.logout">로그아웃</a>';
     } else {
       authHtml = ''
-        + '<a href="' + esc(menu.login_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop">로그인</a>'
-        + '<a href="' + esc(menu.register_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop">회원가입</a>';
+        + '<a href="' + esc(menu.login_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="button.login">로그인</a>'
+        + '<a href="' + esc(menu.register_url || '#') + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--text eottae-gnb-header__btn--desktop" data-i18n="button.register">회원가입</a>';
     }
 
     return ''
@@ -144,8 +174,9 @@
       + authHtml
       + (data && data.talk_url ? '<a href="' + esc(data.talk_url) + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--talk eottae-gnb-header__btn--desktop" data-eottae-home-talk-btn="1">' + esc(data.talk_label || '세부톡') + '</a>' : '')
       + (data && data.calendar_url ? '<a href="' + esc(data.calendar_url) + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--calendar eottae-gnb-header__btn--desktop" data-eottae-home-calendar-btn="1">' + esc(data.calendar_label || '세부일정') + '</a>' : '')
-      + (menu.shop_write_url ? '<a href="' + esc(menu.shop_write_url) + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--register eottae-gnb-header__btn--desktop">업소등록</a>' : '')
-      + '<button type="button" class="eottae-gnb-header__icon-btn eottae-gnb-header__menu-btn site-header__menu-btn" data-eottae-home-menu-btn="1" aria-controls="siteMobileNav" aria-expanded="false" aria-label="메뉴 열기">'
+      + (menu.shop_write_url ? '<a href="' + esc(menu.shop_write_url) + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--register eottae-gnb-header__btn--desktop" data-i18n="button.shop_register">업소등록</a>' : '')
+      + renderLanguageSelect('eottae-language--desktop')
+      + '<button type="button" class="eottae-gnb-header__icon-btn eottae-gnb-header__menu-btn site-header__menu-btn" data-eottae-home-menu-btn="1" aria-controls="siteMobileNav" aria-expanded="false" aria-label="메뉴 열기" data-i18n-aria-label="common.open_menu">'
       + '<svg class="eottae-gnb-header__icon eottae-gnb-header__icon--menu" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>'
       + '</button>'
       + '</div>'
@@ -176,7 +207,7 @@
         + '<div class="eottae-gnb-header__mega-col"'
         + (item.key ? ' data-mega-key="' + esc(item.key) + '"' : '')
         + '>'
-        + '<a href="' + esc(item.href || '#') + '" class="eottae-gnb-header__mega-col-title">'
+        + '<a href="' + esc(item.href || '#') + '" class="eottae-gnb-header__mega-col-title"' + i18nAttrForText(item.label || '') + '>'
         + esc(item.label || '')
         + '</a>'
         + '<ul class="eottae-gnb-header__mega-list">';
@@ -187,7 +218,7 @@
           continue;
         }
         cols += ''
-          + '<li><a href="' + esc(child.href || '#') + '" class="eottae-gnb-header__mega-link">'
+          + '<li><a href="' + esc(child.href || '#') + '" class="eottae-gnb-header__mega-link"' + i18nAttrForText(child.label) + '>'
           + esc(child.label)
           + '</a></li>';
       }
@@ -275,6 +306,9 @@
 
     header.classList.add('eottae-gnb-header');
     header.setAttribute('data-eottae-home-gnb-injected', '1');
+    if (global.EottaeI18N && typeof global.EottaeI18N.apply === 'function') {
+      global.EottaeI18N.apply();
+    }
     return true;
   }
 
@@ -428,6 +462,7 @@
         + (hasChildren ? ' eottae-gnb-header__nav-link--parent' : '')
         + '"'
         + (item.key ? ' data-mega-key="' + esc(item.key) + '"' : '')
+        + i18nAttrForText(item.label)
         + (hasChildren ? ' aria-haspopup="true"' : '')
         + '>'
         + esc(item.label);
@@ -562,7 +597,7 @@
 
     document.querySelectorAll('[data-eottae-home-menu-btn="1"]').forEach(function (btn) {
       btn.setAttribute('aria-expanded', on ? 'true' : 'false');
-      btn.setAttribute('aria-label', on ? '메뉴 닫기' : '메뉴 열기');
+      btn.setAttribute('aria-label', global.EottaeI18N ? global.EottaeI18N.t(on ? 'common.close_menu' : 'common.open_menu') || (on ? '메뉴 닫기' : '메뉴 열기') : (on ? '메뉴 닫기' : '메뉴 열기'));
     });
   }
 
@@ -671,6 +706,7 @@
       openBtn.setAttribute('aria-controls', 'siteMobileNav');
       openBtn.setAttribute('aria-expanded', 'false');
       openBtn.setAttribute('aria-label', '메뉴 열기');
+      openBtn.setAttribute('data-i18n-aria-label', 'common.open_menu');
       openBtn.innerHTML = ''
         + '<svg class="eottae-gnb-header__icon eottae-gnb-header__icon--menu" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">'
         + '<path d="M4 6h16M4 12h16M4 18h16"/>'
@@ -702,6 +738,9 @@
     }
 
     ensureHomeMobileMenuControls();
+    if (global.EottaeI18N && typeof global.EottaeI18N.apply === 'function') {
+      global.EottaeI18N.apply();
+    }
   }
 
   function isShopWriteLabel(text) {

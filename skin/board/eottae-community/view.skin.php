@@ -202,7 +202,13 @@ if ($is_ai_post) {
         </div>
         <?php } ?>
 
-        <h1 class="community-view-page__title<?php echo $is_ai_post ? ' talk-ai-msg__title' : ''; ?>"><?php echo get_text($view['wr_subject']); ?></h1>
+        <h1 class="community-view-page__title<?php echo $is_ai_post ? ' talk-ai-msg__title' : ''; ?>" data-translation-title><?php echo get_text($view['wr_subject']); ?></h1>
+
+        <?php
+        if (function_exists('eottae_post_translation_panel_html')) {
+            echo eottae_post_translation_panel_html($bo_table, $view, 'ko');
+        }
+        ?>
 
         <?php if ($is_report_board_view) { ?>
         <div class="report-info-panel">
@@ -516,7 +522,7 @@ if ($is_ai_post) {
         );
         $hide_plain_body = $job_hide_plain_body || $estate_hide_plain_body || $event_hide_plain_body;
         ?>
-        <section class="community-view-page__body talk-ai-msg__body<?php echo $is_ai_post ? ' talk-ai-msg__body--ai' : ''; ?><?php echo $hide_plain_body ? ' community-view-page__body--template' : ''; ?><?php echo $is_icrm_view_body ? ' community-view-page__body--icrm' : ''; ?>" id="bo_v_con"<?php echo $hide_plain_body ? ' hidden' : ''; ?>>
+        <section class="community-view-page__body talk-ai-msg__body<?php echo $is_ai_post ? ' talk-ai-msg__body--ai' : ''; ?><?php echo $hide_plain_body ? ' community-view-page__body--template' : ''; ?><?php echo $is_icrm_view_body ? ' community-view-page__body--icrm' : ''; ?>" id="bo_v_con" data-translation-content<?php echo $hide_plain_body ? ' hidden' : ''; ?>>
             <?php echo get_view_thumbnail($view['content']); ?>
         </section>
     </article>

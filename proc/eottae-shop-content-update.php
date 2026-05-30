@@ -16,6 +16,7 @@ if (!defined('_GNUBOARD_')) {
 
 include_once G5_LIB_PATH.'/eottae.lib.php';
 include_once G5_LIB_PATH.'/eottae-shop-owner.lib.php';
+include_once G5_LIB_PATH.'/eottae-translation.lib.php';
 
 function eottae_shop_content_update_json($success, $message, $extra = array())
 {
@@ -95,6 +96,10 @@ sql_query(" update {$write_table}
         wr_option = '{$wr_option_sql}',
         wr_last = '".G5_TIME_YMDHIS."'
     where wr_id = '{$wr_id}' ");
+
+if (function_exists('eottae_translation_cache_delete')) {
+    eottae_translation_cache_delete($bo_table, $wr_id);
+}
 
 $next_token = function_exists('eottae_shop_content_token')
     ? eottae_shop_content_token(true)

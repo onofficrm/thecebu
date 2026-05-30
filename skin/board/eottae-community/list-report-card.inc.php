@@ -11,6 +11,7 @@ if (!function_exists('eottae_report_list_card_data')) {
 }
 
 $card = eottae_report_list_card_data($item, $item_bo_table ?? '');
+$post_language = function_exists('eottae_lang_normalize') ? eottae_lang_normalize($post_language ?? ($item['language'] ?? 'ko')) : 'ko';
 $card_class = 'report-card';
 if ($card['status'] === 'rejected') {
     $card_class .= ' report-card--rejected';
@@ -19,6 +20,7 @@ if ($card['status'] === 'rejected') {
 <article class="<?php echo $card_class; ?>">
     <a href="<?php echo $card['href']; ?>" class="report-card__link">
         <div class="report-card__head">
+            <?php echo function_exists('eottae_lang_badge_html') ? eottae_lang_badge_html($post_language, 'report-card__lang-badge') : ''; ?>
             <?php echo eottae_report_render_status_badge($card['status']); ?>
             <?php echo eottae_report_render_type_badge($card['type']); ?>
         </div>

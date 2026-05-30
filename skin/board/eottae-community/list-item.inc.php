@@ -21,6 +21,7 @@ if (!defined('_GNUBOARD_')) {
  * @var int    $hit_num
  * @var int    $good_num
  * @var int    $comment_num
+ * @var string $post_language
  * @var string $estate_deal_label
  * @var string $estate_thumb_html
  * @var string $estate_deal_status
@@ -38,10 +39,11 @@ $job_thumb_html = $job_thumb_html ?? '';
 $job_recruit_status = $job_recruit_status ?? '';
 $job_badge_label = $job_badge_label ?? '';
 $job_shop = isset($job_shop) && is_array($job_shop) ? $job_shop : null;
+$post_language = function_exists('eottae_lang_normalize') ? eottae_lang_normalize($post_language ?? 'ko') : 'ko';
 $status_thumb_html = $estate_thumb_html !== '' ? $estate_thumb_html : $job_thumb_html;
 $badge_category = $job_badge_label !== '' ? $job_badge_label : $ca_name;
 $show_job_recruit_badge = $job_recruit_label !== '' && $job_thumb_html === '';
-$has_badges = $is_ai_post || $is_notice || $badge_category !== '' || $region !== '' || $is_new || $is_hot
+$has_badges = $is_ai_post || $is_notice || $post_language !== '' || $badge_category !== '' || $region !== '' || $is_new || $is_hot
     || $estate_deal_label !== '' || $show_job_recruit_badge;
 ?>
 <article class="<?php echo $item_class; ?>">
@@ -65,6 +67,9 @@ $has_badges = $is_ai_post || $is_notice || $badge_category !== '' || $region !==
                             <?php if ($is_notice) { ?>
                             <span class="community-badge community-badge--notice"><span aria-hidden="true">📣</span> 공지</span>
                             <?php } else { ?>
+                                <?php if ($post_language !== '') { ?>
+                            <?php echo eottae_lang_badge_html($post_language, 'community-badge community-badge--language'); ?>
+                                <?php } ?>
                                 <?php if ($badge_category !== '') { ?>
                             <span class="community-badge <?php echo eottae_community_badge_class($badge_category); ?>"><?php echo $badge_category; ?></span>
                                 <?php } ?>

@@ -1,3 +1,55 @@
+.eottae-language-checks,
+.eottae-lang-badges,
+.eottae-lang-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.eottae-field__label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.eottae-lang-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 22px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #4338ca;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.eottae-lang-badge--short {
+    min-width: 30px;
+    padding-inline: 7px;
+}
+
+.shop-list-card__lang-badges,
+.shop-card__lang-badges {
+    display: inline-flex;
+    margin-top: 4px;
+}
+
+@media (max-width: 640px) {
+    .eottae-language-checks,
+    .eottae-lang-filter {
+        gap: 5px;
+    }
+
+    .eottae-lang-badge {
+        min-height: 20px;
+        padding: 2px 7px;
+        font-size: 11px;
+    }
+}
 @import url('../../css/eottae.css');
 
 .board-wrap--eottae-shop .board-cate ul {

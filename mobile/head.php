@@ -62,6 +62,7 @@ if (function_exists('eottae_use_site_chrome') && eottae_use_site_chrome() && fun
         <div id="logo">
             <a href="<?php echo G5_URL ?>"><img src="<?php echo $g5_mobile_logo_url; ?>" alt="<?php echo $config['cf_title']; ?>"></a>
         </div>
+        <?php echo function_exists('eottae_i18n_language_select_html') ? eottae_i18n_language_select_html('eottae-language--mobile-header') : ''; ?>
 
         <button type="button" id="gnb_open" class="hd_opener"><i class="fa fa-bars" aria-hidden="true"></i><span class="sound_only"> 메뉴열기</span></button>
 
@@ -76,7 +77,7 @@ if (function_exists('eottae_use_site_chrome') && eottae_use_site_chrome() && fun
 				if( empty($row) ) continue;
             ?>
                 <li class="gnb_1dli">
-                    <a href="<?php echo $row['me_link']; ?>" target="_<?php echo $row['me_target']; ?>" class="gnb_1da"><?php echo $row['me_name'] ?></a>
+                    <a href="<?php echo $row['me_link']; ?>" target="_<?php echo $row['me_target']; ?>" class="gnb_1da"<?php echo function_exists('eottae_i18n_text_attrs') ? eottae_i18n_text_attrs($row['me_name']) : ''; ?>><?php echo $row['me_name'] ?></a>
                     <?php
                     $k = 0;
                     foreach( (array) $row['sub'] as $row2 ){
@@ -84,7 +85,7 @@ if (function_exists('eottae_use_site_chrome') && eottae_use_site_chrome() && fun
                         if($k == 0)
                             echo '<button type="button" class="btn_gnb_op"><span class="sound_only">하위분류</span></button><ul class="gnb_2dul">'.PHP_EOL;
                     ?>
-                        <li class="gnb_2dli"><a href="<?php echo $row2['me_link']; ?>" target="_<?php echo $row2['me_target']; ?>" class="gnb_2da"><span></span><?php echo $row2['me_name'] ?></a></li>
+                        <li class="gnb_2dli"><a href="<?php echo $row2['me_link']; ?>" target="_<?php echo $row2['me_target']; ?>" class="gnb_2da"<?php echo function_exists('eottae_i18n_text_attrs') ? eottae_i18n_text_attrs($row2['me_name']) : ''; ?>><span></span><?php echo $row2['me_name'] ?></a></li>
                     <?php
 					$k++;
                     }	//end foreach $row2
@@ -101,7 +102,7 @@ if (function_exists('eottae_use_site_chrome') && eottae_use_site_chrome() && fun
                 <li id="gnb_empty">메뉴 준비 중입니다.<?php if ($is_admin) { ?> <br><a href="<?php echo G5_ADMIN_URL; ?>/menu_list.php">관리자모드 &gt; 환경설정 &gt; 메뉴설정</a>에서 설정하세요.<?php } ?></li>
             <?php } ?>
             <?php if (defined('G5_USE_SHOP') && G5_USE_SHOP) { ?>
-                <li class="gnb_1dli"><a href="<?php echo G5_SHOP_URL ?>" class="gnb_1da"> 쇼핑몰</a></li>
+                <li class="gnb_1dli"><a href="<?php echo G5_SHOP_URL ?>" class="gnb_1da" data-i18n="common.shopping_mall"> 쇼핑몰</a></li>
             <?php } ?>
             </ul>
             <ul id="hd_nb">

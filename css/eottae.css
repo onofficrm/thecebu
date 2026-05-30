@@ -931,6 +931,64 @@ img[data-eottae-logo] {
   border-top: 1px solid #f1f5f9;
 }
 
+.eottae-language {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.eottae-language__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.eottae-language__icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.eottae-language__select {
+  min-width: 112px;
+  height: 34px;
+  padding: 0 28px 0 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.eottae-language--mobile,
+.eottae-language--mobile-header {
+  width: 100%;
+  padding: 0 0 10px;
+}
+
+.eottae-language--mobile .eottae-language__label,
+.eottae-language--mobile-header .eottae-language__label {
+  width: 100%;
+}
+
+.eottae-language--mobile .eottae-language__select,
+.eottae-language--mobile-header .eottae-language__select {
+  width: 100%;
+  min-width: 0;
+}
+
+.eottae-language--mobile-header {
+  width: auto;
+  padding: 0;
+}
+
+.eottae-language--mobile-header .eottae-language__select {
+  width: auto;
+  max-width: 120px;
+}
+
 .eottae-home-mobile-overlay {
   position: fixed !important;
   inset: 0 !important;

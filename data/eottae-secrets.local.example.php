@@ -25,6 +25,20 @@ $eottae_secrets_override = array(
     'ai_generate_model'         => 'gpt-4o-mini',
     'ai_generate_image_model'   => 'gpt-image-1',
 
+    /*
+     * 게시글 자동 번역 (선택)
+     * 환경변수로도 설정 가능:
+     * TRANSLATION_PROVIDER=openai
+     * OPENAI_API_KEY=
+     * GOOGLE_TRANSLATE_API_KEY=
+     * DEEPL_API_KEY=
+     */
+    'translation_provider'      => 'openai',
+    'openai_api_key'            => '',
+    'translation_openai_model'  => 'gpt-4o-mini',
+    'google_translate_api_key'  => '',
+    'deepl_api_key'             => '',
+
     /* 공개단톡 AI — 내부 데이터에 답이 없을 때 외부 웹검색 보강(선택, SerpAPI) */
     'life_qa_serpapi_key'       => '',
 

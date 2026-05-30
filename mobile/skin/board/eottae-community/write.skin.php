@@ -70,6 +70,7 @@ if ($w !== 'u' && !empty($is_member) && function_exists('eottae_is_business_memb
 
 <?php
 $file_count = eottae_community_write_photo_count($board, $file_count);
+$post_language = function_exists('eottae_lang_post_default') ? eottae_lang_post_default($write ?? array()) : 'ko';
 ?>
 
 <div class="community-write-page board-wrap board-wrap--eottae-community" id="bo_w" style="width:<?php echo $width; ?>">
@@ -139,6 +140,13 @@ $file_count = eottae_community_write_photo_count($board, $file_count);
 
     <?php include G5_PATH.'/components/eottae/business-write-snippets.php'; ?>
 
+    <div class="community-write-page__field">
+        <label for="language">작성 언어</label>
+        <select name="language" id="language" class="community-write-page__select" data-post-language-select>
+            <?php echo function_exists('eottae_lang_options_html') ? eottae_lang_options_html($post_language) : ''; ?>
+        </select>
+    </div>
+
     <?php if ($is_event_board_write) {
         include G5_PATH.'/components/eottae/event-write-template.php';
     } elseif ($is_report_board_write) {
@@ -204,6 +212,17 @@ $file_count = eottae_community_write_photo_count($board, $file_count);
 </div>
 
 <script>
+(function () {
+    var select = document.querySelector('[data-post-language-select]');
+    if (!select || <?php echo $w === 'u' ? 'true' : 'false'; ?>) return;
+    try {
+        var lang = localStorage.getItem('cebuatteLanguage');
+        if (lang && /^(ko|en|ja|zh)$/.test(lang)) {
+            select.value = lang;
+        }
+    } catch (e) {}
+})();
+
 function fwrite_submit(f) {
     <?php echo $editor_js; ?>
 

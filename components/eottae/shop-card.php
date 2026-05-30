@@ -28,6 +28,9 @@ if (!function_exists('eottae_shop_card_html')) {
             : G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$shop['wr_id'];
         $status_class = $shop['status'] === '영업중' ? ' shop-card--open' : '';
         $event_badges = eottae_shop_card_event_badges_html($row, $bo_table);
+        $language_badges = function_exists('eottae_lang_short_badges_html')
+            ? eottae_lang_short_badges_html($shop['available_languages'], 'shop-card__lang-badges')
+            : '';
 
         ob_start();
         ?>
@@ -47,6 +50,7 @@ if (!function_exists('eottae_shop_card_html')) {
                 <div class="shop-card__body">
                     <?php if ($shop['category']) { ?><span class="shop-card__cate"><?php echo $shop['category']; ?></span><?php } ?>
                     <h3 class="shop-card__title"><?php echo $shop['name'] ?: get_text($row['subject']); ?></h3>
+                    <?php echo $language_badges; ?>
                     <?php if ($shop['region']) { ?><p class="shop-card__region"><?php echo $shop['region']; ?></p><?php } ?>
                     <?php if ($shop['address']) { ?><p class="shop-card__addr"><?php echo $shop['address']; ?></p><?php } ?>
                 </div>
@@ -187,6 +191,9 @@ if (!function_exists('eottae_shop_list_card_html')) {
         $status_label = trim((string) $shop['status']);
         $status_open = $status_label === '영업중';
         $event_badges = eottae_shop_card_event_badges_html($row, $bo_table);
+        $language_badges = function_exists('eottae_lang_short_badges_html')
+            ? eottae_lang_short_badges_html($shop['available_languages'], 'shop-list-card__lang-badges')
+            : '';
 
         ob_start();
         ?>
@@ -227,6 +234,7 @@ if (!function_exists('eottae_shop_list_card_html')) {
                             <span class="shop-list-card__tag shop-list-card__tag--status<?php echo $status_open ? ' shop-list-card__tag--status-open' : ''; ?>"><?php echo $status_label; ?></span>
                             <?php } ?>
                             <?php if ($shop['category']) { ?><span class="shop-list-card__tag shop-list-card__tag--cate"><?php echo $shop['category']; ?></span><?php } ?>
+                            <?php echo $language_badges; ?>
                         </div>
                     </div>
                 </div>

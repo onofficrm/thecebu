@@ -34,6 +34,9 @@ if (!in_array($ca_value, $board_categories, true)) {
 }
 $category_options = eottae_shop_quick_categories($board);
 $shop_region_label = $v['wr_2'] !== '' ? get_text($v['wr_2']) : '';
+$shop_available_languages = function_exists('eottae_shop_available_languages')
+    ? eottae_shop_available_languages_from_row($write)
+    : array('ko');
 $business_hour_options = array(
     '09:00 - 18:00',
     '09:00 - 20:00',
@@ -142,6 +145,17 @@ $eottae_ai_hint = $eottae_ai_enabled
             </select>
         </div>
         <?php include G5_PATH.'/components/eottae/shop-owner-assign.php'; ?>
+        <div class="eottae-field">
+            <span class="eottae-field__label">사용 가능 언어</span>
+            <div class="eottae-language-checks">
+                <?php foreach (eottae_lang_supported() as $lang_code => $lang_meta) { ?>
+                <label class="shop-register-page__check">
+                    <input type="checkbox" name="available_languages[]" value="<?php echo $lang_code; ?>"<?php echo in_array($lang_code, $shop_available_languages, true) ? ' checked' : ''; ?>>
+                    <span><?php echo get_text($lang_meta['label']); ?> 가능</span>
+                </label>
+                <?php } ?>
+            </div>
+        </div>
         <div class="eottae-field eottae-field--editor">
             <?php
             $eottae_editor_label = '업체 소개';

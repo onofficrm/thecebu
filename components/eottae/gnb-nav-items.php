@@ -78,6 +78,7 @@ if (!function_exists('eottae_gnb_render_desktop_nav_primary')) {
             <a
                 href="<?php echo $href; ?>"
                 class="<?php echo $link_class; ?>"
+                <?php echo function_exists('eottae_i18n_text_attrs') ? eottae_i18n_text_attrs($label) : ''; ?>
                 <?php echo $key !== '' ? ' data-mega-key="'.get_text($key).'"' : ''; ?>
                 <?php echo $children ? ' aria-haspopup="true"' : ''; ?>
             >
@@ -125,7 +126,7 @@ if (!function_exists('eottae_gnb_render_desktop_mega_panel')) {
                     $parent_label = eottae_gnb_nav_item_label($item['label'] ?? '');
                     ?>
                 <div class="eottae-gnb-header__mega-col"<?php echo $key !== '' ? ' data-mega-key="'.get_text($key).'"' : ''; ?>>
-                    <a href="<?php echo $parent_href; ?>" class="eottae-gnb-header__mega-col-title<?php echo $parent_active ? ' is-active' : ''; ?>">
+                    <a href="<?php echo $parent_href; ?>" class="eottae-gnb-header__mega-col-title<?php echo $parent_active ? ' is-active' : ''; ?>"<?php echo function_exists('eottae_i18n_text_attrs') ? eottae_i18n_text_attrs($parent_label) : ''; ?>>
                         <?php echo get_text($parent_label); ?>
                     </a>
                     <ul class="eottae-gnb-header__mega-list">
@@ -135,7 +136,7 @@ if (!function_exists('eottae_gnb_render_desktop_mega_panel')) {
                             $child_label = eottae_gnb_nav_item_label($child['label'] ?? '');
                             ?>
                         <li>
-                            <a href="<?php echo $child_href; ?>" class="eottae-gnb-header__mega-link<?php echo $child_active ? ' is-active' : ''; ?>">
+                            <a href="<?php echo $child_href; ?>" class="eottae-gnb-header__mega-link<?php echo $child_active ? ' is-active' : ''; ?>"<?php echo function_exists('eottae_i18n_text_attrs') ? eottae_i18n_text_attrs($child_label) : ''; ?>>
                                 <?php echo get_text($child_label); ?>
                             </a>
                         </li>
@@ -158,7 +159,7 @@ if (!function_exists('eottae_gnb_render_mobile_nav_item')) {
 
         if (!$children) {
             ?>
-            <a href="<?php echo $href; ?>" class="<?php echo $link_class; ?>">
+            <a href="<?php echo $href; ?>" class="<?php echo $link_class; ?>"<?php echo function_exists('eottae_i18n_text_attrs') ? eottae_i18n_text_attrs($label) : ''; ?>>
                 <?php echo get_text($label); ?>
             </a>
             <?php
@@ -168,7 +169,7 @@ if (!function_exists('eottae_gnb_render_mobile_nav_item')) {
         ?>
         <details class="eottae-gnb-header__mobile-group"<?php echo $active ? ' open' : ''; ?>>
             <summary class="<?php echo $link_class; ?> eottae-gnb-header__mobile-summary">
-                <span><?php echo get_text($label); ?></span>
+                <span<?php echo function_exists('eottae_i18n_text_attrs') ? eottae_i18n_text_attrs($label) : ''; ?>><?php echo get_text($label); ?></span>
             </summary>
             <div class="eottae-gnb-header__mobile-children">
                 <?php foreach ($children as $child) {
@@ -176,7 +177,7 @@ if (!function_exists('eottae_gnb_render_mobile_nav_item')) {
                     $child_href = eottae_gnb_nav_item_href($child);
                     $child_label = eottae_gnb_nav_item_label($child['label'] ?? '');
                     ?>
-                <a href="<?php echo $child_href; ?>" class="eottae-gnb-header__mobile-child-link<?php echo $child_active ? ' is-active' : ''; ?>">
+                <a href="<?php echo $child_href; ?>" class="eottae-gnb-header__mobile-child-link<?php echo $child_active ? ' is-active' : ''; ?>"<?php echo function_exists('eottae_i18n_text_attrs') ? eottae_i18n_text_attrs($child_label) : ''; ?>>
                     <?php echo get_text($child_label); ?>
                 </a>
                 <?php } ?>

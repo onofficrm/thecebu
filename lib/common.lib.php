@@ -860,7 +860,9 @@ function get_sql_search($search_ca_name, $search_field, $search_text, $search_op
         $str .= " and wr_is_comment = '1' ";
     }
 
-    return $str;
+    $replaced = run_replace('get_sql_search', $str, $search_ca_name, $search_field, $search_text, $search_operator);
+
+    return $replaced !== null ? $replaced : $str;
 }
 
 // 게시판 테이블에서 하나의 행을 읽음

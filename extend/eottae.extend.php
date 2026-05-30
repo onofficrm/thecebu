@@ -5,7 +5,10 @@ if (!defined('_GNUBOARD_')) {
 
 include_once G5_PATH.'/extend/eottae.config.php';
 include_once G5_LIB_PATH.'/eottae-secrets.lib.php';
+include_once G5_LIB_PATH.'/eottae-i18n.lib.php';
+include_once G5_LIB_PATH.'/eottae-translation.lib.php';
 include_once G5_LIB_PATH.'/eottae.lib.php';
+include_once G5_LIB_PATH.'/eottae-language-meta.lib.php';
 include_once G5_LIB_PATH.'/eottae-ai-generate.lib.php';
 include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
 include_once G5_LIB_PATH.'/eottae-ad.lib.php';
@@ -94,6 +97,9 @@ if (function_exists('eottae_market_ensure_schema')) {
 }
 if (function_exists('eottae_member_growth_ensure_schema')) {
     eottae_member_growth_ensure_schema();
+}
+if (function_exists('eottae_translation_ensure_schema')) {
+    eottae_translation_ensure_schema();
 }
 if (is_file(G5_LIB_PATH.'/eottae-community-report.lib.php')) {
     include_once G5_LIB_PATH.'/eottae-community-report.lib.php';
@@ -623,6 +629,19 @@ if (!function_exists('eottae_on_promo_board_view')) {
 }
 add_event('board_head_before', 'eottae_on_promo_board_view', 20, 3);
 
+if (function_exists('eottae_translation_on_write_update_after')) {
+    add_event('write_update_after', 'eottae_translation_on_write_update_after', 40, 5);
+}
+if (function_exists('eottae_lang_on_write_update_after')) {
+    add_event('write_update_after', 'eottae_lang_on_write_update_after', 41, 5);
+}
+if (function_exists('eottae_lang_get_sql_search_filter')) {
+    add_replace('get_sql_search', 'eottae_lang_get_sql_search_filter', 20, 5);
+}
+if (function_exists('eottae_lang_on_board_head_before')) {
+    add_event('board_head_before', 'eottae_lang_on_board_head_before', 2, 3);
+}
+
 if (eottae_should_load_assets()) {
     add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/custom.css">', 10);
     if (function_exists('g5site_cfg')) {
@@ -668,6 +687,19 @@ if (eottae_should_load_assets()) {
         ), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT).';</script>',
         18
     );
+    add_javascript(
+        '<script>window.__EOTTaeI18N__='.json_encode(array(
+            'defaultLanguage' => 'ko',
+            'storageKey' => 'cebuatteLanguage',
+            'supportedLanguages' => array('ko', 'en', 'ja', 'zh'),
+            'localesBaseUrl' => G5_URL.'/locales',
+        ), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT).';</script>',
+        18
+    );
+    $eottae_i18n_js_version = defined('G5_PATH') && is_file(G5_PATH.'/js/eottae-i18n.js')
+        ? (string) @filemtime(G5_PATH.'/js/eottae-i18n.js')
+        : (defined('G5_JS_VER') ? G5_JS_VER : '');
+    add_javascript('<script src="'.G5_JS_URL.'/eottae-i18n.js'.($eottae_i18n_js_version !== '' ? '?v='.$eottae_i18n_js_version : '').'" defer></script>', 19);
     add_javascript('<script src="'.G5_JS_URL.'/eottae.js'.($eottae_js_version !== '' ? '?v='.$eottae_js_version : '').'" defer></script>', 20);
     if (defined('G5_IS_MOBILE') && G5_IS_MOBILE) {
         add_javascript('<script src="'.G5_JS_URL.'/custom.js"></script>', 21);
