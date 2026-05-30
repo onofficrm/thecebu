@@ -69,15 +69,21 @@ g5_page_start('세부생활지도');
                     <p class="cebu-map-register__label">내 정보 등록하기</p>
                     <div class="cebu-map-register__actions">
                         <a href="<?php echo get_text($market_write_url); ?>" class="cebu-map-register__btn cebu-map-register__btn--market">
-                            <span class="cebu-map-register__icon" aria-hidden="true">🛍</span>
+                            <span class="cebu-map-register__icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h15l-1.5 9h-12z"></path><path d="M6 7 5 4H2"></path><circle cx="9" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle></svg>
+                            </span>
                             <span class="cebu-map-register__text">물품등록</span>
                         </a>
                         <a href="<?php echo get_text($job_write_url); ?>" class="cebu-map-register__btn cebu-map-register__btn--job">
-                            <span class="cebu-map-register__icon" aria-hidden="true">💼</span>
+                            <span class="cebu-map-register__icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><path d="M3 12h18"></path></svg>
+                            </span>
                             <span class="cebu-map-register__text">구인등록</span>
                         </a>
                         <a href="<?php echo get_text($estate_write_url); ?>" class="cebu-map-register__btn cebu-map-register__btn--estate">
-                            <span class="cebu-map-register__icon" aria-hidden="true">🏠</span>
+                            <span class="cebu-map-register__icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 10v10h14V10"></path><path d="M10 20v-6h4v6"></path></svg>
+                            </span>
                             <span class="cebu-map-register__text">부동산등록</span>
                         </a>
                     </div>

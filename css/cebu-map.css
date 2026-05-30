@@ -78,24 +78,25 @@ body.eottae-page:has(.cebu-map-page) #hd .eottae-gnb-header {
 
 .cebu-map-register {
   margin-bottom: 14px;
-  padding: 14px;
-  border-radius: 16px;
-  border: 1px solid rgba(14, 165, 233, 0.14);
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.06) 0%, rgba(255, 255, 255, 0.96) 100%);
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--cebu-map-border);
+  background: #fafafa;
 }
 
 .cebu-map-register__label {
   margin: 0 0 10px;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  color: #0369a1;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #94a3b8;
 }
 
 .cebu-map-register__actions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: 6px;
 }
 
 .cebu-map-register__btn {
@@ -103,56 +104,67 @@ body.eottae-page:has(.cebu-map-page) #hd .eottae-gnb-header {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  min-height: 72px;
-  padding: 10px 8px;
-  border-radius: 14px;
-  border: 1px solid transparent;
+  gap: 8px;
+  min-height: 68px;
+  padding: 12px 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fff;
   text-decoration: none;
   text-align: center;
-  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
-  transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+  color: #334155;
+  box-shadow: none;
+  transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease;
 }
 
 .cebu-map-register__btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
-  filter: brightness(1.03);
+  border-color: rgba(15, 23, 42, 0.14);
+  background: #fff;
+  color: #0f172a;
 }
 
 .cebu-map-register__btn:focus-visible {
-  outline: 2px solid rgba(14, 165, 233, 0.45);
+  outline: 2px solid rgba(15, 23, 42, 0.18);
   outline-offset: 2px;
 }
 
 .cebu-map-register__icon {
-  font-size: 20px;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #64748b;
+  transition: background-color 0.16s ease, color 0.16s ease;
+}
+
+.cebu-map-register__icon svg {
+  width: 18px;
+  height: 18px;
 }
 
 .cebu-map-register__text {
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   line-height: 1.25;
 }
 
-.cebu-map-register__btn--market {
-  background: linear-gradient(180deg, #fff7ed 0%, #ffedd5 100%);
-  border-color: rgba(249, 115, 22, 0.22);
-  color: #9a3412;
+.cebu-map-register__btn--market:hover .cebu-map-register__icon {
+  background: #fff7ed;
+  color: #c2410c;
 }
 
-.cebu-map-register__btn--job {
-  background: linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%);
-  border-color: rgba(124, 58, 237, 0.2);
-  color: #5b21b6;
+.cebu-map-register__btn--job:hover .cebu-map-register__icon {
+  background: #f5f3ff;
+  color: #6d28d9;
 }
 
-.cebu-map-register__btn--estate {
-  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
-  border-color: rgba(2, 132, 199, 0.22);
-  color: #075985;
+.cebu-map-register__btn--estate:hover .cebu-map-register__icon {
+  background: #eff6ff;
+  color: #1d4ed8;
 }
 
 .cebu-map-search__row {
@@ -475,26 +487,36 @@ body.eottae-page:has(.cebu-map-page) #hd .eottae-gnb-header {
   color: #6d28d9;
 }
 
+.cebu-map-card__headline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .cebu-map-card__title {
+  flex: 1 1 auto;
+  min-width: 0;
   margin: 0;
   font-size: 15px;
   font-weight: 900;
   line-height: 1.35;
 }
 
-.cebu-map-card__price,
+.cebu-map-card__price {
+  flex: 0 0 auto;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.35;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
 .cebu-map-card__location {
   margin: 6px 0 0;
   font-size: 13px;
   line-height: 1.45;
-}
-
-.cebu-map-card__price {
-  font-weight: 900;
-  color: #0f172a;
-}
-
-.cebu-map-card__location {
   color: #64748b;
 }
 
@@ -574,7 +596,8 @@ body.eottae-page:has(.cebu-map-page) #hd .eottae-gnb-header {
   }
 
   .cebu-map-register__btn {
-    min-height: 64px;
+    min-height: 62px;
+    padding: 10px 4px;
   }
 
   .cebu-map-card {

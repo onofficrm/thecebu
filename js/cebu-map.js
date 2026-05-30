@@ -146,7 +146,7 @@
 
   function cardHtml(loc) {
     var meta = TYPE_META[loc.type] || TYPE_META.market;
-    var price = loc.price ? '<p class="cebu-map-card__price">' + escapeHtml(loc.price) + '</p>' : '';
+    var priceHtml = loc.price ? '<span class="cebu-map-card__price">' + escapeHtml(loc.price) + '</span>' : '';
     var status = loc.status ? '<span class="cebu-map-card__status">' + escapeHtml(loc.status) + '</span>' : '';
     return (
       '<article class="cebu-map-card cebu-map-card--' + escapeHtml(loc.type) + (loc.is_dimmed ? ' is-dimmed' : '') + '">' +
@@ -156,8 +156,10 @@
       '<span class="cebu-map-card__type"><span aria-hidden="true">' + meta.icon + '</span> ' + escapeHtml(loc.label) + '</span>' +
       status +
       '</div>' +
+      '<div class="cebu-map-card__headline">' +
       '<h3 class="cebu-map-card__title">' + escapeHtml(loc.title) + '</h3>' +
-      price +
+      priceHtml +
+      '</div>' +
       '<p class="cebu-map-card__location">' + escapeHtml(loc.location || loc.area) + '</p>' +
       actionsHtml(loc) +
       '</div>' +
