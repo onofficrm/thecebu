@@ -8,10 +8,30 @@ if (!function_exists('eottae_column_render_avatar_html')) {
 }
 
 if (!function_exists('eottae_column_author_card_html')) {
+    function eottae_column_author_meta_items(array $author)
+    {
+        $specialties = array_filter(array_map('trim', explode(',', (string) ($author['specialty'] ?? ''))));
+        $primary_specialty = !empty($specialties) ? $specialties[0] : '';
+        $items = array();
+
+        if (!empty($author['area_label'])) {
+            $items[] = array('label' => '활동 지역', 'value' => $author['area_label']);
+        }
+        if ($primary_specialty !== '') {
+            $items[] = array('label' => '대표 분야', 'value' => $primary_specialty);
+        }
+        if (!empty($author['title'])) {
+            $items[] = array('label' => '소개', 'value' => $author['title']);
+        }
+
+        return $items;
+    }
+
     function eottae_column_author_card_html(array $author, $variant = 'default')
     {
         $stats = $author['stats'] ?? array();
         $bio_limit = ($variant === 'article') ? 180 : 80;
+        $author_meta = ($variant === 'article') ? eottae_column_author_meta_items($author) : array();
         ob_start();
         ?>
         <article class="sebu-author-card sebu-author-card--<?php echo get_text($variant); ?>">
@@ -21,6 +41,9 @@ if (!function_exists('eottae_column_author_card_html')) {
                     <a href="<?php echo get_text($author['profile_url'] ?? '#'); ?>" class="sebu-author-card__cta">프로필 보기</a>
                 </div>
                 <div class="sebu-author-card__main">
+                    <?php if ($variant === 'article') { ?>
+                    <p class="sebu-author-card__eyebrow">Columnist Profile</p>
+                    <?php } ?>
                     <?php if (!empty($author['grade_label'])) { ?>
                     <span class="sebu-author-card__grade"><?php echo get_text($author['grade_label']); ?></span>
                     <?php } ?>
@@ -31,6 +54,21 @@ if (!function_exists('eottae_column_author_card_html')) {
                     <?php if (!empty($author['bio'])) { ?>
                     <p class="sebu-author-card__bio"><?php echo get_text(cut_str($author['bio'], $bio_limit, '…')); ?></p>
                     <?php } ?>
+                    <?php if ($author_meta) { ?>
+                    <dl class="sebu-author-card__facts">
+                        <?php foreach ($author_meta as $meta) { ?>
+                        <div>
+                            <dt><?php echo get_text($meta['label']); ?></dt>
+                            <dd><?php echo get_text($meta['value']); ?></dd>
+                        </div>
+                        <?php } ?>
+                    </dl>
+                    <?php } ?>
+                    <?php if ($variant === 'article') { ?>
+                    <div class="sebu-author-card__links">
+                        <?php echo eottae_column_render_author_profile_link_badges_html($author, 'sebu-author-card__social sebu-column-social'); ?>
+                    </div>
+                    <?php } ?>
                 </div>
                 <div class="sebu-author-card__meta">
                     <dl class="sebu-author-card__stats">
@@ -38,7 +76,9 @@ if (!function_exists('eottae_column_author_card_html')) {
                         <div><dt>조회</dt><dd><?php echo number_format((int) ($stats['total_views'] ?? 0)); ?></dd></div>
                         <div><dt>공감</dt><dd><?php echo number_format((int) ($stats['total_likes'] ?? 0)); ?></dd></div>
                     </dl>
+                    <?php if ($variant !== 'article') { ?>
                     <?php echo eottae_column_render_author_profile_link_badges_html($author, 'sebu-author-card__social sebu-column-social'); ?>
+                    <?php } ?>
                 </div>
             </div>
         </article>

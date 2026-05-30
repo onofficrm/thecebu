@@ -107,5 +107,9 @@ $(function() {
 <?php
 if (is_file(G5_PATH.'/components/onoff-chatbot.php')) {
     include_once(G5_PATH.'/components/onoff-chatbot.php');
+    if (!defined('ONOFF_CHATBOT_ASSETS_EMITTED')) {
+        define('ONOFF_CHATBOT_ASSETS_EMITTED', true);
+        echo onoff_chatbot_assets_html(false);
+    }
 }
 include_once(G5_PATH."/tail.sub.php");

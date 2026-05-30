@@ -2129,3 +2129,10 @@ eottae_apply_google_oauth_config();
 if (function_exists('eottae_apply_free_board_skin_runtime')) {
     eottae_apply_free_board_skin_runtime();
 }
+
+if (!defined('G5_IS_ADMIN') && is_file(G5_PATH.'/components/onoff-chatbot.php')) {
+    if (!defined('ONOFF_CHATBOT_LIBRARY_ONLY')) {
+        define('ONOFF_CHATBOT_LIBRARY_ONLY', true);
+    }
+    include_once G5_PATH.'/components/onoff-chatbot.php';
+}

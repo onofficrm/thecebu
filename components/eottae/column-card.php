@@ -87,7 +87,7 @@ if (!function_exists('eottae_column_neighbor_nav_html')) {
 
         ob_start();
         ?>
-        <nav class="sebu-article-nav<?php echo $single ? ' sebu-article-nav--single' : ''; ?>" aria-label="이전글·다음글">
+        <nav class="sebu-article-nav<?php echo $single ? ' sebu-article-nav--single' : ''; ?><?php echo $prev && !$next ? ' sebu-article-nav--prev-only' : ''; ?><?php echo $next && !$prev ? ' sebu-article-nav--next-only' : ''; ?>" aria-label="이전글·다음글">
             <?php if ($prev) { ?>
             <a href="<?php echo get_text($prev['view_url'] ?? '#'); ?>" class="sebu-article-nav__item sebu-article-nav__item--prev">
                 <span class="sebu-article-nav__label">이전글</span>

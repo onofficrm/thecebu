@@ -82,7 +82,7 @@ $site_config = array(
     'talkroom_ai_summary_start_time' => '21:00:00',
     'talkroom_ai_summary_end_time'   => '23:00:00',
     'talkroom_ai_summary_min_activity' => 5,
-    /* 온오프챗봇 (components/onoff-chatbot.php) — iCRM 관리자에서 허용 도메인(G5_URL) 등록 필요 */
+    /* 온오프챗봇 (components/onoff-chatbot.php) — chat.icrm.co.kr 관리자에 https://thecebu.co.kr 허용 도메인 등록 필요 */
     'onoff_chatbot_enabled'     => true,
     'onoff_chatbot_site_key'    => '967314350ee8ce35058ed2c5d0ed9039b10f200a829089af',
     'onoff_chatbot_page_url'    => '',  /* 비우면 G5_URL 사용 — iCRM origin 검사용 */

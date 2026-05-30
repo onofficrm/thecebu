@@ -37,6 +37,47 @@
     lockBodyScroll(false);
   }
 
+  function removeIcrmWidget() {
+    document.documentElement.classList.add('onoff-chatbot-fallback-active');
+
+    qsa('script[src*="chat.icrm.co.kr/widget.js"]').forEach(function (script) {
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    });
+
+    qsa('iframe[id^="chat-icrm-widget-"], iframe[title="chat.icrm.co.kr messenger"]').forEach(function (frame) {
+      if (frame.parentNode) {
+        frame.parentNode.removeChild(frame);
+      }
+    });
+
+    qsa('[id^="chat-icrm"], .chat-launcher, .chat-widget, .chat-launcher-prompt').forEach(function (node) {
+      if (node.parentNode) {
+        node.parentNode.removeChild(node);
+      }
+    });
+  }
+
+  function pageHasOriginError() {
+    var bodyText = document.body ? document.body.textContent || '' : '';
+    if (bodyText.indexOf('origin_not_allowed') !== -1) {
+      return true;
+    }
+
+    return !!qs('[data-onoff-chatbot-fallback="1"]');
+  }
+
+  function ensureFallbackVisible() {
+    var fallback = qs('[data-onoff-chatbot-fallback="1"]');
+    if (!fallback) {
+      return;
+    }
+
+    fallback.hidden = false;
+    fallback.style.removeProperty('display');
+  }
+
   function initConsultModal() {
     qsa('.consult-modal').forEach(function (modal) {
       var overlay = qs('.consult-modal-overlay', modal);
@@ -148,7 +189,29 @@
     });
   }
 
+  function initIcrmGuard() {
+    if (!pageHasOriginError()) {
+      return;
+    }
+
+    removeIcrmWidget();
+    ensureFallbackVisible();
+
+    var observer = window.MutationObserver
+      ? new window.MutationObserver(function () {
+          if (qs('iframe[id^="chat-icrm-widget-"], iframe[title="chat.icrm.co.kr messenger"], .chat-launcher')) {
+            removeIcrmWidget();
+          }
+        })
+      : null;
+
+    if (observer && document.body) {
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+  }
+
   function init() {
+    initIcrmGuard();
     initConsultModal();
     initConsultForm();
     initFallbackLauncher();

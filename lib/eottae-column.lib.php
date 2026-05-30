@@ -1445,7 +1445,10 @@ if (!function_exists('eottae_column_get_post')) {
 
 if (!function_exists('eottae_column_neighbor_posts')) {
     /**
-     * 컬럼 상세 — 목록(최신순) 기준 이전·다음 글
+     * 컬럼 상세 — 연재 순서 기준 이전·다음 글
+     *
+     * - prev(이전글): 더 이전에 발행된 글 (예: 9편 → 8편)
+     * - next(다음글): 더 최근에 발행된 글 (예: 8편 → 9편)
      *
      * @return array{prev: ?array<string, mixed>, next: ?array<string, mixed>}
      */
@@ -1470,21 +1473,7 @@ if (!function_exists('eottae_column_neighbor_posts')) {
         $include_hidden = !empty($opts['include_hidden']);
         $status_where = $include_hidden ? '' : " AND m.status = 'published' ";
 
-        $prev_sql = "
-            SELECT w.wr_id, w.wr_subject, w.wr_datetime, m.category
-            FROM `{$write_table}` w
-            INNER JOIN `{$meta_table}` m ON m.wr_id = w.wr_id
-            WHERE w.wr_is_comment = 0
-            {$status_where}
-            AND (
-                w.wr_datetime > '{$datetime_sql}'
-                OR (w.wr_datetime = '{$datetime_sql}' AND w.wr_id > {$wr_id})
-            )
-            ORDER BY w.wr_datetime ASC, w.wr_id ASC
-            LIMIT 1
-        ";
-
-        $next_sql = "
+        $older_sql = "
             SELECT w.wr_id, w.wr_subject, w.wr_datetime, m.category
             FROM `{$write_table}` w
             INNER JOIN `{$meta_table}` m ON m.wr_id = w.wr_id
@@ -1495,6 +1484,20 @@ if (!function_exists('eottae_column_neighbor_posts')) {
                 OR (w.wr_datetime = '{$datetime_sql}' AND w.wr_id < {$wr_id})
             )
             ORDER BY w.wr_datetime DESC, w.wr_id DESC
+            LIMIT 1
+        ";
+
+        $newer_sql = "
+            SELECT w.wr_id, w.wr_subject, w.wr_datetime, m.category
+            FROM `{$write_table}` w
+            INNER JOIN `{$meta_table}` m ON m.wr_id = w.wr_id
+            WHERE w.wr_is_comment = 0
+            {$status_where}
+            AND (
+                w.wr_datetime > '{$datetime_sql}'
+                OR (w.wr_datetime = '{$datetime_sql}' AND w.wr_id > {$wr_id})
+            )
+            ORDER BY w.wr_datetime ASC, w.wr_id ASC
             LIMIT 1
         ";
 
@@ -1520,8 +1523,8 @@ if (!function_exists('eottae_column_neighbor_posts')) {
         };
 
         return array(
-            'prev' => $format_neighbor(sql_fetch($prev_sql)),
-            'next' => $format_neighbor(sql_fetch($next_sql)),
+            'prev' => $format_neighbor(sql_fetch($older_sql)),
+            'next' => $format_neighbor(sql_fetch($newer_sql)),
         );
     }
 }

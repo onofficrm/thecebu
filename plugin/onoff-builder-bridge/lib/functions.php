@@ -688,6 +688,9 @@ if (!function_exists('onoff_builder_render_import_page')) {
         $html = onoff_builder_remove_base_tags($html);
         $html = onoff_builder_rewrite_asset_paths($html, $id, $entry);
         if (is_file(G5_PATH.'/components/onoff-chatbot.php')) {
+            if (!defined('ONOFF_CHATBOT_LIBRARY_ONLY')) {
+                define('ONOFF_CHATBOT_LIBRARY_ONLY', true);
+            }
             include_once G5_PATH.'/components/onoff-chatbot.php';
             if (function_exists('onoff_chatbot_inject_html')) {
                 $html = onoff_chatbot_inject_html($html);

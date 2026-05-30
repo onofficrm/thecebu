@@ -302,10 +302,14 @@ if (!function_exists('onoff_chatbot_fallback_html')) {
 
         $html .= '<div class="onoff-chatbot-fallback" data-onoff-chatbot-fallback="1">'
             .'<button type="button" class="onoff-chatbot-fallback__launcher consult-modal-open" data-target="#cmpConsultModal" aria-label="'.$safe_label.' 열기">'
-            .'<span class="onoff-chatbot-fallback__icon" aria-hidden="true">💬</span>'
+            .'<span class="onoff-chatbot-fallback__icon" aria-hidden="true">'.onoff_chatbot_fallback_icon_html().'</span>'
             .'<span class="onoff-chatbot-fallback__text">'.$safe_label.'</span>'
             .'</button>'
             .'</div>';
+
+        if (!$include_builder_assets) {
+            $html .= onoff_chatbot_fallback_script_html();
+        }
 
         return $html;
     }
@@ -337,7 +341,68 @@ if (!function_exists('onoff_chatbot_strip_widget_scripts')) {
             return $html;
         }
 
-        return preg_replace('#<script[^>]+chat\.icrm\.co\.kr/widget\.js[^>]*>\s*</script>\s*#i', '', $html);
+        $html = preg_replace('#<script[^>]+chat\.icrm\.co\.kr/widget\.js[^>]*>\s*</script>\s*#i', '', $html);
+        $html = preg_replace('#<script[^>]+src=["\']https?://chat\.icrm\.co\.kr/widget\.js["\'][^>]*>\s*</script>\s*#i', '', $html);
+
+        return $html;
+    }
+}
+
+if (!function_exists('onoff_chatbot_filter_legacy_scripts')) {
+    /**
+     * 그누보드 cf_add_script 등 레거시 iCRM 삽입 제거 — origin 실패 시 widget.js 중복 방지
+     */
+    function onoff_chatbot_filter_legacy_scripts()
+    {
+        global $config;
+
+        if (!is_array($config) || empty($config['cf_add_script'])) {
+            return;
+        }
+
+        if (!onoff_chatbot_use_icrm_widget()) {
+            $config['cf_add_script'] = onoff_chatbot_strip_widget_scripts((string) $config['cf_add_script']);
+        }
+    }
+}
+
+if (!function_exists('onoff_chatbot_on_pre_head')) {
+    function onoff_chatbot_on_pre_head()
+    {
+        if (!onoff_chatbot_config_enabled()) {
+            return;
+        }
+
+        onoff_chatbot_filter_legacy_scripts();
+    }
+}
+
+if (!function_exists('onoff_chatbot_fallback_icon_html')) {
+    function onoff_chatbot_fallback_icon_html()
+    {
+        return '<svg class="onoff-chatbot-fallback__svg" viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false">'
+            .'<path fill="currentColor" d="M4 4.5A2.5 2.5 0 0 1 6.5 2h11A2.5 2.5 0 0 1 20 4.5v8A2.5 2.5 0 0 1 17.5 15H11l-4.2 3.15a1 1 0 0 1-1.55-.83V15H6.5A2.5 2.5 0 0 1 4 12.5v-8Z"/>'
+            .'<circle cx="9" cy="9.5" r="1.1" fill="#2563eb"/>'
+            .'<circle cx="12" cy="9.5" r="1.1" fill="#2563eb"/>'
+            .'<circle cx="15" cy="9.5" r="1.1" fill="#2563eb"/>'
+            .'</svg>';
+    }
+}
+
+if (!function_exists('onoff_chatbot_fallback_script_html')) {
+    function onoff_chatbot_fallback_script_html()
+    {
+        if (!defined('G5_JS_URL')) {
+            return '';
+        }
+
+        $fallback_js = G5_PATH.'/js/onoff-chatbot-fallback.js';
+        $fallback_js_url = G5_JS_URL.'/onoff-chatbot-fallback.js';
+        if (is_file($fallback_js)) {
+            $fallback_js_url .= '?ver='.(int) filemtime($fallback_js);
+        }
+
+        return '<script src="'.htmlspecialchars($fallback_js_url, ENT_QUOTES, 'UTF-8').'" defer></script>';
     }
 }
 
@@ -362,4 +427,14 @@ if (!function_exists('onoff_chatbot_inject_html')) {
     }
 }
 
-echo onoff_chatbot_assets_html(false);
+if (!defined('ONOFF_CHATBOT_EVENTS_REGISTERED')) {
+    define('ONOFF_CHATBOT_EVENTS_REGISTERED', true);
+    if (function_exists('add_event')) {
+        add_event('pre_head', 'onoff_chatbot_on_pre_head', 3);
+    }
+}
+
+if (!defined('ONOFF_CHATBOT_LIBRARY_ONLY') && !defined('ONOFF_CHATBOT_ASSETS_EMITTED')) {
+    define('ONOFF_CHATBOT_ASSETS_EMITTED', true);
+    echo onoff_chatbot_assets_html(false);
+}
