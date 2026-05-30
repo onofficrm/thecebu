@@ -21,31 +21,64 @@
     });
   }
 
+  function getColumnToken(scope) {
+    if (!scope) {
+      return '';
+    }
+    return scope.getAttribute('data-member-token') || '';
+  }
+
+  function setBookmarkLabel(btn, bookmarked) {
+    if (!btn) {
+      return;
+    }
+    var label = bookmarked ? '저장됨' : '저장하기';
+    var textNode = btn.querySelector('[data-sebu-column-bookmark-label]');
+    if (textNode) {
+      textNode.textContent = label;
+      return;
+    }
+    var icon = btn.querySelector('.sebu-article__action-icon');
+    if (icon && icon.nextSibling && icon.nextSibling.nodeType === Node.TEXT_NODE) {
+      icon.nextSibling.textContent = label;
+      return;
+    }
+    btn.appendChild(document.createTextNode(label));
+  }
+
   var viewRoot = document.querySelector('[data-sebu-column-view]');
   if (viewRoot) {
     var wrId = viewRoot.getAttribute('data-wr-id');
     var procUrl = viewRoot.getAttribute('data-proc-url') || '/proc/eottae-column.php';
+    var engagePending = false;
 
     var likeBtn = viewRoot.querySelector('[data-sebu-column-like]');
     if (likeBtn) {
       likeBtn.addEventListener('click', function () {
-        var token = likeBtn.getAttribute('data-token');
+        if (engagePending) {
+          return;
+        }
+        engagePending = true;
         postJson(procUrl, {
           action: 'toggle_like',
           wr_id: wrId,
-          eottae_column_token: token,
+          eottae_column_token: getColumnToken(viewRoot),
           response: 'json'
         }).then(function (res) {
+          if (res.column_token) {
+            syncColumnToken(viewRoot, res.column_token);
+          }
           if (!res.success) {
             alert(res.message || '처리에 실패했습니다.');
             return;
           }
-          syncColumnToken(viewRoot, res.column_token);
           likeBtn.classList.toggle('is-liked', !!res.liked);
           var countEl = likeBtn.querySelector('[data-sebu-column-like-count]');
           if (countEl) {
             countEl.textContent = String(res.like_count || 0);
           }
+        }).finally(function () {
+          engagePending = false;
         });
       });
     }
@@ -53,20 +86,27 @@
     var bookmarkBtn = viewRoot.querySelector('[data-sebu-column-bookmark]');
     if (bookmarkBtn) {
       bookmarkBtn.addEventListener('click', function () {
-        var token = bookmarkBtn.getAttribute('data-token');
+        if (engagePending) {
+          return;
+        }
+        engagePending = true;
         postJson(procUrl, {
           action: 'toggle_bookmark',
           wr_id: wrId,
-          eottae_column_token: token,
+          eottae_column_token: getColumnToken(viewRoot),
           response: 'json'
         }).then(function (res) {
+          if (res.column_token) {
+            syncColumnToken(viewRoot, res.column_token);
+          }
           if (!res.success) {
             alert(res.message || '처리에 실패했습니다.');
             return;
           }
-          syncColumnToken(viewRoot, res.column_token);
           bookmarkBtn.classList.toggle('is-saved', !!res.bookmarked);
-          bookmarkBtn.textContent = res.bookmarked ? '저장됨' : '저장하기';
+          setBookmarkLabel(bookmarkBtn, !!res.bookmarked);
+        }).finally(function () {
+          engagePending = false;
         });
       });
     }

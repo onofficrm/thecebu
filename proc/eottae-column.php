@@ -93,7 +93,6 @@ if (!$is_member) {
 if ($action === 'toggle_like') {
     $wr_id = isset($_POST['wr_id']) ? (int) $_POST['wr_id'] : 0;
     $result = eottae_column_toggle_like($wr_id, $member['mb_id']);
-    eottae_column_member_token(true);
     eottae_column_proc_json(!empty($result['ok']), $result['message'] ?? '', array(
         'liked'         => !empty($result['liked']),
         'like_count'    => (int) ($result['like_count'] ?? 0),
@@ -104,7 +103,6 @@ if ($action === 'toggle_like') {
 if ($action === 'toggle_bookmark') {
     $wr_id = isset($_POST['wr_id']) ? (int) $_POST['wr_id'] : 0;
     $result = eottae_column_toggle_bookmark($wr_id, $member['mb_id']);
-    eottae_column_member_token(true);
     eottae_column_proc_json(!empty($result['ok']), $result['message'] ?? '', array(
         'bookmarked'   => !empty($result['bookmarked']),
         'column_token' => eottae_column_member_token(false),
