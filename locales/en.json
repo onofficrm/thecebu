@@ -122,6 +122,8 @@
   "job.field.email": "Email",
   "job.field.location_area": "Area",
   "job.field.location_detail": "Detailed Location",
+  "job.field.recruit_status": "Recruitment Status",
+  "job.field.posted_at": "Posted",
   "member.preferred_language": "Preferred language",
   "member.preferred_language_hint": "Your language preference is saved to your profile and stays consistent after login.",
   "member.mypage_language_title": "Language",

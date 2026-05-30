@@ -282,11 +282,19 @@
     return typeof value === 'string' ? value : '';
   }
 
-  function translate(key) {
-    var dictionary = dictionaries[currentLanguage] || {};
-    var fallback = dictionaries[defaultLanguage] || {};
+  function translateInLanguage(key, language) {
+    var dictionary = dictionaries[language] || {};
+    var fallback = dictionaries[defaultLanguage] || staticKoDictionary;
 
     return readNestedValue(dictionary, key) || dictionary[key] || readNestedValue(fallback, key) || fallback[key] || '';
+  }
+
+  function translate(key, language) {
+    if (language && isSupported(language)) {
+      return translateInLanguage(key, language);
+    }
+
+    return translateInLanguage(key, currentLanguage);
   }
 
   function setText(element, value) {
@@ -298,37 +306,49 @@
     element.textContent = value;
   }
 
-  function applyTranslations() {
-    document.documentElement.setAttribute('lang', currentLanguage);
-    document.documentElement.setAttribute('data-eottae-language', currentLanguage);
+  function queryI18nRoot(root, selector) {
+    if (!root || root === document) {
+      return document.querySelectorAll(selector);
+    }
 
-    document.querySelectorAll('[data-i18n]').forEach(function (element) {
-      var value = translate(element.getAttribute('data-i18n'));
+    return root.querySelectorAll(selector);
+  }
+
+  function applyI18nToRoot(root, language) {
+    queryI18nRoot(root, '[data-i18n]').forEach(function (element) {
+      var value = translateInLanguage(element.getAttribute('data-i18n'), language);
       if (value) {
         setText(element, value);
       }
     });
 
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(function (element) {
-      var value = translate(element.getAttribute('data-i18n-placeholder'));
+    queryI18nRoot(root, '[data-i18n-placeholder]').forEach(function (element) {
+      var value = translateInLanguage(element.getAttribute('data-i18n-placeholder'), language);
       if (value) {
         element.setAttribute('placeholder', value);
       }
     });
 
-    document.querySelectorAll('[data-i18n-title]').forEach(function (element) {
-      var value = translate(element.getAttribute('data-i18n-title'));
+    queryI18nRoot(root, '[data-i18n-title]').forEach(function (element) {
+      var value = translateInLanguage(element.getAttribute('data-i18n-title'), language);
       if (value) {
         element.setAttribute('title', value);
       }
     });
 
-    document.querySelectorAll('[data-i18n-aria-label]').forEach(function (element) {
-      var value = translate(element.getAttribute('data-i18n-aria-label'));
+    queryI18nRoot(root, '[data-i18n-aria-label]').forEach(function (element) {
+      var value = translateInLanguage(element.getAttribute('data-i18n-aria-label'), language);
       if (value) {
         element.setAttribute('aria-label', value);
       }
     });
+  }
+
+  function applyTranslations() {
+    document.documentElement.setAttribute('lang', currentLanguage);
+    document.documentElement.setAttribute('data-eottae-language', currentLanguage);
+
+    applyI18nToRoot(document, currentLanguage);
 
     document.querySelectorAll('[data-eottae-language-select]').forEach(function (select) {
       select.value = currentLanguage;
@@ -341,6 +361,25 @@
         }
       }));
     }
+  }
+
+  function applyScopeTranslations(root, language) {
+    if (!root) {
+      return Promise.resolve(language);
+    }
+
+    var nextLanguage = isSupported(language) ? language : defaultLanguage;
+
+    return Promise.all([
+      loadDictionary(defaultLanguage),
+      loadDictionary(nextLanguage)
+    ]).then(function () {
+      applyI18nToRoot(root, nextLanguage);
+      return nextLanguage;
+    }).catch(function () {
+      applyI18nToRoot(root, defaultLanguage);
+      return defaultLanguage;
+    });
   }
 
   function loadDictionary(language) {
@@ -427,6 +466,7 @@
     },
     t: translate,
     apply: applyTranslations,
+    applyScope: applyScopeTranslations,
     keyForText: function (text) {
       var normalized = String(text || '').replace(/\s+/g, ' ').trim();
       var dictionary = dictionaries[defaultLanguage] || staticKoDictionary;

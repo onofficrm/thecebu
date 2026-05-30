@@ -68,7 +68,7 @@ $shop_map = $job_aside_shop_map;
             </div>
             <?php } ?>
             <div>
-                <dt>등록일</dt>
+                <dt data-i18n="job.field.posted_at">등록일</dt>
                 <dd><?php echo date('Y.m.d H:i', strtotime($view['wr_datetime'] ?? 'now')); ?></dd>
             </div>
         </dl>

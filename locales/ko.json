@@ -122,6 +122,8 @@
   "job.field.email": "이메일",
   "job.field.location_area": "지역",
   "job.field.location_detail": "상세위치",
+  "job.field.recruit_status": "모집 상태",
+  "job.field.posted_at": "등록일",
   "member.preferred_language": "선호 언어",
   "member.preferred_language_hint": "로그인 후에도 동일한 언어로 사이트를 이용할 수 있습니다.",
   "member.mypage_language_title": "언어 설정",

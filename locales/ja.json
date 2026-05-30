@@ -122,6 +122,8 @@
   "job.field.email": "メール",
   "job.field.location_area": "地域",
   "job.field.location_detail": "詳細位置",
+  "job.field.recruit_status": "募集状態",
+  "job.field.posted_at": "登録日",
   "member.preferred_language": "希望言語",
   "member.preferred_language_hint": "ログイン後も同じ言語設定が維持されます。",
   "member.mypage_language_title": "言語設定",

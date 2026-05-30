@@ -449,7 +449,7 @@ if ($is_ai_post) {
         ?>
         <?php if ($is_job_board_view) { ?>
         <div class="job-recruit-panel"<?php echo $job_can_change_recruit ? ' data-job-recruit-panel data-proc-url="'.G5_URL.'/proc/eottae-job-recruit-status.php" data-bo-table="'.get_text($bo_table).'" data-wr-id="'.(int) $view['wr_id'].'"' : ''; ?>>
-            <span class="job-recruit-panel__label">모집 상태</span>
+            <span class="job-recruit-panel__label" data-i18n="job.field.recruit_status">모집 상태</span>
             <?php echo eottae_job_render_recruit_badge($job_recruit_status, 'job-recruit-badge--view'); ?>
             <?php if ($job_can_change_recruit) { ?>
             <div class="job-recruit-panel__actions" role="group" aria-label="모집 상태 변경">

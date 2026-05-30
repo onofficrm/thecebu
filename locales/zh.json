@@ -122,6 +122,8 @@
   "job.field.email": "邮箱",
   "job.field.location_area": "地区",
   "job.field.location_detail": "详细位置",
+  "job.field.recruit_status": "招聘状态",
+  "job.field.posted_at": "发布日期",
   "member.preferred_language": "首选语言",
   "member.preferred_language_hint": "登录后也会保持相同的语言设置。",
   "member.mypage_language_title": "语言设置",

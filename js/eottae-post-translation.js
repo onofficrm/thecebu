@@ -31,9 +31,31 @@
     return panel.closest('article') || panel.closest('#bo_v') || document;
   }
 
-  function rememberOriginal(article) {
-    if (originalMap.has(article)) {
-      return originalMap.get(article);
+  function findTranslationScope(panel) {
+    return panel.closest('.community-view-page__layout')
+      || panel.closest('#bo_v')
+      || findArticle(panel);
+  }
+
+  function applyScopeLabels(scope, language) {
+    if (!scope || !window.EottaeI18N || typeof window.EottaeI18N.applyScope !== 'function') {
+      return Promise.resolve();
+    }
+
+    return window.EottaeI18N.applyScope(scope, language);
+  }
+
+  function restoreScopeLabels(scope) {
+    var siteLanguage = currentLanguage();
+    return applyScopeLabels(scope, siteLanguage);
+  }
+
+  function rememberOriginal(panel) {
+    var scope = findTranslationScope(panel);
+    var article = findArticle(panel);
+
+    if (originalMap.has(scope)) {
+      return originalMap.get(scope);
     }
 
     var title = qs('[data-translation-title]', article);
@@ -44,14 +66,14 @@
       extras: {}
     };
 
-    qsa('[data-translation-extra]', article).forEach(function (el) {
+    qsa('[data-translation-extra]', scope).forEach(function (el) {
       var key = el.getAttribute('data-translation-extra');
       if (key) {
         original.extras[key] = el.textContent;
       }
     });
 
-    originalMap.set(article, original);
+    originalMap.set(scope, original);
     return original;
   }
 
@@ -94,25 +116,25 @@
     }
   }
 
-  function applyExtras(article, extras) {
+  function applyExtras(scope, extras) {
     if (!extras || typeof extras !== 'object') {
       return;
     }
 
     Object.keys(extras).forEach(function (key) {
-      qsa('[data-translation-extra="' + key + '"]', article).forEach(function (el) {
+      qsa('[data-translation-extra="' + key + '"]', scope).forEach(function (el) {
         el.textContent = extras[key];
       });
     });
   }
 
-  function restoreExtras(article, original) {
+  function restoreExtras(scope, original) {
     if (!original || !original.extras) {
       return;
     }
 
     Object.keys(original.extras).forEach(function (key) {
-      qsa('[data-translation-extra="' + key + '"]', article).forEach(function (el) {
+      qsa('[data-translation-extra="' + key + '"]', scope).forEach(function (el) {
         el.textContent = original.extras[key];
       });
     });
@@ -121,6 +143,7 @@
   function applyTranslation(panel, article, payload) {
     var title = qs('[data-translation-title]', article);
     var content = qs('[data-translation-content]', article);
+    var scope = findTranslationScope(panel);
 
     if (title && payload.translatedTitle) {
       title.textContent = payload.translatedTitle;
@@ -132,14 +155,16 @@
       }
     }
 
-    applyExtras(article, payload.translatedExtras || null);
+    applyExtras(scope, payload.translatedExtras || null);
+    applyScopeLabels(scope, payload.targetLanguage || '');
 
     showNotice(panel, true);
     setActive(panel, payload.targetLanguage || '');
   }
 
   function restoreOriginal(panel, article) {
-    var original = rememberOriginal(article);
+    var scope = findTranslationScope(panel);
+    var original = rememberOriginal(panel);
     var title = qs('[data-translation-title]', article);
     var content = qs('[data-translation-content]', article);
 
@@ -153,7 +178,8 @@
       }
     }
 
-    restoreExtras(article, original);
+    restoreExtras(scope, original);
+    restoreScopeLabels(scope);
 
     showNotice(panel, false);
     setStatus(panel, '');
@@ -162,7 +188,7 @@
 
   function translate(panel, language) {
     var article = findArticle(panel);
-    rememberOriginal(article);
+    rememberOriginal(panel);
 
     var body = new window.FormData();
     body.append('bo_table', panel.getAttribute('data-bo-table') || '');
