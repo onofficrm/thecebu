@@ -532,9 +532,95 @@ if (!function_exists('eottae_job_template_normalize_data')) {
             $out[$key] = trim(strip_tags((string) ($data[$key] ?? '')));
         }
 
+        if (function_exists('eottae_job_template_repair_merged_values')) {
+            $out = eottae_job_template_repair_merged_values($out);
+        }
+
         $out['job_recruit_status'] = eottae_job_normalize_recruit_status($out['job_recruit_status'] ?: 'recruiting');
 
         return $out;
+    }
+}
+
+if (!function_exists('eottae_job_template_kv_labels')) {
+    /**
+     * @return array<int, string>
+     */
+    function eottae_job_template_kv_labels()
+    {
+        return array(
+            '업체명', '모집직종', '모집인원', '근무지역', '근무형태', '근무시간', '급여', '급여형태',
+            '나이', '성별', '경력', '언어조건',
+            '지원방법', '연락처', '카카오톡 ID', '이메일',
+        );
+    }
+}
+
+if (!function_exists('eottae_job_template_strip_embedded_labels')) {
+    function eottae_job_template_strip_embedded_labels($value, ?array $labels = null)
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return '';
+        }
+
+        if (!is_array($labels)) {
+            $labels = eottae_job_template_kv_labels();
+        }
+
+        $cut_at = null;
+        foreach ($labels as $label) {
+            if (preg_match('/'.preg_quote($label, '/').'\s*:/u', $value, $match, PREG_OFFSET_CAPTURE)) {
+                $pos = (int) $match[0][1];
+                if ($pos > 0 && ($cut_at === null || $pos < $cut_at)) {
+                    $cut_at = $pos;
+                }
+            }
+        }
+
+        if ($cut_at !== null) {
+            $value = trim(substr($value, 0, $cut_at));
+        }
+
+        return $value;
+    }
+}
+
+if (!function_exists('eottae_job_template_repair_merged_values')) {
+    /**
+     * 한 줄로 붙어 저장된 필드값에서 뒤쪽 라벨 덩어리 제거
+     *
+     * @param array<string, string> $data
+     * @return array<string, string>
+     */
+    function eottae_job_template_repair_merged_values(array $data)
+    {
+        $labels = eottae_job_template_kv_labels();
+        foreach ($data as $key => $value) {
+            if (!is_string($value) || $value === '') {
+                continue;
+            }
+            $data[$key] = eottae_job_template_strip_embedded_labels($value, $labels);
+        }
+
+        return $data;
+    }
+}
+
+if (!function_exists('eottae_job_template_format_display_text')) {
+    function eottae_job_template_format_display_text($text)
+    {
+        $text = trim(strip_tags((string) $text));
+        if ($text === '') {
+            return '';
+        }
+
+        $text = preg_replace("/\r\n|\r/u", "\n", $text);
+        $text = preg_replace('/[ \t]+/u', ' ', $text);
+        $text = preg_replace('/\.[ \t]+/u', ".\n", $text);
+        $text = preg_replace('/\n{3,}/u', "\n\n", $text);
+
+        return trim($text);
     }
 }
 
@@ -707,10 +793,25 @@ if (!function_exists('eottae_job_template_parse_content')) {
 if (!function_exists('eottae_job_template_parse_kv_block')) {
     function eottae_job_template_parse_kv_block(array &$data, $block, array $map)
     {
+        $labels = array_values($map);
+
         foreach ($map as $field => $label) {
-            $pattern = '/'.preg_quote($label, '/').'\s*:\s*(.+?)(?=\n|$)/u';
-            if (preg_match($pattern, $block, $m)) {
-                $data[$field] = trim($m[1]);
+            $other_labels = array_values(array_filter($labels, function ($candidate) use ($label) {
+                return $candidate !== $label;
+            }));
+
+            if ($other_labels) {
+                $stop_parts = array_map(function ($candidate) {
+                    return preg_quote($candidate, '/').'\s*:';
+                }, $other_labels);
+                $lookahead = '(?='.implode('|', $stop_parts).'|\r?\n|$)';
+            } else {
+                $lookahead = '(?=\r?\n|$)';
+            }
+
+            $pattern = '/'.preg_quote($label, '/').'\s*:\s*(.+?)'.$lookahead.'/us';
+            if (preg_match($pattern, $block, $match)) {
+                $data[$field] = trim((string) $match[1]);
             }
         }
     }
@@ -879,69 +980,122 @@ if (!function_exists('eottae_job_template_view_rows')) {
         $sections = array();
 
         $basic = array();
-        eottae_job_template_push_row($basic, '업체명', $data['company']);
-        eottae_job_template_push_row($basic, '모집직종', $data['job_type']);
-        eottae_job_template_push_row($basic, '모집인원', $data['headcount']);
-        eottae_job_template_push_row($basic, '근무지역', $data['region']);
-        eottae_job_template_push_row($basic, '근무형태', eottae_job_template_label('work_type', $data['work_type']));
-        eottae_job_template_push_row($basic, '근무시간', $data['work_hours']);
-        eottae_job_template_push_row($basic, '급여', $data['salary']);
-        eottae_job_template_push_row($basic, '급여형태', eottae_job_template_label('pay_type', $data['pay_type']));
+        eottae_job_template_push_row($basic, '업체명', $data['company'], 'job_company', 'job.field.company');
+        eottae_job_template_push_row($basic, '모집직종', $data['job_type'], 'job_job_type', 'job.field.job_type');
+        eottae_job_template_push_row($basic, '모집인원', $data['headcount'], 'job_headcount', 'job.field.headcount');
+        eottae_job_template_push_row($basic, '근무지역', $data['region'], 'job_region', 'job.field.region');
+        eottae_job_template_push_row($basic, '근무형태', eottae_job_template_label('work_type', $data['work_type']), 'job_work_type', 'job.field.work_type');
+        eottae_job_template_push_row($basic, '근무시간', $data['work_hours'], 'job_work_hours', 'job.field.work_hours');
+        eottae_job_template_push_row($basic, '급여', $data['salary'], 'job_salary', 'job.field.salary');
+        eottae_job_template_push_row($basic, '급여형태', eottae_job_template_label('pay_type', $data['pay_type']), 'job_pay_type', 'job.field.pay_type');
         if ($basic) {
-            $sections[] = array('section' => '구인정보', 'rows' => $basic);
+            $sections[] = array(
+                'section'     => '구인정보',
+                'section_key' => 'job.section.info',
+                'rows'        => $basic,
+            );
         }
 
         if ($data['work_desc'] !== '') {
             $sections[] = array(
-                'section' => '업무내용',
-                'rows'    => array(array('label' => '', 'value' => $data['work_desc'], 'multiline' => true)),
+                'section'     => '업무내용',
+                'section_key' => 'job.section.work_desc',
+                'rows'        => array(array(
+                    'label'      => '',
+                    'value'      => $data['work_desc'],
+                    'multiline'  => true,
+                    'extra_key'  => 'job_work_desc',
+                    'label_key'  => '',
+                )),
             );
         }
 
         $qual = array();
-        eottae_job_template_push_row($qual, '나이', $data['age']);
-        eottae_job_template_push_row($qual, '성별', eottae_job_template_label('gender', $data['gender']));
-        eottae_job_template_push_row($qual, '경력', eottae_job_template_label('career', $data['career']));
-        eottae_job_template_push_row($qual, '언어조건', eottae_job_template_label('language', $data['language']));
+        eottae_job_template_push_row($qual, '나이', $data['age'], 'job_age', 'job.field.age');
+        eottae_job_template_push_row($qual, '성별', eottae_job_template_label('gender', $data['gender']), 'job_gender', 'job.field.gender');
+        eottae_job_template_push_row($qual, '경력', eottae_job_template_label('career', $data['career']), 'job_career', 'job.field.career');
+        eottae_job_template_push_row($qual, '언어조건', eottae_job_template_label('language', $data['language']), 'job_language', 'job.field.language');
         if ($data['qualification'] !== '') {
-            $qual[] = array('label' => '', 'value' => $data['qualification'], 'multiline' => true);
+            $qual[] = array(
+                'label'     => '',
+                'value'     => $data['qualification'],
+                'multiline' => true,
+                'extra_key' => 'job_qualification',
+                'label_key' => '',
+            );
         }
         if ($qual) {
-            $sections[] = array('section' => '지원자격', 'rows' => $qual);
+            $sections[] = array(
+                'section'     => '지원자격',
+                'section_key' => 'job.section.qualification',
+                'rows'        => $qual,
+            );
         }
 
         if ($data['benefits'] !== '') {
             $sections[] = array(
-                'section' => '복리후생',
-                'rows'    => array(array('label' => '', 'value' => $data['benefits'], 'multiline' => true)),
+                'section'     => '복리후생',
+                'section_key' => 'job.section.benefits',
+                'rows'        => array(array(
+                    'label'     => '',
+                    'value'     => $data['benefits'],
+                    'multiline' => true,
+                    'extra_key' => 'job_benefits',
+                    'label_key' => '',
+                )),
             );
         }
         if ($data['preferred'] !== '') {
             $sections[] = array(
-                'section' => '우대사항',
-                'rows'    => array(array('label' => '', 'value' => $data['preferred'], 'multiline' => true)),
+                'section'     => '우대사항',
+                'section_key' => 'job.section.preferred',
+                'rows'        => array(array(
+                    'label'     => '',
+                    'value'     => $data['preferred'],
+                    'multiline' => true,
+                    'extra_key' => 'job_preferred',
+                    'label_key' => '',
+                )),
             );
         }
 
         $apply = array();
-        eottae_job_template_push_row($apply, '지원방법', $data['apply_method']);
-        eottae_job_template_push_row($apply, '연락처', $data['contact']);
-        eottae_job_template_push_row($apply, '카카오톡 ID', $data['kakao_id']);
-        eottae_job_template_push_row($apply, '이메일', $data['email']);
+        eottae_job_template_push_row($apply, '지원방법', $data['apply_method'], 'job_apply_method', 'job.field.apply_method');
+        eottae_job_template_push_row($apply, '연락처', $data['contact'], '', 'job.field.contact');
+        eottae_job_template_push_row($apply, '카카오톡 ID', $data['kakao_id'], '', 'job.field.kakao_id');
+        eottae_job_template_push_row($apply, '이메일', $data['email'], '', 'job.field.email');
         if ($apply) {
-            $sections[] = array('section' => '지원방법', 'rows' => $apply);
+            $sections[] = array(
+                'section'     => '지원방법',
+                'section_key' => 'job.section.apply',
+                'rows'        => $apply,
+            );
         }
 
         if ($data['deadline'] !== '') {
             $sections[] = array(
-                'section' => '마감일',
-                'rows'    => array(array('label' => '', 'value' => $data['deadline'], 'multiline' => false)),
+                'section'     => '마감일',
+                'section_key' => 'job.section.deadline',
+                'rows'        => array(array(
+                    'label'     => '',
+                    'value'     => $data['deadline'],
+                    'multiline' => false,
+                    'extra_key' => 'job_deadline',
+                    'label_key' => '',
+                )),
             );
         }
         if ($data['extra'] !== '') {
             $sections[] = array(
-                'section' => '기타 안내',
-                'rows'    => array(array('label' => '', 'value' => $data['extra'], 'multiline' => true)),
+                'section'     => '기타 안내',
+                'section_key' => 'job.section.extra',
+                'rows'        => array(array(
+                    'label'     => '',
+                    'value'     => $data['extra'],
+                    'multiline' => true,
+                    'extra_key' => 'job_extra',
+                    'label_key' => '',
+                )),
             );
         }
 
@@ -950,12 +1104,203 @@ if (!function_exists('eottae_job_template_view_rows')) {
 }
 
 if (!function_exists('eottae_job_template_push_row')) {
-    function eottae_job_template_push_row(array &$rows, $label, $value)
+    function eottae_job_template_push_row(array &$rows, $label, $value, $extra_key = '', $label_key = '')
     {
         $value = trim((string) $value);
         if ($value === '') {
             return;
         }
-        $rows[] = array('label' => $label, 'value' => $value, 'multiline' => false);
+        $rows[] = array(
+            'label'     => $label,
+            'value'     => $value,
+            'multiline' => false,
+            'extra_key' => (string) $extra_key,
+            'label_key' => (string) $label_key,
+        );
+    }
+}
+
+if (!function_exists('eottae_job_translation_extra_labels')) {
+    /**
+     * 구인구직 번역 extras 키 → 원문 라벨 (OpenAI 프롬프트용)
+     *
+     * @return array<string, string>
+     */
+    function eottae_job_translation_extra_labels()
+    {
+        return array(
+            'job_company'        => '업체명',
+            'job_job_type'       => '모집직종',
+            'job_headcount'      => '모집인원',
+            'job_region'         => '근무지역',
+            'job_work_type'      => '근무형태',
+            'job_work_hours'     => '근무시간',
+            'job_salary'         => '급여',
+            'job_pay_type'       => '급여형태',
+            'job_work_desc'      => '업무내용',
+            'job_age'            => '나이',
+            'job_gender'         => '성별',
+            'job_career'         => '경력',
+            'job_language'       => '언어조건',
+            'job_qualification'  => '지원자격',
+            'job_benefits'       => '복리후생',
+            'job_preferred'      => '우대사항',
+            'job_apply_method'   => '지원방법',
+            'job_deadline'       => '마감일',
+            'job_extra'          => '기타 안내',
+            'job_location_area'  => '근무 지역',
+            'job_location_text'  => '근무 상세위치',
+        );
+    }
+}
+
+if (!function_exists('eottae_job_translation_extras_from_write')) {
+    /**
+     * 구인구직 wr_3 템플릿 → 번역 API extras
+     *
+     * @param array<string, mixed> $write
+     * @return array<string, string>
+     */
+    function eottae_job_translation_extras_from_write(array $write)
+    {
+        $data = eottae_job_template_from_row($write);
+        if (!is_array($data)) {
+            return array();
+        }
+
+        $extras = array();
+        $put = function ($key, $value) use (&$extras) {
+            $value = trim((string) $value);
+            if ($key !== '' && $value !== '') {
+                $extras[$key] = $value;
+            }
+        };
+
+        $put('job_company', $data['company'] ?? '');
+        $put('job_job_type', $data['job_type'] ?? '');
+        $put('job_headcount', $data['headcount'] ?? '');
+        $put('job_region', $data['region'] ?? '');
+        $put('job_work_type', eottae_job_template_label('work_type', $data['work_type'] ?? ''));
+        $put('job_work_hours', $data['work_hours'] ?? '');
+        $put('job_salary', $data['salary'] ?? '');
+        $put('job_pay_type', eottae_job_template_label('pay_type', $data['pay_type'] ?? ''));
+        $put('job_work_desc', $data['work_desc'] ?? '');
+        $put('job_age', $data['age'] ?? '');
+        $put('job_gender', eottae_job_template_label('gender', $data['gender'] ?? ''));
+        $put('job_career', eottae_job_template_label('career', $data['career'] ?? ''));
+        $put('job_language', eottae_job_template_label('language', $data['language'] ?? ''));
+        $put('job_qualification', $data['qualification'] ?? '');
+        $put('job_benefits', $data['benefits'] ?? '');
+        $put('job_preferred', $data['preferred'] ?? '');
+        $put('job_apply_method', $data['apply_method'] ?? '');
+        $put('job_deadline', $data['deadline'] ?? '');
+        $put('job_extra', $data['extra'] ?? '');
+
+        if (function_exists('eottae_job_location_from_row')) {
+            $location = eottae_job_location_from_row($write);
+            if (is_array($location)) {
+                $put('job_location_area', $location['area_label'] ?? '');
+                $put('job_location_text', $location['location_text'] ?? '');
+            }
+        }
+
+        return $extras;
+    }
+}
+
+if (!function_exists('eottae_job_view_should_hide_body')) {
+    /**
+     * 구인구직 상세 — 템플릿 패널이 있으면 wr_content 본문은 숨김 (중복 방지)
+     *
+     * @param array<string, mixed>      $view
+     * @param array<string, string>|null $job_template_data
+     */
+    function eottae_job_view_should_hide_body($view, $job_template_data)
+    {
+        if (!is_array($job_template_data)) {
+            return false;
+        }
+
+        if (function_exists('eottae_icrm_content_should_preserve_html')
+            && eottae_icrm_content_should_preserve_html($view['wr_content'] ?? '')) {
+            return false;
+        }
+
+        return true;
+    }
+}
+
+if (!function_exists('eottae_job_view_has_map')) {
+    function eottae_job_view_has_map($job_location)
+    {
+        if (!is_array($job_location) || empty($job_location['map_visible'])) {
+            return false;
+        }
+
+        $lat = trim((string) ($job_location['latitude'] ?? ''));
+        $lng = trim((string) ($job_location['longitude'] ?? ''));
+
+        return $lat !== '' && $lng !== '' && is_numeric($lat) && is_numeric($lng);
+    }
+}
+
+if (!function_exists('eottae_job_view_inquiry_opts')) {
+    /**
+     * @param array<string, mixed>      $view
+     * @param array<string, mixed>|null $job_location
+     * @param array<string, string>|null $job_template_data
+     * @return array<string, string>
+     */
+    function eottae_job_view_inquiry_opts($view, $bo_table, $job_location = null, $job_template_data = null)
+    {
+        if (!is_array($view)) {
+            return array();
+        }
+
+        if (!is_array($job_location) && function_exists('eottae_job_location_from_row')) {
+            $job_location = eottae_job_location_from_row($view);
+        }
+        if (!is_array($job_template_data) && function_exists('eottae_job_template_from_row')) {
+            $job_template_data = eottae_job_template_from_row($view);
+        }
+
+        $bo_table = preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table);
+        $wr_id = (int) ($view['wr_id'] ?? 0);
+        $share_url = ($bo_table !== '' && $wr_id > 0 && function_exists('get_pretty_url'))
+            ? get_pretty_url($bo_table, $wr_id)
+            : G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$wr_id;
+
+        $phone = '';
+        if (is_array($job_template_data) && !empty($job_template_data['contact'])) {
+            $phone = trim((string) $job_template_data['contact']);
+        }
+
+        return array(
+            'phone'       => $phone,
+            'owner_mb_id' => trim((string) ($view['mb_id'] ?? '')),
+            'shop_name'   => get_text($view['wr_subject'] ?? ''),
+            'lat'         => is_array($job_location) ? trim((string) ($job_location['latitude'] ?? '')) : '',
+            'lng'         => is_array($job_location) ? trim((string) ($job_location['longitude'] ?? '')) : '',
+            'address'     => is_array($job_location) ? trim((string) ($job_location['location_text'] ?? '')) : '',
+            'share_url'   => $share_url,
+        );
+    }
+}
+
+if (!function_exists('eottae_job_view_apply_method_label')) {
+    function eottae_job_view_apply_method_label($job_template_data)
+    {
+        if (!is_array($job_template_data)) {
+            return '';
+        }
+
+        $parts = array_filter(array(
+            trim((string) ($job_template_data['apply_method'] ?? '')),
+            trim((string) ($job_template_data['contact'] ?? '')),
+            trim((string) ($job_template_data['kakao_id'] ?? '')),
+            trim((string) ($job_template_data['email'] ?? '')),
+        ));
+
+        return implode(' · ', $parts);
     }
 }

@@ -187,6 +187,10 @@ if (!function_exists('eottae_translation_extra_labels')) {
                 'contact' => '문의 방법',
             );
         }
+        if (function_exists('eottae_is_job_board') && eottae_is_job_board($bo_table)
+            && function_exists('eottae_job_translation_extra_labels')) {
+            return eottae_job_translation_extra_labels();
+        }
 
         return array(
             'intro' => '한 줄 소개',
@@ -376,6 +380,14 @@ if (!function_exists('eottae_translation_extras_from_write')) {
         if (function_exists('eottae_is_event_board') && eottae_is_event_board($bo_table)) {
             return eottae_translation_event_extras_from_write($write);
         }
+        if (function_exists('eottae_is_job_board') && eottae_is_job_board($bo_table)) {
+            if (!function_exists('eottae_job_translation_extras_from_write') && is_file(G5_LIB_PATH.'/eottae-job.lib.php')) {
+                include_once G5_LIB_PATH.'/eottae-job.lib.php';
+            }
+            if (function_exists('eottae_job_translation_extras_from_write')) {
+                return eottae_job_translation_extras_from_write($write);
+            }
+        }
 
         return array();
     }
@@ -432,6 +444,7 @@ if (!function_exists('eottae_translation_build_translate_args')) {
     function eottae_translation_build_translate_args($bo_table, array $write, $source_language, $target_language)
     {
         $args = array(
+            'bo_table' => preg_replace('/[^a-z0-9_]/i', '', (string) $bo_table),
             'title' => (string) ($write['wr_subject'] ?? ''),
             'content' => (string) ($write['wr_content'] ?? ''),
             'sourceLanguage' => $source_language,
@@ -783,6 +796,9 @@ if (!function_exists('eottae_translation_should_pretranslate_board')) {
             return true;
         }
         if (function_exists('eottae_is_event_board') && eottae_is_event_board($bo_table)) {
+            return true;
+        }
+        if (function_exists('eottae_is_job_board') && eottae_is_job_board($bo_table)) {
             return true;
         }
 
@@ -1184,7 +1200,7 @@ if (!function_exists('eottae_translation_openai_translate_post')) {
             ."본문:\n{$content}\n";
 
         if ($extras) {
-            $labels = eottae_translation_extra_labels();
+            $labels = eottae_translation_extra_labels((string) ($args['bo_table'] ?? ''));
             $prompt .= "\n추가 정보:\n";
             foreach ($extras as $key => $value) {
                 $label = isset($labels[$key]) ? $labels[$key] : $key;
@@ -1257,7 +1273,10 @@ if (!function_exists('eottae_translation_openai_translate_post')) {
             'provider' => 'openai',
         );
         if ($extras && is_array($translated['translatedExtras'] ?? null)) {
-            $response['translatedExtras'] = eottae_translation_sanitize_extras($translated['translatedExtras']);
+            $response['translatedExtras'] = eottae_translation_sanitize_extras(
+                $translated['translatedExtras'],
+                (string) ($args['bo_table'] ?? '')
+            );
         }
 
         return $response;
@@ -1363,6 +1382,23 @@ if (!function_exists('eottae_list_translation_enqueue_assets')) {
     }
 }
 
+if (!function_exists('eottae_translation_target_button_label')) {
+    /**
+     * 번역 보기 버튼 — 각 대상 언어로 고정 표기
+     */
+    function eottae_translation_target_button_label($lang)
+    {
+        $lang = eottae_translation_normalize_language($lang, '');
+        $labels = array(
+            'en' => 'English View',
+            'ja' => '日本語表示',
+            'zh' => '中文查看',
+        );
+
+        return $labels[$lang] ?? strtoupper($lang).' View';
+    }
+}
+
 if (!function_exists('eottae_post_translation_panel_html')) {
     function eottae_post_translation_panel_html($bo_table, array $view, $source_language = 'ko')
     {
@@ -1373,11 +1409,7 @@ if (!function_exists('eottae_post_translation_panel_html')) {
         eottae_post_translation_enqueue_assets();
 
         $source_language = eottae_translation_normalize_language($source_language, 'ko');
-        $targets = array(
-            'en' => 'English',
-            'ja' => '日本語',
-            'zh' => '中文',
-        );
+        $targets = array('en', 'ja', 'zh');
 
         ob_start();
         ?>
@@ -1389,8 +1421,8 @@ if (!function_exists('eottae_post_translation_panel_html')) {
              data-endpoint="<?php echo G5_URL; ?>/proc/eottae-post-translate.php">
             <div class="post-translation__buttons" role="group" aria-label="게시글 번역">
                 <button type="button" class="post-translation__btn is-active" data-translation-original data-i18n="translation.view_original">원문 보기</button>
-                <?php foreach ($targets as $lang => $label) { ?>
-                <button type="button" class="post-translation__btn" data-translation-target="<?php echo $lang; ?>" data-i18n="translation.view_<?php echo $lang; ?>"><?php echo $label; ?>로 보기</button>
+                <?php foreach ($targets as $lang) { ?>
+                <button type="button" class="post-translation__btn" data-translation-target="<?php echo get_text($lang); ?>"><?php echo get_text(eottae_translation_target_button_label($lang)); ?></button>
                 <?php } ?>
             </div>
             <p class="post-translation__status" data-translation-status role="status" aria-live="polite" hidden></p>

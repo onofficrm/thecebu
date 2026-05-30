@@ -263,57 +263,99 @@
 
 /* 구인구직 상세 — 템플릿 정보 패널 */
 .job-detail-panel {
-  margin: 0 0 1.25rem;
-  padding: 1rem 1.1rem;
+  margin: 0 0 1.5rem;
+  padding: 1.15rem 1.2rem;
   border: 1px solid #ddd6fe;
-  border-radius: 14px;
+  border-radius: 16px;
   background: linear-gradient(180deg, #faf5ff 0%, #fff 100%);
 }
 
 .job-detail-panel__block + .job-detail-panel__block {
-  margin-top: 1rem;
-  padding-top: 1rem;
+  margin-top: 1.25rem;
+  padding-top: 1.15rem;
   border-top: 1px solid #ede9fe;
 }
 
 .job-detail-panel__title {
-  margin: 0 0 0.65rem;
-  font-size: 0.92rem;
+  margin: 0 0 0.85rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid #ede9fe;
+  font-size: 0.98rem;
   font-weight: 800;
   color: #5b21b6;
+  letter-spacing: -0.01em;
 }
 
 .job-detail-panel__list {
   margin: 0;
+  display: grid;
+  gap: 0.55rem;
 }
 
 .job-detail-panel__item {
   display: grid;
-  grid-template-columns: 7.5em 1fr;
-  gap: 0.35rem 0.75rem;
-  margin: 0 0 0.45rem;
-  font-size: 0.88rem;
-  line-height: 1.5;
+  grid-template-columns: minmax(5.5rem, 7rem) minmax(0, 1fr);
+  gap: 0.45rem 1rem;
+  align-items: start;
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #ede9fe;
+  font-size: 0.9rem;
+  line-height: 1.55;
 }
 
-.job-detail-panel__item--block {
-  display: block;
+.job-detail-panel__item--block,
+.job-detail-panel__item--solo {
+  grid-template-columns: 1fr;
+  gap: 0.35rem;
+  padding: 0.85rem 0.95rem;
 }
 
 .job-detail-panel__item--block dt {
-  display: none;
+  display: block;
+  margin: 0 0 0.15rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #7c3aed;
 }
 
 .job-detail-panel__item dt {
   margin: 0;
-  font-weight: 700;
+  padding-top: 0.1rem;
+  font-size: 0.74rem;
+  font-weight: 800;
   color: #64748b;
+  letter-spacing: 0.01em;
 }
 
-.job-detail-panel__item dd {
+.job-detail-panel__item dd,
+.job-detail-panel__value {
   margin: 0;
   color: #0f172a;
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1.65;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.job-detail-panel__value--multiline {
+  white-space: pre-line;
   font-weight: 500;
+  line-height: 1.75;
+  color: #1e293b;
+}
+
+.job-detail-panel__shop-link {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.job-detail-panel__shop-link:hover {
+  color: #6d28d9;
+  text-decoration: underline;
 }
 
 .job-location-panel {
@@ -379,10 +421,120 @@
 @media (max-width: 640px) {
   .job-detail-panel__item {
     grid-template-columns: 1fr;
-    gap: 0.15rem;
+    gap: 0.3rem;
+  }
+
+  .job-detail-panel__item dt {
+    padding-top: 0;
   }
 
   .job-location-panel__grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* 구인구직 상세 — 우측 요약·지도·액션 (중고장터 패턴) */
+.community-view-page__aside-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-self: start;
+  position: sticky;
+  top: calc(var(--eottae-header-h, 64px) + 12px);
+}
+
+.community-view-page__aside-column .community-sidebar {
+  position: static;
+  top: auto;
+}
+
+.job-view-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.job-view-aside__summary {
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: var(--eottae-shadow-sm, 0 1px 2px rgba(15, 23, 42, 0.06));
+}
+
+.job-view-aside__badges {
+  margin-bottom: 0.65rem;
+}
+
+.job-view-aside__title {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1.35;
+  color: #0f172a;
+}
+
+.job-view-aside__meta {
+  margin: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.job-view-aside__meta > div {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.job-view-aside__meta dt {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #64748b;
+}
+
+.job-view-aside__meta dd {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.job-view-aside .shop-detail-map {
+  margin: 0;
+}
+
+.job-view-aside .shop-detail-map.is-live .shop-detail-map__canvas,
+.job-view-aside .shop-detail-map__map {
+  min-height: 180px;
+}
+
+.job-view-aside .shop-detail-map__embed {
+  height: 180px;
+}
+
+.job-view-aside .inquiry-button--detail {
+  margin: 0;
+}
+
+@media (max-width: 960px) {
+  .community-view-page__aside-column {
+    display: contents;
+  }
+
+  .community-view-page .job-view-aside {
+    order: 3;
+    width: 100%;
+    max-width: none;
+    align-self: stretch;
+    box-sizing: border-box;
+  }
+
+  .community-view-page .community-sidebar__card,
+  .community-view-page .community-sidebar__ad,
+  .community-view-page .community-ad-carousel {
+    order: 4;
   }
 }

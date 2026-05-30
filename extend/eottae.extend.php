@@ -1451,6 +1451,12 @@ if (!function_exists('eottae_talkroom_on_bbs_write')) {
 if (!function_exists('eottae_on_bbs_write_force_dhtml_editor')) {
     function eottae_on_bbs_write_force_dhtml_editor($board, $wr_id, $w)
     {
+        if (!empty($board['bo_table'])
+            && function_exists('eottae_is_job_board')
+            && eottae_is_job_board($board['bo_table'])) {
+            return;
+        }
+
         if (function_exists('eottae_board_force_dhtml_editor')) {
             eottae_board_force_dhtml_editor();
         }

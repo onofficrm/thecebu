@@ -164,14 +164,16 @@ $post_language = function_exists('eottae_lang_post_default') ? eottae_lang_post_
         include G5_PATH.'/components/eottae/property-write-template.php';
     } ?>
 
-    <?php
-    if ($is_job_board_write || $is_estate_board_write) {
-        $eottae_editor_placeholder = '템플릿 자동작성을 사용하거나 직접 본문을 작성해 주세요';
-    } else {
-        $eottae_editor_placeholder = '세부 생활 정보, 꿀팁, 질문 등을 자유롭게 작성해 주세요';
-    }
-    include G5_PATH.'/components/eottae/board-write-editor.php';
-    ?>
+    <?php if ($is_job_board_write) { ?>
+    <input type="hidden" name="wr_content" id="wr_content" value="<?php echo htmlspecialchars($content, ENT_QUOTES, 'UTF-8'); ?>">
+    <?php } else {
+        if ($is_estate_board_write) {
+            $eottae_editor_placeholder = '템플릿 자동작성을 사용하거나 직접 본문을 작성해 주세요';
+        } else {
+            $eottae_editor_placeholder = '세부 생활 정보, 꿀팁, 질문 등을 자유롭게 작성해 주세요';
+        }
+        include G5_PATH.'/components/eottae/board-write-editor.php';
+    } ?>
     <?php } ?>
 
     <?php if ($is_community_hub_write

@@ -129,6 +129,7 @@ $job_recruit_status = 'recruiting';
 $job_can_change_recruit = false;
 $job_location = null;
 $job_shop = null;
+$job_view_mobile_inquiry_opts = array();
 if ($is_job_board_view) {
     $job_board_css = G5_PATH.'/css/eottae-job-board.css';
     if (is_file($job_board_css)) {
@@ -446,37 +447,6 @@ if ($is_ai_post) {
             include G5_PATH.'/components/eottae/job-view-detail.php';
         }
         ?>
-        <?php if ($is_job_board_view && is_array($job_location) && ($job_location['location_text'] !== '' || $job_location['area_label'] !== '')) { ?>
-        <section class="job-location-panel" aria-label="근무 위치">
-            <h2 class="job-location-panel__title">근무 위치</h2>
-            <dl class="job-location-panel__grid">
-                <div class="job-location-panel__item">
-                    <dt>지역</dt>
-                    <dd><?php echo get_text($job_location['area_label']); ?></dd>
-                </div>
-                <?php if ($job_location['location_text'] !== '') { ?>
-                <div class="job-location-panel__item">
-                    <dt>상세위치</dt>
-                    <dd><?php echo get_text($job_location['location_text']); ?></dd>
-                </div>
-                <?php } ?>
-            </dl>
-            <?php if (!empty($job_location['map_visible']) && $job_location['latitude'] !== '' && $job_location['longitude'] !== '' && is_numeric($job_location['latitude']) && is_numeric($job_location['longitude'])) {
-                $shop_map = array(
-                    'address' => $job_location['location_text'],
-                    'lat'     => $job_location['latitude'],
-                    'lng'     => $job_location['longitude'],
-                    'name'    => get_text($view['wr_subject']),
-                );
-                if (function_exists('eottae_enqueue_google_maps')) {
-                    eottae_enqueue_google_maps();
-                }
-                echo '<div class="job-location-panel__map">';
-                include G5_PATH.'/components/eottae/shop-detail-map.php';
-                echo '</div>';
-            } ?>
-        </section>
-        <?php } ?>
         <?php if ($is_job_board_view) { ?>
         <div class="job-recruit-panel"<?php echo $job_can_change_recruit ? ' data-job-recruit-panel data-proc-url="'.G5_URL.'/proc/eottae-job-recruit-status.php" data-bo-table="'.get_text($bo_table).'" data-wr-id="'.(int) $view['wr_id'].'"' : ''; ?>>
             <span class="job-recruit-panel__label">모집 상태</span>
@@ -548,9 +518,9 @@ if ($is_ai_post) {
         $is_icrm_view_body = function_exists('eottae_icrm_content_should_preserve_html')
             && eottae_icrm_content_should_preserve_html($view['wr_content'] ?? '');
         $view_body_plain = trim(strip_tags((string) ($view['content'] ?? '')));
-        $job_hide_plain_body = $is_job_board_view && is_array($job_template_data)
-            && strpos($view_body_plain, '[구인정보]') !== false
-            && !$is_icrm_view_body;
+        $job_hide_plain_body = $is_job_board_view
+            && function_exists('eottae_job_view_should_hide_body')
+            && eottae_job_view_should_hide_body($view, $job_template_data);
         $estate_hide_plain_body = $is_estate_board_view && is_array($estate_template_data)
             && (
                 strpos($view_body_plain, '[부동산 매물정보]') !== false
@@ -585,8 +555,17 @@ if ($is_ai_post) {
     </footer>
 </main>
 
+<div class="community-view-page__aside-column">
+<?php if ($is_job_board_view) {
+    include G5_PATH.'/components/eottae/job-view-aside.php';
+} ?>
 <?php include_once(G5_PATH.'/components/eottae/community-sidebar.php'); ?>
 </div>
+</div>
+
+<?php if ($is_job_board_view && !empty($job_view_mobile_inquiry_opts) && function_exists('eottae_render_inquiry_buttons')) {
+    eottae_render_inquiry_buttons('mobile-bar', $job_view_mobile_inquiry_opts);
+} ?>
 
 </div>
 

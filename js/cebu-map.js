@@ -225,6 +225,10 @@
     };
   };
 
+  CebuLifeMap.prototype.shouldUseRadiusView = function () {
+    return !!(this.userLocation && this.getActiveRadiusKm() > 0);
+  };
+
   CebuLifeMap.prototype.clearRadiusOverlay = function () {
     if (this.radiusCircle) {
       this.radiusCircle.setMap(null);
@@ -452,9 +456,6 @@
     });
     this.infoWindow = new google.maps.InfoWindow({ maxWidth: 340 });
     this.renderMarkers();
-    if (this.userLocation) {
-      this.applyRadiusView(this.userLocation);
-    }
   };
 
   CebuLifeMap.prototype.clearMarkers = function () {
@@ -468,10 +469,11 @@
     var self = this;
     if (!this.map || !global.google || !google.maps) return;
     this.clearMarkers();
-    var bounds = new google.maps.LatLngBounds();
-    if (this.userLocation) {
-      bounds.extend(new google.maps.LatLng(this.userLocation.lat, this.userLocation.lng));
+
+    if (this.shouldUseRadiusView()) {
+      this.applyRadiusView(this.userLocation);
     }
+
     this.filtered.forEach(function (loc) {
       var marker = new google.maps.Marker({
         position: { lat: loc.lat, lng: loc.lng },
@@ -484,15 +486,21 @@
         self.openMarker(marker, loc);
       });
       self.markers.push({ marker: marker, loc: loc });
-      bounds.extend(marker.getPosition());
+    });
+
+    if (this.shouldUseRadiusView()) {
+      return;
+    }
+
+    var bounds = new google.maps.LatLngBounds();
+    this.filtered.forEach(function (loc) {
+      bounds.extend(new google.maps.LatLng(loc.lat, loc.lng));
     });
     if (this.filtered.length === 1) {
       this.map.setCenter({ lat: this.filtered[0].lat, lng: this.filtered[0].lng });
       this.map.setZoom(15);
     } else if (this.filtered.length > 1) {
       this.map.fitBounds(bounds, 48);
-    } else if (this.userLocation && this.getActiveRadiusKm() > 0) {
-      this.applyRadiusView(this.userLocation);
     }
   };
 
