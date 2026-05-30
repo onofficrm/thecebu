@@ -99,6 +99,11 @@ $site_config = array(
     'public_ai_traffic_tick_enabled'  => true,
     'public_ai_traffic_tick_interval' => 90,
     'public_ai_traffic_grace_minutes' => 45,
+    /* 번역 큐 — 일반 호스팅용: 방문 트리거 + 외부 웹크론 */
+    'translation_traffic_tick_enabled'  => true,
+    'translation_traffic_tick_interval' => 90,
+    'translation_traffic_tick_limit'    => 2,
+    'translation_traffic_tick_percent'  => 5,
     'map_unit'                  => 'km',
     'map_placeholder_title'     => 'Google Maps API 키가 설정되지 않았습니다.',
     'map_placeholder_desc'      => '_site.config.php에서 google_maps_api_key 값을 입력하면 지도가 표시됩니다.',

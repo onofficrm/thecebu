@@ -5356,6 +5356,48 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
   opacity: 0.9;
 }
 
+.mypage-language-card {
+  background: var(--eottae-surface, #fff);
+  border: 1px solid var(--eottae-border, #e8ecef);
+  border-radius: var(--eottae-radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.mypage-language-card__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.mypage-language-card__form .eottae-field {
+  margin-bottom: 12px;
+}
+
+.mypage-language-card__save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--eottae-primary);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mypage-language-card__status {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--eottae-primary);
+}
+
+.mypage-language-card__status.is-error {
+  color: #c0392b;
+}
+
 .mypage-point-summary,
 .mypage-coupon-summary {
   display: grid;

@@ -9,6 +9,7 @@ include_once G5_LIB_PATH.'/eottae-i18n.lib.php';
 include_once G5_LIB_PATH.'/eottae-translation.lib.php';
 include_once G5_LIB_PATH.'/eottae.lib.php';
 include_once G5_LIB_PATH.'/eottae-language-meta.lib.php';
+include_once G5_LIB_PATH.'/eottae-lang-seo.lib.php';
 include_once G5_LIB_PATH.'/eottae-ai-generate.lib.php';
 include_once G5_LIB_PATH.'/eottae-coupon.lib.php';
 include_once G5_LIB_PATH.'/eottae-ad.lib.php';
@@ -257,6 +258,34 @@ if (!function_exists('eottae_add_shop_board_write_nginx_pre_rules')) {
     }
 }
 add_replace('add_nginx_conf_pre_rules', 'eottae_add_shop_board_write_nginx_pre_rules', 5, 3);
+
+if (function_exists('eottae_lang_seo_init')) {
+    eottae_lang_seo_init();
+}
+if (function_exists('add_replace')) {
+    add_replace('add_mod_rewrite_pre_rules', 'eottae_lang_seo_rewrite_pre_rules', 4, 3);
+    add_replace('add_nginx_conf_pre_rules', 'eottae_lang_seo_nginx_pre_rules', 4, 3);
+}
+
+if (!function_exists('eottae_on_lang_seo_board_head')) {
+    function eottae_on_lang_seo_board_head($board, $write, $wr_id)
+    {
+        if (function_exists('eottae_lang_seo_apply_board_view_robots')) {
+            eottae_lang_seo_apply_board_view_robots($board, $write, (int) $wr_id);
+        }
+    }
+}
+add_event('board_head_before', 'eottae_on_lang_seo_board_head', 8, 3);
+
+if (!function_exists('eottae_on_lang_seo_board_meta')) {
+    function eottae_on_lang_seo_board_meta($board, $write, $wr_id)
+    {
+        if (function_exists('eottae_lang_seo_apply_board_view_meta')) {
+            eottae_lang_seo_apply_board_view_meta($board, $write, (int) $wr_id);
+        }
+    }
+}
+add_event('board_head_before', 'eottae_on_lang_seo_board_meta', 11, 3);
 
 if (!function_exists('eottae_on_shop_write_before')) {
     function eottae_on_shop_write_before($board, $wr_id, $w, $qstr)
@@ -635,6 +664,12 @@ if (function_exists('eottae_translation_on_write_update_after')) {
 if (function_exists('eottae_lang_on_write_update_after')) {
     add_event('write_update_after', 'eottae_lang_on_write_update_after', 41, 5);
 }
+if (function_exists('eottae_translation_on_write_update_prewarm_after')) {
+    add_event('write_update_after', 'eottae_translation_on_write_update_prewarm_after', 42, 5);
+}
+if (function_exists('eottae_translation_on_traffic_tick_common_header')) {
+    add_event('common_header', 'eottae_translation_on_traffic_tick_common_header', 98, 0);
+}
 if (function_exists('eottae_lang_get_sql_search_filter')) {
     add_replace('get_sql_search', 'eottae_lang_get_sql_search_filter', 20, 5);
 }
@@ -693,6 +728,17 @@ if (eottae_should_load_assets()) {
             'storageKey' => 'cebuatteLanguage',
             'supportedLanguages' => array('ko', 'en', 'ja', 'zh'),
             'localesBaseUrl' => G5_URL.'/locales',
+            'seoEnabled' => function_exists('eottae_lang_seo_enabled') ? eottae_lang_seo_enabled() : false,
+            'seoAutoRouteEnabled' => function_exists('eottae_lang_seo_auto_route_enabled') ? eottae_lang_seo_auto_route_enabled() : true,
+            'seoDefaultLanguage' => 'ko',
+            'seoPrefixedLanguages' => function_exists('eottae_lang_seo_config')
+                ? (array) (eottae_lang_seo_config()['prefixes'] ?? array('en', 'ja', 'zh'))
+                : array('en', 'ja', 'zh'),
+            'memberPreferredLanguage' => (!empty($is_member) && function_exists('eottae_member_preferred_language_get'))
+                ? eottae_member_preferred_language_get($member)
+                : '',
+            'memberLanguageSaveUrl' => G5_URL.'/proc/eottae-member-language.php',
+            'isMember' => !empty($is_member),
         ), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT).';</script>',
         18
     );
@@ -700,6 +746,9 @@ if (eottae_should_load_assets()) {
         ? (string) @filemtime(G5_PATH.'/js/eottae-i18n.js')
         : (defined('G5_JS_VER') ? G5_JS_VER : '');
     add_javascript('<script src="'.G5_JS_URL.'/eottae-i18n.js'.($eottae_i18n_js_version !== '' ? '?v='.$eottae_i18n_js_version : '').'" defer></script>', 19);
+    if (function_exists('eottae_list_translation_enqueue_assets')) {
+        eottae_list_translation_enqueue_assets();
+    }
     add_javascript('<script src="'.G5_JS_URL.'/eottae.js'.($eottae_js_version !== '' ? '?v='.$eottae_js_version : '').'" defer></script>', 20);
     if (defined('G5_IS_MOBILE') && G5_IS_MOBILE) {
         add_javascript('<script src="'.G5_JS_URL.'/custom.js"></script>', 21);

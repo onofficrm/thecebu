@@ -14,11 +14,26 @@
       .replace(/"/g, '&quot;');
   }
 
+  function t(key, fallback) {
+    if (global.EottaeI18N && typeof global.EottaeI18N.t === 'function') {
+      var value = global.EottaeI18N.t(key);
+      if (value) {
+        return value;
+      }
+    }
+
+    return fallback;
+  }
+
+  function tCount(key, fallback, count) {
+    return String(t(key, fallback)).replace('{count}', String(count));
+  }
+
   function parseJsonResponse(res) {
     return res.text().then(function (text) {
       var trimmed = (text || '').trim();
       if (!trimmed) {
-        throw new Error('서버 응답이 비어 있습니다.');
+        throw new Error(t('home.public_chat.empty_response', '서버 응답이 비어 있습니다.'));
       }
       try {
         return JSON.parse(trimmed);
@@ -27,10 +42,10 @@
           return {
             success: false,
             auth_required: true,
-            message: '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.',
+            message: t('home.public_chat.auth_message', '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.'),
           };
         }
-        throw new Error('서버 응답 오류입니다.');
+        throw new Error(t('home.public_chat.bad_response', '서버 응답 오류입니다.'));
       }
     });
   }
@@ -60,7 +75,7 @@
     var urls = authUrls(section);
     var panel = section.querySelector('.public-group-chat__panel');
     if (!panel) {
-      window.alert(message || '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.');
+      window.alert(message || t('home.public_chat.auth_message', '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.'));
       return;
     }
 
@@ -70,10 +85,10 @@
     notice.className = 'public-group-chat__auth-notice';
     notice.setAttribute('role', 'alert');
     notice.innerHTML = ''
-      + '<p class="public-group-chat__auth-notice-text">' + esc(message || '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.') + '</p>'
+      + '<p class="public-group-chat__auth-notice-text">' + esc(message || t('home.public_chat.auth_message', '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.')) + '</p>'
       + '<div class="public-group-chat__auth-notice-actions">'
-      + '<a href="' + esc(urls.login) + '" class="public-group-chat__action">로그인</a>'
-      + '<a href="' + esc(urls.register) + '" class="public-group-chat__action public-group-chat__action--register">회원가입</a>'
+      + '<a href="' + esc(urls.login) + '" class="public-group-chat__action">' + esc(t('home.public_chat.login', '로그인')) + '</a>'
+      + '<a href="' + esc(urls.register) + '" class="public-group-chat__action public-group-chat__action--register">' + esc(t('home.public_chat.register', '회원가입')) + '</a>'
       + '</div>';
 
     panel.appendChild(notice);
@@ -94,7 +109,7 @@
     if (data && data.register_url) {
       section.setAttribute('data-register-url', data.register_url);
     }
-    showAuthNotice(section, message || '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.');
+    showAuthNotice(section, message || t('home.public_chat.auth_message', '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.'));
   }
 
   function findHeroGrid() {
@@ -275,8 +290,8 @@
     if (count < 1) {
       return '';
     }
-    return '<span class="public-group-chat__unread" aria-label="읽지 않은 '
-      + count + '명">' + count + '</span>';
+    return '<span class="public-group-chat__unread" aria-label="' + esc(tCount('home.public_chat.unread_aria', '읽지 않은 {count}명', count))
+      + '">' + count + '</span>';
   }
 
   function mineTimeBeforeHtml(message) {
@@ -339,7 +354,7 @@
         }
       }
       unread.textContent = String(count);
-      unread.setAttribute('aria-label', '읽지 않은 ' + count + '명');
+      unread.setAttribute('aria-label', tCount('home.public_chat.unread_aria', '읽지 않은 {count}명', count));
     });
   }
 
@@ -361,10 +376,10 @@
     }
 
     var author = message.is_ai
-      ? (message.ai_display_name || message.author || '어때봇 · AI 도우미')
-      : (message.author || '익명');
+      ? (message.ai_display_name || message.author || t('home.public_chat.ai_author', '어때봇 · AI 도우미'))
+      : (message.author || t('home.public_chat.anonymous', '익명'));
     var badge = message.is_ai
-      ? '<span class="talk-ai-msg__badge talk-ai-msg__badge--sm" aria-label="AI 도우미">'
+      ? '<span class="talk-ai-msg__badge talk-ai-msg__badge--sm" aria-label="' + esc(t('home.public_chat.ai_badge', 'AI 도우미')) + '">'
         + '<span class="talk-ai-msg__icon" aria-hidden="true">🤖</span>'
         + '<span class="talk-ai-msg__badge-label">' + esc(author) + '</span>'
         + '</span>'
@@ -685,7 +700,7 @@
     }
 
     if (requiresAuth(section)) {
-      handleAuthRequired(section, '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.');
+      handleAuthRequired(section, t('home.public_chat.auth_message', '회원가입 또는 로그인 후 메시지를 보낼 수 있습니다.'));
       return;
     }
 
@@ -714,7 +729,7 @@
           return;
         }
         if (!data || !data.success) {
-          throw new Error((data && data.message) || '전송에 실패했습니다.');
+          throw new Error((data && data.message) || t('home.public_chat.send_failed', '전송에 실패했습니다.'));
         }
 
         if (data.member_token) {
@@ -738,7 +753,7 @@
         }
       })
       .catch(function (err) {
-        var errMessage = err && err.message ? err.message : '전송에 실패했습니다.';
+        var errMessage = err && err.message ? err.message : t('home.public_chat.send_failed', '전송에 실패했습니다.');
         if (/로그인|회원가입/.test(errMessage)) {
           handleAuthRequired(section, errMessage);
           return;
@@ -766,11 +781,11 @@
       return;
     }
     if (requiresAuth(section)) {
-      handleAuthRequired(section, '회원가입 또는 로그인 후 AI 질문을 사용할 수 있습니다.');
+      handleAuthRequired(section, t('home.public_chat.ai_auth_message', '회원가입 또는 로그인 후 AI 질문을 사용할 수 있습니다.'));
       return;
     }
     if (!question) {
-      if (status) status.textContent = '질문을 먼저 입력해 주세요.';
+      if (status) status.textContent = t('home.public_chat.enter_question', '질문을 먼저 입력해 주세요.');
       input && input.focus();
       return;
     }
@@ -788,7 +803,7 @@
       btn.classList.add('is-loading');
     }
     if (status) {
-      status.textContent = 'AI가 세부 생활 답변을 작성 중입니다...';
+      status.textContent = t('home.public_chat.ai_thinking', 'AI가 세부 생활 답변을 작성 중입니다...');
     }
 
     fetch(sendUrl, {
@@ -804,7 +819,7 @@
           return;
         }
         if (!data || !data.success) {
-          throw new Error((data && data.message) || 'AI 질문 요청에 실패했습니다.');
+          throw new Error((data && data.message) || t('home.public_chat.ai_failed', 'AI 질문 요청에 실패했습니다.'));
         }
         if (data.member_token) {
           section.setAttribute('data-member-token', data.member_token);
@@ -819,14 +834,15 @@
           appendMessages(section, [data.message_row]);
         }
         if (status) {
-          status.textContent = 'AI 답변이 공개톡에 올라왔습니다.';
+          status.textContent = t('home.public_chat.ai_success', 'AI 답변이 공개톡에 올라왔습니다.');
         }
       })
       .catch(function (err) {
+        var aiFailed = t('home.public_chat.ai_failed', 'AI 질문 요청에 실패했습니다.');
         if (status) {
-          status.textContent = err && err.message ? err.message : 'AI 질문 요청에 실패했습니다.';
+          status.textContent = err && err.message ? err.message : aiFailed;
         } else {
-          window.alert(err && err.message ? err.message : 'AI 질문 요청에 실패했습니다.');
+          window.alert(err && err.message ? err.message : aiFailed);
         }
       })
       .then(function () {

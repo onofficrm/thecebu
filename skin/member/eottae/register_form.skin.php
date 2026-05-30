@@ -67,6 +67,14 @@ $member_role = (isset($member['mb_1']) && $member['mb_1'] === 'business') ? 'bus
             <label for="reg_mb_email">E-mail (필수)</label>
             <input type="email" name="mb_email" id="reg_mb_email" <?php echo $required ?> class="frm_input" placeholder="email@example.com" value="<?php echo isset($member['mb_email']) ? get_text($member['mb_email']) : ''; ?>">
         </div>
+        <?php
+        if (!function_exists('eottae_render_member_preferred_language_field') && is_file(G5_LIB_PATH.'/eottae-language-meta.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-language-meta.lib.php';
+        }
+        if (function_exists('eottae_render_member_preferred_language_field')) {
+            echo eottae_render_member_preferred_language_field($member, $w);
+        }
+        ?>
         <button type="submit" class="btn_submit" id="btn_submit"><?php echo $w === 'u' ? '정보 수정' : '가입하기'; ?></button>
         </form>
     </div>

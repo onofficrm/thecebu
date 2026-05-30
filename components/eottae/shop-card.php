@@ -34,7 +34,7 @@ if (!function_exists('eottae_shop_card_html')) {
 
         ob_start();
         ?>
-        <article class="shop-card<?php echo $status_class; ?>">
+        <article class="shop-card<?php echo $status_class; ?>" data-list-translation-item data-bo-table="<?php echo get_text($bo_table); ?>" data-wr-id="<?php echo (int) $shop['wr_id']; ?>">
             <a href="<?php echo $href; ?>" class="shop-card__link">
                 <div class="shop-card__media">
                     <?php if ($thumb) { ?>
@@ -43,13 +43,13 @@ if (!function_exists('eottae_shop_card_html')) {
                     <div class="shop-card__img shop-card__img--empty" aria-hidden="true"></div>
                     <?php } ?>
                     <?php if ($shop['status']) { ?>
-                    <span class="shop-card__status"><?php echo $shop['status']; ?></span>
+                    <span class="shop-card__status" data-translation-extra="status"><?php echo $shop['status']; ?></span>
                     <?php } ?>
                     <?php echo $event_badges; ?>
                 </div>
                 <div class="shop-card__body">
                     <?php if ($shop['category']) { ?><span class="shop-card__cate"><?php echo $shop['category']; ?></span><?php } ?>
-                    <h3 class="shop-card__title"><?php echo $shop['name'] ?: get_text($row['subject']); ?></h3>
+                    <h3 class="shop-card__title" data-translation-list-title><?php echo $shop['name'] ?: get_text($row['subject']); ?></h3>
                     <?php echo $language_badges; ?>
                     <?php if ($shop['region']) { ?><p class="shop-card__region"><?php echo $shop['region']; ?></p><?php } ?>
                     <?php if ($shop['address']) { ?><p class="shop-card__addr"><?php echo $shop['address']; ?></p><?php } ?>
@@ -179,7 +179,12 @@ if (!function_exists('eottae_shop_list_card_html')) {
             ? eottae_shop_view_url($shop['wr_id'], $bo_table)
             : G5_BBS_URL.'/board.php?bo_table='.$bo_table.'&wr_id='.$shop['wr_id'];
         $summary = eottae_get_shop_review_summary((int) $shop['wr_id']);
-        $snippet = eottae_shop_list_snippet(isset($row['wr_content']) ? $row['wr_content'] : '');
+        $shop_seo = function_exists('eottae_shop_seo_get') ? eottae_shop_seo_get($bo_table, (int) $shop['wr_id']) : array();
+        $shop_intro = trim(get_text($shop_seo['meta_intro'] ?? ''));
+        $snippet = $shop_intro !== ''
+            ? (function_exists('cut_str') ? cut_str($shop_intro, 110, '…') : $shop_intro)
+            : eottae_shop_list_snippet(isset($row['wr_content']) ? $row['wr_content'] : '');
+        $snippet_is_intro = $shop_intro !== '';
         $save_count = isset($row['_eottae_save_count']) ? (int) $row['_eottae_save_count'] : 0;
         $badges = eottae_shop_list_card_badges($row, $summary, $save_count);
         $latest_review = isset($row['_eottae_latest_review']) ? trim((string) $row['_eottae_latest_review']) : '';
@@ -197,7 +202,7 @@ if (!function_exists('eottae_shop_list_card_html')) {
 
         ob_start();
         ?>
-        <article class="shop-list-card" data-shop-card data-wr-id="<?php echo (int) $shop['wr_id']; ?>" data-lat="<?php echo htmlspecialchars($shop['lat'], ENT_QUOTES, 'UTF-8'); ?>" data-lng="<?php echo htmlspecialchars($shop['lng'], ENT_QUOTES, 'UTF-8'); ?>">
+        <article class="shop-list-card" data-shop-card data-list-translation-item data-bo-table="<?php echo get_text($bo_table); ?>" data-wr-id="<?php echo (int) $shop['wr_id']; ?>" data-lat="<?php echo htmlspecialchars($shop['lat'], ENT_QUOTES, 'UTF-8'); ?>" data-lng="<?php echo htmlspecialchars($shop['lng'], ENT_QUOTES, 'UTF-8'); ?>">
             <a href="<?php echo $href; ?>" class="shop-list-card__thumb-wrap">
                 <?php if ($thumb) { ?>
                 <img src="<?php echo $thumb; ?>" alt="<?php echo $shop['name']; ?>" class="shop-list-card__thumb" loading="lazy">
@@ -218,7 +223,7 @@ if (!function_exists('eottae_shop_list_card_html')) {
             </a>
             <div class="shop-list-card__body">
                 <div class="shop-list-card__head">
-                    <h3 class="shop-list-card__title"><a href="<?php echo $href; ?>"><?php echo $shop['name'] ?: get_text($row['subject']); ?></a></h3>
+                    <h3 class="shop-list-card__title"><a href="<?php echo $href; ?>" data-translation-list-title><?php echo $shop['name'] ?: get_text($row['subject']); ?></a></h3>
                     <div class="shop-list-card__meta">
                         <p class="shop-list-card__rating">
                             <span class="shop-list-card__stars">★ <?php echo number_format($summary['average'], 1); ?></span>
@@ -231,7 +236,7 @@ if (!function_exists('eottae_shop_list_card_html')) {
                             <span class="shop-list-card__tag shop-list-card__tag--region"><?php echo $shop['region']; ?></span>
                             <?php } ?>
                             <?php if ($status_label !== '') { ?>
-                            <span class="shop-list-card__tag shop-list-card__tag--status<?php echo $status_open ? ' shop-list-card__tag--status-open' : ''; ?>"><?php echo $status_label; ?></span>
+                            <span class="shop-list-card__tag shop-list-card__tag--status<?php echo $status_open ? ' shop-list-card__tag--status-open' : ''; ?>" data-translation-extra="status"><?php echo $status_label; ?></span>
                             <?php } ?>
                             <?php if ($shop['category']) { ?><span class="shop-list-card__tag shop-list-card__tag--cate"><?php echo $shop['category']; ?></span><?php } ?>
                             <?php echo $language_badges; ?>
@@ -239,7 +244,7 @@ if (!function_exists('eottae_shop_list_card_html')) {
                     </div>
                 </div>
                 <?php if ($snippet !== '') { ?>
-                <p class="shop-list-card__desc"><?php echo $snippet; ?></p>
+                <p class="shop-list-card__desc"<?php echo $snippet_is_intro ? ' data-translation-extra="intro"' : ' data-translation-list-snippet'; ?>><?php echo $snippet; ?></p>
                 <?php } ?>
                 <?php if ($show_review_preview) { ?>
                 <p class="shop-list-card__review-preview"><span class="shop-list-card__review-quote" aria-hidden="true">“</span><?php echo $latest_review; ?><span class="shop-list-card__review-quote" aria-hidden="true">”</span></p>

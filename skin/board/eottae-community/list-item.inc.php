@@ -46,7 +46,7 @@ $show_job_recruit_badge = $job_recruit_label !== '' && $job_thumb_html === '';
 $has_badges = $is_ai_post || $is_notice || $post_language !== '' || $badge_category !== '' || $region !== '' || $is_new || $is_hot
     || $estate_deal_label !== '' || $show_job_recruit_badge;
 ?>
-<article class="<?php echo $item_class; ?>">
+<article class="<?php echo $item_class; ?>" data-list-translation-item data-bo-table="<?php echo get_text($item_bo_table); ?>" data-wr-id="<?php echo (int) $item['wr_id']; ?>">
     <a href="<?php echo $item['href']; ?>" class="community-post__link">
         <div class="community-post__cols">
             <?php if ($status_thumb_html !== '') {
@@ -87,7 +87,7 @@ $has_badges = $is_ai_post || $is_notice || $post_language !== '' || $badge_categ
                             <?php } ?>
                         </span>
                         <?php } ?>
-                        <h2 class="community-post__title<?php echo $is_ai_post ? ' talk-ai-msg__title' : ''; ?>"><?php echo $item['subject']; ?></h2>
+                        <h2 class="community-post__title<?php echo $is_ai_post ? ' talk-ai-msg__title' : ''; ?>" data-translation-list-title><?php echo $item['subject']; ?></h2>
                     </div>
                     <?php if ($snippet !== '') { ?>
                     <p class="community-post__excerpt"><?php echo htmlspecialchars($snippet, ENT_QUOTES, 'UTF-8'); ?></p>

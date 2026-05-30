@@ -76,3 +76,35 @@
   background: var(--eottae-primary, #0ea5e9);
   color: #fff;
 }
+
+.shop-detail-page__promos {
+  margin: 12px 0 20px;
+}
+
+.shop-detail-page__intro {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #475569;
+}
+
+.shop-detail-page__promo-title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.shop-detail-page__promo-body {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #334155;
+}
+
+.shop-detail-page__promo-body--pre {
+  white-space: pre-line;
+}
+
+.shop-detail-page__promo + .shop-detail-page__promo {
+  margin-top: 16px;
+}

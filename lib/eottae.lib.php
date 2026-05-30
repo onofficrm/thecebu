@@ -1333,11 +1333,26 @@ if (!function_exists('eottae_builder_inject_home_member_login_template')) {
 if (!function_exists('eottae_builder_inject_home_i18n_script')) {
     function eottae_builder_inject_home_i18n_script()
     {
+        if (!function_exists('eottae_member_preferred_language_get') && is_file(G5_LIB_PATH.'/eottae-language-meta.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-language-meta.lib.php';
+        }
+
         $config_json = json_encode(array(
             'defaultLanguage' => 'ko',
             'storageKey' => 'cebuatteLanguage',
             'supportedLanguages' => array('ko', 'en', 'ja', 'zh'),
             'localesBaseUrl' => G5_URL.'/locales',
+            'seoEnabled' => function_exists('eottae_lang_seo_enabled') ? eottae_lang_seo_enabled() : false,
+            'seoAutoRouteEnabled' => function_exists('eottae_lang_seo_auto_route_enabled') ? eottae_lang_seo_auto_route_enabled() : true,
+            'seoDefaultLanguage' => 'ko',
+            'seoPrefixedLanguages' => function_exists('eottae_lang_seo_config')
+                ? (array) (eottae_lang_seo_config()['prefixes'] ?? array('en', 'ja', 'zh'))
+                : array('en', 'ja', 'zh'),
+            'memberPreferredLanguage' => (!empty($GLOBALS['is_member']) && function_exists('eottae_member_preferred_language_get'))
+                ? eottae_member_preferred_language_get($GLOBALS['member'] ?? array())
+                : '',
+            'memberLanguageSaveUrl' => G5_URL.'/proc/eottae-member-language.php',
+            'isMember' => !empty($GLOBALS['is_member']),
         ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
         if ($config_json === false) {
             return '';

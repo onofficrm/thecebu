@@ -120,7 +120,17 @@ if (!function_exists('eottae_lang_from_row')) {
 if (!function_exists('eottae_lang_from_request')) {
     function eottae_lang_from_request($key = 'lang')
     {
+        if (function_exists('eottae_lang_seo_enabled') && eottae_lang_seo_enabled() && function_exists('eottae_lang_seo_current')) {
+            $seo_lang = eottae_lang_seo_current();
+            if ($seo_lang !== '' && isset(eottae_lang_supported()[$seo_lang])) {
+                return $seo_lang;
+            }
+        }
+
         $raw = isset($_REQUEST[$key]) ? trim((string) $_REQUEST[$key]) : '';
+        if ($raw === '' && !empty($_REQUEST['eottae_lang'])) {
+            $raw = trim((string) $_REQUEST['eottae_lang']);
+        }
         if ($raw === '') {
             return '';
         }
@@ -321,11 +331,99 @@ if (!function_exists('eottae_lang_filter_url')) {
 if (!function_exists('eottae_lang_seo_config')) {
     function eottae_lang_seo_config()
     {
+        if (function_exists('eottae_lang_seo_config_resolve')) {
+            return eottae_lang_seo_config_resolve();
+        }
+
         return array(
             'enabled' => false,
-            'prefixes' => array('ko', 'en', 'ja', 'zh'),
+            'prefixes' => array('en', 'ja', 'zh'),
+            'default_language' => 'ko',
             'index_auto_translations' => false,
             'manual_review_required' => true,
+            'hreflang_map' => array(
+                'ko' => 'ko',
+                'en' => 'en',
+                'ja' => 'ja',
+                'zh' => 'zh-Hans',
+            ),
         );
+    }
+}
+
+if (!function_exists('eottae_member_preferred_language_field')) {
+    function eottae_member_preferred_language_field()
+    {
+        return 'mb_9';
+    }
+}
+
+if (!function_exists('eottae_member_preferred_language_get')) {
+    function eottae_member_preferred_language_get($member)
+    {
+        if (!is_array($member)) {
+            return '';
+        }
+
+        $field = eottae_member_preferred_language_field();
+        $raw = isset($member[$field]) ? trim((string) $member[$field]) : '';
+
+        return eottae_lang_normalize($raw, '');
+    }
+}
+
+if (!function_exists('eottae_member_preferred_language_save')) {
+    function eottae_member_preferred_language_save($mb_id, $language)
+    {
+        global $g5;
+
+        $mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $mb_id);
+        $language = eottae_lang_normalize($language, '');
+        if ($mb_id === '' || $language === '') {
+            return array('ok' => false, 'message' => 'invalid_params');
+        }
+
+        $field = eottae_member_preferred_language_field();
+        sql_query(" update {$g5['member_table']} set {$field} = '".sql_escape_string($language)."' where mb_id = '".sql_escape_string($mb_id)."' ");
+
+        return array('ok' => true, 'language' => $language);
+    }
+}
+
+if (!function_exists('eottae_member_preferred_language_options')) {
+    function eottae_member_preferred_language_options()
+    {
+        $options = array();
+        foreach (eottae_lang_supported() as $code => $meta) {
+            $options[$code] = $meta['label'] ?? strtoupper($code);
+        }
+
+        return $options;
+    }
+}
+
+if (!function_exists('eottae_render_member_preferred_language_field')) {
+    function eottae_render_member_preferred_language_field($member = array(), $w = '')
+    {
+        $current = eottae_member_preferred_language_get($member);
+        if ($current === '') {
+            $current = 'ko';
+        }
+        $options = eottae_member_preferred_language_options();
+
+        ob_start();
+        ?>
+        <div class="eottae-field">
+            <label for="reg_preferred_language" data-i18n="member.preferred_language">선호 언어</label>
+            <select name="<?php echo eottae_member_preferred_language_field(); ?>" id="reg_preferred_language" class="eottae-select">
+                <?php foreach ($options as $code => $label) { ?>
+                <option value="<?php echo get_text($code); ?>"<?php echo $current === $code ? ' selected' : ''; ?>><?php echo get_text($label); ?></option>
+                <?php } ?>
+            </select>
+            <p class="eottae-field__hint" data-i18n="member.preferred_language_hint">로그인 후에도 동일한 언어로 사이트를 이용할 수 있습니다.</p>
+        </div>
+        <?php
+
+        return (string) ob_get_clean();
     }
 }

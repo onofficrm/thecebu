@@ -29,6 +29,21 @@
     return key ? ' data-i18n="' + esc(key) + '"' : '';
   }
 
+  function t(key, fallback) {
+    if (global.EottaeI18N && typeof global.EottaeI18N.t === 'function') {
+      var value = global.EottaeI18N.t(key);
+      if (value) {
+        return value;
+      }
+    }
+
+    return fallback;
+  }
+
+  function navLabel(key, fallback) {
+    return t(key, fallback);
+  }
+
   function applyHomeI18n() {
     if (!global.EottaeI18N) {
       return;
@@ -189,8 +204,8 @@
       + '<div class="eottae-gnb-header__actions">'
       + authHtml
       + renderLanguageSelect('eottae-language--desktop')
-      + (data && data.talk_url ? '<a href="' + esc(data.talk_url) + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--talk eottae-gnb-header__btn--desktop" data-eottae-home-talk-btn="1">' + esc(data.talk_label || '세부톡') + '</a>' : '')
-      + (data && data.calendar_url ? '<a href="' + esc(data.calendar_url) + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--calendar eottae-gnb-header__btn--desktop" data-eottae-home-calendar-btn="1">' + esc(data.calendar_label || '세부일정') + '</a>' : '')
+      + (data && data.talk_url ? '<a href="' + esc(data.talk_url) + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--talk eottae-gnb-header__btn--desktop" data-eottae-home-talk-btn="1">' + esc(navLabel('home.talk', data.talk_label || '세부톡')) + '</a>' : '')
+      + (data && data.calendar_url ? '<a href="' + esc(data.calendar_url) + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--calendar eottae-gnb-header__btn--desktop" data-eottae-home-calendar-btn="1">' + esc(navLabel('home.calendar', data.calendar_label || '세부일정')) + '</a>' : '')
       + (menu.shop_write_url ? '<a href="' + esc(menu.shop_write_url) + '" class="eottae-gnb-header__btn eottae-gnb-header__btn--register eottae-gnb-header__btn--desktop" data-i18n="button.shop_register">업소등록</a>' : '')
       + '<button type="button" class="eottae-gnb-header__icon-btn eottae-gnb-header__menu-btn site-header__menu-btn" data-eottae-home-menu-btn="1" aria-controls="siteMobileNav" aria-expanded="false" aria-label="메뉴 열기" data-i18n-aria-label="common.open_menu">'
       + '<svg class="eottae-gnb-header__icon eottae-gnb-header__icon--menu" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>'

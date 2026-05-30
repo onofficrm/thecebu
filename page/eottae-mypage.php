@@ -13,6 +13,9 @@ include_once G5_LIB_PATH.'/eottae-briefing.lib.php';
 include_once G5_LIB_PATH.'/eottae-member-growth.lib.php';
 include_once G5_LIB_PATH.'/eottae-message.lib.php';
 include_once G5_LIB_PATH.'/eottae-notification.lib.php';
+if (is_file(G5_LIB_PATH.'/eottae-language-meta.lib.php')) {
+    include_once G5_LIB_PATH.'/eottae-language-meta.lib.php';
+}
 include_once G5_PATH.'/components/eottae/member-growth-display.php';
 include_once G5_PATH.'/components/eottae/talk-admin-nav.php';
 include_once G5_PATH.'/components/eottae/public-ai-admin-nav.php';
@@ -234,6 +237,19 @@ g5_page_start('마이페이지');
         <p><?php echo get_text($member['mb_email']); ?></p>
     </section>
 
+    <section class="mypage-language-card" id="mypage-language-card" aria-labelledby="mypage-language-title">
+        <h2 class="mypage-language-card__title" id="mypage-language-title" data-i18n="member.mypage_language_title">언어 설정</h2>
+        <form id="mypage-language-form" class="mypage-language-card__form" method="post" action="<?php echo G5_URL; ?>/proc/eottae-member-language.php">
+            <?php
+            if (function_exists('eottae_render_member_preferred_language_field')) {
+                echo eottae_render_member_preferred_language_field($member, 'u');
+            }
+            ?>
+            <p class="mypage-language-card__status" data-mypage-language-status hidden></p>
+            <button type="submit" class="mypage-language-card__save" data-i18n="member.save_language">저장</button>
+        </form>
+    </section>
+
     <section class="mypage-point-summary">
         <a href="<?php echo G5_URL; ?>/page/eottae-points.php" class="mypage-point-summary__box" style="text-decoration:none;color:inherit">
             <p class="mypage-point-summary__label">포인트</p>
@@ -416,6 +432,89 @@ g5_page_start('마이페이지');
     ?>
 
 </main>
+
+<script>
+(function () {
+  'use strict';
+
+  var form = document.getElementById('mypage-language-form');
+  if (!form) {
+    return;
+  }
+
+  function t(key, fallback) {
+    if (window.EottaeI18N && typeof window.EottaeI18N.t === 'function') {
+      var value = window.EottaeI18N.t(key);
+      if (value) {
+        return value;
+      }
+    }
+    return fallback;
+  }
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    var cfg = window.__EOTTaeI18N__ || {};
+    var url = cfg.memberLanguageSaveUrl || form.getAttribute('action') || '';
+    var select = form.querySelector('#reg_preferred_language');
+    var status = form.querySelector('[data-mypage-language-status]');
+    var submitBtn = form.querySelector('[type="submit"]');
+    var language = select ? String(select.value || '').trim() : '';
+
+    if (!url || !language) {
+      return;
+    }
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+    }
+    if (status) {
+      status.hidden = true;
+      status.classList.remove('is-error');
+    }
+
+    var body = new FormData();
+    body.append('preferred_language', language);
+
+    window.fetch(url, {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: body,
+      headers: { Accept: 'application/json' },
+    })
+      .then(function (res) {
+        return res.json().catch(function () {
+          return { success: false };
+        });
+      })
+      .then(function (data) {
+        if (!data || !data.success) {
+          throw new Error((data && data.message) || 'save_failed');
+        }
+        if (window.EottaeI18N && typeof window.EottaeI18N.setLanguage === 'function') {
+          window.EottaeI18N.setLanguage(language);
+        }
+        if (status) {
+          status.textContent = t('member.language_saved', '언어 설정을 저장했습니다.');
+          status.hidden = false;
+        }
+      })
+      .catch(function () {
+        if (status) {
+          status.textContent = t('member.language_save_failed', '언어 설정 저장에 실패했습니다.');
+          status.classList.add('is-error');
+          status.hidden = false;
+        }
+      })
+      .then(function () {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+        }
+      });
+  });
+})();
+</script>
 
 <?php
 g5_page_end();

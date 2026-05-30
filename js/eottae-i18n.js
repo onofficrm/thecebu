@@ -6,6 +6,13 @@
   var storageKey = config.storageKey || 'cebuatteLanguage';
   var supportedLanguages = config.supportedLanguages || ['ko', 'en', 'ja', 'zh'];
   var localesBaseUrl = config.localesBaseUrl || '/locales';
+  var seoEnabled = !!config.seoEnabled;
+  var seoAutoRouteEnabled = config.seoAutoRouteEnabled !== false;
+  var seoDefaultLanguage = config.seoDefaultLanguage || 'ko';
+  var seoPrefixedLanguages = config.seoPrefixedLanguages || ['en', 'ja', 'zh'];
+  var memberPreferredLanguage = isSupported(config.memberPreferredLanguage) ? config.memberPreferredLanguage : '';
+  var memberLanguageSaveUrl = config.memberLanguageSaveUrl || '';
+  var isMember = !!config.isMember;
   var dictionaries = {};
   var currentLanguage = defaultLanguage;
   var readyPromise = null;
@@ -106,8 +113,159 @@
     return '';
   }
 
+  function detectLanguageFromUrl() {
+    if (!seoEnabled) {
+      return '';
+    }
+
+    try {
+      var params = new URL(window.location.href).searchParams;
+      var queryLang = normalizeLanguage(params.get('eottae_lang') || '');
+      if (isSupported(queryLang)) {
+        return queryLang;
+      }
+    } catch (error) { /* ignore */ }
+
+    var path = window.location.pathname || '/';
+    var i;
+    for (i = 0; i < seoPrefixedLanguages.length; i += 1) {
+      var code = seoPrefixedLanguages[i];
+      if (path === '/' + code || path === '/' + code + '/' || path.indexOf('/' + code + '/') === 0) {
+        return isSupported(code) ? code : '';
+      }
+    }
+
+    return '';
+  }
+
+  function buildLanguagePath(language) {
+    var path = window.location.pathname || '/';
+    var search = window.location.search || '';
+    var hash = window.location.hash || '';
+    var relative = path.replace(/^\/+/, '');
+
+    seoPrefixedLanguages.forEach(function (code) {
+      if (relative === code || relative.indexOf(code + '/') === 0) {
+        relative = relative === code ? '' : relative.slice(code.length + 1);
+      }
+    });
+
+    if (!isSupported(language) || language === seoDefaultLanguage) {
+      return (relative ? '/' + relative : '/') + search + hash;
+    }
+
+    return '/' + language + (relative ? '/' + relative : '/') + search + hash;
+  }
+
+  function getMemberPreferredLanguage() {
+    return memberPreferredLanguage;
+  }
+
+  function persistMemberLanguage(language) {
+    if (!isMember || !memberLanguageSaveUrl || !isSupported(language)) {
+      return;
+    }
+
+    var body = new window.FormData();
+    body.append('preferred_language', language);
+
+    window.fetch(memberLanguageSaveUrl, {
+      method: 'POST',
+      body: body,
+      credentials: 'same-origin'
+    }).catch(function () { /* ignore */ });
+  }
+
+  function setLanguageCookie(language) {
+    if (!isSupported(language)) {
+      return;
+    }
+
+    var maxAge = 365 * 24 * 60 * 60;
+    var secure = window.location.protocol === 'https:' ? '; secure' : '';
+    document.cookie = storageKey + '=' + encodeURIComponent(language)
+      + '; path=/; max-age=' + maxAge + '; samesite=lax' + secure;
+  }
+
+  function resolveLanguagePreference() {
+    if (isMember && getMemberPreferredLanguage()) {
+      return getMemberPreferredLanguage();
+    }
+
+    var stored = getStoredLanguage();
+    if (stored) {
+      return stored;
+    }
+
+    return detectBrowserLanguage() || defaultLanguage;
+  }
+
+  function needsPrefixedUrl(language) {
+    return seoEnabled
+      && seoAutoRouteEnabled
+      && isSupported(language)
+      && language !== seoDefaultLanguage
+      && seoPrefixedLanguages.indexOf(language) !== -1;
+  }
+
+  function maybeRedirectToLanguageUrl() {
+    if (!seoEnabled || !seoAutoRouteEnabled) {
+      return false;
+    }
+
+    var urlLang = detectLanguageFromUrl();
+    var preferred = resolveLanguagePreference();
+    var current = window.location.pathname + window.location.search + window.location.hash;
+
+    if (needsPrefixedUrl(preferred)) {
+      if (urlLang === preferred) {
+        return false;
+      }
+
+      var prefixedPath = buildLanguagePath(preferred);
+      if (prefixedPath !== current) {
+        if (!getStoredLanguage()) {
+          try {
+            window.localStorage.setItem(storageKey, preferred);
+          } catch (error) { /* ignore */ }
+        }
+        setLanguageCookie(preferred);
+        window.location.replace(prefixedPath);
+        return true;
+      }
+
+      return false;
+    }
+
+    if (urlLang && urlLang !== seoDefaultLanguage) {
+      var explicitDefault = getStoredLanguage() === seoDefaultLanguage
+        || (isMember && getMemberPreferredLanguage() === seoDefaultLanguage);
+      if (explicitDefault) {
+        var defaultPath = buildLanguagePath(seoDefaultLanguage);
+        if (defaultPath !== current) {
+          setLanguageCookie(seoDefaultLanguage);
+          window.location.replace(defaultPath);
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
   function resolveInitialLanguage() {
-    return getStoredLanguage() || detectBrowserLanguage() || defaultLanguage;
+    var fromUrl = detectLanguageFromUrl();
+    if (fromUrl) {
+      return fromUrl;
+    }
+    if (isMember && getMemberPreferredLanguage()) {
+      return getMemberPreferredLanguage();
+    }
+    var stored = getStoredLanguage();
+    if (stored) {
+      return stored;
+    }
+    return detectBrowserLanguage() || defaultLanguage;
   }
 
   function readNestedValue(source, path) {
@@ -208,11 +366,22 @@
   function setLanguage(language, persist) {
     var nextLanguage = isSupported(language) ? language : defaultLanguage;
 
+    if (persist && seoEnabled && nextLanguage !== currentLanguage) {
+      var nextPath = buildLanguagePath(nextLanguage);
+      if (nextPath !== window.location.pathname + window.location.search + window.location.hash) {
+        window.location.assign(nextPath);
+        return Promise.resolve(nextLanguage);
+      }
+    }
+
     currentLanguage = nextLanguage;
     if (persist) {
       try {
         window.localStorage.setItem(storageKey, nextLanguage);
       } catch (error) { /* ignore */ }
+      setLanguageCookie(nextLanguage);
+      memberPreferredLanguage = nextLanguage;
+      persistMemberLanguage(nextLanguage);
     }
 
     readyPromise = Promise.all([
@@ -321,7 +490,17 @@
     }
   };
 
+  if (maybeRedirectToLanguageUrl()) {
+    return;
+  }
+
   currentLanguage = resolveInitialLanguage();
+  if (isMember && getMemberPreferredLanguage() && !getStoredLanguage()) {
+    try {
+      window.localStorage.setItem(storageKey, getMemberPreferredLanguage());
+    } catch (error) { /* ignore */ }
+    setLanguageCookie(getMemberPreferredLanguage());
+  }
   initSelectors();
 
   if (document.readyState === 'loading') {

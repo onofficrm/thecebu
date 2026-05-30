@@ -14,6 +14,17 @@
       .replace(/"/g, '&quot;');
   }
 
+  function t(key, fallback) {
+    if (global.EottaeI18N && typeof global.EottaeI18N.t === 'function') {
+      var value = global.EottaeI18N.t(key);
+      if (value) {
+        return value;
+      }
+    }
+
+    return fallback;
+  }
+
   function findHeroSidebar() {
     if (typeof global.findEottaeHeroSidebarColumn === 'function') {
       return global.findEottaeHeroSidebarColumn();
@@ -79,12 +90,12 @@
     stats.setAttribute('aria-hidden', 'true');
     stats.innerHTML = ''
       + '<div class="community-login-box__stat community-login-box__stat--guest">'
-      + '<span class="community-login-box__stat-label">포인트</span>'
-      + '<strong class="community-login-box__stat-value">활동·리뷰 적립</strong>'
+      + '<span class="community-login-box__stat-label">' + esc(t('home.guest_points_label', '포인트')) + '</span>'
+      + '<strong class="community-login-box__stat-value">' + esc(t('home.guest_points_value', '활동·리뷰 적립')) + '</strong>'
       + '</div>'
       + '<div class="community-login-box__stat community-login-box__stat--guest">'
-      + '<span class="community-login-box__stat-label">쿠폰</span>'
-      + '<strong class="community-login-box__stat-value">할인·이벤트</strong>'
+      + '<span class="community-login-box__stat-label">' + esc(t('home.guest_coupon_label', '쿠폰')) + '</span>'
+      + '<strong class="community-login-box__stat-value">' + esc(t('home.guest_coupon_value', '할인·이벤트')) + '</strong>'
       + '</div>';
 
     guestBox.insertBefore(stats, cta);

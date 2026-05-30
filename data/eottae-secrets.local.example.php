@@ -34,8 +34,24 @@ $eottae_secrets_override = array(
      * DEEPL_API_KEY=
      */
     'translation_provider'      => 'openai',
+    'translation_auto_prewarm'  => true,
+    'translation_cron_key'      => '',
+    'translation_traffic_tick_enabled' => true,
+    'translation_traffic_tick_interval' => 90,
+    'translation_traffic_tick_limit' => 2,
+    'translation_traffic_tick_percent' => 5,
     'openai_api_key'            => '',
     'translation_openai_model'  => 'gpt-4o-mini',
+
+    /*
+     * 다국어 SEO (선택)
+     * LANG_SEO_ENABLED=1
+     * 활성화 시 /en/, /ja/, /zh/ URL prefix, hreflang, 다국어 sitemap 사용
+     * 관리자 > 환경설정 > DB업그레이드 로 rewrite 규칙 반영 필요
+     */
+    'lang_seo_enabled'          => false,
+    /* 브라우저/회원 선호 언어로 첫 방문 시 /en/ 등 prefix URL 자동 이동 (기본 true) */
+    'lang_seo_auto_route'       => true,
     'google_translate_api_key'  => '',
     'deepl_api_key'             => '',
 

@@ -40,8 +40,16 @@
     var content = qs('[data-translation-content]', article);
     var original = {
       titleText: title ? title.textContent : '',
-      contentHtml: content ? content.innerHTML : ''
+      contentHtml: content ? content.innerHTML : '',
+      extras: {}
     };
+
+    qsa('[data-translation-extra]', article).forEach(function (el) {
+      var key = el.getAttribute('data-translation-extra');
+      if (key) {
+        original.extras[key] = el.textContent;
+      }
+    });
 
     originalMap.set(article, original);
     return original;
@@ -86,6 +94,30 @@
     }
   }
 
+  function applyExtras(article, extras) {
+    if (!extras || typeof extras !== 'object') {
+      return;
+    }
+
+    Object.keys(extras).forEach(function (key) {
+      qsa('[data-translation-extra="' + key + '"]', article).forEach(function (el) {
+        el.textContent = extras[key];
+      });
+    });
+  }
+
+  function restoreExtras(article, original) {
+    if (!original || !original.extras) {
+      return;
+    }
+
+    Object.keys(original.extras).forEach(function (key) {
+      qsa('[data-translation-extra="' + key + '"]', article).forEach(function (el) {
+        el.textContent = original.extras[key];
+      });
+    });
+  }
+
   function applyTranslation(panel, article, payload) {
     var title = qs('[data-translation-title]', article);
     var content = qs('[data-translation-content]', article);
@@ -99,6 +131,8 @@
         window.jQuery(content).viewimageresize();
       }
     }
+
+    applyExtras(article, payload.translatedExtras || null);
 
     showNotice(panel, true);
     setActive(panel, payload.targetLanguage || '');
@@ -118,6 +152,8 @@
         window.jQuery(content).viewimageresize();
       }
     }
+
+    restoreExtras(article, original);
 
     showNotice(panel, false);
     setStatus(panel, '');
@@ -164,6 +200,18 @@
       });
   }
 
+  function applyCurrentLanguage(panel) {
+    var language = currentLanguage();
+    if (!language || language === (panel.getAttribute('data-source-language') || 'ko')) {
+      restoreOriginal(panel, findArticle(panel));
+      return;
+    }
+
+    if (qs('[data-translation-target="' + language + '"]', panel)) {
+      translate(panel, language);
+    }
+  }
+
   function initPanel(panel) {
     if (panel.getAttribute('data-translation-ready') === '1') {
       return;
@@ -174,6 +222,12 @@
     var preferred = qs('[data-translation-target="' + language + '"]', panel);
     if (preferred) {
       preferred.classList.add('is-preferred');
+    }
+
+    if (preferred && language !== (panel.getAttribute('data-source-language') || 'ko')) {
+      window.setTimeout(function () {
+        applyCurrentLanguage(panel);
+      }, 80);
     }
 
     panel.addEventListener('click', function (event) {
@@ -211,6 +265,7 @@
       qsa('[data-translation-target]', panel).forEach(function (button) {
         button.classList.toggle('is-preferred', button.getAttribute('data-translation-target') === currentLanguage());
       });
+      applyCurrentLanguage(panel);
     });
   });
 })(window, document);

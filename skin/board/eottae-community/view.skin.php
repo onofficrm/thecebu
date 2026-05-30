@@ -256,7 +256,7 @@ if ($is_ai_post) {
                 <?php if ($event_display_name !== '') { ?>
                 <div class="event-info-panel__item">
                     <dt>업체/작성자</dt>
-                    <dd><?php echo $event_display_name; ?></dd>
+                    <dd data-translation-extra="display_name"><?php echo $event_display_name; ?></dd>
                 </div>
                 <?php } ?>
                 <div class="event-info-panel__item">
@@ -266,13 +266,13 @@ if ($is_ai_post) {
                 <?php if ($event_benefit !== '') { ?>
                 <div class="event-info-panel__item event-info-panel__benefit">
                     <dt>혜택 요약</dt>
-                    <dd><?php echo $event_benefit; ?></dd>
+                    <dd data-translation-extra="benefit"><?php echo $event_benefit; ?></dd>
                 </div>
                 <?php } ?>
                 <?php if ($event_contact !== '') { ?>
                 <div class="event-info-panel__item">
                     <dt>문의 방법</dt>
-                    <dd><?php echo $event_contact; ?></dd>
+                    <dd data-translation-extra="contact"><?php echo $event_contact; ?></dd>
                 </div>
                 <?php } ?>
             </dl>

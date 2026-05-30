@@ -73,9 +73,15 @@ if (function_exists('eottae_shop_apply_manage_links')) {
                 <div class="shop-detail-page__tags">
                     <?php if ($shop['category']) { ?><span class="shop-detail-page__badge"><?php echo $shop['category']; ?></span><?php } ?>
                     <?php if ($shop['region']) { ?><span class="shop-detail-page__badge shop-detail-page__badge--muted"><?php echo $shop['region']; ?></span><?php } ?>
-                    <?php if ($shop['status']) { ?><span class="shop-detail-page__badge shop-detail-page__badge--status"><?php echo $shop['status']; ?></span><?php } ?>
+                    <?php if ($shop['status']) { ?><span class="shop-detail-page__badge shop-detail-page__badge--status" data-translation-extra="status"><?php echo $shop['status']; ?></span><?php } ?>
                 </div>
-                <h1 class="shop-detail-page__title"><?php echo get_text($view['wr_subject']); ?></h1>
+                <h1 class="shop-detail-page__title" data-translation-title><?php echo get_text($view['wr_subject']); ?></h1>
+                <?php include G5_PATH.'/components/eottae/shop-detail-promos.php'; ?>
+                <?php
+                if (function_exists('eottae_post_translation_panel_html')) {
+                    echo eottae_post_translation_panel_html($bo_table, $view, 'ko');
+                }
+                ?>
                 <p class="shop-detail-page__rating">
                     <span class="shop-detail-page__stars">★ <?php echo number_format($summary['average'], 1); ?></span>
                     <span class="shop-detail-page__reviews">리뷰 <?php echo number_format($summary['count']); ?></span>
@@ -96,8 +102,8 @@ if (function_exists('eottae_shop_apply_manage_links')) {
                 <dl class="shop-detail-page__info-list">
                     <?php if ($shop['address']) { ?><div><dt>주소</dt><dd><?php echo $shop['address']; ?></dd></div><?php } ?>
                     <?php if ($shop['phone']) { ?><div><dt>전화</dt><dd><a href="<?php echo eottae_tel_href($shop['phone']); ?>"><?php echo $shop['phone']; ?></a></dd></div><?php } ?>
-                    <?php if ($shop['hours']) { ?><div><dt>영업시간</dt><dd><?php echo $shop['hours']; ?></dd></div><?php } ?>
-                    <?php if ($shop['closed']) { ?><div><dt>휴무일</dt><dd><?php echo $shop['closed']; ?></dd></div><?php } ?>
+                    <?php if ($shop['hours']) { ?><div><dt>영업시간</dt><dd data-translation-extra="hours"><?php echo $shop['hours']; ?></dd></div><?php } ?>
+                    <?php if ($shop['closed']) { ?><div><dt>휴무일</dt><dd data-translation-extra="closed"><?php echo $shop['closed']; ?></dd></div><?php } ?>
                     <?php if ($shop['website']) { ?><div><dt>홈페이지</dt><dd><a href="<?php echo $shop['website']; ?>" target="_blank" rel="noopener noreferrer">바로가기</a></dd></div><?php } ?>
                     <?php foreach ($shop_sns_links as $sns_link) { ?><div><dt><?php echo $sns_link['label']; ?></dt><dd><a href="<?php echo $sns_link['url']; ?>" target="_blank" rel="noopener noreferrer">바로가기</a></dd></div><?php } ?>
                 </dl>

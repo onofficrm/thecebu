@@ -16,6 +16,17 @@
       .replace(/"/g, '&quot;');
   }
 
+  function t(key, fallback) {
+    if (global.EottaeI18N && typeof global.EottaeI18N.t === 'function') {
+      var value = global.EottaeI18N.t(key);
+      if (value) {
+        return value;
+      }
+    }
+
+    return fallback;
+  }
+
   function normalizeText(value) {
     return String(value || '').replace(/\s+/g, '').trim();
   }
@@ -230,8 +241,8 @@
     } else {
       eventsHtml = ''
         + '<div class="sebu-cal-summary-day__empty">'
-        + '<p>등록된 일정이 없습니다.</p>'
-        + '<p class="sebu-cal-summary-day__empty-sub">새로운 일정을 등록해보세요.</p>'
+        + '<p>' + esc(t('home.calendar_empty', '등록된 일정이 없습니다.')) + '</p>'
+        + '<p class="sebu-cal-summary-day__empty-sub">' + esc(t('home.calendar_empty_sub', '새로운 일정을 등록해보세요.')) + '</p>'
         + '</div>';
     }
 
@@ -278,7 +289,7 @@
     return ''
       + '<section class="sebu-cal-summary-talk" aria-label="세부톡 일정">'
       + '<header class="sebu-cal-summary-talk__head">'
-      + '<h3 class="sebu-cal-summary-talk__title">세부톡 일정</h3>'
+      + '<h3 class="sebu-cal-summary-talk__title">' + esc(t('home.calendar_talk_title', '세부톡 일정')) + '</h3>'
       + '</header>'
       + '<ul class="sebu-cal-summary-talk__list">' + html + '</ul>'
       + '</section>';
@@ -302,7 +313,7 @@
         summaryHtml += ''
           + '<span class="sebu-cal-compact__day">'
           + '<strong>' + esc(calendar.days[i].label || '') + '</strong>'
-          + '<span>일정 없음</span>'
+          + '<span>' + esc(t('home.calendar_no_schedule', '일정 없음')) + '</span>'
           + '</span>';
       }
 
@@ -310,14 +321,14 @@
         + '<section class="sebu-cal-summary sebu-cal-summary--compact" data-eottae-home-calendar="1">'
         + '<div class="sebu-cal-compact">'
         + '<div class="sebu-cal-compact__copy">'
-        + '<p class="sebu-cal-compact__eyebrow">세부 일정</p>'
-        + '<h2 class="sebu-cal-summary__title">' + esc(calendar.title || '이번 3일 세부 일정') + '</h2>'
-        + '<p class="sebu-cal-summary__desc">오늘·내일·모레 등록된 일정이 아직 없습니다.</p>'
+        + '<p class="sebu-cal-compact__eyebrow">' + esc(t('home.calendar_eyebrow', '세부 일정')) + '</p>'
+        + '<h2 class="sebu-cal-summary__title">' + esc(calendar.title || t('home.calendar_title', '이번 3일 세부 일정')) + '</h2>'
+        + '<p class="sebu-cal-summary__desc">' + esc(t('home.calendar_empty_sub', '오늘·내일·모레 등록된 일정이 아직 없습니다.')) + '</p>'
         + '</div>'
         + '<div class="sebu-cal-compact__days" aria-label="이번 3일 일정 요약">' + summaryHtml + '</div>'
         + '<div class="sebu-cal-summary__actions">'
-        + '<a href="' + esc(calendar.calendar_url || '/calendar/') + '" class="sebu-cal-summary__btn">캘린더 보기</a>'
-        + '<a href="' + esc(createHref || '/page/eottae-calendar-create.php') + '" class="sebu-cal-summary__btn sebu-cal-summary__btn--primary">일정 등록</a>'
+        + '<a href="' + esc(calendar.calendar_url || '/calendar/') + '" class="sebu-cal-summary__btn">' + esc(t('home.calendar_view', '캘린더 보기')) + '</a>'
+        + '<a href="' + esc(createHref || '/page/eottae-calendar-create.php') + '" class="sebu-cal-summary__btn sebu-cal-summary__btn--primary">' + esc(t('home.calendar_create', '일정 등록')) + '</a>'
         + '</div>'
         + '</div>'
         + '</section>';
@@ -327,12 +338,12 @@
       + '<section class="sebu-cal-summary" data-eottae-home-calendar="1">'
       + '<header class="sebu-cal-summary__head">'
       + '<div>'
-      + '<h2 class="sebu-cal-summary__title">' + esc(calendar.title || '이번 3일 세부 일정') + '</h2>'
-      + '<p class="sebu-cal-summary__desc">오늘·내일·모레 세부 지역 일정을 한눈에 확인하세요.</p>'
+      + '<h2 class="sebu-cal-summary__title">' + esc(calendar.title || t('home.calendar_title', '이번 3일 세부 일정')) + '</h2>'
+      + '<p class="sebu-cal-summary__desc">' + esc(t('home.calendar_desc', '오늘·내일·모레 세부 지역 일정을 한눈에 확인하세요.')) + '</p>'
       + '</div>'
       + '<div class="sebu-cal-summary__actions">'
-      + '<a href="' + esc(calendar.calendar_url || '/calendar/') + '" class="sebu-cal-summary__btn">캘린더 전체보기</a>'
-      + '<a href="' + esc(createHref || '/page/eottae-calendar-create.php') + '" class="sebu-cal-summary__btn sebu-cal-summary__btn--primary">일정 등록하기</a>'
+      + '<a href="' + esc(calendar.calendar_url || '/calendar/') + '" class="sebu-cal-summary__btn">' + esc(t('home.calendar_view', '캘린더 전체보기')) + '</a>'
+      + '<a href="' + esc(createHref || '/page/eottae-calendar-create.php') + '" class="sebu-cal-summary__btn sebu-cal-summary__btn--primary">' + esc(t('home.calendar_create', '일정 등록하기')) + '</a>'
       + '</div>'
       + '</header>'
       + '<div class="sebu-cal-summary__grid">' + daysHtml + '</div>'
@@ -402,17 +413,17 @@
 
     return [
       {
-        label: '실시간 추천글',
+        label: t('home.popular_recommended', '실시간 추천글'),
         posts: data.latest || [],
         accentClass: 'sebu-community-col__accent--orange',
       },
       {
-        label: '조회수 급상승',
+        label: t('home.popular_rising', '조회수 급상승'),
         posts: data.hit || [],
         accentClass: 'sebu-community-col__accent--rose',
       },
       {
-        label: '댓글 많은 글',
+        label: t('home.popular_comments', '댓글 많은 글'),
         posts: data.comment || [],
         accentClass: 'sebu-community-col__accent--pink',
       },
@@ -437,7 +448,7 @@
   function renderPopularHotBlock(popular) {
     return ''
       + '<section class="sebu-community-popular-hot" data-eottae-home-popular-hot="1" aria-label="전체 실시간 인기글">'
-      + '<h2 class="sebu-community-popular-hot__title"><span class="sebu-community-popular-hot__emoji" aria-hidden="true">🔥 </span>전체 실시간 인기글</h2>'
+      + '<h2 class="sebu-community-popular-hot__title"><span class="sebu-community-popular-hot__emoji" aria-hidden="true">🔥 </span>' + esc(t('home.popular_hot_title', '전체 실시간 인기글')) + '</h2>'
       + renderPopularTripleRow(popular)
       + '</section>';
   }
@@ -831,7 +842,7 @@
 
     return ''
       + '<div class="sebu-news-today" aria-label="오늘 세부 한눈에">'
-      + '<span class="sebu-news-today__eyebrow">오늘 세부 한눈에</span>'
+      + '<span class="sebu-news-today__eyebrow">' + esc(t('home.news_eyebrow', '오늘 세부 한눈에')) + '</span>'
       + '<div class="sebu-news-today__items">' + html + '</div>'
       + '</div>';
   }
@@ -885,11 +896,11 @@
       html = ''
         + '<div class="sebu-news-empty">'
         + '<p class="sebu-news-empty__eyebrow">첫 소식을 기다리는 중</p>'
-        + '<strong class="sebu-news-empty__title">' + esc(cta.title || '아직 표시할 글이 없습니다.') + '</strong>'
-        + '<p class="sebu-news-empty__desc">' + esc(cta.desc || '새 글이 올라오면 홈 최신소식에 바로 노출됩니다.') + '</p>'
+        + '<strong class="sebu-news-empty__title">' + esc(cta.title || t('home.news_empty_title', '아직 표시할 글이 없습니다.')) + '</strong>'
+        + '<p class="sebu-news-empty__desc">' + esc(cta.desc || t('home.news_empty_desc', '새 글이 올라오면 홈 최신소식에 바로 노출됩니다.')) + '</p>'
         + '<div class="sebu-news-empty__actions">'
-        + '<a href="' + esc(cta.primaryUrl || tab.url || communityUrl()) + '" class="sebu-news-empty__btn sebu-news-empty__btn--primary">' + esc(cta.primaryText || '글쓰기') + '</a>'
-        + '<a href="' + esc(cta.listUrl || tab.url || communityUrl()) + '" class="sebu-news-empty__btn">' + esc(cta.listText || '목록 보기') + '</a>'
+        + '<a href="' + esc(cta.primaryUrl || tab.url || communityUrl()) + '" class="sebu-news-empty__btn sebu-news-empty__btn--primary">' + esc(cta.primaryText || t('home.news_write', '글쓰기')) + '</a>'
+        + '<a href="' + esc(cta.listUrl || tab.url || communityUrl()) + '" class="sebu-news-empty__btn">' + esc(cta.listText || t('home.news_list', '목록 보기')) + '</a>'
         + '</div>'
         + '</div>';
     } else {
@@ -902,7 +913,7 @@
       + ' role="tabpanel"'
       + ' aria-hidden="' + (index === 0 ? 'false' : 'true') + '">'
       + html
-      + '<a href="' + esc(tab.url || communityUrl()) + '" class="sebu-news-panel__more">더보기</a>'
+      + '<a href="' + esc(tab.url || communityUrl()) + '" class="sebu-news-panel__more">' + esc(t('home.news_more', '더보기')) + '</a>'
       + '</div>';
   }
 
@@ -953,12 +964,12 @@
       + '<article class="sebu-community-col sebu-community-col--news" data-eottae-news-tabs="1">'
       + '<header class="sebu-community-col__head sebu-community-col__head--news">'
       + '<div>'
-      + '<p class="sebu-news-kicker">세부 커뮤니티</p>'
+      + '<p class="sebu-news-kicker">' + esc(t('home.news_kicker', '세부 커뮤니티')) + '</p>'
       + '<h3 class="sebu-community-col__title">'
       + '<span class="sebu-community-col__accent sebu-community-col__accent--sky" aria-hidden="true"></span>'
-      + esc(latestNews.title || '세부 최신소식')
+      + esc(latestNews.title || t('home.news_title', '세부 최신소식'))
       + '</h3>'
-      + '<p class="sebu-news-desc">' + esc(latestNews.desc || '세부의 새 글을 빠르게 확인하세요.') + '</p>'
+      + '<p class="sebu-news-desc">' + esc(latestNews.desc || t('home.news_desc', '세부의 새 글을 빠르게 확인하세요.')) + '</p>'
       + '</div>'
       + '</header>'
       + renderTodayOverview(latestNews)
@@ -1416,4 +1427,17 @@
   }
 
   global.initEottaeHomeMainSection = init;
+
+  global.addEventListener('eottae:languagechange', function () {
+    mountDone = false;
+    var mainMounted = document.querySelector('[data-eottae-home-main-mounted="1"]');
+    if (mainMounted && mainMounted.parentNode) {
+      mainMounted.parentNode.removeChild(mainMounted);
+    }
+    var hotMounted = document.querySelector('[data-eottae-home-popular-hot-mounted="1"]');
+    if (hotMounted && hotMounted.parentNode) {
+      hotMounted.parentNode.removeChild(hotMounted);
+    }
+    mount();
+  });
 }(window));

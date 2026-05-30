@@ -46,10 +46,10 @@ if (is_array($event_shop) && function_exists('eottae_event_shop_list_thumb_html'
         </div>
         <h2 class="event-post__title"><?php echo $item['subject']; ?></h2>
         <?php if ($event_display_name !== '') { ?>
-        <p class="event-post__meta"><?php echo get_text($event_display_name); ?></p>
+        <p class="event-post__meta" data-translation-extra="display_name"><?php echo get_text($event_display_name); ?></p>
         <?php } ?>
         <?php if ($event_benefit !== '') { ?>
-        <p class="event-post__benefit"><?php echo get_text($event_benefit); ?></p>
+        <p class="event-post__benefit" data-translation-extra="benefit"><?php echo get_text($event_benefit); ?></p>
         <?php } ?>
         <p class="event-post__period"><?php echo get_text($event_period_label); ?></p>
     </a>

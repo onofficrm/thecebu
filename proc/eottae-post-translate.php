@@ -40,37 +40,36 @@ if (empty($write['wr_id'])) {
 }
 
 $view = get_view($write, $board, G5_PATH.'/skin/board/'.$board['bo_skin']);
-$html = 0;
-if (strpos((string) ($view['wr_option'] ?? ''), 'html1') !== false) {
-    $html = 1;
-} elseif (strpos((string) ($view['wr_option'] ?? ''), 'html2') !== false) {
-    $html = 2;
-} elseif (function_exists('eottae_icrm_content_needs_html') && eottae_icrm_content_needs_html($view['wr_content'])) {
-    $html = 1;
-}
+$html = function_exists('eottae_translation_post_html_mode') ? eottae_translation_post_html_mode($view) : 0;
 
 $source_updated_at = eottae_translation_source_updated_at($write);
 $cached = eottae_translation_cache_get($bo_table, $wr_id, $target_language, $source_updated_at);
 if ($cached) {
     $title = eottae_translation_sanitize_title($cached['translated_title']);
     $content = eottae_translation_sanitize_content($cached['translated_content'], $html);
-
-    eottae_json_send(array(
+    $payload = array(
         'success' => true,
         'cached' => true,
         'provider' => $cached['provider'],
+        'reviewStatus' => (string) ($cached['review_status'] ?? 'auto'),
         'targetLanguage' => $target_language,
         'translatedTitle' => $title,
         'translatedContent' => eottae_translation_render_content($content, $html),
         'plainContent' => $content,
-    ));
+    );
+    $extras = eottae_translation_sanitize_extras(eottae_translation_decode_extras($cached['translated_extras'] ?? ''), $bo_table);
+    if ($extras) {
+        $payload['translatedExtras'] = $extras;
+    }
+
+    eottae_json_send($payload);
 }
 
-$result = eottae_translate_post(array(
-    'title' => (string) ($write['wr_subject'] ?? ''),
-    'content' => (string) ($write['wr_content'] ?? ''),
-    'sourceLanguage' => $source_language,
-    'targetLanguage' => $target_language,
+$result = eottae_translate_post(eottae_translation_build_translate_args(
+    $bo_table,
+    $write,
+    $source_language,
+    $target_language
 ));
 
 if (empty($result['success'])) {
@@ -88,6 +87,7 @@ if ($translated_title === '' && $translated_content === '') {
 }
 
 $provider = (string) ($result['provider'] ?? eottae_translation_provider());
+$translated_extras = eottae_translation_sanitize_extras($result['translatedExtras'] ?? array(), $bo_table);
 eottae_translation_cache_save(
     $bo_table,
     $wr_id,
@@ -96,15 +96,22 @@ eottae_translation_cache_save(
     $translated_title,
     $translated_content,
     $provider,
-    $source_updated_at
+    $source_updated_at,
+    $translated_extras
 );
 
-eottae_json_send(array(
+$response = array(
     'success' => true,
     'cached' => false,
     'provider' => $provider,
+    'reviewStatus' => 'auto',
     'targetLanguage' => $target_language,
     'translatedTitle' => $translated_title,
     'translatedContent' => eottae_translation_render_content($translated_content, $html),
     'plainContent' => $translated_content,
-));
+);
+if ($translated_extras) {
+    $response['translatedExtras'] = $translated_extras;
+}
+
+eottae_json_send($response);
