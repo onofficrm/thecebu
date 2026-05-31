@@ -177,13 +177,15 @@ if (!function_exists('eottae_column_home_feed_html')) {
 
                 <div class="sebu-column-home__side">
                 <?php if (!empty($popular)) { ?>
-                <div class="sebu-column-home__popular">
+                <div class="sebu-column-home__popular-wrap">
                     <p class="sebu-column-home__latest-label">인기 컬럼 TOP 3</p>
+                    <div class="sebu-column-home__popular">
                     <ol class="sebu-column-home__rank-list">
                     <?php foreach ($popular as $idx => $post) { ?>
                     <?php echo eottae_column_home_rank_item_html($post, (int) $idx + 1); ?>
                     <?php } ?>
                     </ol>
+                    </div>
                 </div>
                 <?php } ?>
                 </div>
@@ -215,9 +217,6 @@ if (!function_exists('eottae_column_home_feed_html')) {
                 </div>
                 <?php } ?>
 
-                <div class="sebu-column-home__footer">
-                    <a href="<?php echo $list_url; ?>" class="sebu-column-home__more"><?php echo function_exists('eottae_column_menu_label') ? eottae_column_menu_label() : '컬럼'; ?> 전체 보기</a>
-                </div>
             </div>
         </section>
         <?php
