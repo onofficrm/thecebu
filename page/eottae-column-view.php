@@ -51,6 +51,7 @@ $column_neighbors = eottae_column_neighbor_posts($wr_id, array(
 ));
 $can_edit = $is_member && eottae_column_can_edit($member['mb_id'] ?? '', $wr_id, $is_super);
 $can_delete = $is_member && eottae_column_can_delete($member['mb_id'] ?? '', $wr_id, $is_super);
+$can_write_new = $is_member && eottae_column_can_write($member['mb_id'] ?? '', $is_super);
 $thumb_url = trim((string) ($post['thumbnail_url'] ?? ''));
 $has_thumb = $thumb_url !== '' && stripos($thumb_url, 'no_img') === false;
 $tag_list = array();
@@ -98,6 +99,9 @@ g5_page_start(get_text($post['wr_subject'] ?? '컬럼'));
 
     <?php if ($can_edit || $can_delete) { ?>
     <div class="sebu-article__owner-bar">
+        <?php if ($can_write_new && $can_edit) { ?>
+        <a href="<?php echo eottae_column_write_url(); ?>" class="sebu-column-btn sebu-column-btn--primary sebu-column-btn--sm">컬럼작성</a>
+        <?php } ?>
         <?php if ($can_edit) { ?>
         <a href="<?php echo eottae_column_write_url($wr_id); ?>" class="sebu-column-btn sebu-column-btn--outline sebu-column-btn--sm">수정</a>
         <?php } ?>
