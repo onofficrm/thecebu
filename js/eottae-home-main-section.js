@@ -914,16 +914,56 @@
       + '</li>';
   }
 
+  function renderNewsFeaturePost(post, index) {
+    if (!post || !post.title) {
+      return '';
+    }
+
+    var comments = Number(post.comments || 0);
+    var views = Number(post.views || 0);
+    var stats = [];
+    if (views > 0) {
+      stats.push('조회 ' + formatCount(views));
+    }
+    if (comments > 0) {
+      stats.push('댓글 ' + formatCount(comments));
+    }
+    if (post.time) {
+      stats.push(post.time);
+    }
+
+    return ''
+      + '<a href="' + esc(post.url || '#') + '" class="sebu-news-feature sebu-news-feature--' + esc(String(index + 1)) + '">'
+      + '<span class="sebu-news-feature__media">' + renderNewsThumb(post) + '</span>'
+      + '<span class="sebu-news-feature__body">'
+      + '<span class="sebu-news-feature__head">'
+      + (post.board ? '<span class="sebu-news-item__board">' + esc(post.board) + '</span>' : '')
+      + (post.is_new ? '<span class="sebu-news-item__badge sebu-news-item__badge--new">NEW</span>' : '')
+      + (post.is_hot ? '<span class="sebu-news-item__badge sebu-news-item__badge--hot">HOT</span>' : '')
+      + '</span>'
+      + '<strong class="sebu-news-feature__title">' + esc(post.title) + '</strong>'
+      + (post.excerpt ? '<span class="sebu-news-feature__excerpt">' + esc(post.excerpt) + '</span>' : '')
+      + (stats.length ? '<span class="sebu-news-feature__stats">' + esc(stats.join(' · ')) + '</span>' : '')
+      + '</span>'
+      + '</a>';
+  }
+
   function renderNewsPanel(tab, index) {
     var posts = tab && tab.items ? tab.items.slice(0, 5) : [];
+    var featureCount = Math.min(posts.length, 2);
+    var featureHtml = '';
+    var listHtml = '';
     var html = '';
     var i;
 
-    for (i = 0; i < posts.length; i += 1) {
-      html += renderNewsPost(posts[i]);
+    for (i = 0; i < featureCount; i += 1) {
+      featureHtml += renderNewsFeaturePost(posts[i], i);
+    }
+    for (i = featureCount; i < posts.length; i += 1) {
+      listHtml += renderNewsPost(posts[i]);
     }
 
-    if (!html) {
+    if (!featureHtml && !listHtml) {
       var cta = tab && tab.emptyCta ? tab.emptyCta : {};
       html = ''
         + '<div class="sebu-news-empty">'
@@ -936,7 +976,9 @@
         + '</div>'
         + '</div>';
     } else {
-      html = '<ul class="sebu-news-panel__list">' + html + '</ul>';
+      html = ''
+        + (featureHtml ? '<div class="sebu-news-panel__features">' + featureHtml + '</div>' : '')
+        + (listHtml ? '<ul class="sebu-news-panel__list">' + listHtml + '</ul>' : '');
     }
 
     return ''

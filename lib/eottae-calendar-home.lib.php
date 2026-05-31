@@ -221,6 +221,10 @@ if (!function_exists('eottae_home_latest_news_format_row')) {
         $comments = (int) ($row['wr_comment'] ?? 0);
         $views = (int) ($row['wr_hit'] ?? 0);
         $title = get_text($row['wr_subject'] ?? '');
+        $excerpt = trim(preg_replace('/\s+/', ' ', strip_tags((string) ($row['wr_content'] ?? ''))));
+        if ($excerpt !== '') {
+            $excerpt = get_text(cut_str($excerpt, 96, '…'));
+        }
         $thumb = '';
 
         if (function_exists('eottae_community_list_thumb')) {
@@ -232,6 +236,7 @@ if (!function_exists('eottae_home_latest_news_format_row')) {
             'boardKey' => (string) ($board['key'] ?? ''),
             'board'    => (string) ($board['label'] ?? $bo_table),
             'title'    => $title,
+            'excerpt'  => $excerpt,
             'comments' => $comments,
             'views'    => $views,
             'time'     => function_exists('eottae_api_relative_time_label') ? eottae_api_relative_time_label($datetime) : '',
@@ -258,7 +263,7 @@ if (!function_exists('eottae_home_latest_news_board_payload')) {
 
         $write_table = $g5['write_prefix'].$bo_table;
         $result = sql_query("
-            SELECT wr_id, wr_subject, wr_comment, wr_hit, wr_datetime
+            SELECT wr_id, wr_subject, wr_content, wr_comment, wr_hit, wr_datetime
             FROM `{$write_table}`
             WHERE wr_is_comment = 0
             ORDER BY wr_datetime DESC, wr_id DESC
