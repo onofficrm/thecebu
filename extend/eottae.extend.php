@@ -97,6 +97,9 @@ if (function_exists('eottae_report_ensure_schema')) {
 if (function_exists('eottae_market_ensure_schema')) {
     eottae_market_ensure_schema();
 }
+if (function_exists('eottae_free_ensure_schema')) {
+    eottae_free_ensure_schema();
+}
 if (function_exists('eottae_member_growth_ensure_schema')) {
     eottae_member_growth_ensure_schema();
 }

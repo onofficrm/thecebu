@@ -124,7 +124,7 @@ if (!function_exists('eottae_gnb_nav_menu')) {
                 'children' => array(
                     array('key' => 'community_news', 'label' => '필리핀뉴스', 'href' => $news_list_url),
                     array('key' => 'community_life', 'label' => '생활정보', 'href' => eottae_board_list_url($community_table)),
-                    array('key' => 'community_free', 'label' => '자유게시판', 'href' => eottae_board_list_url($free_table)),
+                    array('key' => 'community_free', 'label' => '자유게시판', 'href' => function_exists('eottae_free_list_url') ? eottae_free_list_url() : eottae_board_list_url($free_table)),
                     array('key' => 'community_review', 'label' => '업체리뷰', 'href' => eottae_board_list_url($review_table)),
                     array('key' => 'community_people', 'label' => '사람찾기', 'href' => eottae_board_list_url($people_table)),
                     array('key' => 'community_event', 'label' => '이벤트/프로모션', 'href' => eottae_board_list_url($event_table)),

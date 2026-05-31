@@ -173,6 +173,10 @@ if (!function_exists('eottae_community_hub_list_url')) {
             $params['hub'] = 'community';
         }
 
+        if (empty($params) && function_exists('eottae_free_board_table') && $bo_table === eottae_free_board_table() && function_exists('eottae_free_list_url')) {
+            return eottae_free_list_url();
+        }
+
         if (function_exists('eottae_board_list_url')) {
             return eottae_board_list_url($bo_table, $params);
         }

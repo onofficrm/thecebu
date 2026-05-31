@@ -445,6 +445,13 @@ if (!function_exists('eottae_home_public_talkrooms_payload')) {
             'list_url'      => function_exists('eottae_talkroom_list_url') ? eottae_talkroom_list_url() : G5_URL.'/talk',
             'create_url'    => function_exists('eottae_talkroom_create_url') ? eottae_talkroom_create_url() : G5_URL.'/page/eottae-talk-create.php',
             'total'         => count($pool),
+            'ai_banner'     => array(
+                'url'     => function_exists('eottae_talkroom_ai_landing_url') ? eottae_talkroom_ai_landing_url() : G5_URL.'/talk/ai.php',
+                'eyebrow' => 'AI 톡방 도우미',
+                'title'   => '조용한 톡방, AI가 먼저 말을 걸어요',
+                'desc'    => '오늘의 질문·모임 제안·신규회원 환영까지. 세부어때 AI가 우리 톡방 분위기를 살려줍니다.',
+                'cta'     => '자세히 보기',
+            ),
         );
     }
 }

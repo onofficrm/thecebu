@@ -950,7 +950,7 @@
 
   function renderNewsPanel(tab, index) {
     var posts = tab && tab.items ? tab.items.slice(0, 5) : [];
-    var featureCount = Math.min(posts.length, 2);
+    var featureCount = Math.min(posts.length, 3);
     var featureHtml = '';
     var listHtml = '';
     var html = '';
@@ -1225,6 +1225,26 @@
       + '</div>';
   }
 
+  function renderTalkRoomsAiBanner(banner) {
+    banner = banner || {};
+    var url = banner.url || (global.__EOTTae__ && global.__EOTTae__.talkAiUrl) || '/talk/ai.php';
+    var eyebrow = banner.eyebrow || t('home.talk_ai_eyebrow', 'AI 톡방 도우미');
+    var title = banner.title || t('home.talk_ai_title', '조용한 톡방, AI가 먼저 말을 걸어요');
+    var desc = banner.desc || t('home.talk_ai_desc', '오늘의 질문·모임 제안·신규회원 환영까지. 세부어때 AI가 우리 톡방 분위기를 살려줍니다.');
+    var cta = banner.cta || t('home.talk_ai_cta', '자세히 보기');
+
+    return ''
+      + '<a href="' + esc(url) + '" class="sebu-talkrooms-ai-banner" aria-label="' + esc(title) + '">'
+      + '<span class="sebu-talkrooms-ai-banner__icon" aria-hidden="true">🤖</span>'
+      + '<span class="sebu-talkrooms-ai-banner__copy">'
+      + '<span class="sebu-talkrooms-ai-banner__eyebrow">' + esc(eyebrow) + '</span>'
+      + '<strong class="sebu-talkrooms-ai-banner__title">' + esc(title) + '</strong>'
+      + '<span class="sebu-talkrooms-ai-banner__desc">' + esc(desc) + '</span>'
+      + '</span>'
+      + '<span class="sebu-talkrooms-ai-banner__cta">' + esc(cta) + '<span aria-hidden="true">→</span></span>'
+      + '</a>';
+  }
+
   function renderTalkRoomsColumn(talkRooms) {
     var listUrl = (talkRooms && talkRooms.list_url) ? talkRooms.list_url : talkListUrl();
     var rooms = talkRooms && talkRooms.rooms ? talkRooms.rooms : [];
@@ -1250,7 +1270,10 @@
       + '</h3>'
       + '<a href="' + esc(listUrl) + '" class="sebu-community-col__more">전체보기 +</a>'
       + '</header>'
+      + '<div class="sebu-talkrooms-col__stack">'
       + bodyHtml
+      + renderTalkRoomsAiBanner(talkRooms && talkRooms.ai_banner ? talkRooms.ai_banner : null)
+      + '</div>'
       + '</article>';
   }
 
