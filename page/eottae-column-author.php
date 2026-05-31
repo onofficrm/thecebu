@@ -5,6 +5,8 @@ include_once G5_LIB_PATH.'/eottae-column-likes.lib.php';
 include_once G5_PATH.'/components/eottae/column-card.php';
 include_once G5_PATH.'/components/eottae/column-author-card.php';
 include_once G5_PATH.'/components/eottae/column-author-profile.php';
+include_once G5_LIB_PATH.'/eottae-column-author-exposure.lib.php';
+include_once G5_PATH.'/components/eottae/column-author-activity.php';
 
 $mb_id = isset($_GET['mb_id']) ? trim((string) $_GET['mb_id']) : '';
 if ($mb_id === '') {
@@ -41,6 +43,7 @@ if (empty($representative)) {
 }
 
 $stats = $author['stats'] ?? array();
+$activity_sections = eottae_column_author_exposure_sections($mb_id, $author, 3);
 $specialties = array_filter(array_map('trim', explode(',', (string) ($author['specialty'] ?? ''))));
 $primary_specialty = !empty($specialties) ? $specialties[0] : '';
 $author_meta = array();
@@ -108,6 +111,10 @@ g5_page_start(get_text($author['display_name'] ?? '').' · 칼럼니스트');
         <div class="sebu-writer-stat"><span class="sebu-writer-stat__value"><?php echo number_format((int) ($stats['total_likes'] ?? 0)); ?></span><span class="sebu-writer-stat__label">누적 공감</span></div>
         <div class="sebu-writer-stat"><span class="sebu-writer-stat__value"><?php echo number_format((int) ($stats['total_comments'] ?? 0)); ?></span><span class="sebu-writer-stat__label">댓글</span></div>
     </section>
+
+    <?php if (!empty($activity_sections)) { ?>
+    <?php echo eottae_column_author_activity_html($activity_sections); ?>
+    <?php } ?>
 
     <?php if (!empty($representative)) { ?>
     <section class="sebu-column-section" aria-labelledby="sebu-writer-rep-title">

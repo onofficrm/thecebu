@@ -534,6 +534,10 @@ if (!function_exists('eottae_column_ensure_schema')) {
                     `is_official` tinyint(1) NOT NULL DEFAULT '0',
                     `is_active` tinyint(1) NOT NULL DEFAULT '1',
                     `is_visible` tinyint(1) NOT NULL DEFAULT '1',
+                    `show_shop` tinyint(1) NOT NULL DEFAULT '0',
+                    `show_market` tinyint(1) NOT NULL DEFAULT '0',
+                    `show_estate` tinyint(1) NOT NULL DEFAULT '0',
+                    `show_job` tinyint(1) NOT NULL DEFAULT '0',
                     `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
                     `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
                     PRIMARY KEY (`id`),
@@ -648,6 +652,12 @@ if (!function_exists('eottae_column_ensure_schema')) {
         eottae_column_ensure_board();
         eottae_column_sync_board_categories();
         eottae_column_migrate_profile_columns();
+        if (is_file(G5_LIB_PATH.'/eottae-column-author-exposure.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-column-author-exposure.lib.php';
+            if (function_exists('eottae_column_author_exposure_migrate')) {
+                eottae_column_author_exposure_migrate();
+            }
+        }
         eottae_column_migrate_meta_columns();
 
         return array('ok' => true, 'results' => $results);
@@ -2158,6 +2168,16 @@ if (!function_exists('eottae_column_save_author')) {
         $is_visible = !isset($input['is_visible']) || !empty($input['is_visible']) ? 1 : 0;
         $is_official = $admin_mode && !empty($input['is_official']) ? 1 : (int) ($existing['is_official'] ?? 0);
 
+        if (!function_exists('eottae_column_author_exposure_from_input') && is_file(G5_LIB_PATH.'/eottae-column-author-exposure.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-column-author-exposure.lib.php';
+        }
+        $exposure_values = function_exists('eottae_column_author_exposure_from_input')
+            ? eottae_column_author_exposure_from_input($input, is_array($existing) ? $existing : array(), !$admin_mode)
+            : array();
+        $exposure_sql = function_exists('eottae_column_author_exposure_sql_set')
+            ? eottae_column_author_exposure_sql_set($exposure_values)
+            : '';
+
         $profile_image = (string) ($existing['profile_image'] ?? '');
         if (!empty($input['profile_image_keep'])) {
             $profile_image = (string) ($existing['profile_image'] ?? '');
@@ -2194,7 +2214,8 @@ if (!function_exists('eottae_column_save_author')) {
                 contact_open = '{$contact_open}',
                 is_official = '{$is_official}',
                 is_active = '{$is_active}',
-                is_visible = '{$is_visible}',
+                is_visible = '{$is_visible}'
+                {$exposure_sql},
                 updated_at = '{$now}'
                 WHERE mb_id = '{$mb_id_sql}'
             ", false);
@@ -2213,7 +2234,8 @@ if (!function_exists('eottae_column_save_author')) {
                 contact_open = '{$contact_open}',
                 is_official = '{$is_official}',
                 is_active = '{$is_active}',
-                is_visible = '{$is_visible}',
+                is_visible = '{$is_visible}'
+                {$exposure_sql},
                 created_at = '{$now}',
                 updated_at = '{$now}'
             ", false);

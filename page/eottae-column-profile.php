@@ -2,6 +2,8 @@
 include_once(dirname(__FILE__).'/_init.php');
 include_once G5_LIB_PATH.'/eottae-column.lib.php';
 include_once G5_PATH.'/components/eottae/column-author-profile.php';
+include_once G5_LIB_PATH.'/eottae-column-author-exposure.lib.php';
+include_once G5_PATH.'/components/eottae/column-author-activity.php';
 
 global $is_member, $member;
 
@@ -39,6 +41,7 @@ $profile_initial = function_exists('mb_substr') && $pen_name_default !== ''
     : ($pen_name_default !== '' ? substr($pen_name_default, 0, 1) : '?');
 $profile_preview_url = !empty($author['has_profile_image']) ? (string) ($author['profile_image_url'] ?? '') : '';
 $profile_preview_visible = $profile_preview_url !== '';
+$exposure_counts = eottae_column_author_exposure_item_counts($member['mb_id']);
 
 add_stylesheet('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">', 20);
 add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-column.css">', 24);
@@ -136,6 +139,14 @@ g5_page_start('컬럼리스트 프로필 설정');
                     <input type="url" name="website_url" class="sebu-column-form__input" placeholder="https://" value="<?php echo get_text($form_values['website_url']); ?>">
                 </label>
             </div>
+        </section>
+
+        <section class="sebu-column-apply-section" aria-labelledby="sebu-column-profile-exposure-title">
+            <header class="sebu-column-apply-section__head">
+                <h2 class="sebu-column-apply-section__title" id="sebu-column-profile-exposure-title">프로필 자동 노출</h2>
+                <p class="sebu-column-apply-section__desc">원하는 항목만 선택하면 공개 프로필에 최신 등록 정보가 자동으로 표시됩니다. 기본값은 비공개입니다.</p>
+            </header>
+            <?php echo eottae_column_author_exposure_form_fields_html($author, $exposure_counts); ?>
         </section>
 
         <div class="sebu-column-write-form__actions">
