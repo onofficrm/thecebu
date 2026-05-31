@@ -25,14 +25,31 @@ if (!function_exists('eottae_column_home_feed_html')) {
         return (string) ob_get_clean();
     }
 
-    function eottae_column_home_meta_html(array $post, $class = '')
+    function eottae_column_home_meta_html(array $post, $class = '', array $parts_order = null)
     {
         $class = trim((string) $class);
         $class_attr = $class !== '' ? ' '.$class : '';
         $author = trim((string) ($post['author_name'] ?? ''));
         $read_time = trim((string) ($post['read_time_label'] ?? ''));
         $category = trim((string) ($post['category_label'] ?? ''));
-        $parts = array_filter(array($category, $author, $read_time));
+        $date = trim((string) ($post['date_label'] ?? ''));
+
+        if ($parts_order === null) {
+            $parts = array_filter(array($category, $author, $read_time));
+        } else {
+            $map = array(
+                'category'  => $category,
+                'author'    => $author,
+                'read_time' => $read_time,
+                'date'      => $date,
+            );
+            $parts = array();
+            foreach ($parts_order as $key) {
+                if (!empty($map[$key])) {
+                    $parts[] = $map[$key];
+                }
+            }
+        }
 
         return $parts
             ? '<span class="sebu-column-home-meta'.$class_attr.'">'.get_text(implode(' · ', $parts)).'</span>'
@@ -41,20 +58,21 @@ if (!function_exists('eottae_column_home_feed_html')) {
 
     function eottae_column_home_rank_item_html(array $post, $rank)
     {
+        $rank = max(1, (int) $rank);
+        $is_first = $rank === 1;
+
         ob_start();
         ?>
-        <li class="sebu-column-home-rank">
+        <li class="sebu-column-home-rank<?php echo $is_first ? ' sebu-column-home-rank--lead' : ' sebu-column-home-rank--plain'; ?>">
             <a href="<?php echo get_text($post['view_url'] ?? '#'); ?>" class="sebu-column-home-rank__link">
-                <span class="sebu-column-home-rank__num"><?php echo sprintf('%02d', (int) $rank); ?></span>
+                <span class="sebu-column-home-rank__num"><?php echo sprintf('%02d', $rank); ?></span>
+                <?php if ($is_first) { ?>
                 <?php echo eottae_column_home_thumb_html($post, 'sebu-column-home-rank__thumb'); ?>
+                <?php } ?>
                 <span class="sebu-column-home-rank__body">
                     <strong class="sebu-column-home-rank__title"><?php echo get_text($post['wr_subject'] ?? ''); ?></strong>
-                    <?php if (!empty($post['summary'])) { ?>
-                    <span class="sebu-column-home-rank__summary"><?php echo get_text($post['summary']); ?></span>
-                    <?php } ?>
-                    <?php echo eottae_column_home_meta_html($post, 'sebu-column-home-rank__meta'); ?>
+                    <?php echo eottae_column_home_meta_html($post, 'sebu-column-home-rank__meta', array('category', 'author', 'read_time')); ?>
                 </span>
-                <span class="sebu-column-home-rank__go" aria-hidden="true">→</span>
             </a>
         </li>
         <?php
@@ -71,9 +89,8 @@ if (!function_exists('eottae_column_home_feed_html')) {
                 <?php echo eottae_column_home_thumb_html($post, 'sebu-column-home-recent__thumb'); ?>
                 <span class="sebu-column-home-recent__body">
                     <strong class="sebu-column-home-recent__title"><?php echo get_text($post['wr_subject'] ?? ''); ?></strong>
-                    <?php echo eottae_column_home_meta_html($post, 'sebu-column-home-recent__meta'); ?>
+                    <?php echo eottae_column_home_meta_html($post, 'sebu-column-home-recent__meta', array('author', 'date', 'read_time')); ?>
                 </span>
-                <span class="sebu-column-home-recent__go" aria-hidden="true">→</span>
             </a>
         </li>
         <?php
@@ -120,7 +137,7 @@ if (!function_exists('eottae_column_home_feed_html')) {
         $latest = array_values(array_filter($latest, function ($post) use ($exclude_ids) {
             return !in_array((int) ($post['wr_id'] ?? 0), $exclude_ids, true);
         }));
-        $latest = array_slice($latest, 0, 4);
+        $latest = array_slice($latest, 0, 6);
         $monthly = eottae_column_get_monthly_columnist();
         $list_url = eottae_column_list_url();
         $write_url = eottae_column_write_url();
@@ -140,7 +157,7 @@ if (!function_exists('eottae_column_home_feed_html')) {
                     <div class="sebu-column-home__copy">
                         <p class="sebu-column-home__eyebrow">Column · Editor's Picks</p>
                         <h2 class="sebu-column-home__title" id="sebu-column-home-title">세부 인사이트 컬럼</h2>
-                        <p class="sebu-column-home__desc">추천 컬럼, 많이 읽은 글, 새로 올라온 이야기를 한눈에 모았습니다.</p>
+                        <p class="sebu-column-home__desc">대표 추천 · 인기 TOP 3 · 최신 글을 빠르게 훑어보세요.</p>
                     </div>
                     <div class="sebu-column-home__actions">
                         <?php if ($can_write) { ?>
