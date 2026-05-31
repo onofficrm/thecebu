@@ -152,6 +152,165 @@
     if (nameInput) nameInput.focus();
   }
 
+  function isDesktopViewport() {
+    return window.matchMedia('(min-width: 1025px)').matches;
+  }
+
+  function lifeMapMessageUrl(context, wrId, boTable) {
+    var cfg = global.__EOTTae__ || {};
+    var base = cfg.messageUrl || '/page/eottae-messages.php';
+    if (context === 'market' && wrId) {
+      return base + (base.indexOf('?') >= 0 ? '&' : '?') + 'market=' + encodeURIComponent(String(wrId))
+        + (boTable ? '&bo_table=' + encodeURIComponent(boTable) : '') + '#message-compose';
+    }
+    return base + '#message-compose';
+  }
+
+  function lifeMapMessageDefaultBody(context, title) {
+    title = (title || '').trim();
+    if (context === 'market') {
+      return title !== ''
+        ? '안녕하세요. ' + title + ' 구매 문의드립니다.\n\n'
+        : '안녕하세요. 중고물품 구매 문의드립니다.\n\n';
+    }
+    if (context === 'job') {
+      return title !== ''
+        ? '안녕하세요. ' + title + ' 구인 문의드립니다.\n\n'
+        : '안녕하세요. 구인공고 문의드립니다.\n\n';
+    }
+    if (context === 'estate') {
+      return title !== ''
+        ? '안녕하세요. ' + title + ' 부동산 문의드립니다.\n\n'
+        : '안녕하세요. 부동산 매물 문의드립니다.\n\n';
+    }
+    return '';
+  }
+
+  function lifeMapMessageModalTitle(context) {
+    if (context === 'market') return '중고물품 문의하기';
+    if (context === 'job') return '구인공고 문의하기';
+    if (context === 'estate') return '부동산 문의하기';
+    return '문의하기';
+  }
+
+  function ensureLifeMapMessageModal() {
+    var modal = qs('#eottaeLifeMapMessageModal');
+    if (modal) return modal;
+
+    modal = document.createElement('div');
+    modal.id = 'eottaeLifeMapMessageModal';
+    modal.className = 'eottae-inquiry-modal eottae-life-map-message-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.innerHTML =
+      '<div class="eottae-inquiry-modal__panel">' +
+      '<button type="button" class="eottae-inquiry-modal__close" aria-label="닫기">&times;</button>' +
+      '<h2 class="eottae-inquiry-modal__title" data-life-map-message-title>문의하기</h2>' +
+      '<p class="eottae-life-map-message-modal__desc">작성자에게 쪽지로 문의를 보냅니다.</p>' +
+      '<form class="eottae-life-map-message-modal__form" method="post">' +
+      '<input type="hidden" name="eottae_message_token" value="">' +
+      '<input type="hidden" name="action" value="">' +
+      '<input type="hidden" name="wr_id" value="">' +
+      '<input type="hidden" name="bo_table" value="">' +
+      '<input type="hidden" name="receiver" value="">' +
+      '<div class="eottae-field"><label for="eottaeLifeMapMessageBody">문의 내용</label>' +
+      '<textarea id="eottaeLifeMapMessageBody" name="body" rows="5" maxlength="3000" required></textarea></div>' +
+      '<button type="submit" class="inquiry-button__btn inquiry-button__btn--inquiry" style="width:100%">보내기</button>' +
+      '</form></div>';
+    document.body.appendChild(modal);
+
+    qs('.eottae-inquiry-modal__close', modal).addEventListener('click', function () {
+      modal.classList.remove('is-open');
+    });
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) modal.classList.remove('is-open');
+    });
+
+    qs('.eottae-life-map-message-modal__form', modal).addEventListener('submit', function (e) {
+      e.preventDefault();
+      var form = e.currentTarget;
+      var cfg = global.__EOTTae__ || {};
+      var procUrl = cfg.messageProcUrl || eottaeProcPath('eottae-message.php');
+      var submit = qs('[type="submit"]', form);
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      if (submit) submit.disabled = true;
+      fetch(procUrl, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { Accept: 'application/json' },
+        body: new FormData(form)
+      })
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+          if (data && data.success) {
+            modal.classList.remove('is-open');
+            showEottaeToast(data.message || '문의를 보냈습니다.');
+            return;
+          }
+          window.alert((data && data.message) || '처리 중 오류가 발생했습니다.');
+          if (data && data.redirect) {
+            window.location.href = data.redirect;
+          }
+        })
+        .catch(function () {
+          window.alert('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+        })
+        .finally(function () {
+          if (submit) submit.disabled = false;
+        });
+    });
+
+    return modal;
+  }
+
+  function openLifeMapMessageModal(options) {
+    options = options || {};
+    var cfg = global.__EOTTae__ || {};
+    if (!cfg.isMember) {
+      window.location.href = loginUrlFor(window.location.href);
+      return;
+    }
+    if (!cfg.messageToken) {
+      window.location.href = lifeMapMessageUrl(options.context, options.wrId, options.boTable);
+      return;
+    }
+
+    var modal = ensureLifeMapMessageModal();
+    var context = options.context || '';
+    var titleEl = qs('[data-life-map-message-title]', modal);
+    if (titleEl) titleEl.textContent = lifeMapMessageModalTitle(context);
+
+    var tokenInput = qs('input[name="eottae_message_token"]', modal);
+    var actionInput = qs('input[name="action"]', modal);
+    var wrInput = qs('input[name="wr_id"]', modal);
+    var boInput = qs('input[name="bo_table"]', modal);
+    var receiverInput = qs('input[name="receiver"]', modal);
+    var bodyInput = qs('textarea[name="body"]', modal);
+
+    if (tokenInput) tokenInput.value = cfg.messageToken;
+    if (actionInput) actionInput.value = context === 'market' ? 'market_inquiry' : 'send';
+    if (wrInput) wrInput.value = context === 'market' ? String(options.wrId || '') : '';
+    if (boInput) boInput.value = context === 'market' ? String(options.boTable || '') : '';
+    if (receiverInput) receiverInput.value = context === 'market' ? '' : String(options.ownerId || '');
+    if (bodyInput) {
+      bodyInput.value = lifeMapMessageDefaultBody(context, options.title || '');
+      bodyInput.focus();
+      bodyInput.setSelectionRange(bodyInput.value.length, bodyInput.value.length);
+    }
+
+    modal.classList.add('is-open');
+  }
+
+  function shouldUseLifeMapMessagePopup(btn) {
+    if (!isDesktopViewport()) return false;
+    if (!btn.closest('[data-cebu-map-page]')) return false;
+    var context = btn.getAttribute('data-inquiry-context') || '';
+    return context === 'market' || context === 'job' || context === 'estate';
+  }
+
   function showEottaeToast(message, durationMs) {
     var text = (message || '').trim();
     if (!text) {
@@ -267,7 +426,34 @@
       e.preventDefault();
       var code = inquiryBtn.getAttribute('data-inquiry-code') || '';
       var ownerId = inquiryBtn.getAttribute('data-message-owner') || '';
+      var inquiryContext = inquiryBtn.getAttribute('data-inquiry-context') || '';
       var cfg = global.__EOTTae__ || {};
+
+      if (shouldUseLifeMapMessagePopup(inquiryBtn)) {
+        openLifeMapMessageModal({
+          context: inquiryContext,
+          ownerId: ownerId,
+          wrId: inquiryBtn.getAttribute('data-inquiry-wr-id') || '',
+          boTable: inquiryBtn.getAttribute('data-inquiry-bo-table') || '',
+          title: inquiryBtn.getAttribute('data-shop-name') || ''
+        });
+        return;
+      }
+
+      if (inquiryBtn.closest('[data-cebu-map-page]') && inquiryContext) {
+        var targetUrl = lifeMapMessageUrl(
+          inquiryContext,
+          inquiryBtn.getAttribute('data-inquiry-wr-id') || '',
+          inquiryBtn.getAttribute('data-inquiry-bo-table') || ''
+        );
+        if (cfg.isMember) {
+          window.location.href = targetUrl;
+          return;
+        }
+        window.location.href = loginUrlFor(targetUrl);
+        return;
+      }
+
       if (ownerId) {
         if (cfg.isMember) {
           window.location.href = messageComposeUrl(code);

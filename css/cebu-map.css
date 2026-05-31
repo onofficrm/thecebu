@@ -522,6 +522,10 @@ body.eottae-page:has(.cebu-map-page) #hd .eottae-gnb-header {
   padding-top: 8px;
 }
 
+.cebu-map-card__actions--with-inquiry {
+  grid-template-columns: 1fr 1fr;
+}
+
 .cebu-map-card__actions .inquiry-button__btn {
   width: 100%;
   min-width: 0;

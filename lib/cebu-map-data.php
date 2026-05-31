@@ -151,6 +151,7 @@ if (!function_exists('cebu_map_marker_base')) {
             'share_url'     => cebu_map_absolute_url($post_url),
             'directions_url'=> $directions_url,
             'thumbnail'     => cebu_map_marker_thumb_url($type, $bo_table, $row),
+            'owner_mb_id'   => preg_replace('/[^a-z0-9_@.-]/i', '', (string) ($row['mb_id'] ?? '')),
             'datetime'      => (string) ($row['wr_datetime'] ?? ''),
             'timestamp'     => isset($row['wr_datetime']) ? (int) strtotime($row['wr_datetime']) : 0,
             'price_num'     => 0,

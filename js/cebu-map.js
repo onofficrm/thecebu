@@ -71,6 +71,7 @@
       share_url: item.share_url || '',
       directions_url: item.directions_url || '',
       thumbnail: item.thumbnail || '',
+      owner_mb_id: item.owner_mb_id || '',
       is_dimmed: !!item.is_dimmed,
       timestamp: parseInt(item.timestamp, 10) || 0,
       price_num: parseInt(item.price_num, 10) || 0,
@@ -116,10 +117,28 @@
     return '<div class="cebu-map-card__thumb-wrap"><div class="cebu-map-card__thumb cebu-map-card__thumb--empty" aria-hidden="true"></div></div>';
   }
 
-  function actionsHtml(loc) {
+  function inquiryButtonHtml(loc) {
+    if (!loc.owner_mb_id) {
+      return '';
+    }
+
     return (
-      '<div class="cebu-map-card__actions inquiry-button inquiry-button--list">' +
+      '<button type="button" class="inquiry-button__btn inquiry-button__btn--inquiry inquiry-button__btn--outline" ' +
+      'data-inquiry-action="open" ' +
+      'data-inquiry-context="' + escapeHtml(loc.type) + '" ' +
+      'data-inquiry-wr-id="' + escapeHtml(String(loc.wr_id || '')) + '" ' +
+      'data-inquiry-bo-table="' + escapeHtml(loc.bo_table || '') + '" ' +
+      'data-message-owner="' + escapeHtml(loc.owner_mb_id) + '" ' +
+      'data-shop-name="' + escapeHtml(loc.title || '') + '">문의하기</button>'
+    );
+  }
+
+  function actionsHtml(loc) {
+    var inquiryBtn = inquiryButtonHtml(loc);
+    return (
+      '<div class="cebu-map-card__actions inquiry-button inquiry-button--list' + (inquiryBtn ? ' cebu-map-card__actions--with-inquiry' : '') + '">' +
       '<a href="' + escapeHtml(loc.url) + '" class="inquiry-button__btn inquiry-button__btn--primary">상세보기</a>' +
+      inquiryBtn +
       '<a href="' + escapeHtml(directionsUrl(loc)) + '" class="inquiry-button__btn inquiry-button__btn--map inquiry-button__btn--outline" target="_blank" rel="noopener noreferrer">길찾기</a>' +
       '<button type="button" class="inquiry-button__btn inquiry-button__btn--share inquiry-button__btn--share-compact" data-share-url="' + escapeHtml(shareUrl(loc)) + '" aria-label="공유하기">' +
       '<span class="inquiry-button__icon">' + shareIconSvg() + '</span>' +

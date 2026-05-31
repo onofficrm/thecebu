@@ -711,6 +711,9 @@ if (eottae_should_load_assets()) {
     $eottae_js_version = defined('G5_PATH') && is_file(G5_PATH.'/js/eottae.js')
         ? (string) @filemtime(G5_PATH.'/js/eottae.js')
         : (defined('G5_JS_VER') ? G5_JS_VER : '');
+    if (!function_exists('eottae_message_token') && is_file(G5_LIB_PATH.'/eottae-message.lib.php')) {
+        include_once G5_LIB_PATH.'/eottae-message.lib.php';
+    }
     add_javascript(
         '<script>window.__EOTTae__='.json_encode(array(
             'url' => G5_URL,
@@ -719,6 +722,8 @@ if (eottae_should_load_assets()) {
             'jsVersion' => $eottae_js_version,
             'isMember' => !empty($is_member),
             'messageUrl' => function_exists('eottae_message_url') ? eottae_message_url() : G5_URL.'/page/eottae-messages.php',
+            'messageProcUrl' => function_exists('eottae_message_proc_url') ? eottae_message_proc_url() : G5_URL.'/proc/eottae-message.php',
+            'messageToken' => (!empty($is_member) && function_exists('eottae_message_token')) ? eottae_message_token() : '',
             'loginUrl' => function_exists('eottae_login_url') ? eottae_login_url() : G5_BBS_URL.'/login.php',
         ), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT).';</script>',
         18
