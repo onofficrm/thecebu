@@ -2460,11 +2460,15 @@
     }
 
     var shell = qs('[data-eottae-gnb-shell]');
-    var head = qs('[data-eottae-gnb-desktop-head]');
     var nav = qs('[data-eottae-gnb-nav]');
     var panel = qs('[data-eottae-gnb-mega]');
-    if (!shell || !head || !nav || !panel) {
+    if (!shell || !nav || !panel) {
       return;
+    }
+
+    var desktopHead = shell.querySelector('[data-eottae-gnb-desktop-head]');
+    if (desktopHead && panel.parentElement !== desktopHead) {
+      desktopHead.appendChild(panel);
     }
 
     if (window.matchMedia('(max-width: 1023px)').matches) {
@@ -2493,7 +2497,7 @@
       clearCloseTimer();
       closeTimer = setTimeout(function () {
         setOpen(false);
-      }, 200);
+      }, 280);
     }
 
     function handleEnter() {
@@ -2501,22 +2505,18 @@
       setOpen(true);
     }
 
-    head.addEventListener('mouseenter', handleEnter);
-    head.addEventListener('mouseleave', scheduleClose);
-    panel.addEventListener('mouseenter', handleEnter);
-    panel.addEventListener('mouseleave', scheduleClose);
+    function isInsideMegaArea(node) {
+      return node instanceof Node && shell.contains(node);
+    }
+
+    shell.addEventListener('mouseenter', handleEnter);
+    shell.addEventListener('mouseleave', scheduleClose);
 
     nav.addEventListener('focusin', handleEnter);
-    head.addEventListener('focusout', function (event) {
+    panel.addEventListener('focusin', handleEnter);
+    shell.addEventListener('focusout', function (event) {
       var related = event.relatedTarget;
-      if (related instanceof Node && head.contains(related)) {
-        return;
-      }
-      scheduleClose();
-    });
-    panel.addEventListener('focusout', function (event) {
-      var related = event.relatedTarget;
-      if (related instanceof Node && (head.contains(related) || panel.contains(related))) {
+      if (isInsideMegaArea(related)) {
         return;
       }
       scheduleClose();

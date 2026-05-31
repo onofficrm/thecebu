@@ -585,7 +585,8 @@
       return;
     }
 
-    shell.insertAdjacentHTML('beforeend', megaHtml);
+    var desktopHead = shell.querySelector('.eottae-gnb-header__desktop-head') || shell;
+    desktopHead.insertAdjacentHTML('beforeend', megaHtml);
   }
 
   function findHeaderMenuButtonHost(header, actions) {

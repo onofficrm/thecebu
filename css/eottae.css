@@ -453,7 +453,9 @@ img[data-eottae-logo] {
 
   .eottae-gnb-header__shell.is-mega-open .eottae-gnb-header__mega-panel,
   .eottae-gnb-header__desktop-head:hover .eottae-gnb-header__mega-panel,
-  .eottae-gnb-header__shell:has(.eottae-gnb-header__nav:focus-within) .eottae-gnb-header__mega-panel {
+  .eottae-gnb-header__shell:has(.eottae-gnb-header__mega-panel:hover) .eottae-gnb-header__mega-panel,
+  .eottae-gnb-header__shell:has(.eottae-gnb-header__nav:focus-within) .eottae-gnb-header__mega-panel,
+  .eottae-gnb-header__shell:has(.eottae-gnb-header__mega-panel:focus-within) .eottae-gnb-header__mega-panel {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
@@ -519,7 +521,14 @@ img[data-eottae-logo] {
   .eottae-gnb-header__shell:has([data-mega-key="golf_join"]:hover) .eottae-gnb-header__mega-col[data-mega-key="golf_join"],
   .eottae-gnb-header__shell:has([data-mega-key="column"]:hover) .eottae-gnb-header__mega-col[data-mega-key="column"],
   .eottae-gnb-header__shell:has([data-mega-key="media"]:hover) .eottae-gnb-header__mega-col[data-mega-key="media"],
-  .eottae-gnb-header__shell:has([data-mega-key="mypage"]:hover) .eottae-gnb-header__mega-col[data-mega-key="mypage"] {
+  .eottae-gnb-header__shell:has([data-mega-key="mypage"]:hover) .eottae-gnb-header__mega-col[data-mega-key="mypage"],
+  .eottae-gnb-header__shell:has(.eottae-gnb-header__mega-col[data-mega-key="shop"]:hover) .eottae-gnb-header__mega-col[data-mega-key="shop"],
+  .eottae-gnb-header__shell:has(.eottae-gnb-header__mega-col[data-mega-key="community"]:hover) .eottae-gnb-header__mega-col[data-mega-key="community"],
+  .eottae-gnb-header__shell:has(.eottae-gnb-header__mega-col[data-mega-key="cebu_map"]:hover) .eottae-gnb-header__mega-col[data-mega-key="cebu_map"],
+  .eottae-gnb-header__shell:has(.eottae-gnb-header__mega-col[data-mega-key="golf_join"]:hover) .eottae-gnb-header__mega-col[data-mega-key="golf_join"],
+  .eottae-gnb-header__shell:has(.eottae-gnb-header__mega-col[data-mega-key="column"]:hover) .eottae-gnb-header__mega-col[data-mega-key="column"],
+  .eottae-gnb-header__shell:has(.eottae-gnb-header__mega-col[data-mega-key="media"]:hover) .eottae-gnb-header__mega-col[data-mega-key="media"],
+  .eottae-gnb-header__shell:has(.eottae-gnb-header__mega-col[data-mega-key="mypage"]:hover) .eottae-gnb-header__mega-col[data-mega-key="mypage"] {
     opacity: 1;
   }
 }
@@ -861,8 +870,10 @@ img[data-eottae-logo] {
 }
 
 @media (min-width: 1024px) {
+  #root header.eottae-gnb-header .eottae-gnb-header__shell.is-mega-open .eottae-gnb-header__mega-panel[data-eottae-home-mega="1"],
   #root header.eottae-gnb-header .eottae-gnb-header__shell:hover .eottae-gnb-header__mega-panel[data-eottae-home-mega="1"],
-  #root header.eottae-gnb-header .eottae-gnb-header__shell:has([data-mega-key]:hover) .eottae-gnb-header__mega-panel[data-eottae-home-mega="1"] {
+  #root header.eottae-gnb-header .eottae-gnb-header__shell:has([data-mega-key]:hover) .eottae-gnb-header__mega-panel[data-eottae-home-mega="1"],
+  #root header.eottae-gnb-header .eottae-gnb-header__shell:has(.eottae-gnb-header__mega-panel[data-eottae-home-mega="1"]:hover) .eottae-gnb-header__mega-panel[data-eottae-home-mega="1"] {
     display: block;
   }
 }
