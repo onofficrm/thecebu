@@ -1280,20 +1280,19 @@ body.eottae-page hr {
     padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px));
   }
 
-  /* iCRM 챗봇 FAB — 하단 글로벌 메뉴 가림 방지 */
+  /* 모바일 — iCRM·상담 폴백 FAB 미표시 */
   iframe[id^="chat-icrm-widget-"],
-  iframe[title="chat.icrm.co.kr messenger"] {
+  iframe[title="chat.icrm.co.kr messenger"],
+  .chat-launcher,
+  .chat-widget,
+  .chat-launcher-prompt,
+  .onoff-chatbot-fallback {
     display: none !important;
     visibility: hidden !important;
     width: 0 !important;
     height: 0 !important;
     opacity: 0 !important;
     pointer-events: none !important;
-  }
-
-  .onoff-chatbot-fallback {
-    right: 12px;
-    bottom: calc(var(--eottae-bottom-nav-h, 64px) + 12px + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -1310,7 +1309,7 @@ html.onoff-chatbot-fallback-active .chat-launcher-prompt {
   pointer-events: none !important;
 }
 
-/* iCRM 연결 실패·모바일 — 상담 폴백 FAB */
+/* iCRM 연결 실패(데스크톱) — 상담 폴백 FAB */
 .onoff-chatbot-fallback {
   position: fixed;
   right: 20px;

@@ -20,7 +20,7 @@ if (!function_exists('onoff_chatbot_site_key')) {
 
 if (!function_exists('onoff_chatbot_is_mobile_hidden')) {
     /**
-     * 모바일·좁은 화면에서는 iCRM iframe을 CSS로 숨기므로 폴백 상담 버튼 사용
+     * 모바일·좁은 화면 — iCRM 위젯·상담 폴백 FAB 미노출
      */
     function onoff_chatbot_is_mobile_hidden()
     {
@@ -197,6 +197,10 @@ if (!function_exists('onoff_chatbot_use_icrm_widget')) {
 if (!function_exists('onoff_chatbot_use_fallback')) {
     function onoff_chatbot_use_fallback()
     {
+        if (onoff_chatbot_is_mobile_hidden()) {
+            return false;
+        }
+
         if (!onoff_chatbot_config_enabled()) {
             return false;
         }
