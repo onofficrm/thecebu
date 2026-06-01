@@ -14064,9 +14064,75 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
     padding-right: 12px;
   }
 
+  /* 커뮤니티 글보기 — 본문·갤러리 좌우 여백 제거, 가독 영역 확대 */
   .community-view-page {
+    padding: 0;
+  }
+
+  .community-view-page__header {
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+
+  .community-view-page__article {
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .community-view-page__article > :not(.community-view-page__body):not(.community-view-page__gallery):not(.community-view-page__links) {
     padding-left: 12px;
     padding-right: 12px;
+  }
+
+  .community-view-page__gallery {
+    gap: 0;
+    margin-bottom: 0;
+  }
+
+  .community-view-page__gallery-item {
+    border-radius: 0;
+  }
+
+  .community-view-page__links {
+    padding: 0;
+    gap: 0;
+    margin-bottom: 0;
+  }
+
+  .community-view-page__youtube .board-yt-embed__ratio {
+    border-radius: 0;
+  }
+
+  .community-view-page__related-link {
+    margin: 12px;
+  }
+
+  .community-view-page__body {
+    padding: 0;
+    font-size: 17px;
+    line-height: 1.85;
+  }
+
+  .community-view-page__body img,
+  .community-view-page__body iframe,
+  .community-view-page__body video {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    border-radius: 0;
+  }
+
+  .community-view-page__footer {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .community-view-page .board-view__comments,
+  .community-view-page .bo_vc_w {
+    margin-left: 12px;
+    margin-right: 12px;
   }
 
   .community-sidebar__card,
