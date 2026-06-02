@@ -2084,24 +2084,28 @@ if (!function_exists('eottae_google_oauth_remove_from_servicelist')) {
     }
 }
 
-if (!function_exists('eottae_google_oauth_configured')) {
-    function eottae_google_oauth_configured()
+if (!function_exists('eottae_google_oauth_credentials_valid')) {
+    function eottae_google_oauth_credentials_valid($client_id, $client_secret)
     {
-        global $config;
+        $client_id = trim((string) $client_id);
+        $client_secret = trim((string) $client_secret);
 
-        $client_id = isset($config['cf_google_clientid']) ? trim((string) $config['cf_google_clientid']) : '';
-        $client_secret = isset($config['cf_google_secret']) ? trim((string) $config['cf_google_secret']) : '';
+        if ($client_id === '' || $client_secret === '') {
+            return false;
+        }
 
-        return $client_id !== '' && $client_secret !== '';
+        return strpos($client_id, '.apps.googleusercontent.com') !== false
+            && strlen($client_id) >= 40;
     }
 }
 
-if (!function_exists('eottae_apply_google_oauth_config')) {
+if (!function_exists('eottae_google_oauth_resolve_credentials')) {
     /**
-     * Google OAuth — _site.config.local.php / data/eottae-secrets.local.php 우선.
-     * 파일에 키가 없으면 DB에 남은 잘못된 cf_google_* 로 invalid_client 가 나지 않도록 비활성화.
+     * Google OAuth 자격증명 — 파일(_site.config.local / data) 우선, 없으면 관리자 DB(cf_google_*).
+     *
+     * @return array{client_id: string, client_secret: string}
      */
-    function eottae_apply_google_oauth_config()
+    function eottae_google_oauth_resolve_credentials()
     {
         global $config;
 
@@ -2109,14 +2113,49 @@ if (!function_exists('eottae_apply_google_oauth_config')) {
             include_once G5_PATH.'/_site.config.php';
         }
 
-        if (!function_exists('g5site_cfg')) {
-            return;
+        $client_id = '';
+        $client_secret = '';
+
+        if (function_exists('g5site_cfg')) {
+            $client_id = trim((string) g5site_cfg('google_oauth_client_id', ''));
+            $client_secret = trim((string) g5site_cfg('google_oauth_client_secret', ''));
         }
 
-        $client_id = g5site_cfg('google_oauth_client_id', '');
-        $client_secret = g5site_cfg('google_oauth_client_secret', '');
-
         if ($client_id === '' || $client_secret === '') {
+            $client_id = trim((string) ($config['cf_google_clientid'] ?? ''));
+            $client_secret = trim((string) ($config['cf_google_secret'] ?? ''));
+        }
+
+        return array(
+            'client_id'     => $client_id,
+            'client_secret' => $client_secret,
+        );
+    }
+}
+
+if (!function_exists('eottae_google_oauth_configured')) {
+    function eottae_google_oauth_configured()
+    {
+        $creds = eottae_google_oauth_resolve_credentials();
+
+        return eottae_google_oauth_credentials_valid($creds['client_id'], $creds['client_secret']);
+    }
+}
+
+if (!function_exists('eottae_apply_google_oauth_config')) {
+    /**
+     * Google OAuth — 파일 우선, 없으면 관리자 소셜로그인 설정(DB) 사용.
+     * Client ID가 .apps.googleusercontent.com 형식이 아니면 비활성화(invalid_client 방지).
+     */
+    function eottae_apply_google_oauth_config()
+    {
+        global $config;
+
+        $creds = eottae_google_oauth_resolve_credentials();
+        $client_id = $creds['client_id'];
+        $client_secret = $creds['client_secret'];
+
+        if (!eottae_google_oauth_credentials_valid($client_id, $client_secret)) {
             eottae_google_oauth_remove_from_servicelist();
             return;
         }

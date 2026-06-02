@@ -1396,11 +1396,11 @@ if ($config['cf_sms_use'] && $config['cf_icode_id'] && $config['cf_icode_pw']) {
                     <tr>
                         <th scope="row"><label for="cf_google_clientid">구글 Client ID</label></th>
                         <td>
-                            <input type="text" name="cf_google_clientid" value="<?php echo get_sanitize_input($config['cf_google_clientid']); ?>" id="cf_google_clientid" class="frm_input" size="40"> <a href="https://console.developers.google.com" target="_blank" class="btn_frmline">앱 등록하기</a>
+                            <input type="text" name="cf_google_clientid" value="<?php echo get_sanitize_input($config['cf_google_clientid']); ?>" id="cf_google_clientid" class="frm_input" size="72" maxlength="255" style="width:100%;max-width:520px" placeholder="xxxx.apps.googleusercontent.com"> <a href="https://console.developers.google.com" target="_blank" class="btn_frmline">앱 등록하기</a>
                         </td>
                         <th scope="row"><label for="cf_google_secret">구글 Client Secret</label></th>
                         <td>
-                            <input type="text" name="cf_google_secret" value="<?php echo get_sanitize_input($config['cf_google_secret']); ?>" id="cf_google_secret" class="frm_input" size="45">
+                            <input type="text" name="cf_google_secret" value="<?php echo get_sanitize_input($config['cf_google_secret']); ?>" id="cf_google_secret" class="frm_input" size="52" maxlength="255" style="width:100%;max-width:360px">
                         </td>
                     </tr>
                     <tr>
