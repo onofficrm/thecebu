@@ -25,6 +25,10 @@ $map_has_key = function_exists('onoff_map_has_api_key')
     && is_numeric($lng);
 $embed_url = function_exists('eottae_shop_map_embed_url') ? eottae_shop_map_embed_url($lat, $lng, $address) : '';
 $dir_url = eottae_maps_directions_url($lat, $lng, $address);
+$detail_link = '';
+if (!empty($_SERVER['REQUEST_URI'])) {
+    $detail_link = (defined('G5_URL') ? rtrim((string) G5_URL, '/') : '') . $_SERVER['REQUEST_URI'];
+}
 
 if (!$map_has_key && $embed_url === '') {
     return;
@@ -38,6 +42,7 @@ if (!$map_has_key && $embed_url === '') {
     data-map-lng="<?php echo htmlspecialchars($lng, ENT_QUOTES, 'UTF-8'); ?>"
     data-map-name="<?php echo htmlspecialchars($name, ENT_QUOTES, 'UTF-8'); ?>"
     data-map-thumbnail="<?php echo htmlspecialchars($thumbnail, ENT_QUOTES, 'UTF-8'); ?>"
+    data-map-link="<?php echo htmlspecialchars($detail_link, ENT_QUOTES, 'UTF-8'); ?>"
     data-map-zoom="15"
     <?php } ?>>
     <div class="shop-detail-map__canvas">

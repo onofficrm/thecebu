@@ -191,6 +191,38 @@
     return html;
   }
 
+  function markerDirectionsUrl(loc) {
+    var lat = parseNum(loc.lat, NaN);
+    var lng = parseNum(loc.lng, NaN);
+    if (isFinite(lat) && isFinite(lng)) {
+      return (
+        'https://www.google.com/maps/dir/?api=1&destination=' +
+        encodeURIComponent(lat + ',' + lng)
+      );
+    }
+    return '#';
+  }
+
+  function markerInfoActionsHtml(loc) {
+    var detail =
+      loc.link && loc.link !== '#'
+        ? '<a href="' +
+          escapeHtml(loc.link) +
+          '" class="marker-info-link marker-info-link--btn marker-info-link--detail">상세정보 보기</a>'
+        : '';
+    var dirUrl = markerDirectionsUrl(loc);
+    var directions =
+      dirUrl !== '#'
+        ? '<a href="' +
+          escapeHtml(dirUrl) +
+          '" class="marker-info-link marker-info-link--btn marker-info-link--directions" target="_blank" rel="noopener noreferrer">길찾기</a>'
+        : '';
+    if (!detail && !directions) {
+      return '';
+    }
+    return '<div class="marker-info-actions">' + detail + directions + '</div>';
+  }
+
   function markerInfoBadgesHtml(loc) {
     var html = '';
     if (loc.category) {
@@ -210,16 +242,13 @@
 
   function markerInfoHtml(loc) {
     var hasThumb = !!loc.thumbnail;
-    var link =
-      loc.link && loc.link !== '#'
-        ? '<a href="' + escapeHtml(loc.link) + '" class="marker-info-link marker-info-link--btn">상세보기</a>'
-        : '';
+    var actions = markerInfoActionsHtml(loc);
     if (hasThumb) {
       return (
         '<div class="marker-info marker-info--thumb marker-info--compact">' +
         '<div class="marker-info-thumb-wrap"><img class="marker-info-thumb" src="' +
         escapeHtml(loc.thumbnail) +
-        '" alt=""></div>' +
+        '" alt="" draggable="false" decoding="async"></div>' +
         '<div class="marker-info-body">' +
         '<div class="marker-info-head">' +
         '<h3 class="marker-info-title">' +
@@ -227,7 +256,7 @@
         '</h3>' +
         markerInfoMetaHtml(loc) +
         '</div>' +
-        (link ? '<div class="marker-info-actions">' + link + '</div>' : '') +
+        actions +
         '</div></div>'
       );
     }
@@ -240,20 +269,48 @@
       escapeHtml(loc.name) +
       '</h3>' +
       badges +
-      link +
-      '</div></div></div>'
+      '</div>' +
+      actions +
+      '</div></div>'
+    );
+  }
+
+  function markerInfoWindowMaxWidth() {
+    if (global.matchMedia && global.matchMedia('(max-width: 767px)').matches) {
+      return 300;
+    }
+    return 260;
+  }
+
+  function bindMarkerInfoWindowThumb(root) {
+    var thumb = root.querySelector('.marker-info-thumb');
+    if (!thumb) {
+      return;
+    }
+    thumb.setAttribute('draggable', 'false');
+    thumb.addEventListener(
+      'click',
+      function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      },
+      { passive: false }
     );
   }
 
   function openMarkerInfoWindow(infoWindow, map, marker, loc) {
-    infoWindow.setOptions({ maxWidth: 240 });
+    infoWindow.setOptions({ maxWidth: markerInfoWindowMaxWidth() });
     infoWindow.setContent(markerInfoHtml(loc));
     infoWindow.open(map, marker);
     global.google.maps.event.addListenerOnce(infoWindow, 'domready', function () {
       var root = document.querySelector('.gm-style-iw .marker-info--compact');
       if (!root) {
+        root = document.querySelector('.gm-style-iw .marker-info');
+      }
+      if (!root) {
         return;
       }
+      bindMarkerInfoWindowThumb(root);
       var iw = root.closest('.gm-style-iw');
       if (!iw) {
         return;
@@ -267,6 +324,7 @@
       if (contentPane) {
         contentPane.style.overflow = 'visible';
         contentPane.style.height = 'auto';
+        contentPane.style.maxHeight = 'none';
       }
       var position = marker.getPosition && marker.getPosition();
       if (position) {
@@ -516,7 +574,7 @@
         streetViewControl: false,
         fullscreenControl: true
       });
-      self.infoWindow = new global.google.maps.InfoWindow({ maxWidth: 240 });
+      self.infoWindow = new global.google.maps.InfoWindow({ maxWidth: markerInfoWindowMaxWidth() });
       self.applyCardThumbnailFallbacks();
       self.renderMarkers();
       self.bindCardThumbRefresh();
@@ -719,6 +777,7 @@
     this.lng = parseNum(root.dataset.mapLng, NaN);
     this.name = root.dataset.mapName || '업체';
     this.thumbnail = resolveAbsoluteUrl(root.dataset.mapThumbnail || '');
+    this.link = root.dataset.mapLink || global.location.href;
     this.zoom = parseInt(root.dataset.mapZoom, 10) || 15;
     this.map = null;
     this.marker = null;
@@ -747,9 +806,15 @@
     });
 
     createMapMarker(
-      { lat: this.lat, lng: this.lng, thumbnail: this.thumbnail, name: this.name, link: '' },
+      {
+        lat: this.lat,
+        lng: this.lng,
+        thumbnail: this.thumbnail,
+        name: this.name,
+        link: this.link
+      },
       this.map,
-      { infoWindow: new global.google.maps.InfoWindow({ maxWidth: 240 }) },
+      { infoWindow: new global.google.maps.InfoWindow({ maxWidth: markerInfoWindowMaxWidth() }) },
       function (marker) {
         self.marker = marker;
       }

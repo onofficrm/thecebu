@@ -9392,6 +9392,10 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
   object-fit: cover;
   margin: 0 !important;
   border-radius: 0;
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .marker-info--compact .marker-info-body {
@@ -9471,25 +9475,67 @@ body.eottae-page.eottae-auth-page:not(:has(#siteHeader)) .auth-layout {
 
 .marker-info--compact .marker-info-actions {
   margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 .marker-info--compact .marker-info-link--btn {
   display: block;
   width: 100%;
-  padding: 10px 12px;
+  padding: 10px 8px;
   border-radius: 10px;
   background: var(--eottae-primary, #2563eb);
   color: #fff !important;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   text-align: center;
   text-decoration: none;
   box-sizing: border-box;
+  line-height: 1.25;
+}
+
+.marker-info--compact .marker-info-link--directions {
+  background: #fff;
+  color: var(--eottae-primary, #2563eb) !important;
+  border: 1px solid var(--eottae-primary, #2563eb);
 }
 
 .marker-info--compact .marker-info-link--btn:hover {
   opacity: 0.92;
   text-decoration: none;
+}
+
+@media (max-width: 767px) {
+  .marker-info--compact {
+    width: min(280px, calc(100vw - 48px));
+    max-width: 100%;
+  }
+
+  .marker-info--compact.marker-info--thumb {
+    max-width: min(280px, calc(100vw - 48px));
+  }
+
+  .marker-info--compact .marker-info-thumb-wrap {
+    width: 100%;
+    height: 108px;
+  }
+
+  .marker-info--compact .marker-info-thumb {
+    width: 100% !important;
+    height: 108px !important;
+    max-width: 100% !important;
+    aspect-ratio: auto;
+  }
+
+  .marker-info--compact .marker-info-body {
+    padding: 10px;
+  }
+
+  .marker-info--compact .marker-info-link--btn {
+    font-size: 11px;
+    padding: 10px 6px;
+  }
 }
 
 .marker-info--thumb:not(.marker-info--compact) .marker-info-thumb-wrap {
