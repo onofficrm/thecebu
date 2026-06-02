@@ -104,7 +104,7 @@ if (!function_exists('eottae_column_render_mypage_super_admin_section')) {
             <p class="my-talk-section__desc">검토 중인 칼럼니스트 신청을 승인하거나 반려할 수 있습니다.</p>
             <div class="sebu-column-mypage-admin__links">
                 <a href="<?php echo get_text($admin_url); ?>" class="my-talk-btn my-talk-btn--primary my-talk-btn--sm">칼럼니스트 신청 관리<?php if ($pending_count > 0) { ?> (<?php echo number_format($pending_count); ?>)<?php } ?></a>
-                <a href="<?php echo eottae_column_admin_authors_url(); ?>" class="my-talk-btn my-talk-btn--ghost my-talk-btn--sm">칼럼니스트 목록</a>
+                <a href="<?php echo eottae_column_admin_authors_list_url(); ?>" class="my-talk-btn my-talk-btn--ghost my-talk-btn--sm">칼럼니스트 목록</a>
                 <a href="<?php echo eottae_column_list_url(); ?>" class="my-talk-btn my-talk-btn--ghost my-talk-btn--sm">컬럼 섹션</a>
             </div>
 

@@ -210,7 +210,14 @@ if ($is_admin === 'super') {
             'tone' => 'admin',
         ),
         array(
-            'label' => '칼럼니스트 관리',
+            'label' => '칼럼니스트 목록',
+            'href' => function_exists('eottae_column_admin_authors_list_url')
+                ? eottae_column_admin_authors_list_url()
+                : G5_URL.'/page/eottae-admin-column-authors-list.php',
+            'tone' => 'admin',
+        ),
+        array(
+            'label' => '칼럼니스트 등록',
             'href' => function_exists('eottae_column_admin_authors_url')
                 ? eottae_column_admin_authors_url()
                 : G5_URL.'/page/eottae-admin-column-authors.php',

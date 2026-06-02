@@ -15,6 +15,18 @@ if (!function_exists('eottae_column_admin_authors_url')) {
     }
 }
 
+if (!function_exists('eottae_column_admin_authors_list_url')) {
+    function eottae_column_admin_authors_list_url(array $params = array())
+    {
+        $url = G5_URL.'/page/eottae-admin-column-authors-list.php';
+        if (!empty($params)) {
+            $url .= '?'.http_build_query($params);
+        }
+
+        return $url;
+    }
+}
+
 if (!function_exists('eottae_column_admin_authors_summary')) {
     function eottae_column_admin_authors_summary()
     {

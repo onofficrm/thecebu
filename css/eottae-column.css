@@ -4090,6 +4090,15 @@ span.sebu-column-admin__application-avatar.sebu-column-avatar--initials {
 }
 
 /* Columnist admin (standalone page) */
+.sebu-column-authors-manage-list-link {
+  margin: 0 0 24px;
+  text-align: center;
+}
+
+.sebu-column-admin-authors--list-only .sebu-column-admin__tabs {
+  margin-bottom: 20px;
+}
+
 .sebu-column-admin-authors .sebu-column-authors-summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

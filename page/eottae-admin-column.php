@@ -49,7 +49,7 @@ g5_page_start('생활정보 컬럼 관리');
 
     <nav class="sebu-column-admin__tabs" aria-label="관리 메뉴">
         <a href="<?php echo eottae_column_admin_url(array('tab' => 'columns')); ?>" class="sebu-column-admin__tab<?php echo $tab === 'columns' ? ' is-active' : ''; ?>">컬럼 목록</a>
-        <a href="<?php echo eottae_column_admin_authors_url(); ?>" class="sebu-column-admin__tab">칼럼니스트</a>
+        <a href="<?php echo eottae_column_admin_authors_list_url(); ?>" class="sebu-column-admin__tab">칼럼니스트</a>
         <a href="<?php echo eottae_column_admin_url(array('tab' => 'applications')); ?>" class="sebu-column-admin__tab<?php echo $tab === 'applications' ? ' is-active' : ''; ?>">신청 관리<?php
             $pending_tab_count = eottae_column_pending_application_count();
             if ($pending_tab_count > 0) {
