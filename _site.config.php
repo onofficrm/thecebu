@@ -144,11 +144,17 @@ if (is_file($eottae_secrets_file) && is_readable($eottae_secrets_file)) {
 }
 
 /* Google OAuth — 배포 시 data/eottae-google-oauth.local.php (GitHub Actions·FTP, AI 키 파일과 분리) */
-$eottae_oauth_file = (defined('G5_DATA_PATH') ? G5_DATA_PATH : G5_PATH.'/data').'/eottae-google-oauth.local.php';
-if (is_file($eottae_oauth_file) && is_readable($eottae_oauth_file)) {
-    $eottae_oauth_override = null;
-    include $eottae_oauth_file;
-    if (isset($eottae_oauth_override) && is_array($eottae_oauth_override)) {
+if (!function_exists('eottae_merge_oauth_override_file')) {
+    function eottae_merge_oauth_override_file(array &$site_config, $oauth_file)
+    {
+        if (!is_file($oauth_file) || !is_readable($oauth_file)) {
+            return false;
+        }
+        $eottae_oauth_override = null;
+        include $oauth_file;
+        if (!isset($eottae_oauth_override) || !is_array($eottae_oauth_override)) {
+            return false;
+        }
         foreach ($eottae_oauth_override as $ok => $ov) {
             if ($ov === null || $ov === '') {
                 continue;
@@ -158,7 +164,16 @@ if (is_file($eottae_oauth_file) && is_readable($eottae_oauth_file)) {
             }
             $site_config[$ok] = $ov;
         }
+
+        return true;
     }
+}
+
+$eottae_data_dir = defined('G5_DATA_PATH') ? G5_DATA_PATH : G5_PATH.'/data';
+$eottae_oauth_file = $eottae_data_dir.'/eottae-google-oauth.local.php';
+$eottae_oauth_example_file = $eottae_data_dir.'/eottae-google-oauth.local.example.php';
+if (!eottae_merge_oauth_override_file($site_config, $eottae_oauth_file)) {
+    eottae_merge_oauth_override_file($site_config, $eottae_oauth_example_file);
 }
 
 /**

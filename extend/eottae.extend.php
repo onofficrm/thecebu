@@ -2142,6 +2142,44 @@ if (!function_exists('eottae_google_oauth_configured')) {
     }
 }
 
+if (!function_exists('eottae_google_oauth_runtime_diagnostics')) {
+    /**
+     * @return array<string, mixed>
+     */
+    function eottae_google_oauth_runtime_diagnostics()
+    {
+        $data_dir = defined('G5_DATA_PATH') ? G5_DATA_PATH : G5_PATH.'/data';
+        $local_file = $data_dir.'/eottae-google-oauth.local.php';
+        $example_file = $data_dir.'/eottae-google-oauth.local.example.php';
+        $creds = function_exists('eottae_google_oauth_resolve_credentials')
+            ? eottae_google_oauth_resolve_credentials()
+            : array('client_id' => '', 'client_secret' => '');
+        $client_id = isset($creds['client_id']) ? trim((string) $creds['client_id']) : '';
+        $client_secret = isset($creds['client_secret']) ? trim((string) $creds['client_secret']) : '';
+        $example_has_keys = false;
+        if (is_file($example_file) && is_readable($example_file)) {
+            $eottae_oauth_override = null;
+            include $example_file;
+            if (isset($eottae_oauth_override['google_oauth_client_id'], $eottae_oauth_override['google_oauth_client_secret'])) {
+                $example_has_keys = trim((string) $eottae_oauth_override['google_oauth_client_id']) !== ''
+                    && trim((string) $eottae_oauth_override['google_oauth_client_secret']) !== '';
+            }
+        }
+
+        return array(
+            'local_file'        => $local_file,
+            'local_exists'      => is_file($local_file),
+            'local_readable'    => is_file($local_file) && is_readable($local_file),
+            'example_exists'    => is_file($example_file),
+            'example_has_keys'  => $example_has_keys,
+            'configured'        => function_exists('eottae_google_oauth_configured') && eottae_google_oauth_configured(),
+            'client_id_suffix'  => $client_id !== '' ? preg_replace('/^.*([a-z0-9]{8}\\.apps\\.googleusercontent\\.com)$/i', '$1', $client_id) : '',
+            'has_secret'        => $client_secret !== '',
+            'redirect_uri'      => function_exists('get_social_callbackurl') ? get_social_callbackurl('google') : '',
+        );
+    }
+}
+
 if (!function_exists('eottae_apply_google_oauth_config')) {
     /**
      * Google OAuth — 파일 우선, 없으면 관리자 소셜로그인 설정(DB) 사용.

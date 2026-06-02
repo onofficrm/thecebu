@@ -1403,6 +1403,27 @@ if ($config['cf_sms_use'] && $config['cf_icode_id'] && $config['cf_icode_pw']) {
                             <input type="text" name="cf_google_secret" value="<?php echo get_sanitize_input($config['cf_google_secret']); ?>" id="cf_google_secret" class="frm_input" size="52" maxlength="255" style="width:100%;max-width:360px">
                         </td>
                     </tr>
+                    <?php if (function_exists('eottae_google_oauth_runtime_diagnostics')) {
+                        $google_oauth_diag = eottae_google_oauth_runtime_diagnostics();
+                        ?>
+                    <tr>
+                        <th scope="row">구글 OAuth 상태</th>
+                        <td colspan="3">
+                            <p class="frm_info" style="margin:0 0 8px;line-height:1.6">
+                                FTP 키 파일: <code>data/eottae-google-oauth.local.php</code>
+                                <?php echo !empty($google_oauth_diag['local_readable']) ? ' — <strong style="color:#15803d">읽기 가능</strong>' : ' — <strong style="color:#b91c1c">없음</strong>'; ?>
+                                <?php if (empty($google_oauth_diag['local_readable']) && !empty($google_oauth_diag['example_has_keys'])) { ?>
+                                <br><strong style="color:#b45309">주의:</strong> <code>eottae-google-oauth.local.example.php</code>에만 키가 있습니다. 같은 내용을 <code>eottae-google-oauth.local.php</code>로 복사·이름 변경하세요.
+                                <?php } ?>
+                                <br>런타임 적용: <?php echo !empty($google_oauth_diag['configured']) ? '<strong style="color:#15803d">정상</strong>' : '<strong style="color:#b91c1c">미설정</strong>'; ?>
+                                <?php if (!empty($google_oauth_diag['client_id_suffix'])) { ?>
+                                (Client ID …<?php echo get_text($google_oauth_diag['client_id_suffix']); ?>)
+                                <?php } ?>
+                                <br>리디렉션 URI: <?php echo get_text($google_oauth_diag['redirect_uri']); ?>
+                            </p>
+                        </td>
+                    </tr>
+                    <?php } ?>
                     <tr>
                         <th scope="row"><label for="cf_googl_shorturl_apikey">구글 짧은주소 API Key</label></th>
                         <td colspan="3">
