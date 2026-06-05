@@ -34,6 +34,8 @@ $site_config = array(
     'main_keyword'        => '',
     'sub_keywords'        => '',
     'robots'              => 'index,follow',
+    /* 네이버 서치어드바이저 소유 확인 (searchadvisor.naver.com) */
+    'naver_site_verification' => 'aee2b0fc0761f0fb5ab3befb9cb0d234f1f5be3b',
     'consultation_text'   => '상담문의',
     'footer_desc'         => '필리핀 세부 교민, 사업자, 관광객을 위한 위치기반 생활정보 커뮤니티.',
     /* 문의 폼 → inquiry 게시판 (proc/inquiry-submit.php) */
