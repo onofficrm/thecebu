@@ -57,6 +57,8 @@ include_once G5_LIB_PATH.'/eottae-adroom.lib.php';
 include_once G5_LIB_PATH.'/eottae-member-growth.lib.php';
 include_once G5_LIB_PATH.'/eottae-member-profile.lib.php';
 include_once G5_LIB_PATH.'/eottae-gnb-menu.lib.php';
+include_once G5_LIB_PATH.'/eottae-seo-feed.lib.php';
+include_once G5_LIB_PATH.'/eottae-sitemap.lib.php';
 
 if (function_exists('eottae_secrets_load')) {
     eottae_secrets_load();
@@ -105,6 +107,9 @@ if (function_exists('eottae_member_growth_ensure_schema')) {
 }
 if (function_exists('eottae_translation_ensure_schema')) {
     eottae_translation_ensure_schema();
+}
+if (function_exists('eottae_seo_ensure_rss_boards')) {
+    eottae_seo_ensure_rss_boards();
 }
 if (is_file(G5_LIB_PATH.'/eottae-community-report.lib.php')) {
     include_once G5_LIB_PATH.'/eottae-community-report.lib.php';

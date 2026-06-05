@@ -227,6 +227,7 @@ if (!function_exists('eottae_column_board_def')) {
             'bo_category_list' => $cats,
             'bo_upload_count'  => 10,
             'bo_use_dhtml_editor' => 1,
+            'bo_use_rss_view'  => 1,
             'bo_order'         => 16,
             'bo_1_subj'        => '부제목',
             'bo_2_subj'        => '발행상태',

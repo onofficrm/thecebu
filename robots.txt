@@ -1,0 +1,17 @@
+# robots.txt — https://thecebu.co.kr
+
+User-agent: *
+Allow: /
+
+Disallow: /adm/
+Disallow: /bbs/login.php
+Disallow: /bbs/register.php
+Disallow: /bbs/password.php
+Disallow: /data/
+Disallow: /_BUILDER_INPUT/
+Disallow: /page/style-guide.php
+Disallow: /page/inquiry-thanks.php
+Disallow: /page/404.php
+Disallow: /page/local-template.php
+
+Sitemap: https://thecebu.co.kr/sitemap.xml

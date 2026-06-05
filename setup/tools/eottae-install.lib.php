@@ -78,6 +78,7 @@ if (!function_exists('eottae_install_create_board')) {
         $bo_upload_count = (int) (isset($def['bo_upload_count']) ? $def['bo_upload_count'] : 5);
         $bo_upload_size = (int) (isset($def['bo_upload_size']) ? $def['bo_upload_size'] : 10485760);
         $bo_use_dhtml_editor = (int) (isset($def['bo_use_dhtml_editor']) ? $def['bo_use_dhtml_editor'] : 1);
+        $bo_use_rss_view = (int) (isset($def['bo_use_rss_view']) ? $def['bo_use_rss_view'] : 0);
         $bo_order = (int) (isset($def['bo_order']) ? $def['bo_order'] : 0);
 
         $extra_subj_sql = '';
@@ -116,7 +117,7 @@ if (!function_exists('eottae_install_create_board')) {
             bo_use_secret = '{$bo_use_secret}',
             bo_use_dhtml_editor = '{$bo_use_dhtml_editor}',
             bo_select_editor = '',
-            bo_use_rss_view = '0',
+            bo_use_rss_view = '{$bo_use_rss_view}',
             bo_use_good = '0',
             bo_use_nogood = '0',
             bo_use_name = '0',
@@ -328,7 +329,10 @@ if (!function_exists('eottae_install_get_board_defs')) {
                 'bo_order'         => 16,
             ),
             // 신규 설치: 생활정보(community)는 분류 없이 독립 게시판. 기존 ca_name 데이터 마이그레이션은 별도 작업.
-            eottae_install_community_board_def('community', '생활정보', 10, ''),
+            array_merge(
+                eottae_install_community_board_def('community', '생활정보', 10, ''),
+                array('bo_use_rss_view' => 1)
+            ),
             array_merge(
                 eottae_install_community_board_def('free', '자유게시판', 10, ''),
                 array(
