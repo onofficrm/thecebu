@@ -1652,6 +1652,9 @@ if (!function_exists('eottae_builder_inject_head_meta_tags')) {
         }
 
         $tags = array();
+        if (function_exists('eottae_pwa_head_lines')) {
+            $tags = array_merge($tags, eottae_pwa_head_lines());
+        }
         $naver = function_exists('g5site_cfg') ? trim((string) g5site_cfg('naver_site_verification', '')) : '';
         if ($naver !== '') {
             $tags[] = '<meta name="naver-site-verification" content="'.htmlspecialchars($naver, ENT_QUOTES, 'UTF-8').'" />';

@@ -220,6 +220,11 @@ if (!function_exists('g5b_seo_build_meta_html')) {
         if (!empty($data['apple_touch_icon_url'])) {
             $lines[] = '<link rel="apple-touch-icon" sizes="180x180" href="' . g5b_seo_escape($data['apple_touch_icon_url']) . '">';
         }
+        if (function_exists('eottae_pwa_head_lines')) {
+            foreach (eottae_pwa_head_lines() as $pwa_line) {
+                $lines[] = $pwa_line;
+            }
+        }
 
         if ($data['description'] !== '') {
             $lines[] = '<meta name="description" content="' . g5b_seo_escape($data['description']) . '">';

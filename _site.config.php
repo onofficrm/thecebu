@@ -27,6 +27,17 @@ $site_config = array(
     'favicon_png_path'    => '/img/logo/favicon-32x32.png',
     'favicon_16_path'     => '/img/logo/favicon-16x16.png',
     'apple_touch_icon_path' => '/img/logo/apple-touch-icon.png',
+    /* PWA / Android TWA (lib/eottae-pwa.lib.php, docs/ANDROID-APP-GUIDE.md) */
+    'pwa_enabled'           => true,
+    'pwa_short_name'        => '세부어때',
+    'pwa_start_url'         => '/',
+    'pwa_display'           => 'standalone',
+    'pwa_theme_color'       => '',
+    'pwa_background_color'  => '#ffffff',
+    'pwa_manifest_path'     => '/proc/eottae-pwa-manifest.php',
+    'pwa_icon_512_path'     => '/img/logo/android-chrome-512x512.png',
+    'android_app_package'   => 'kr.co.thecebu.app',
+    'android_app_name'      => '세부어때',
     'og_image'            => '/img/logo/cebu-logo-main.png',
     /* SEO (components/seo-meta.php) */
     'seo_title'           => '',

@@ -59,6 +59,7 @@ include_once G5_LIB_PATH.'/eottae-member-profile.lib.php';
 include_once G5_LIB_PATH.'/eottae-gnb-menu.lib.php';
 include_once G5_LIB_PATH.'/eottae-seo-feed.lib.php';
 include_once G5_LIB_PATH.'/eottae-sitemap.lib.php';
+include_once G5_LIB_PATH.'/eottae-pwa.lib.php';
 
 if (function_exists('eottae_secrets_load')) {
     eottae_secrets_load();

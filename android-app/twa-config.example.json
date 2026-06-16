@@ -1,0 +1,35 @@
+{
+  "packageId": "kr.co.thecebu.app",
+  "host": "thecebu.co.kr",
+  "name": "세부어때",
+  "launcherName": "세부어때",
+  "display": "standalone",
+  "themeColor": "#0ea5e9",
+  "navigationColor": "#0ea5e9",
+  "backgroundColor": "#ffffff",
+  "startUrl": "/",
+  "iconUrl": "https://thecebu.co.kr/img/logo/android-chrome-512x512.png",
+  "maskableIconUrl": "https://thecebu.co.kr/img/logo/android-chrome-512x512.png",
+  "monochromeIconUrl": "https://thecebu.co.kr/img/logo/android-chrome-512x512.png",
+  "splashScreenFadeOutDuration": 300,
+  "enableNotifications": false,
+  "shortcuts": [
+    {
+      "name": "내주변",
+      "shortName": "내주변",
+      "url": "/shop",
+      "icon": "https://thecebu.co.kr/img/logo/android-chrome-512x512.png"
+    },
+    {
+      "name": "커뮤니티",
+      "shortName": "커뮤니티",
+      "url": "/community",
+      "icon": "https://thecebu.co.kr/img/logo/android-chrome-512x512.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://thecebu.co.kr/proc/eottae-pwa-manifest.php",
+  "fallbackType": "customtabs",
+  "enableSiteSettingsShortcut": true,
+  "orientation": "portrait-primary"
+}
