@@ -22,7 +22,7 @@
 | **1** | PWA 기반 (manifest, theme-color, 메타) | ✅ 배포 완료 |
 | **2** | Android 실기기 웹 QA (로그인·GPS·톡방) | ⬜ APK 설치 후 테스트 |
 | **3** | TWA 프로젝트 생성 (Bubblewrap) | ✅ `android-app/twa/` |
-| **4** | Digital Asset Links (`assetlinks.json`) | ✅ 배포 예정 |
+| **4** | Digital Asset Links (`assetlinks.json`) | ✅ 배포 완료 |
 | **5** | Play Console 등록·내부 테스트 | ⬜ 다음 |
 | **6** | (선택) 푸시·딥링크·스플래시 고도화 | ⬜ |
 
