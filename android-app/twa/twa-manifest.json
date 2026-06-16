@@ -1,0 +1,67 @@
+{
+  "packageId": "kr.co.thecebu.app",
+  "host": "thecebu.co.kr",
+  "name": "세부어때",
+  "launcherName": "세부어때",
+  "display": "standalone",
+  "themeColor": "#0EA5E9",
+  "themeColorDark": "#000000",
+  "navigationColor": "#000000",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#000000",
+  "enableNotifications": false,
+  "startUrl": "/",
+  "iconUrl": "https://thecebu.co.kr/img/logo/play-store-icon-512.png",
+  "maskableIconUrl": "https://thecebu.co.kr/img/logo/android-chrome-512x512-maskable.png",
+  "monochromeIconUrl": "https://thecebu.co.kr/img/logo/android-chrome-512x512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "thecebu"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 2,
+  "shortcuts": [
+    {
+      "name": "내주변",
+      "shortName": "내주변",
+      "url": "/shop",
+      "chosenIconUrl": "https://thecebu.co.kr/img/logo/android-chrome-192x192.png"
+    },
+    {
+      "name": "커뮤니티",
+      "shortName": "커뮤니티",
+      "url": "/community",
+      "chosenIconUrl": "https://thecebu.co.kr/img/logo/android-chrome-192x192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://thecebu.co.kr/proc/eottae-pwa-manifest.php",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": true
+    },
+    "playBilling": {
+      "enabled": false
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "minSdkVersion": 21,
+  "orientation": "portrait-primary",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "displayOverride": [],
+  "appVersion": "1.0.0"
+}

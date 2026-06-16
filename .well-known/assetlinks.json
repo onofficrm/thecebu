@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "kr.co.thecebu.app",
+      "sha256_cert_fingerprints": [
+        "B3:0B:C4:B9:20:E2:64:A9:4E:A7:83:51:44:25:3A:B5:95:6A:F8:B3:AE:B1:B6:9F:43:FF:1C:8A:4A:68:3A:37"
+      ]
+    }
+  }
+]
