@@ -73,15 +73,19 @@ if (!function_exists('eottae_pwa_icon_entries')) {
         $icons = array();
 
         $candidates = array(
-            array('key' => 'pwa_icon_512_path', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any maskable'),
+            array('key' => 'pwa_icon_512_path', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any'),
+            array('key' => 'pwa_icon_maskable_path', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'maskable'),
+            array('key' => 'pwa_icon_192_path', 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any', 'fallback' => '/img/logo/android-chrome-192x192.png'),
             array('key' => 'apple_touch_icon_path', 'sizes' => '180x180', 'type' => 'image/png', 'purpose' => 'any'),
             array('key' => 'favicon_png_path', 'sizes' => '32x32', 'type' => 'image/png', 'purpose' => 'any'),
-            array('key' => 'logo_path', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any'),
         );
 
         $seen = array();
         foreach ($candidates as $candidate) {
-            $url = function_exists('g5site_cfg_url') ? g5site_cfg_url($candidate['key'], '') : '';
+            $url = function_exists('g5site_cfg_url') ? g5site_cfg_url($candidate['key'], isset($candidate['fallback']) ? $candidate['fallback'] : '') : '';
+            if ($url === '' && !empty($candidate['fallback']) && defined('G5_URL')) {
+                $url = rtrim(G5_URL, '/').$candidate['fallback'];
+            }
             if ($url === '' || isset($seen[$url])) {
                 continue;
             }
