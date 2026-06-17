@@ -67,6 +67,7 @@ $report_token = eottae_column_report_token();
 $report_reasons = eottae_column_report_reasons();
 $bo_table = eottae_column_board_table();
 $comment_action = G5_BBS_URL.'/write_comment_update.php';
+$comment_csrf_token = eottae_column_comment_csrf_token();
 $column_youtube_id = (string) ($post['youtube_id'] ?? '');
 $column_youtube_embed = '';
 if ($column_youtube_id !== '') {
@@ -237,10 +238,11 @@ g5_page_start(get_text($post['wr_subject'] ?? '컬럼'));
     <section class="sebu-article-comments" aria-labelledby="sebu-comments-title">
         <h2 class="sebu-article-comments__title" id="sebu-comments-title">댓글 <?php echo number_format(count($comments)); ?></h2>
         <?php if ($is_member) { ?>
-        <form class="sebu-article-comments__form" method="post" action="<?php echo $comment_action; ?>">
+        <form class="sebu-article-comments__form" method="post" action="<?php echo $comment_action; ?>" data-sebu-column-comment-form>
             <input type="hidden" name="w" value="c">
             <input type="hidden" name="bo_table" value="<?php echo get_text($bo_table); ?>">
             <input type="hidden" name="wr_id" value="<?php echo (int) $wr_id; ?>">
+            <input type="hidden" name="token" value="<?php echo get_text($comment_csrf_token); ?>">
             <textarea name="wr_content" class="sebu-article-comments__input" rows="3" placeholder="댓글을 입력해 주세요" required></textarea>
             <button type="submit" class="sebu-column-btn sebu-column-btn--primary">댓글 등록</button>
         </form>

@@ -1720,6 +1720,23 @@ if (!function_exists('eottae_column_on_board_head')) {
 }
 add_event('board_head_before', 'eottae_column_on_board_head', 6, 3);
 
+if (!function_exists('eottae_column_on_comment_after')) {
+    function eottae_column_on_comment_after($board, $wr_id, $w, $qstr, $redirect_url, $comment_id, $reply_array)
+    {
+        if ($w !== 'c' || (int) $wr_id < 1) {
+            return;
+        }
+        if (empty($board['bo_table']) || !eottae_column_is_column_board($board['bo_table'])) {
+            return;
+        }
+
+        include_once G5_LIB_PATH.'/eottae-column.lib.php';
+        goto_url(eottae_column_view_url((int) $wr_id).'#sebu-comments-title');
+        exit;
+    }
+}
+add_event('comment_update_after', 'eottae_column_on_comment_after', 6, 7);
+
 if (!function_exists('eottae_column_on_write_update_before')) {
     function eottae_column_on_write_update_before($board, $wr_id, $w, $qstr)
     {

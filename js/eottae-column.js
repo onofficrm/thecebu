@@ -52,6 +52,42 @@
     var procUrl = viewRoot.getAttribute('data-proc-url') || '/proc/eottae-column.php';
     var engagePending = false;
 
+    var commentForm = viewRoot.querySelector('[data-sebu-column-comment-form]');
+    if (commentForm) {
+      commentForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        var form = commentForm;
+        var submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+        }
+        var bbsUrl = (typeof window.g5_bbs_url !== 'undefined' && window.g5_bbs_url) ? window.g5_bbs_url : '/bbs';
+        fetch(bbsUrl + '/ajax.comment_token.php', {
+          method: 'GET',
+          credentials: 'same-origin',
+          cache: 'no-store'
+        })
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            var tokenInput = form.querySelector('input[name="token"]');
+            if (!tokenInput) {
+              tokenInput = document.createElement('input');
+              tokenInput.type = 'hidden';
+              tokenInput.name = 'token';
+              form.appendChild(tokenInput);
+            }
+            tokenInput.value = (data && data.token) ? data.token : '';
+            form.submit();
+          })
+          .catch(function () {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+            }
+            alert('댓글 등록 준비 중 오류가 발생했습니다. 다시 시도해 주세요.');
+          });
+      });
+    }
+
     var likeBtn = viewRoot.querySelector('[data-sebu-column-like]');
     if (likeBtn) {
       likeBtn.addEventListener('click', function () {

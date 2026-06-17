@@ -395,6 +395,20 @@ if (!function_exists('eottae_column_view_url')) {
     }
 }
 
+if (!function_exists('eottae_column_comment_csrf_token')) {
+    /**
+     * 그누보드 write_comment_update.php 용 댓글 토큰 (ss_comment_token)
+     */
+    function eottae_column_comment_csrf_token()
+    {
+        set_session('ss_comment_token', '');
+        $token = _token();
+        set_session('ss_comment_token', $token);
+
+        return $token;
+    }
+}
+
 if (!function_exists('eottae_column_write_url')) {
     function eottae_column_write_url($wr_id = 0)
     {
