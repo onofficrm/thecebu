@@ -16,6 +16,18 @@ bubblewrap build
 
 | 파일 | 설명 |
 |------|------|
+| `twa/` | Bubblewrap TWA 프로젝트 (`kr.co.thecebu.app`) |
 | `twa-config.example.json` | Bubblewrap 초기화 참고값 |
+| `play-store/listing-ko.txt` | Play 스토어 설명·프로모션 문구 |
+| `play-store/data-safety-ko.md` | 데이터 보안 설문 참고 |
+
+## 빌드 산출물 (로컬, Git 제외)
+
+| 파일 | 경로 |
+|------|------|
+| AAB | `~/thecebu-android-twa/app-release-bundle.aab` |
+| APK | `~/Downloads/thecebu-1.0.0.apk` |
+
+Play Console 절차: [docs/PLAY-CONSOLE-GUIDE.md](../docs/PLAY-CONSOLE-GUIDE.md)
 
 > `android.keystore`, `app-release.aab` 등 서명·빌드 산출물은 **Git에 커밋하지 마세요.**

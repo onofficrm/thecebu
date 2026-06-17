@@ -4,6 +4,8 @@
 (function (global) {
   'use strict';
 
+  var geo = global.eottaeGeolocation;
+
   function shopListUrlFromNav(nav) {
     if (!nav) {
       return '';
@@ -41,6 +43,13 @@
     u.searchParams.set('eottae_lng', String(lng));
     u.searchParams.set('sst', 'near');
     u.searchParams.set('sod', 'asc');
+    u.searchParams.delete('eottae_geo');
+    return u.toString();
+  }
+
+  function buildShopUrlWithGeoPrompt(baseHref) {
+    var u = new URL(baseHref, global.location.href);
+    u.searchParams.set('eottae_geo', '1');
     return u.toString();
   }
 
@@ -75,18 +84,46 @@
     return false;
   }
 
+  function isInstalledApp() {
+    return geo && typeof geo.isInstalledApp === 'function' && geo.isInstalledApp();
+  }
+
+  function locationPermissionMessage(error) {
+    if (geo && typeof geo.permissionMessage === 'function') {
+      return geo.permissionMessage(error);
+    }
+    return '위치 권한이 필요합니다. 내주변 페이지에서 「현재 위치 기준으로 내 주변 찾기」를 이용해 주세요.';
+  }
+
+  function requestPosition() {
+    if (geo && typeof geo.getCurrentPosition === 'function') {
+      return geo.getCurrentPosition();
+    }
+    return new Promise(function (resolve, reject) {
+      if (!global.navigator || !global.navigator.geolocation) {
+        reject({ code: 0 });
+        return;
+      }
+      global.navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 12000,
+        maximumAge: 30000
+      });
+    });
+  }
+
   function requestNearNavigation(listUrl) {
     if (!listUrl) {
       return;
     }
 
-    if (!navigator.geolocation) {
+    if (!global.navigator || !global.navigator.geolocation) {
       global.location.href = listUrl;
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      function (pos) {
+    requestPosition()
+      .then(function (pos) {
         var lat = pos.coords.latitude;
         var lng = pos.coords.longitude;
         var current = global.location.href;
@@ -98,17 +135,19 @@
         }
 
         global.location.href = buildNearUrl(listUrl, lat, lng);
-      },
-      function () {
+      })
+      .catch(function (error) {
         if (isNearModeUrl(global.location.href)) {
           scrollToShopMap();
           return;
         }
-        global.alert('위치 권한이 필요합니다. 내주변 페이지에서 「현재 위치 기준으로 내 주변 찾기」를 이용해 주세요.');
+        if (isInstalledApp()) {
+          global.location.href = buildShopUrlWithGeoPrompt(listUrl);
+          return;
+        }
+        global.alert(locationPermissionMessage(error));
         global.location.href = listUrl;
-      },
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 }
-    );
+      });
   }
 
   function isNearNavLink(link) {

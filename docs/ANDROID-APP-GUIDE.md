@@ -23,7 +23,7 @@
 | **2** | Android 실기기 웹 QA (로그인·GPS·톡방) | ⬜ APK 설치 후 테스트 |
 | **3** | TWA 프로젝트 생성 (Bubblewrap) | ✅ `android-app/twa/` |
 | **4** | Digital Asset Links (`assetlinks.json`) | ✅ 배포 완료 |
-| **5** | Play Console 등록·내부 테스트 | ⬜ 다음 |
+| **5** | Play Console 등록·내부 테스트 | ⬜ [PLAY-CONSOLE-GUIDE.md](PLAY-CONSOLE-GUIDE.md) |
 | **6** | (선택) 푸시·딥링크·스플래시 고도화 | ⬜ |
 
 ---
@@ -76,6 +76,7 @@ Chrome DevTools → **Application → Manifest** 에서 name, icons, theme_color
 
 ### 알려진 주의점
 
+- TWA 앱에서 GPS가 안 되면: `DelegationService`가 켜져 있어야 함 (`enableLocationDelegation: true`, `build.gradle`의 `enableDelegation`). 앱 **1.0.1** 이상으로 재설치 후 위치 권한 허용.
 - 홈 빌더 React `assets/` 번들이 서버에 없으면 홈이 비어 보일 수 있음 → 빌더 ZIP 재업로드
 - OAuth redirect URI는 **운영 도메인**만 등록 (`https://thecebu.co.kr/...`)
 - `G5_COOKIE_DOMAIN`, HTTPS 설정 확인
@@ -140,12 +141,15 @@ https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=http
 
 ## 5단계 — Google Play Console
 
+**상세 절차:** [PLAY-CONSOLE-GUIDE.md](PLAY-CONSOLE-GUIDE.md)  
+**스토어 문구:** [android-app/play-store/listing-ko.txt](../android-app/play-store/listing-ko.txt)
+
 1. [Google Play Console](https://play.google.com/console) 개발자 계정 ($25 일회)
 2. **앱 만들기** → `kr.co.thecebu.app`
-3. **AAB 업로드** (내부 테스트 트랙)
-4. 스토어 등록정보: 앱 이름, 설명, 스크린샷(휴대폰 2장 이상), 512 아이콘
-5. 개인정보처리방침 URL: `https://thecebu.co.kr/page/privacy.php`
-6. 내부 테스트 → 오픈 테스트 → 프로덕션 순 배포
+3. **AAB 업로드:** `~/thecebu-android-twa/app-release-bundle.aab` (내부 테스트)
+4. 스토어 등록정보 + 스크린샷 + `img/logo/play-store-icon-512.png`
+5. 앱 콘텐츠(데이터 보안, 콘텐츠 등급, 앱 액세스) 완료
+6. 내부 테스트 → 오픈 테스트 → 프로덕션
 
 ---
 
@@ -182,4 +186,4 @@ https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=http
 
 ---
 
-**다음 작업:** 2단계 Android 실기기 QA → 이상 없으면 3단계 Bubblewrap TWA 프로젝트 생성.
+**다음 작업:** 실기기 QA → [PLAY-CONSOLE-GUIDE.md](PLAY-CONSOLE-GUIDE.md) 따라 AAB 업로드·내부 테스트.

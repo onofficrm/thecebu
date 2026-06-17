@@ -24,6 +24,11 @@ if (!function_exists('eottae_global_bottom_nav_html')) {
         }
         $near_nav_js = G5_JS_URL.'/eottae-mobile-near-nav.js';
         $near_nav_path = G5_PATH.'/js/eottae-mobile-near-nav.js';
+        $geo_js = G5_JS_URL.'/eottae-geolocation.js';
+        $geo_path = G5_PATH.'/js/eottae-geolocation.js';
+        if (is_file($geo_path)) {
+            $geo_js .= '?ver='.(int) filemtime($geo_path);
+        }
         if (is_file($near_nav_path)) {
             $near_nav_js .= '?ver='.(int) filemtime($near_nav_path);
         }
@@ -53,6 +58,7 @@ if (!function_exists('eottae_global_bottom_nav_html')) {
                 MY
             </a>
         </nav>
+        <script src="<?php echo htmlspecialchars($geo_js, ENT_QUOTES, 'UTF-8'); ?>"></script>
         <script src="<?php echo htmlspecialchars($near_nav_js, ENT_QUOTES, 'UTF-8'); ?>" defer></script>
         <?php
 

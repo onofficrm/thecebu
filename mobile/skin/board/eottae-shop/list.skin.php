@@ -39,6 +39,7 @@ $shop_map_markers = array();
 $eottae_maps_enabled = eottae_enqueue_google_maps();
 $eottae_near_enabled = true;
 $eottae_shop_list_api = G5_URL.'/proc/eottae-shop-list.php';
+add_javascript('<script src="'.G5_JS_URL.'/eottae-geolocation.js"></script>', 25);
 add_javascript('<script src="'.G5_JS_URL.'/eottae-shop-near-infinite.js"></script>', 26);
 
 function eottae_shop_build_list_url($bo_table, $params = array())
@@ -212,11 +213,22 @@ function fboardlist_submit(f) {
         statusEl.classList.toggle('is-success', type === 'success');
     }
 
+    function isInstalledApp() {
+        return window.eottaeGeolocation && typeof window.eottaeGeolocation.isInstalledApp === 'function'
+            && window.eottaeGeolocation.isInstalledApp();
+    }
+
     function locationErrorMessage(error) {
+        if (window.eottaeGeolocation && typeof window.eottaeGeolocation.permissionMessage === 'function') {
+            return window.eottaeGeolocation.permissionMessage(error);
+        }
         if (!window.isSecureContext && window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
             return '현재 위치 검색은 HTTPS 보안 연결에서만 사용할 수 있습니다.';
         }
         if (error && error.code === 1) {
+            if (isInstalledApp()) {
+                return '앱 위치 권한이 필요합니다. 설정 → 앱 → 세부어때 → 권한 → 위치를 허용한 뒤, 버튼을 다시 눌러 주세요.';
+            }
             return '브라우저 위치 권한이 차단되었습니다. 주소창의 위치 권한을 허용한 뒤 다시 시도해 주세요.';
         }
         if (error && error.code === 2) {
@@ -252,7 +264,18 @@ function fboardlist_submit(f) {
             geoBtn.disabled = true;
         }
         setStatus('현재 위치를 확인하는 중입니다...', 'success');
-        navigator.geolocation.getCurrentPosition(
+
+        var geoPromise = (window.eottaeGeolocation && typeof window.eottaeGeolocation.getCurrentPosition === 'function')
+            ? window.eottaeGeolocation.getCurrentPosition()
+            : new Promise(function (resolve, reject) {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 60000
+                });
+            });
+
+        geoPromise.then(
             function (pos) {
                 redirectWithCoords(pos.coords.latitude, pos.coords.longitude, !!withNear);
             },
@@ -261,8 +284,7 @@ function fboardlist_submit(f) {
                 if (geoBtn) {
                     geoBtn.disabled = false;
                 }
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+            }
         );
     }
 
@@ -278,5 +300,14 @@ function fboardlist_submit(f) {
             requestLocation(true);
         });
     });
+
+    try {
+        var pageUrl = new URL(window.location.href);
+        if (pageUrl.searchParams.get('eottae_geo') === '1' && !pageUrl.searchParams.get('eottae_lat')) {
+            window.setTimeout(function () {
+                requestLocation(true);
+            }, 400);
+        }
+    } catch (e) {}
 })();
 </script>

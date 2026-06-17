@@ -1000,13 +1000,20 @@ if (!function_exists('eottae_builder_inject_home_search_script')) {
 if (!function_exists('eottae_builder_inject_mobile_near_nav_script')) {
     function eottae_builder_inject_mobile_near_nav_script()
     {
+        $geo_js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-geolocation.js' : '/js/eottae-geolocation.js';
+        $geo_path = G5_PATH.'/js/eottae-geolocation.js';
+        if (is_file($geo_path)) {
+            $geo_js .= '?ver='.(int) filemtime($geo_path);
+        }
+
         $js = defined('G5_JS_URL') ? G5_JS_URL.'/eottae-mobile-near-nav.js' : '/js/eottae-mobile-near-nav.js';
         $path = G5_PATH.'/js/eottae-mobile-near-nav.js';
         if (is_file($path)) {
             $js .= '?ver='.(int) filemtime($path);
         }
 
-        return '<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
+        return '<script src="'.htmlspecialchars($geo_js, ENT_QUOTES, 'UTF-8').'"></script>'
+            .'<script src="'.htmlspecialchars($js, ENT_QUOTES, 'UTF-8').'" defer></script>';
     }
 }
 

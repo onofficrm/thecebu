@@ -22,6 +22,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="kr.co.thecebu.app">
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     
 
     
@@ -174,8 +177,8 @@
 
         <service
             android:name=".DelegationService"
-            android:enabled="@bool/enableNotification"
-            android:exported="@bool/enableNotification">
+            android:enabled="@bool/enableDelegation"
+            android:exported="@bool/enableDelegation">
 
             
 
@@ -188,8 +191,13 @@
         
 
         
-            <activity android:name=
-        "com.google.androidbrowserhelper.locationdelegation.PermissionRequestActivity"/>
+            <activity
+                android:name="com.google.androidbrowserhelper.locationdelegation.PermissionRequestActivity"
+                android:exported="false"
+                android:excludeFromRecents="true"
+                android:launchMode="singleTop"
+                android:theme="@android:style/Theme.Translucent.NoTitleBar"
+                android:configChanges="orientation|screenSize"/>
         
     </application>
 </manifest>
