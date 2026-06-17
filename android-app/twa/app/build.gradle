@@ -58,8 +58,8 @@ android {
         applicationId "kr.co.thecebu.app"
         minSdkVersion 21
         targetSdkVersion 35
-        versionCode 6
-        versionName "1.0.4"
+        versionCode 7
+        versionName "1.0.5"
 
         // The name for the application
         resValue "string", "appName", twaManifest.name
