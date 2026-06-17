@@ -4,6 +4,7 @@
  *
  * 설치: php setup/tools/eottae-auto-comment-install-cli.php
  * 상태: php setup/tools/eottae-auto-comment-install-cli.php --status
+ * 진단: php setup/tools/eottae-auto-comment-install-cli.php --diag
  */
 if (php_sapi_name() !== 'cli') {
     exit("CLI only\n");
@@ -31,11 +32,78 @@ if (!defined('_GNUBOARD_')) {
 
 $argv = $argv ?? array();
 $status_only = in_array('--status', $argv, true);
+$diag_only = in_array('--diag', $argv, true);
 
 $tables = array('setting', 'board', 'author', 'template', 'queue', 'log', 'ai_usage', 'visitor', 'post_view');
 
 echo "Auto Comment plugin v".AUTO_COMMENT_VERSION."\n";
 echo "Table prefix: ".G5_TABLE_PREFIX."\n\n";
+
+if ($diag_only) {
+    if (!auto_comment_is_installed()) {
+        echo "NOT INSTALLED\n";
+        exit(1);
+    }
+
+    $today = date('Y-m-d 00:00:00', G5_SERVER_TIME);
+    $failure_actions = "'failed','schedule_failed','schedule_skip','strategy_skip','worker_failed','generator_fallback','ai_failed'";
+
+    echo "enabled: ".auto_comment_get_setting('enabled', '0')."\n";
+    echo "generator_mode: ".auto_comment_get_setting('generator_mode', 'ai')."\n";
+    echo "auto_min_comments: ".auto_comment_get_setting('auto_min_comments', '0')."\n";
+    echo "daily_limit: ".auto_comment_get_setting('daily_limit', '20')."\n";
+    echo "trigger_percent: ".auto_comment_get_setting('trigger_percent', '3')."\n";
+    echo "trigger_interval: ".auto_comment_get_setting('trigger_interval', '180')."s\n\n";
+
+    foreach (array('review', 'pending', 'inserted', 'failed', 'cancelled') as $status) {
+        $row = sql_fetch(" select count(*) as cnt from ".auto_comment_table('queue')." where acq_status = '".auto_comment_escape($status)."' ", false);
+        echo "queue {$status}: ".(int) $row['cnt']."\n";
+    }
+
+    $due = sql_fetch(" select count(*) as cnt from ".auto_comment_table('queue')."
+                       where acq_status = 'pending' and acq_scheduled_at <= '".G5_TIME_YMDHIS."' ", false);
+    echo "queue pending (due now): ".(int) $due['cnt']."\n";
+
+    $inserted_today = sql_fetch(" select count(*) as cnt from ".auto_comment_table('queue')."
+                                  where acq_status = 'inserted' and acq_inserted_at >= '{$today}' ", false);
+    echo "inserted today: ".(int) $inserted_today['cnt']."\n";
+
+    $failures_today = sql_fetch(" select count(*) as cnt from ".auto_comment_table('log')."
+                                   where acl_action in ({$failure_actions}) and acl_datetime >= '{$today}' ", false);
+    echo "failures today: ".(int) $failures_today['cnt']."\n\n";
+
+    echo "enabled boards:\n";
+    $boards = sql_query(" select bo_table, acb_enabled, acb_auto_new_post, acb_strategy_scan, acb_midnight_schedule, acb_interval_minutes, acb_review_mode
+                            from ".auto_comment_table('board')."
+                           where acb_enabled = 1
+                           order by bo_table asc ", false);
+    while ($board = sql_fetch_array($boards)) {
+        echo '  - '.$board['bo_table']
+            .' new_post='.(int) $board['acb_auto_new_post']
+            .' strategy='.(int) $board['acb_strategy_scan']
+            .' interval='.(int) $board['acb_midnight_schedule']
+            .' interval_min='.(int) $board['acb_interval_minutes']
+            .' review='.(int) $board['acb_review_mode']."\n";
+    }
+
+    echo "\nrecent logs:\n";
+    $logs = sql_query(" select acl_action, acl_message, acl_datetime
+                          from ".auto_comment_table('log')."
+                         order by acl_id desc
+                         limit 12 ", false);
+    while ($log = sql_fetch_array($logs)) {
+        echo '  ['.$log['acl_datetime'].'] '.$log['acl_action'].': '.$log['acl_message']."\n";
+    }
+
+    $last_file = G5_DATA_PATH.'/cache/auto_comment_last_run.php';
+    if (is_file($last_file)) {
+        echo "\nworker last run file: ".date('Y-m-d H:i:s', filemtime($last_file))."\n";
+    } else {
+        echo "\nworker last run file: (none)\n";
+    }
+
+    exit(0);
+}
 
 if ($status_only) {
     foreach ($tables as $name) {

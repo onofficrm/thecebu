@@ -2770,6 +2770,25 @@ function auto_comment_inserted_count_for_post($bo_table, $wr_id)
     return (int) $row['cnt'];
 }
 
+function auto_comment_on_post_published($bo_table, $wr_id)
+{
+    $bo_table = preg_replace('/[^a-zA-Z0-9_]/', '', (string) $bo_table);
+    $wr_id = (int) $wr_id;
+    if (!$bo_table || $wr_id < 1 || !auto_comment_is_installed()) {
+        return;
+    }
+    if (auto_comment_get_setting('enabled', '0') !== '1') {
+        return;
+    }
+
+    $board = get_board_db($bo_table, true);
+    if (!$board || empty($board['bo_table'])) {
+        return;
+    }
+
+    auto_comment_schedule_for_post($board, $wr_id, '');
+}
+
 function auto_comment_schedule_for_post($board, $wr_id, $w)
 {
     global $g5;

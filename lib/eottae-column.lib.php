@@ -1581,6 +1581,7 @@ if (!function_exists('eottae_column_save_post')) {
         }
 
         $wr_id = (int) ($input['wr_id'] ?? 0);
+        $is_new_post = ($wr_id < 1);
         if ($wr_id > 0 && !eottae_column_can_edit($mb_id, $wr_id, $is_super)) {
             return array('ok' => false, 'message' => '수정 권한이 없습니다.');
         }
@@ -1765,6 +1766,24 @@ if (!function_exists('eottae_column_save_post')) {
 
         if (function_exists('delete_cache_latest')) {
             delete_cache_latest($bo_table);
+        }
+
+        if ($status === 'published' && function_exists('auto_comment_on_post_published')) {
+            $should_schedule = $is_new_post;
+            if (!$should_schedule && $wr_id > 0) {
+                $prev_status = '';
+                if (isset($meta_existing) && is_array($meta_existing)) {
+                    $prev_status = (string) ($meta_existing['status'] ?? '');
+                } elseif (isset($existing) && is_array($existing)) {
+                    $prev_status = (string) ($existing['wr_2'] ?? '');
+                }
+                if ($prev_status !== '' && $prev_status !== 'published') {
+                    $should_schedule = true;
+                }
+            }
+            if ($should_schedule) {
+                auto_comment_on_post_published($bo_table, $wr_id);
+            }
         }
 
         return array(

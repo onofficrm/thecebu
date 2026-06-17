@@ -20,6 +20,13 @@ if (!$post) {
     alert('컬럼을 찾을 수 없습니다.', eottae_column_list_url());
 }
 
+global $write, $bo_table;
+$bo_table = eottae_column_board_table();
+$write = eottae_column_get_write_row($wr_id);
+if (!is_array($write)) {
+    $write = array();
+}
+
 eottae_column_apply_seo($post);
 
 $author = $post['author'] ?? null;
@@ -65,7 +72,6 @@ if (!empty($post['tags'])) {
 }
 $report_token = eottae_column_report_token();
 $report_reasons = eottae_column_report_reasons();
-$bo_table = eottae_column_board_table();
 $comment_action = G5_BBS_URL.'/write_comment_update.php';
 $comment_csrf_token = eottae_column_comment_csrf_token();
 $column_youtube_id = (string) ($post['youtube_id'] ?? '');
