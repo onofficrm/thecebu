@@ -15,6 +15,18 @@ if (!function_exists('eottae_push_table')) {
     }
 }
 
+if (!function_exists('eottae_push_campaign_table')) {
+    function eottae_push_campaign_table()
+    {
+        global $g5;
+        if (!isset($g5['eottae_push_campaigns_table'])) {
+            $g5['eottae_push_campaigns_table'] = G5_TABLE_PREFIX.'eottae_push_campaigns';
+        }
+
+        return $g5['eottae_push_campaigns_table'];
+    }
+}
+
 if (!function_exists('eottae_push_enabled')) {
     function eottae_push_enabled()
     {
@@ -74,6 +86,22 @@ if (!function_exists('eottae_push_ensure_schema')) {
             PRIMARY KEY (`id`),
             UNIQUE KEY `endpoint_hash` (`endpoint_hash`),
             KEY `idx_mb_active` (`mb_id`, `is_active`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ", false);
+
+        $campaign_table = eottae_push_campaign_table();
+        sql_query(" CREATE TABLE IF NOT EXISTS `{$campaign_table}` (
+            `campaign_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+            `title` varchar(120) NOT NULL DEFAULT '',
+            `body` varchar(500) NOT NULL DEFAULT '',
+            `url` varchar(500) NOT NULL DEFAULT '',
+            `created_by` varchar(20) NOT NULL DEFAULT '',
+            `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+            `expires_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+            `sent_count` int(11) unsigned NOT NULL DEFAULT '0',
+            `is_active` tinyint(1) NOT NULL DEFAULT '1',
+            PRIMARY KEY (`campaign_id`),
+            KEY `idx_active_expires` (`is_active`, `expires_at`),
+            KEY `idx_created_at` (`created_at`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ", false);
     }
 }
@@ -355,6 +383,98 @@ if (!function_exists('eottae_push_broadcast_active')) {
     }
 }
 
+if (!function_exists('eottae_push_create_campaign')) {
+    function eottae_push_create_campaign($title, $body, $url, $created_by, $ttl_minutes = 20)
+    {
+        eottae_push_ensure_schema();
+
+        $title = trim((string) $title);
+        $body = trim((string) $body);
+        $url = trim((string) $url);
+        $created_by = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $created_by);
+        $ttl_minutes = max(5, min(120, (int) $ttl_minutes));
+
+        if ($title === '' || $body === '') {
+            return array('ok' => false, 'message' => '제목과 내용을 입력해 주세요.');
+        }
+        if (function_exists('mb_substr')) {
+            $title = mb_substr($title, 0, 80, 'UTF-8');
+            $body = mb_substr($body, 0, 220, 'UTF-8');
+        } else {
+            $title = substr($title, 0, 80);
+            $body = substr($body, 0, 220);
+        }
+        if ($url === '') {
+            $url = G5_URL.'/page/eottae-notifications.php';
+        } elseif (strpos($url, 'http://') !== 0 && strpos($url, 'https://') !== 0 && strpos($url, '/') === 0) {
+            $url = G5_URL.$url;
+        }
+        if (strpos($url, G5_URL) !== 0) {
+            return array('ok' => false, 'message' => '세부어때 내부 URL만 사용할 수 있습니다.');
+        }
+
+        $table = eottae_push_campaign_table();
+        $now = G5_TIME_YMDHIS;
+        $expires_at = date('Y-m-d H:i:s', G5_SERVER_TIME + $ttl_minutes * 60);
+        sql_query(" UPDATE `{$table}` SET is_active = '0' WHERE is_active = '1' ", false);
+        sql_query(" INSERT INTO `{$table}` SET
+                title = '".sql_escape_string($title)."',
+                body = '".sql_escape_string($body)."',
+                url = '".sql_escape_string($url)."',
+                created_by = '".sql_escape_string($created_by)."',
+                created_at = '{$now}',
+                expires_at = '".sql_escape_string($expires_at)."',
+                is_active = '1' ", false);
+
+        return array('ok' => true, 'campaign_id' => (int) sql_insert_id(), 'message' => '푸시 캠페인을 만들었습니다.');
+    }
+}
+
+if (!function_exists('eottae_push_latest_campaign_payload')) {
+    function eottae_push_latest_campaign_payload()
+    {
+        eottae_push_ensure_schema();
+        $table = eottae_push_campaign_table();
+        $row = sql_fetch(" SELECT *
+                             FROM `{$table}`
+                            WHERE is_active = '1'
+                              AND expires_at >= '".sql_escape_string(G5_TIME_YMDHIS)."'
+                            ORDER BY campaign_id DESC
+                            LIMIT 1 ", false);
+        if (empty($row['campaign_id'])) {
+            return null;
+        }
+
+        return array(
+            'title' => get_text($row['title'] ?? '세부어때 알림'),
+            'body' => get_text($row['body'] ?? '새 소식을 확인해 주세요.'),
+            'url' => (string) ($row['url'] ?? G5_URL.'/page/eottae-notifications.php'),
+        );
+    }
+}
+
+if (!function_exists('eottae_push_send_campaign')) {
+    function eottae_push_send_campaign($title, $body, $url, $created_by, $limit = 500)
+    {
+        $campaign = eottae_push_create_campaign($title, $body, $url, $created_by);
+        if (empty($campaign['ok'])) {
+            return $campaign;
+        }
+
+        $result = eottae_push_broadcast_active($limit);
+        $sent = (int) ($result['sent'] ?? 0);
+        $table = eottae_push_campaign_table();
+        sql_query(" UPDATE `{$table}` SET sent_count = '{$sent}' WHERE campaign_id = '".(int) $campaign['campaign_id']."' ", false);
+
+        return array(
+            'ok' => !empty($result['ok']),
+            'campaign_id' => (int) $campaign['campaign_id'],
+            'sent' => $sent,
+            'message' => !empty($result['ok']) ? '푸시 캠페인을 발송했습니다.' : (string) ($result['message'] ?? '발송된 기기가 없습니다.'),
+        );
+    }
+}
+
 if (!function_exists('eottae_push_latest_payload')) {
     function eottae_push_latest_message_payload($mb_id)
     {
@@ -429,6 +549,20 @@ if (!function_exists('eottae_push_latest_payload')) {
         }
         if (!function_exists('eottae_talkroom_notify_list') && is_file(G5_LIB_PATH.'/eottae-talkroom-notify.lib.php')) {
             include_once G5_LIB_PATH.'/eottae-talkroom-notify.lib.php';
+        }
+
+        $campaign = eottae_push_latest_campaign_payload();
+        if ($campaign) {
+            return array(
+                'success' => true,
+                'has_notification' => true,
+                'total' => 1,
+                'title' => $campaign['title'],
+                'body' => $campaign['body'],
+                'url' => $campaign['url'],
+                'icon' => function_exists('g5site_cfg_url') ? g5site_cfg_url('pwa_icon_192_path', '/img/logo/android-chrome-192x192.png') : G5_URL.'/img/logo/android-chrome-192x192.png',
+                'badge' => function_exists('g5site_cfg_url') ? g5site_cfg_url('favicon_png_path', '/img/logo/favicon-32x32.png') : G5_URL.'/img/logo/favicon-32x32.png',
+            );
         }
 
         $summary = function_exists('eottae_mypage_notification_summary') ? eottae_mypage_notification_summary($mb_id) : array('total' => 0);
