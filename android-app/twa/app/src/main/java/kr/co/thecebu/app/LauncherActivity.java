@@ -29,6 +29,7 @@ public class LauncherActivity
         extends com.google.androidbrowserhelper.trusted.LauncherActivity {
 
     private static final int REQ_LOCATION = 1001;
+    private static final int REQ_NOTIFICATIONS = 1002;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +47,7 @@ public class LauncherActivity
         // TWA 위치 위임: 앱 포그라운드에서 Android 위치 권한을 먼저 요청
         // (Android 14+ 에서 PermissionRequestActivity 백그라운드 실행 차단 완화)
         requestLocationPermissionIfNeeded();
+        requestNotificationPermissionIfNeeded();
     }
 
     private void requestLocationPermissionIfNeeded() {
@@ -60,6 +62,22 @@ public class LauncherActivity
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 },
                 REQ_LOCATION);
+    }
+
+    private void requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return;
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                == PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        ActivityCompat.requestPermissions(
+                this,
+                new String[] {
+                    Manifest.permission.POST_NOTIFICATIONS
+                },
+                REQ_NOTIFICATIONS);
     }
 
     @Override

@@ -32,8 +32,9 @@ $eottae_auth_site_title = isset($g5_site_title) ? get_text($g5_site_title) : '�
         <input type="password" name="mb_password" id="login_pw" required class="frm_input" placeholder="비밀번호">
 
         <div class="login_if_auto chk_box" style="margin:12px 0">
-            <input type="checkbox" name="auto_login" id="login_auto_login" class="selec_chk">
+            <input type="checkbox" name="auto_login" id="login_auto_login" class="selec_chk" data-app-auto-login>
             <label for="login_auto_login"><span></span> 자동로그인</label>
+            <p class="auth-layout__hint" data-app-auto-login-hint style="display:none;margin:6px 0 0;font-size:12px;color:#64748b">앱에서는 로그인 상태를 유지하기 위해 자동로그인이 기본 적용됩니다.</p>
         </div>
 
         <button type="submit" class="btn_submit">로그인</button>
@@ -56,7 +57,34 @@ $eottae_auth_site_title = isset($g5_site_title) ? get_text($g5_site_title) : '�
 </div>
 
 <script>
+function eottae_is_app_context() {
+    return !!(
+        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+        window.navigator.standalone ||
+        (document.referrer && document.referrer.indexOf('android-app://') === 0)
+    );
+}
+
+function eottae_apply_app_auto_login() {
+    var checkbox = document.querySelector('[data-app-auto-login]');
+    if (!checkbox || !eottae_is_app_context()) {
+        return;
+    }
+
+    checkbox.checked = true;
+    checkbox.setAttribute('aria-describedby', 'app-auto-login-hint');
+
+    var hint = document.querySelector('[data-app-auto-login-hint]');
+    if (hint) {
+        hint.id = 'app-auto-login-hint';
+        hint.style.display = 'block';
+    }
+}
+
+eottae_apply_app_auto_login();
+
 function flogin_submit(f) {
+    eottae_apply_app_auto_login();
     return true;
 }
 </script>

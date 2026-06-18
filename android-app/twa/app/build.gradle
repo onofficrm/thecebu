@@ -33,7 +33,7 @@ def twaManifest = [
     navigationDividerColor: '#000000', // The navbar divider color.
     navigationDividerColorDark: '#000000', // The dark navbar divider color.
     backgroundColor: '#000000', // The color used for the splash screen background.
-    enableNotifications: false, // Set to true to enable notification delegation.
+    enableNotifications: true, // Enable notification delegation for web/app notifications.
     enableLocationDelegation: true, // Location delegation needs DelegationService enabled.
     // Every shortcut must include the following fields:
     // - name: String that will show up in the shortcut.
@@ -58,8 +58,8 @@ android {
         applicationId "kr.co.thecebu.app"
         minSdkVersion 21
         targetSdkVersion 35
-        versionCode 7
-        versionName "1.0.5"
+        versionCode 8
+        versionName "1.0.6"
 
         // The name for the application
         resValue "string", "appName", twaManifest.name
