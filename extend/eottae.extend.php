@@ -60,6 +60,7 @@ include_once G5_LIB_PATH.'/eottae-gnb-menu.lib.php';
 include_once G5_LIB_PATH.'/eottae-seo-feed.lib.php';
 include_once G5_LIB_PATH.'/eottae-sitemap.lib.php';
 include_once G5_LIB_PATH.'/eottae-pwa.lib.php';
+include_once G5_LIB_PATH.'/eottae-push.lib.php';
 
 if (function_exists('eottae_secrets_load')) {
     eottae_secrets_load();
@@ -78,6 +79,9 @@ if (function_exists('eottae_review_delete_ensure_schema')) {
 }
 if (function_exists('eottae_talkroom_ensure_schema')) {
     eottae_talkroom_ensure_schema();
+}
+if (function_exists('eottae_push_ensure_schema')) {
+    eottae_push_ensure_schema();
 }
 if (function_exists('eottae_calendar_ensure_schema')) {
     eottae_calendar_ensure_schema();

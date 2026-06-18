@@ -1768,21 +1768,25 @@ if (!function_exists('eottae_column_save_post')) {
             delete_cache_latest($bo_table);
         }
 
-        if ($status === 'published' && function_exists('auto_comment_on_post_published')) {
-            $should_schedule = $is_new_post;
-            if (!$should_schedule && $wr_id > 0) {
-                $prev_status = '';
-                if (isset($meta_existing) && is_array($meta_existing)) {
-                    $prev_status = (string) ($meta_existing['status'] ?? '');
-                } elseif (isset($existing) && is_array($existing)) {
-                    $prev_status = (string) ($existing['wr_2'] ?? '');
-                }
-                if ($prev_status !== '' && $prev_status !== 'published') {
-                    $should_schedule = true;
-                }
+        $is_newly_published = $status === 'published' && $is_new_post;
+        if ($status === 'published' && !$is_newly_published && $wr_id > 0) {
+            $prev_status = '';
+            if (isset($meta_existing) && is_array($meta_existing)) {
+                $prev_status = (string) ($meta_existing['status'] ?? '');
+            } elseif (isset($existing) && is_array($existing)) {
+                $prev_status = (string) ($existing['wr_2'] ?? '');
             }
-            if ($should_schedule) {
+            if ($prev_status !== '' && $prev_status !== 'published') {
+                $is_newly_published = true;
+            }
+        }
+
+        if ($is_newly_published) {
+            if (function_exists('auto_comment_on_post_published')) {
                 auto_comment_on_post_published($bo_table, $wr_id);
+            }
+            if (function_exists('eottae_push_broadcast_active')) {
+                eottae_push_broadcast_active(500);
             }
         }
 

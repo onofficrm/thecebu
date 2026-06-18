@@ -155,9 +155,14 @@ if (!function_exists('eottae_talkroom_notify_create')) {
             return array('ok' => false);
         }
 
+        $notification_id = (int) sql_insert_id();
+        if (function_exists('eottae_push_send_to_member')) {
+            eottae_push_send_to_member($mb_id);
+        }
+
         return array(
             'ok' => true,
-            'id' => (int) sql_insert_id(),
+            'id' => $notification_id,
         );
     }
 }

@@ -773,6 +773,10 @@ if (!function_exists('eottae_message_reply')) {
             WHERE thread_id = '".(int) $thread['thread_id']."'
         ", false);
 
+        if (function_exists('eottae_push_send_to_member')) {
+            eottae_push_send_to_member($receiver_mb_id);
+        }
+
         return array(
             'ok' => true,
             'message' => '메시지를 보냈습니다.',

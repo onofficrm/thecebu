@@ -41,6 +41,12 @@ $site_config = array(
     'play_store_icon_path'  => '/img/logo/play-store-icon-512.png',
     'android_app_package'   => 'kr.co.thecebu.app',
     'android_app_name'      => '세부어때',
+    /* 앱/Web Push — VAPID 키는 _site.config.local.php에 설정하세요 */
+    'web_push_enabled'      => true,
+    'web_push_public_key'   => '',
+    'web_push_private_key_pem' => '',
+    'web_push_subject'      => 'mailto:help@thecebu.co.kr',
+    'web_push_prompt_app_only' => true,
     'og_image'            => '/img/logo/cebu-logo-main.png',
     /* SEO (components/seo-meta.php) */
     'seo_title'           => '',
