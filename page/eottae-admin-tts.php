@@ -36,7 +36,8 @@ $settings = eottae_tts_get_settings();
 $voices = eottae_tts_voice_options();
 $boards = eottae_tts_board_options();
 $selected_boards = array_fill_keys($settings['board_list'], true);
-$api_key_ready = eottae_tts_api_key() !== '';
+$api_key_info = function_exists('eottae_tts_api_key_info') ? eottae_tts_api_key_info() : array('key' => '', 'source_label' => '', 'masked' => '');
+$api_key_ready = !empty($api_key_info['key']);
 
 add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-tts-admin.css">', 24);
 
@@ -62,7 +63,9 @@ g5_page_start('AI 음성읽기 관리');
     <p class="tts-admin-alert tts-admin-alert--error"><?php echo get_text($error); ?></p>
     <?php } ?>
     <?php if (!$api_key_ready) { ?>
-    <p class="tts-admin-alert tts-admin-alert--error">AI API 키가 설정되어 있지 않습니다. <code>data/eottae-secrets.local.php</code>의 <code>ai_generate_api_key</code> 또는 <code>openai_api_key</code>를 확인해 주세요.</p>
+    <p class="tts-admin-alert tts-admin-alert--error">AI API 키가 설정되어 있지 않습니다. <code>data/eottae-secrets.local.php</code>의 <code>tts_openai_api_key</code>, <code>openai_api_key</code>, <code>ai_generate_api_key</code> 중 하나를 확인해 주세요.</p>
+    <?php } else { ?>
+    <p class="tts-admin-alert tts-admin-alert--ok">현재 TTS 사용 키: <?php echo get_text($api_key_info['source_label'] ?? ''); ?> <code><?php echo get_text($api_key_info['masked'] ?? ''); ?></code></p>
     <?php } ?>
 
     <form method="post" class="tts-admin-form">

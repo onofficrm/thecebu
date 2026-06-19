@@ -214,22 +214,73 @@ if (!function_exists('eottae_tts_board_enabled')) {
 }
 
 if (!function_exists('eottae_tts_api_key')) {
-    function eottae_tts_api_key()
+    function eottae_tts_mask_api_key($key)
     {
-        if (!function_exists('eottae_ai_generate_bootstrap_config') && is_file(G5_LIB_PATH.'/eottae-ai-generate.lib.php')) {
-            include_once G5_LIB_PATH.'/eottae-ai-generate.lib.php';
+        $key = trim((string) $key);
+        if ($key === '') {
+            return '';
         }
-        if (function_exists('eottae_ai_generate_bootstrap_config')) {
-            $cfg = eottae_ai_generate_bootstrap_config();
-            if (!empty($cfg['api_key'])) {
-                return (string) $cfg['api_key'];
-            }
-        }
-        if (function_exists('g5site_cfg')) {
-            return trim((string) g5site_cfg('openai_api_key', ''));
+        if (strlen($key) <= 10) {
+            return '********';
         }
 
-        return '';
+        return substr($key, 0, 7).'…'.substr($key, -4);
+    }
+
+    function eottae_tts_api_key_info()
+    {
+        if (!function_exists('eottae_secrets_load') && is_file(G5_LIB_PATH.'/eottae-secrets.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-secrets.lib.php';
+        }
+        if (function_exists('eottae_secrets_load')) {
+            eottae_secrets_load();
+        }
+
+        $sources = array(
+            'tts_openai_api_key' => 'TTS 전용 키',
+            'openai_api_key' => '공통 OpenAI 키',
+            'ai_generate_api_key' => 'AI 자동생성 키',
+        );
+        if (function_exists('g5site_cfg')) {
+            foreach ($sources as $key_name => $label) {
+                $value = trim((string) g5site_cfg($key_name, ''));
+                if ($value !== '') {
+                    return array(
+                        'key' => $value,
+                        'source' => $key_name,
+                        'source_label' => $label,
+                        'masked' => eottae_tts_mask_api_key($value),
+                    );
+                }
+            }
+        }
+
+        foreach (array('OPENAI_API_KEY', 'EOTTAE_OPENAI_API_KEY') as $env_key) {
+            $env_val = getenv($env_key);
+            if ($env_val !== false && trim((string) $env_val) !== '') {
+                $value = trim((string) $env_val);
+                return array(
+                    'key' => $value,
+                    'source' => $env_key,
+                    'source_label' => '환경변수 '.$env_key,
+                    'masked' => eottae_tts_mask_api_key($value),
+                );
+            }
+        }
+
+        return array(
+            'key' => '',
+            'source' => '',
+            'source_label' => '',
+            'masked' => '',
+        );
+    }
+
+    function eottae_tts_api_key()
+    {
+        $info = eottae_tts_api_key_info();
+
+        return (string) ($info['key'] ?? '');
     }
 }
 
@@ -322,6 +373,36 @@ if (!function_exists('eottae_tts_audio_path_url')) {
 }
 
 if (!function_exists('eottae_tts_openai_speech')) {
+    function eottae_tts_openai_error_message($http_code, $decoded, $curl_error = '')
+    {
+        $http_code = (int) $http_code;
+        $error = is_array($decoded) && isset($decoded['error']) && is_array($decoded['error']) ? $decoded['error'] : array();
+        $type = strtolower((string) ($error['type'] ?? ''));
+        $code = strtolower((string) ($error['code'] ?? ''));
+        $message = strtolower((string) ($error['message'] ?? ''));
+
+        if ($http_code === 401) {
+            return 'AI 음성 API 키를 확인해 주세요.';
+        }
+        if ($http_code === 429 && ($code === 'insufficient_quota' || strpos($message, 'quota') !== false || strpos($message, 'billing') !== false)) {
+            return 'AI 음성 생성 한도가 소진되었습니다. 관리자에게 문의해 주세요.';
+        }
+        if ($http_code === 429 || $type === 'rate_limit_error') {
+            return 'AI 음성 요청이 많습니다. 잠시 후 다시 시도해 주세요.';
+        }
+        if ($http_code === 400) {
+            return 'AI 음성 설정을 확인해 주세요.';
+        }
+        if ($http_code >= 500) {
+            return 'AI 음성 서버가 일시적으로 불안정합니다. 잠시 후 다시 시도해 주세요.';
+        }
+        if ($curl_error !== '') {
+            return 'AI 음성 서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.';
+        }
+
+        return 'AI 음성을 생성할 수 없습니다. 잠시 후 다시 시도해 주세요.';
+    }
+
     function eottae_tts_openai_speech($text, $model, $voice, $speed)
     {
         $api_key = eottae_tts_api_key();
@@ -366,11 +447,8 @@ if (!function_exists('eottae_tts_openai_speech')) {
         }
 
         $decoded = is_string($raw) ? json_decode($raw, true) : null;
-        $message = is_array($decoded) && !empty($decoded['error']['message'])
-            ? (string) $decoded['error']['message']
-            : ($curl_error !== '' ? $curl_error : 'HTTP '.$http_code);
 
-        return array('ok' => false, 'message' => 'AI 음성 생성에 실패했습니다. ('.$message.')');
+        return array('ok' => false, 'message' => eottae_tts_openai_error_message($http_code, $decoded, $curl_error));
     }
 }
 
@@ -480,8 +558,10 @@ if (!function_exists('eottae_tts_render_board_player')) {
 
         $estimate = eottae_tts_estimated_minutes($plain);
         $endpoint = G5_URL.'/proc/eottae-tts.php';
-        $css_url = G5_CSS_URL.'/eottae-tts.css';
-        $js_url = G5_JS_URL.'/eottae-tts.js';
+        $css_ver = is_file(G5_PATH.'/css/eottae-tts.css') ? '?ver='.(int) filemtime(G5_PATH.'/css/eottae-tts.css') : '';
+        $js_ver = is_file(G5_PATH.'/js/eottae-tts.js') ? '?ver='.(int) filemtime(G5_PATH.'/js/eottae-tts.js') : '';
+        $css_url = G5_CSS_URL.'/eottae-tts.css'.$css_ver;
+        $js_url = G5_JS_URL.'/eottae-tts.js'.$js_ver;
         ?>
 <link rel="stylesheet" href="<?php echo $css_url; ?>">
 <div class="eottae-tts-player" data-eottae-tts-player data-endpoint="<?php echo get_text($endpoint); ?>" data-bo-table="<?php echo get_text($bo_table); ?>" data-wr-id="<?php echo (int) $wr_id; ?>" data-default-speed="<?php echo get_text(number_format((float) $settings['speed'], 2, '.', '')); ?>">

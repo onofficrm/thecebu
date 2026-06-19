@@ -17,6 +17,17 @@
     }
   }
 
+  function cleanErrorMessage(message) {
+    message = String(message || '').trim();
+    if (!message) {
+      return '음성 파일을 만들 수 없습니다.';
+    }
+    if (message.length > 90 || /quota|billing|platform\.openai\.com|exceeded/i.test(message)) {
+      return 'AI 음성 생성 한도가 소진되었습니다. 관리자에게 문의해 주세요.';
+    }
+    return message;
+  }
+
   function loadAudio(player) {
     if (player.dataset.loading === '1') {
       return Promise.reject(new Error('loading'));
@@ -44,7 +55,7 @@
       })
       .then(function (data) {
         if (!data || !data.success || !data.audio_url) {
-          throw new Error((data && data.message) || '음성 파일을 만들 수 없습니다.');
+          throw new Error(cleanErrorMessage(data && data.message));
         }
         if (audio) {
           audio.src = data.audio_url;
@@ -121,7 +132,7 @@
             if (error && error.message === 'loading') {
               return;
             }
-            setStatus(player, error && error.message ? error.message : '음성 재생을 시작할 수 없습니다.');
+            setStatus(player, cleanErrorMessage(error && error.message ? error.message : '음성 재생을 시작할 수 없습니다.'));
           });
       });
     }
