@@ -141,6 +141,21 @@ if (!function_exists('eottae_tts_get_settings')) {
         $table = eottae_tts_settings_table();
         $row = sql_fetch(" SELECT * FROM `{$table}` WHERE id = 1 ", false);
         $boards = array_filter(array_map('trim', explode(',', (string) ($row['board_list'] ?? ''))));
+        $available_boards = array();
+        foreach (eottae_tts_board_options() as $board) {
+            if (!empty($board['bo_table'])) {
+                $available_boards[] = $board['bo_table'];
+            }
+        }
+        $column_bo_table = function_exists('eottae_column_board_table') ? eottae_column_board_table() : 'column';
+        if (
+            $column_bo_table !== ''
+            && in_array($column_bo_table, $available_boards, true)
+            && !in_array($column_bo_table, $boards, true)
+            && count($boards) >= max(1, count($available_boards) - 1)
+        ) {
+            $boards[] = $column_bo_table;
+        }
         $voice = (string) ($row['voice'] ?? 'nova');
         if (!isset(eottae_tts_voice_options()[$voice])) {
             $voice = 'nova';

@@ -62,6 +62,7 @@ include_once G5_LIB_PATH.'/eottae-sitemap.lib.php';
 include_once G5_LIB_PATH.'/eottae-pwa.lib.php';
 include_once G5_LIB_PATH.'/eottae-push.lib.php';
 include_once G5_LIB_PATH.'/eottae-tts.lib.php';
+include_once G5_LIB_PATH.'/eottae-ops-center.lib.php';
 
 if (function_exists('eottae_secrets_load')) {
     eottae_secrets_load();
@@ -89,6 +90,67 @@ if (function_exists('eottae_tts_ensure_schema')) {
 }
 if (function_exists('add_event') && function_exists('eottae_tts_render_board_player')) {
     add_event('tail_sub', 'eottae_tts_render_board_player', 30, 0);
+}
+if (!function_exists('eottae_admin_index_ops_dashboard')) {
+    function eottae_admin_index_ops_dashboard($html, $is_admin = '', $auth = array(), $member = array())
+    {
+        if ($is_admin !== 'super' || !function_exists('eottae_ops_build_context')) {
+            return $html;
+        }
+
+        $ops = eottae_ops_build_context();
+        $today = isset($ops['today_activity']) && is_array($ops['today_activity']) ? $ops['today_activity'] : array();
+        $members = isset($ops['members']) && is_array($ops['members']) ? $ops['members'] : array();
+        $tasks = isset($ops['tasks']) && is_array($ops['tasks']) ? $ops['tasks'] : array();
+        $push = isset($ops['push']) && is_array($ops['push']) ? $ops['push'] : array();
+        $pending_total = 0;
+        foreach ($tasks as $task) {
+            $pending_total += (int) ($task['count'] ?? 0);
+        }
+
+        ob_start();
+        ?>
+        <section class="eottae-admin-dashboard">
+            <div class="eottae-admin-dashboard__hero">
+                <div>
+                    <p class="eottae-admin-dashboard__eyebrow">THECEBU OPERATIONS</p>
+                    <h2>세부어때 관리자 대시보드</h2>
+                    <p>최고관리자용 운영 현황입니다. 운영센터에서 승인, 신고, 푸시, AI 음성읽기, 자동댓글 상태를 한 번에 관리할 수 있습니다.</p>
+                </div>
+                <div class="eottae-admin-dashboard__actions">
+                    <a href="<?php echo G5_URL; ?>/page/eottae-ops-center.php" class="eottae-admin-dashboard__btn eottae-admin-dashboard__btn--primary">운영센터 열기</a>
+                    <a href="<?php echo G5_URL; ?>/page/eottae-admin-tts.php" class="eottae-admin-dashboard__btn">AI 음성읽기 설정</a>
+                </div>
+            </div>
+            <div class="eottae-admin-dashboard__cards">
+                <a href="<?php echo G5_URL; ?>/page/eottae-ops-center.php" class="eottae-admin-dashboard__card">
+                    <span>오늘 새 글</span>
+                    <strong><?php echo number_format((int) ($today['posts'] ?? 0)); ?></strong>
+                    <em>댓글 <?php echo number_format((int) ($today['comments'] ?? 0)); ?>개</em>
+                </a>
+                <a href="<?php echo G5_ADMIN_URL; ?>/member_list.php" class="eottae-admin-dashboard__card">
+                    <span>오늘 방문 회원</span>
+                    <strong><?php echo number_format((int) ($members['visited_today'] ?? 0)); ?></strong>
+                    <em>신규 <?php echo number_format((int) ($members['joined_today'] ?? 0)); ?>명</em>
+                </a>
+                <a href="<?php echo G5_URL; ?>/page/eottae-ops-center.php" class="eottae-admin-dashboard__card<?php echo $pending_total > 0 ? ' is-warn' : ''; ?>">
+                    <span>처리 대기</span>
+                    <strong><?php echo number_format($pending_total); ?></strong>
+                    <em>승인·신고·자동화 점검</em>
+                </a>
+                <a href="<?php echo G5_URL; ?>/page/eottae-notifications.php" class="eottae-admin-dashboard__card">
+                    <span>앱 푸시 기기</span>
+                    <strong><?php echo number_format((int) ($push['active'] ?? 0)); ?></strong>
+                    <em><?php echo !empty($push['configured']) ? '발송 준비됨' : '키 설정 필요'; ?></em>
+                </a>
+            </div>
+        </section>
+        <?php
+        return $html.ob_get_clean();
+    }
+}
+if (function_exists('add_replace')) {
+    add_replace('adm_index_addtional_content_before', 'eottae_admin_index_ops_dashboard', 10, 4);
 }
 if (function_exists('eottae_calendar_ensure_schema')) {
     eottae_calendar_ensure_schema();

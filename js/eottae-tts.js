@@ -3,7 +3,7 @@
     if (player.dataset.inserted === '1') {
       return;
     }
-    var target = document.getElementById('bo_v_con') || document.querySelector('.board-view__content, .community-view-page__body, .plaza-view-page__body, .market-view__content');
+    var target = document.getElementById('bo_v_con') || document.querySelector('.board-view__content, .community-view-page__body, .plaza-view-page__body, .market-view__content, .sebu-article__content');
     if (target && target.parentNode) {
       target.parentNode.insertBefore(player, target);
     }

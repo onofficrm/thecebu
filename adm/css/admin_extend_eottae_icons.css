@@ -1,0 +1,188 @@
+@charset "utf-8";
+
+/* 세부어때 커스텀 관리자 메뉴 아이콘 */
+#gnb .gnb_li .btn_op.menu-850,
+#gnb .gnb_li .btn_op.menu-860,
+#gnb .gnb_li .btn_op.menu-870,
+#gnb .gnb_li .btn_op.menu-880,
+#gnb .gnb_li .btn_op.menu-890,
+#gnb .gnb_li .btn_op.menu-895,
+#gnb .gnb_li .btn_op.menu-896 {
+    position: relative;
+    background-image: none !important;
+    text-indent: 0;
+    font-size: 0;
+    color: #777;
+}
+
+#gnb .gnb_li .btn_op.menu-850:before,
+#gnb .gnb_li .btn_op.menu-860:before,
+#gnb .gnb_li .btn_op.menu-870:before,
+#gnb .gnb_li .btn_op.menu-880:before,
+#gnb .gnb_li .btn_op.menu-890:before,
+#gnb .gnb_li .btn_op.menu-895:before,
+#gnb .gnb_li .btn_op.menu-896:before {
+    display: inline-block;
+    font-family: FontAwesome;
+    font-size: 19px;
+    line-height: 50px;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+}
+
+#gnb .gnb_li .btn_op.menu-850:before { content: "\f086"; } /* 세부톡 */
+#gnb .gnb_li .btn_op.menu-860:before { content: "\f0e4"; } /* 운영센터 */
+#gnb .gnb_li .btn_op.menu-870:before { content: "\f1ea"; } /* 세부광장 */
+#gnb .gnb_li .btn_op.menu-880:before { content: "\f091"; } /* 챌린지 */
+#gnb .gnb_li .btn_op.menu-890:before { content: "\f0c0"; } /* 회원/뱃지 */
+#gnb .gnb_li .btn_op.menu-895:before { content: "\f02d"; } /* 생활정보 컬럼 */
+#gnb .gnb_li .btn_op.menu-896:before { content: "\f11e"; } /* 골프조인 */
+
+#gnb .gnb_li .btn_op.menu-850:hover,
+#gnb .gnb_li .btn_op.menu-860:hover,
+#gnb .gnb_li .btn_op.menu-870:hover,
+#gnb .gnb_li .btn_op.menu-880:hover,
+#gnb .gnb_li .btn_op.menu-890:hover,
+#gnb .gnb_li .btn_op.menu-895:hover,
+#gnb .gnb_li .btn_op.menu-896:hover {
+    color: #435ffe;
+}
+
+#gnb .on .btn_op.menu-850,
+#gnb .on .btn_op.menu-860,
+#gnb .on .btn_op.menu-870,
+#gnb .on .btn_op.menu-880,
+#gnb .on .btn_op.menu-890,
+#gnb .on .btn_op.menu-895,
+#gnb .on .btn_op.menu-896 {
+    background-image: none !important;
+    color: #435ffe;
+}
+
+/* 관리자 메인 세부어때 대시보드 */
+.eottae-admin-dashboard {
+    margin: 0 0 24px;
+}
+
+.eottae-admin-dashboard__hero {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: flex-end;
+    padding: 24px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #111827 0%, #164e63 54%, #0f766e 100%);
+    color: #fff;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, .16);
+}
+
+.eottae-admin-dashboard__eyebrow {
+    margin: 0 0 8px;
+    color: #7dd3fc;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .14em;
+}
+
+.eottae-admin-dashboard__hero h2 {
+    margin: 0;
+    font-size: 28px;
+    letter-spacing: -.04em;
+}
+
+.eottae-admin-dashboard__hero p {
+    max-width: 720px;
+    margin: 10px 0 0;
+    color: #dbeafe;
+    line-height: 1.55;
+}
+
+.eottae-admin-dashboard__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.eottae-admin-dashboard__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 15px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .14);
+    border: 1px solid rgba(255, 255, 255, .28);
+    color: #fff !important;
+    font-weight: 900;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.eottae-admin-dashboard__btn--primary {
+    background: #38bdf8;
+    border-color: #38bdf8;
+    color: #082f49 !important;
+}
+
+.eottae-admin-dashboard__cards {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.eottae-admin-dashboard__card {
+    display: block;
+    padding: 18px;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #fff;
+    color: #0f172a !important;
+    text-decoration: none;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, .06);
+}
+
+.eottae-admin-dashboard__card.is-warn {
+    background: #fffbeb;
+    border-color: #facc15;
+}
+
+.eottae-admin-dashboard__card span,
+.eottae-admin-dashboard__card em {
+    display: block;
+    color: #64748b;
+    font-style: normal;
+}
+
+.eottae-admin-dashboard__card span {
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.eottae-admin-dashboard__card strong {
+    display: block;
+    margin-top: 7px;
+    font-size: 28px;
+    letter-spacing: -.04em;
+}
+
+.eottae-admin-dashboard__card em {
+    margin-top: 5px;
+    font-size: 12px;
+}
+
+@media (max-width: 1000px) {
+    .eottae-admin-dashboard__hero {
+        display: block;
+    }
+
+    .eottae-admin-dashboard__actions {
+        justify-content: flex-start;
+        margin-top: 16px;
+    }
+
+    .eottae-admin-dashboard__cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}

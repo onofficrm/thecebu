@@ -184,7 +184,7 @@ g5_page_start(get_text($post['wr_subject'] ?? '컬럼'));
         <?php } ?>
 
         <div class="sebu-article__body">
-            <div class="sebu-article__content sebu-article__content--rich">
+            <div id="bo_v_con" class="sebu-article__content sebu-article__content--rich">
                 <?php echo eottae_column_render_content($post['wr_content'] ?? ''); ?>
             </div>
         </div>
