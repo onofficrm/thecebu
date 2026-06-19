@@ -61,6 +61,7 @@ include_once G5_LIB_PATH.'/eottae-seo-feed.lib.php';
 include_once G5_LIB_PATH.'/eottae-sitemap.lib.php';
 include_once G5_LIB_PATH.'/eottae-pwa.lib.php';
 include_once G5_LIB_PATH.'/eottae-push.lib.php';
+include_once G5_LIB_PATH.'/eottae-tts.lib.php';
 
 if (function_exists('eottae_secrets_load')) {
     eottae_secrets_load();
@@ -82,6 +83,12 @@ if (function_exists('eottae_talkroom_ensure_schema')) {
 }
 if (function_exists('eottae_push_ensure_schema')) {
     eottae_push_ensure_schema();
+}
+if (function_exists('eottae_tts_ensure_schema')) {
+    eottae_tts_ensure_schema();
+}
+if (function_exists('add_event') && function_exists('eottae_tts_render_board_player')) {
+    add_event('tail_sub', 'eottae_tts_render_board_player', 30, 0);
 }
 if (function_exists('eottae_calendar_ensure_schema')) {
     eottae_calendar_ensure_schema();

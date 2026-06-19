@@ -386,6 +386,7 @@ if (!function_exists('eottae_ops_build_context')) {
                 array('label' => '그누보드 관리자', 'href' => G5_ADMIN_URL.'/'),
                 array('label' => '세부톡 관리', 'href' => G5_URL.'/page/eottae-admin-talk-rooms.php'),
                 array('label' => '생활정보 컬럼', 'href' => G5_URL.'/page/eottae-admin-column.php'),
+                array('label' => 'AI 음성읽기', 'href' => G5_URL.'/page/eottae-admin-tts.php'),
                 array('label' => '자동댓글 관리', 'href' => G5_PLUGIN_URL.'/auto_comment/admin/index.php'),
                 array('label' => '광고 관리', 'href' => G5_URL.'/page/eottae-admin-ad-platform.php'),
                 array('label' => '푸시/알림 허브', 'href' => G5_URL.'/page/eottae-notifications.php'),

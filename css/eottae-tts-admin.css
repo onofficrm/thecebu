@@ -1,0 +1,174 @@
+.tts-admin-page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 28px 18px 72px;
+    color: #0f172a;
+}
+.tts-admin-hero {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: flex-end;
+    padding: 28px;
+    border-radius: 28px;
+    background: linear-gradient(135deg, #111827 0%, #075985 58%, #0f766e 100%);
+    color: #fff;
+    box-shadow: 0 20px 48px rgba(15,23,42,.18);
+}
+.tts-admin-hero p {
+    margin: 0 0 8px;
+    color: #7dd3fc;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .14em;
+}
+.tts-admin-hero h1 {
+    margin: 0;
+    font-size: clamp(30px, 5vw, 48px);
+    letter-spacing: -.04em;
+}
+.tts-admin-hero span {
+    display: block;
+    max-width: 720px;
+    margin-top: 10px;
+    color: #dbeafe;
+}
+.tts-admin-hero__actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+.tts-admin-hero__actions a,
+.tts-admin-submit button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 999px;
+    background: #38bdf8;
+    color: #082f49;
+    font-weight: 900;
+    text-decoration: none;
+    cursor: pointer;
+}
+.tts-admin-alert {
+    margin: 16px 0 0;
+    padding: 13px 15px;
+    border-radius: 16px;
+    font-weight: 700;
+}
+.tts-admin-alert--ok {
+    background: #ecfdf5;
+    color: #047857;
+}
+.tts-admin-alert--error {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+.tts-admin-panel {
+    margin-top: 18px;
+    padding: 22px;
+    border: 1px solid rgba(148,163,184,.28);
+    border-radius: 24px;
+    background: #fff;
+    box-shadow: 0 14px 32px rgba(15,23,42,.08);
+}
+.tts-admin-panel h2 {
+    margin: 0 0 16px;
+    font-size: 22px;
+    letter-spacing: -.03em;
+}
+.tts-admin-panel__head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+.tts-admin-panel__head h2 {
+    margin-bottom: 0;
+}
+.tts-admin-panel__head span {
+    color: #64748b;
+    font-size: 13px;
+}
+.tts-admin-check {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+    font-weight: 900;
+}
+.tts-admin-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+.tts-admin-grid label {
+    display: grid;
+    gap: 7px;
+}
+.tts-admin-grid label span {
+    color: #475569;
+    font-size: 13px;
+    font-weight: 900;
+}
+.tts-admin-grid input,
+.tts-admin-grid select {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 14px;
+    background: #fff;
+    color: #0f172a;
+}
+.tts-admin-grid em {
+    color: #64748b;
+    font-size: 12px;
+    font-style: normal;
+}
+.tts-admin-board-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+.tts-admin-board {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 3px 9px;
+    align-items: center;
+    padding: 12px;
+    border-radius: 16px;
+    background: #f8fafc;
+}
+.tts-admin-board strong {
+    font-size: 14px;
+}
+.tts-admin-board em {
+    grid-column: 2;
+    color: #64748b;
+    font-size: 12px;
+    font-style: normal;
+}
+.tts-admin-submit {
+    margin-top: 18px;
+    text-align: right;
+}
+
+@media (max-width: 800px) {
+    .tts-admin-hero {
+        display: block;
+    }
+    .tts-admin-hero__actions {
+        justify-content: flex-start;
+        margin-top: 16px;
+    }
+    .tts-admin-grid,
+    .tts-admin-board-grid {
+        grid-template-columns: 1fr;
+    }
+}
