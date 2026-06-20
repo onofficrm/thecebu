@@ -60,6 +60,10 @@ if (!empty($is_member) && is_file(G5_LIB_PATH.'/eottae-promo-coupon.lib.php')) {
     $attendance['checked'] = function_exists('eottae_attendance_checked_today') ? eottae_attendance_checked_today($member['mb_id'] ?? '') : false;
     $attendance['streak'] = function_exists('eottae_attendance_get_streak') ? eottae_attendance_get_streak($member['mb_id'] ?? '') : 0;
 }
+$app_logo_url = function_exists('eottae_site_logo_url') ? eottae_site_logo_url('logo_path') : '';
+if ($app_logo_url === '' && is_file(G5_PATH.'/img/logo/cebu-logo-main-reference.png')) {
+    $app_logo_url = G5_URL.'/img/logo/cebu-logo-main-reference.png';
+}
 
 add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-app-home.css">', 24);
 
@@ -67,7 +71,13 @@ g5_page_start('세부어때 앱 홈');
 ?>
 <main class="eottae-app-home" data-app-home data-interest="<?php echo get_text($selected_interest); ?>">
     <header class="eottae-app-top">
-        <a href="<?php echo G5_URL; ?>/page/eottae-app-home.php" class="eottae-app-top__logo">세부어때</a>
+        <a href="<?php echo G5_URL; ?>/page/eottae-app-home.php" class="eottae-app-top__logo" aria-label="세부어때 홈">
+            <?php if ($app_logo_url !== '') { ?>
+            <img src="<?php echo get_text($app_logo_url); ?>" alt="세부어때" class="eottae-app-top__logo-img">
+            <?php } else { ?>
+            <span>세부어때</span>
+            <?php } ?>
+        </a>
         <div class="eottae-app-top__actions">
             <a href="<?php echo G5_URL; ?>/page/eottae-notifications.php" class="eottae-app-top__icon" aria-label="알림">🔔</a>
             <?php if (!empty($is_member)) { ?>

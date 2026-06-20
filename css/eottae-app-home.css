@@ -39,11 +39,23 @@
 }
 
 .eottae-app-top__logo {
+  display: inline-flex;
+  align-items: center;
+  max-width: 190px;
   color: #0f172a;
   font-size: 22px;
   font-weight: 900;
   letter-spacing: -0.04em;
   text-decoration: none;
+}
+
+.eottae-app-top__logo-img {
+  display: block;
+  width: auto;
+  max-width: 156px;
+  height: 42px;
+  object-fit: contain;
+  object-position: left center;
 }
 
 .eottae-app-top__actions {
