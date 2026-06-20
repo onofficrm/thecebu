@@ -63,6 +63,7 @@ include_once G5_LIB_PATH.'/eottae-pwa.lib.php';
 include_once G5_LIB_PATH.'/eottae-push.lib.php';
 include_once G5_LIB_PATH.'/eottae-tts.lib.php';
 include_once G5_LIB_PATH.'/eottae-ops-center.lib.php';
+include_once G5_LIB_PATH.'/eottae-app-home.lib.php';
 
 if (function_exists('eottae_secrets_load')) {
     eottae_secrets_load();
@@ -87,6 +88,9 @@ if (function_exists('eottae_push_ensure_schema')) {
 }
 if (function_exists('eottae_tts_ensure_schema')) {
     eottae_tts_ensure_schema();
+}
+if (function_exists('eottae_app_ensure_schema')) {
+    eottae_app_ensure_schema();
 }
 if (function_exists('add_event') && function_exists('eottae_tts_render_board_player')) {
     add_event('tail_sub', 'eottae_tts_render_board_player', 30, 0);
@@ -759,6 +763,8 @@ if (function_exists('eottae_lang_get_sql_search_filter')) {
 if (function_exists('eottae_lang_on_board_head_before')) {
     add_event('board_head_before', 'eottae_lang_on_board_head_before', 2, 3);
 }
+
+global $is_member, $member;
 
 if (eottae_should_load_assets()) {
     add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/custom.css">', 10);

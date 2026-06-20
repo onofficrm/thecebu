@@ -170,7 +170,8 @@ if (!function_exists('eottae_pwa_head_lines')) {
         $lines[] = '<meta name="apple-mobile-web-app-capable" content="yes">';
         $lines[] = '<meta name="apple-mobile-web-app-status-bar-style" content="default">';
         $lines[] = '<meta name="application-name" content="'.htmlspecialchars(function_exists('g5site_cfg') ? g5site_cfg('site_name', '세부어때') : '세부어때', ENT_QUOTES, 'UTF-8').'">';
-        $lines[] = '<script src="'.htmlspecialchars(G5_JS_URL.'/eottae-app.js', ENT_QUOTES, 'UTF-8').'" defer></script>';
+        $app_js_ver = is_file(G5_PATH.'/js/eottae-app.js') ? '?ver='.(int) filemtime(G5_PATH.'/js/eottae-app.js') : '';
+        $lines[] = '<script src="'.htmlspecialchars(G5_JS_URL.'/eottae-app.js'.$app_js_ver, ENT_QUOTES, 'UTF-8').'" defer></script>';
 
         return $lines;
     }

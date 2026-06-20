@@ -1,0 +1,698 @@
+.eottae-app-home-shell #hd,
+.eottae-app-home-shell #aside,
+.eottae-app-home-shell #ft,
+.eottae-app-home-shell .site-footer-wrap,
+.eottae-app-home-shell .site-header,
+.eottae-app-home-shell .site-aside,
+.eottae-app-home-shell .site-g5-widgets {
+  display: none !important;
+}
+
+.eottae-app-home-shell {
+  background: #f6f8fc;
+}
+
+.eottae-app-home-shell #wrapper,
+.eottae-app-home-shell #container,
+.eottae-app-home-shell #container_wr {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: #f6f8fc;
+}
+
+.eottae-app-home {
+  min-height: 100vh;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 16px calc(var(--eottae-bottom-nav-h, 64px) + 28px + env(safe-area-inset-bottom, 0px));
+  color: #0f172a;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.eottae-app-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.eottae-app-top__logo {
+  color: #0f172a;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  text-decoration: none;
+}
+
+.eottae-app-top__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.eottae-app-top__icon,
+.eottae-app-top__login {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 13px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.eottae-app-search {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 20;
+  margin-bottom: 16px;
+}
+
+.eottae-app-search form {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+}
+
+.eottae-app-search input {
+  flex: 1;
+  min-width: 0;
+  height: 42px;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  color: #0f172a;
+  font-size: 15px;
+  outline: none;
+}
+
+.eottae-app-search button {
+  flex: 0 0 auto;
+  height: 42px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 16px;
+  background: #0ea5e9;
+  color: #fff;
+  font-weight: 900;
+}
+
+.eottae-app-menu {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.eottae-app-menu__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  min-height: 88px;
+  padding: 12px 6px 10px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 22px;
+  background: #fff;
+  color: #0f172a;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.055);
+}
+
+.eottae-app-menu__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 17px;
+  background: linear-gradient(135deg, #e0f2fe, #f0f9ff);
+  font-size: 22px;
+}
+
+.eottae-app-menu__item strong {
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.eottae-app-banner {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+  padding: 20px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #0284c7, #0f172a);
+  color: #fff;
+  box-shadow: 0 16px 34px rgba(2, 132, 199, 0.24);
+}
+
+.eottae-app-banner span {
+  display: block;
+  margin-bottom: 6px;
+  color: #bae6fd;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.eottae-app-banner strong {
+  display: block;
+  font-size: 20px;
+  font-weight: 950;
+  line-height: 1.25;
+  letter-spacing: -0.04em;
+}
+
+.eottae-app-banner p {
+  margin: 8px 0 0;
+  color: #dbeafe;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.eottae-app-banner a {
+  flex: 0 0 auto;
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: #fff;
+  color: #0369a1;
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.eottae-app-quick {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.eottae-app-quick a {
+  padding: 12px 10px;
+  border-radius: 18px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 850;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.055);
+}
+
+.eottae-app-login-card,
+.eottae-app-section {
+  margin-top: 14px;
+  padding: 17px;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.055);
+}
+
+.eottae-app-login-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.eottae-app-login-card strong {
+  display: block;
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.eottae-app-login-card p {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.eottae-app-login-card a {
+  flex: 0 0 auto;
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.eottae-app-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.eottae-app-section__head h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 17px;
+  font-weight: 950;
+  letter-spacing: -0.035em;
+}
+
+.eottae-app-section__head a {
+  color: #0284c7;
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.eottae-app-section__head button {
+  border: 0;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.eottae-app-onboarding.is-collapsed {
+  display: none;
+}
+
+.eottae-app-onboarding__lead {
+  margin: -3px 0 12px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.eottae-app-interest-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.eottae-app-interest-grid button {
+  padding: 9px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.eottae-app-interest-grid button.is-active {
+  border-color: #0ea5e9;
+  background: #0ea5e9;
+  color: #fff;
+}
+
+.eottae-app-onboarding__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.eottae-app-onboarding__actions a {
+  padding: 11px;
+  border-radius: 16px;
+  background: #0f172a;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+  text-decoration: none;
+}
+
+.eottae-app-column-list,
+.eottae-app-shortcuts {
+  display: grid;
+  gap: 9px;
+}
+
+.eottae-app-column {
+  display: grid;
+  gap: 4px;
+  padding: 13px;
+  border-radius: 17px;
+  background: #f8fafc;
+  color: #0f172a;
+  text-decoration: none;
+}
+
+.eottae-app-column span {
+  color: #0284c7;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.eottae-app-column strong {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eottae-app-column em {
+  color: #64748b;
+  font-size: 12px;
+  font-style: normal;
+}
+
+.eottae-app-shortcuts {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.eottae-app-shortcuts a {
+  padding: 13px;
+  border-radius: 17px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.eottae-app-personal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.eottae-app-personal-card {
+  display: grid;
+  gap: 5px;
+  min-height: 104px;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #f8fafc;
+  color: #0f172a;
+  text-decoration: none;
+}
+
+.eottae-app-personal-card.is-alert {
+  border-color: #7dd3fc;
+  background: #f0f9ff;
+}
+
+.eottae-app-personal-card span,
+.eottae-app-shop-card em,
+.eottae-app-talk-card em,
+.eottae-app-benefit-card span,
+.eottae-app-benefit-card em {
+  color: #64748b;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.eottae-app-personal-card strong {
+  color: #0f172a;
+  font-size: 24px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.eottae-app-personal-card.is-alert strong {
+  color: #dc2626;
+}
+
+.eottae-app-personal-card em {
+  color: #64748b;
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1.35;
+}
+
+.eottae-app-shop-list {
+  display: grid;
+  gap: 10px;
+}
+
+.eottae-app-shop-card {
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.eottae-app-shop-card__main {
+  display: grid;
+  grid-template-columns: 82px 1fr;
+  gap: 12px;
+  padding: 12px;
+  color: #0f172a;
+  text-decoration: none;
+}
+
+.eottae-app-shop-card__thumb {
+  display: block;
+  width: 82px;
+  min-height: 82px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #e0f2fe, #f8fafc);
+  background-position: center;
+  background-size: cover;
+}
+
+.eottae-app-shop-card__body {
+  display: grid;
+  align-content: center;
+  min-width: 0;
+  gap: 4px;
+}
+
+.eottae-app-shop-card strong,
+.eottae-app-talk-card strong,
+.eottae-app-benefit-card strong {
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 950;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eottae-app-shop-card small {
+  overflow: hidden;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eottae-app-shop-card__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  border-top: 1px solid #e2e8f0;
+  background: #e2e8f0;
+}
+
+.eottae-app-shop-card__actions a {
+  padding: 11px 8px;
+  background: #fff;
+  color: #0284c7;
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+  text-decoration: none;
+}
+
+.eottae-app-talk-list,
+.eottae-app-benefit-list {
+  display: grid;
+  gap: 9px;
+}
+
+.eottae-app-talk-card,
+.eottae-app-benefit-card {
+  display: grid;
+  gap: 5px;
+  padding: 13px;
+  border-radius: 18px;
+  background: #f8fafc;
+  color: #0f172a;
+  text-decoration: none;
+}
+
+.eottae-app-talk-card {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+}
+
+.eottae-app-talk-card span {
+  grid-row: span 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 15px;
+  background: #e0f2fe;
+}
+
+.eottae-app-talk-card em {
+  grid-column: 2;
+}
+
+.eottae-app-benefit-card {
+  border: 1px dashed #7dd3fc;
+  background: linear-gradient(135deg, #f0f9ff, #fff);
+}
+
+.eottae-app-sponsored-list,
+.eottae-app-mission-list {
+  display: grid;
+  gap: 9px;
+}
+
+.eottae-app-sponsored-card,
+.eottae-app-mission-card {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #f8fafc;
+  color: #0f172a;
+  text-align: left;
+  text-decoration: none;
+}
+
+.eottae-app-mission-card {
+  appearance: none;
+  cursor: pointer;
+}
+
+.eottae-app-mission-card:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.eottae-app-sponsored-card {
+  border-color: #fde68a;
+  background: linear-gradient(135deg, #fffbeb, #fff);
+}
+
+.eottae-app-mission-card.is-done {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.eottae-app-sponsored-card span,
+.eottae-app-mission-card span,
+.eottae-app-sponsored-card em,
+.eottae-app-mission-card em {
+  color: #64748b;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.eottae-app-sponsored-card strong,
+.eottae-app-mission-card strong {
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 950;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eottae-app-filter {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 0 -16px 14px;
+  padding: 0 16px 4px;
+  scrollbar-width: none;
+}
+
+.eottae-app-filter::-webkit-scrollbar {
+  display: none;
+}
+
+.eottae-app-filter a {
+  flex: 0 0 auto;
+  padding: 9px 13px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.eottae-app-filter a.is-active {
+  border-color: #0ea5e9;
+  background: #0ea5e9;
+  color: #fff;
+}
+
+.eottae-app-shop-list--large .eottae-app-shop-card__main {
+  grid-template-columns: 98px 1fr;
+}
+
+.eottae-app-shop-list--large .eottae-app-shop-card__thumb {
+  width: 98px;
+  min-height: 98px;
+}
+
+.eottae-app-empty {
+  margin: 0;
+  padding: 18px;
+  border-radius: 17px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 13px;
+  text-align: center;
+}
+
+.eottae-app-home-shell .mobile-bottom-nav--global {
+  border-top: 0;
+  border-radius: 22px 22px 0 0;
+  box-shadow: 0 -12px 30px rgba(15, 23, 42, 0.12);
+}
+
+@media (min-width: 721px) {
+  .eottae-app-home {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 380px) {
+  .eottae-app-menu {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .eottae-app-banner,
+  .eottae-app-login-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

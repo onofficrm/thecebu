@@ -1,6 +1,8 @@
 <?php
 include_once(dirname(__FILE__).'/_init.php');
 
+global $is_member, $member;
+
 if (!$is_member) {
     alert('로그인 후 이용해 주세요.', eottae_login_url(G5_URL.'/page/eottae-notifications.php'));
 }
@@ -23,6 +25,26 @@ $push_configured = function_exists('eottae_push_is_configured') && eottae_push_i
 $push_subscriptions = function_exists('eottae_push_member_subscription_count') ? eottae_push_member_subscription_count($member['mb_id']) : 0;
 $talk_notifications = function_exists('eottae_talkroom_notify_list') ? eottae_talkroom_notify_list($member['mb_id'], 8, 0) : array();
 $talk_notify_token = function_exists('eottae_talkroom_member_token') ? eottae_talkroom_member_token() : '';
+$notification_groups = array(
+    array(
+        'id' => 'personal',
+        'label' => '개인 알림',
+        'desc' => '쪽지, 댓글, 세부톡 활동',
+        'count' => $notification_total,
+    ),
+    array(
+        'id' => 'app',
+        'label' => '앱 상태',
+        'desc' => $push_subscriptions > 0 ? '이 기기 알림 등록됨' : '앱 알림 권한 확인',
+        'count' => $push_subscriptions,
+    ),
+    array(
+        'id' => 'talk',
+        'label' => '세부톡',
+        'desc' => '톡방 알림과 읽음 처리',
+        'count' => count($talk_notifications),
+    ),
+);
 
 g5_page_start('알림 허브');
 ?>
@@ -37,7 +59,17 @@ g5_page_start('알림 허브');
         <strong class="notification-hub-page__total"><?php echo number_format($notification_total); ?>개</strong>
     </header>
 
-    <section class="notification-hub-page__grid" aria-label="알림 요약">
+    <nav class="notification-hub-category" aria-label="알림 분류">
+        <?php foreach ($notification_groups as $group) { ?>
+        <a href="#notification-<?php echo get_text($group['id']); ?>" class="<?php echo (int) ($group['count'] ?? 0) > 0 ? 'is-alert' : ''; ?>">
+            <span><?php echo get_text($group['label']); ?></span>
+            <strong><?php echo number_format((int) ($group['count'] ?? 0)); ?></strong>
+            <em><?php echo get_text($group['desc']); ?></em>
+        </a>
+        <?php } ?>
+    </nav>
+
+    <section class="notification-hub-page__grid" id="notification-personal" aria-label="알림 요약">
         <?php foreach ($notification_items as $item) { ?>
         <a href="<?php echo get_text($item['href'] ?? '#'); ?>" class="notification-hub-card<?php echo (int) ($item['count'] ?? 0) > 0 ? ' is-alert' : ''; ?>">
             <span class="notification-hub-card__label"><?php echo get_text($item['label'] ?? '알림'); ?></span>
@@ -48,7 +80,7 @@ g5_page_start('알림 허브');
         <?php } ?>
     </section>
 
-    <section class="notification-hub-breakdown" aria-labelledby="notification-app-title">
+    <section class="notification-hub-breakdown" id="notification-app" aria-labelledby="notification-app-title">
         <h2 id="notification-app-title">앱 알림 상태</h2>
         <dl>
             <div>
@@ -87,7 +119,7 @@ g5_page_start('알림 허브');
     </section>
     <?php } ?>
 
-    <section class="notification-hub-latest" aria-labelledby="notification-talk-latest-title">
+    <section class="notification-hub-latest" id="notification-talk" aria-labelledby="notification-talk-latest-title">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
             <h2 id="notification-talk-latest-title">최근 세부톡 알림</h2>
             <?php if (!empty($talk_notifications)) { ?>

@@ -30,7 +30,7 @@ $site_config = array(
     /* PWA / Android TWA (lib/eottae-pwa.lib.php, docs/ANDROID-APP-GUIDE.md) */
     'pwa_enabled'           => true,
     'pwa_short_name'        => '세부어때',
-    'pwa_start_url'         => '/',
+    'pwa_start_url'         => '/page/eottae-app-home.php',
     'pwa_display'           => 'standalone',
     'pwa_theme_color'       => '',
     'pwa_background_color'  => '#ffffff',

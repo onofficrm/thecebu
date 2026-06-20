@@ -1,6 +1,8 @@
 <?php
 include_once(dirname(__FILE__).'/_init.php');
 
+global $is_member, $member;
+
 if (!$is_member) {
     alert('로그인 후 이용해 주세요.', eottae_login_url(G5_URL.'/page/eottae-coupons.php'));
 }
@@ -15,6 +17,7 @@ $welcome = eottae_coupon_ensure_welcome($member['mb_id']);
 $active_coupons = eottae_coupon_get_member_list($member['mb_id'], 'active');
 $used_coupons = eottae_coupon_get_member_list($member['mb_id'], 'used');
 $active_count = count($active_coupons);
+$used_count = count($used_coupons);
 
 g5_page_start('쿠폰함');
 ?>
@@ -23,6 +26,33 @@ g5_page_start('쿠폰함');
     <?php eottae_render_mypage_back(); ?>
     <a href="<?php echo G5_URL; ?>/page/eottae-coupon-guide.php" class="mypage-subpage__guide-link">쿠폰 사용 방법 안내 →</a>
     <h1 class="mypage-subpage__title">쿠폰함</h1>
+
+    <section class="coupon-wallet-hero" aria-label="쿠폰 혜택 요약">
+        <div class="coupon-wallet-hero__copy">
+            <span>오늘 받을 혜택</span>
+            <strong><?php echo $active_count > 0 ? number_format($active_count).'개 쿠폰 사용 가능' : '사용 가능한 혜택을 확인해 보세요'; ?></strong>
+            <p>매장에서 쿠폰을 보여주고 바로 사용 완료 처리할 수 있습니다.</p>
+        </div>
+        <a href="<?php echo G5_URL; ?>/page/eottae-business-coupon-guide.php">업체 쿠폰 안내</a>
+    </section>
+
+    <section class="coupon-wallet-stats" aria-label="쿠폰 상태">
+        <a href="#coupon-active-list" class="coupon-wallet-stat<?php echo $active_count > 0 ? ' is-active' : ''; ?>">
+            <span>사용 가능</span>
+            <strong><?php echo number_format($active_count); ?></strong>
+            <em>지금 쓸 수 있는 쿠폰</em>
+        </a>
+        <a href="#coupon-used-list" class="coupon-wallet-stat">
+            <span>사용 완료</span>
+            <strong><?php echo number_format($used_count); ?></strong>
+            <em>최근 사용 내역</em>
+        </a>
+        <a href="<?php echo G5_URL; ?>/page/eottae-app-home.php" class="coupon-wallet-stat">
+            <span>앱 홈</span>
+            <strong>혜택</strong>
+            <em>오늘 받을 혜택 보기</em>
+        </a>
+    </section>
 
     <?php
     $callout_type = 'member';
@@ -48,7 +78,7 @@ g5_page_start('쿠폰함');
     <?php } else { ?>
 
     <?php if (!empty($active_coupons)) { ?>
-    <h2 class="mypage-subpage__subtitle" style="font-size:1rem;margin:0 0 12px">사용 가능</h2>
+    <h2 class="mypage-subpage__subtitle" id="coupon-active-list" style="font-size:1rem;margin:0 0 12px">사용 가능</h2>
     <div class="mypage-coupon-list mypage-coupon-list--visual">
         <?php
         $member_label = get_text($member['mb_nick']).' ('.$member['mb_id'].')';
@@ -63,7 +93,7 @@ g5_page_start('쿠폰함');
     <?php } ?>
 
     <?php if (!empty($used_coupons)) { ?>
-    <h2 class="mypage-subpage__subtitle" style="font-size:1rem;margin:0 0 12px">사용 완료</h2>
+    <h2 class="mypage-subpage__subtitle" id="coupon-used-list" style="font-size:1rem;margin:0 0 12px">사용 완료</h2>
     <div class="mypage-coupon-list mypage-coupon-list--visual">
         <?php foreach ($used_coupons as $coupon) {
             eottae_render_coupon_visual_card($coupon, array(

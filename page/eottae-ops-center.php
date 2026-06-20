@@ -19,6 +19,7 @@ $week = $ops['week_activity'];
 $members = $ops['members'];
 $talk = $ops['talk'];
 $push = $ops['push'];
+$app = isset($ops['app']) && is_array($ops['app']) ? $ops['app'] : array('total' => 0, 'home' => 0, 'onboarding' => 0, 'nearby' => 0, 'coupon' => 0, 'talk' => 0, 'phone' => 0, 'map' => 0, 'checkin' => 0);
 $auto_comment = $ops['auto_comment'];
 $latest_posts = $ops['latest_posts'];
 $inbox = $ops['inbox'];
@@ -64,6 +65,11 @@ g5_page_start('세부어때 운영센터');
             <span>앱 푸시 기기</span>
             <strong><?php echo number_format((int) $push['active']); ?></strong>
             <em><?php echo !empty($push['configured']) ? '발송 가능' : 'VAPID 키 필요'; ?></em>
+        </article>
+        <article class="ops-status-card">
+            <span>오늘 앱 이벤트</span>
+            <strong><?php echo number_format((int) ($app['total'] ?? 0)); ?></strong>
+            <em>홈 <?php echo number_format((int) ($app['home'] ?? 0)); ?> · 온보딩 <?php echo number_format((int) ($app['onboarding'] ?? 0)); ?></em>
         </article>
     </section>
 
@@ -120,6 +126,11 @@ g5_page_start('세부어때 운영센터');
                     <span>미읽음 알림</span>
                     <strong><?php echo number_format((int) $talk['notifications_unread']); ?></strong>
                     <em>세부톡 알림 테이블</em>
+                </div>
+                <div>
+                    <span>앱 전환 클릭</span>
+                    <strong><?php echo number_format((int) ($app['phone'] ?? 0) + (int) ($app['map'] ?? 0)); ?></strong>
+                    <em>전화 <?php echo number_format((int) ($app['phone'] ?? 0)); ?> / 길찾기 <?php echo number_format((int) ($app['map'] ?? 0)); ?></em>
                 </div>
             </div>
         </section>

@@ -214,6 +214,20 @@ if (!function_exists('eottae_ops_auto_comment_stats')) {
     }
 }
 
+if (!function_exists('eottae_ops_app_stats')) {
+    function eottae_ops_app_stats()
+    {
+        if (!function_exists('eottae_app_event_stats') && is_file(G5_LIB_PATH.'/eottae-app-home.lib.php')) {
+            include_once G5_LIB_PATH.'/eottae-app-home.lib.php';
+        }
+        if (!function_exists('eottae_app_event_stats')) {
+            return array('total' => 0, 'home' => 0, 'onboarding' => 0, 'nearby' => 0, 'coupon' => 0, 'talk' => 0, 'phone' => 0, 'map' => 0, 'checkin' => 0);
+        }
+
+        return eottae_app_event_stats(date('Y-m-d 00:00:00', G5_SERVER_TIME));
+    }
+}
+
 if (!function_exists('eottae_ops_pending_counts')) {
     function eottae_ops_pending_counts()
     {
@@ -335,6 +349,7 @@ if (!function_exists('eottae_ops_build_context')) {
         $week_activity = eottae_ops_board_activity($week);
         $talk = eottae_ops_talk_stats();
         $push = eottae_ops_push_stats();
+        $app = eottae_ops_app_stats();
         $auto_comment = eottae_ops_auto_comment_stats();
         $pending = eottae_ops_pending_counts();
 
@@ -375,6 +390,7 @@ if (!function_exists('eottae_ops_build_context')) {
             'week_activity' => $week_activity,
             'talk' => $talk,
             'push' => $push,
+            'app' => $app,
             'auto_comment' => $auto_comment,
             'pending' => $pending,
             'tasks' => $tasks,

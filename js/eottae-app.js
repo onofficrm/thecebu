@@ -4,6 +4,7 @@
   var stateUrl = '/proc/eottae-push.php?action=state';
   var swUrl = '/eottae-service-worker.js';
   var loginBannerId = 'eottae-app-login-banner';
+  var appHomeUrl = '/page/eottae-app-home.php';
 
   function isAppContext() {
     return !!(
@@ -22,6 +23,23 @@
       outputArray[i] = rawData.charCodeAt(i);
     }
     return outputArray;
+  }
+
+  function isSiteHome() {
+    var path = window.location.pathname || '/';
+    return path === '/' || path === '/index.php';
+  }
+
+  function maybeRedirectToAppHome() {
+    if (!isAppContext() || !isSiteHome()) {
+      return true;
+    }
+    if (window.location.search && window.location.search.indexOf('web_home=1') !== -1) {
+      return true;
+    }
+
+    window.location.replace(appHomeUrl);
+    return false;
   }
 
   function fetchState() {
@@ -45,7 +63,7 @@
 
     var banner = document.createElement('div');
     banner.id = loginBannerId;
-    banner.style.cssText = 'position:fixed;left:14px;right:14px;bottom:18px;z-index:99999;padding:14px 15px;border-radius:16px;background:#0f172a;color:#fff;box-shadow:0 12px 30px rgba(15,23,42,.24);font:14px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    banner.style.cssText = 'position:fixed;left:14px;right:14px;bottom:calc(78px + env(safe-area-inset-bottom,0px));z-index:99999;padding:14px 15px;border-radius:16px;background:#0f172a;color:#fff;box-shadow:0 12px 30px rgba(15,23,42,.24);font:14px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
     banner.innerHTML = '<strong style="display:block;margin-bottom:4px">앱 로그인이 필요합니다</strong><span style="display:block;color:#cbd5e1">세부톡 메시지와 생활정보 알림을 받으려면 로그인 상태를 유지해 주세요.</span><a href="' + encodeURI(state.login_url || '/bbs/login.php') + '" style="display:inline-block;margin-top:10px;padding:8px 12px;border-radius:999px;background:#38bdf8;color:#082f49;text-decoration:none;font-weight:700">로그인하기</a>';
     document.body.appendChild(banner);
   }
@@ -110,6 +128,10 @@
   }
 
   function init() {
+    if (!maybeRedirectToAppHome()) {
+      return;
+    }
+
     fetchState().then(function (state) {
       if (!state || !state.success) {
         return;
