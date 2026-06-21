@@ -4,7 +4,9 @@
   var stateUrl = '/proc/eottae-push.php?action=state';
   var swUrl = '/eottae-service-worker.js';
   var loginBannerId = 'eottae-app-login-banner';
+  var appStyleId = 'eottae-app-context-style';
   var appHomeUrl = '/page/eottae-app-home.php';
+  var lastState = null;
 
   function isAppContext() {
     return !!(
@@ -28,6 +30,35 @@
   function isSiteHome() {
     var path = window.location.pathname || '/';
     return path === '/' || path === '/index.php';
+  }
+
+  function injectAppContextStyle() {
+    if (document.getElementById(appStyleId)) {
+      return;
+    }
+    var style = document.createElement('style');
+    style.id = appStyleId;
+    style.textContent = [
+      'html.eottae-app-context,html.eottae-app-context body{background:#f6f8fc;}',
+      'html.eottae-app-context body{padding-bottom:calc(var(--eottae-bottom-nav-h,64px) + 18px + env(safe-area-inset-bottom,0px));}',
+      'html.eottae-app-context #ft,html.eottae-app-context footer.site-footer,html.eottae-app-context .site-footer-wrap,html.eottae-app-context .site-footer,html.eottae-app-context .eottae-legacy-mobile-footer,html.eottae-app-context #device_change{display:none!important;}',
+      'html.eottae-app-context #poll,html.eottae-app-context .poll,html.eottae-app-context #visit,html.eottae-app-context .visit,html.eottae-app-context #visit_list,html.eottae-app-context .visit_list{display:none!important;}',
+      'html.eottae-app-context #wrapper,html.eottae-app-context #container,html.eottae-app-context #container_wr{min-width:0;max-width:100%;}',
+      'html.eottae-app-context .mobile-bottom-nav--global{border-top:0;border-radius:22px 22px 0 0;box-shadow:0 -12px 30px rgba(15,23,42,.12);}'
+    ].join('');
+    (document.head || document.documentElement).appendChild(style);
+  }
+
+  function markAppContext() {
+    if (!isAppContext()) {
+      return false;
+    }
+    document.documentElement.classList.add('eottae-app-context');
+    if (document.body) {
+      document.body.classList.add('eottae-app-context');
+    }
+    injectAppContextStyle();
+    return true;
   }
 
   function maybeRedirectToAppHome() {
@@ -92,7 +123,11 @@
       return;
     }
 
-    navigator.serviceWorker.register(swUrl).then(function (registration) {
+    var swVersion = state.sw_version ? '?ver=' + encodeURIComponent(state.sw_version) : '';
+    navigator.serviceWorker.register(swUrl + swVersion, { scope: '/' }).then(function (registration) {
+      if (registration.update) {
+        registration.update().catch(function () {});
+      }
       if (Notification.permission === 'denied') {
         return null;
       }
@@ -127,18 +162,60 @@
     });
   }
 
+  function bindServiceWorkerMessages() {
+    if (!('serviceWorker' in navigator) || bindServiceWorkerMessages.bound) {
+      return;
+    }
+    bindServiceWorkerMessages.bound = true;
+    navigator.serviceWorker.addEventListener('message', function (event) {
+      var data = event && event.data ? event.data : {};
+      if (data.type === 'EOTTAE_PUSH_RESUBSCRIBE') {
+        fetchState().then(function (state) {
+          if (state && state.success) {
+            lastState = state;
+            subscribePush(state);
+          }
+        });
+      }
+    });
+  }
+
+  function refreshPushSubscription() {
+    if (!lastState || !lastState.logged_in || !lastState.enabled) {
+      return;
+    }
+    subscribePush(lastState);
+  }
+
   function init() {
+    markAppContext();
     if (!maybeRedirectToAppHome()) {
       return;
     }
 
+    bindServiceWorkerMessages();
     fetchState().then(function (state) {
       if (!state || !state.success) {
         return;
       }
+      lastState = state;
       showLoginBanner(state);
       subscribePush(state);
     });
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(function (registration) {
+        if (registration && registration.update) {
+          registration.update().catch(function () {});
+        }
+      }).catch(function () {});
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') {
+          refreshPushSubscription();
+        }
+      });
+      window.addEventListener('online', refreshPushSubscription);
+    }
   }
 
   if (document.readyState === 'loading') {

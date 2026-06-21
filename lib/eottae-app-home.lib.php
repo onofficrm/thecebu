@@ -33,6 +33,13 @@ if (!function_exists('eottae_app_event_table')) {
     }
 }
 
+if (!function_exists('eottae_app_pref_table')) {
+    function eottae_app_pref_table()
+    {
+        return G5_TABLE_PREFIX.'eottae_app_preferences';
+    }
+}
+
 if (!function_exists('eottae_app_ensure_schema')) {
     function eottae_app_ensure_schema()
     {
@@ -52,6 +59,23 @@ if (!function_exists('eottae_app_ensure_schema')) {
                 KEY `idx_event_created` (`event_name`, `created_at`),
                 KEY `idx_interest_created` (`interest`, `created_at`),
                 KEY `idx_mb_created` (`mb_id`, `created_at`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ", false);
+
+        $pref_table = eottae_app_pref_table();
+        sql_query("
+            CREATE TABLE IF NOT EXISTS `{$pref_table}` (
+                `pref_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+                `mb_id` varchar(20) NOT NULL DEFAULT '',
+                `interest` varchar(40) NOT NULL DEFAULT '',
+                `region` varchar(40) NOT NULL DEFAULT '',
+                `notification_prefs` text NOT NULL,
+                `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+                `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+                PRIMARY KEY (`pref_id`),
+                UNIQUE KEY `uk_mb_id` (`mb_id`),
+                KEY `idx_region_updated` (`region`, `updated_at`),
+                KEY `idx_interest_updated` (`interest`, `updated_at`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ", false);
     }
@@ -78,6 +102,143 @@ if (!function_exists('eottae_app_normalize_interest')) {
         $options = eottae_app_interest_options();
 
         return isset($options[$interest]) ? $interest : '';
+    }
+}
+
+if (!function_exists('eottae_app_region_options')) {
+    function eottae_app_region_options()
+    {
+        return array(
+            'cebu-city' => array('label' => '세부시티', 'desc' => '아얄라, IT Park, 라훅 중심'),
+            'mactan'    => array('label' => '막탄', 'desc' => '공항, 리조트, 해변 생활권'),
+            'lahug'     => array('label' => '라훅', 'desc' => '학교, 주거, 식당 밀집'),
+            'it-park'   => array('label' => 'IT Park', 'desc' => '맛집, 카페, 야간 이동'),
+            'mandaue'   => array('label' => '만다웨', 'desc' => '상업지, 쇼핑, 병원'),
+            'talisay'   => array('label' => '탈리사이', 'desc' => '남부 이동과 주거'),
+        );
+    }
+}
+
+if (!function_exists('eottae_app_normalize_region')) {
+    function eottae_app_normalize_region($region)
+    {
+        $region = preg_replace('/[^a-z0-9_-]/i', '', (string) $region);
+        $options = eottae_app_region_options();
+
+        return isset($options[$region]) ? $region : '';
+    }
+}
+
+if (!function_exists('eottae_app_notification_options')) {
+    function eottae_app_notification_options()
+    {
+        return array(
+            'message'   => array('label' => '쪽지', 'desc' => '새 개인 메시지'),
+            'talk'      => array('label' => '세부톡', 'desc' => '내 톡방 새 글과 댓글'),
+            'comment'   => array('label' => '댓글', 'desc' => '내 글/댓글 반응'),
+            'column'    => array('label' => '생활정보', 'desc' => '새 컬럼과 음성 콘텐츠'),
+            'coupon'    => array('label' => '쿠폰', 'desc' => '혜택, 이벤트, 광고 쿠폰'),
+            'emergency' => array('label' => '긴급공지', 'desc' => '안전, 공지, 중요 안내'),
+            'region'    => array('label' => '관심지역', 'desc' => '내 지역 관련 새 소식'),
+        );
+    }
+}
+
+if (!function_exists('eottae_app_normalize_notification_prefs')) {
+    function eottae_app_normalize_notification_prefs($prefs = null)
+    {
+        $options = eottae_app_notification_options();
+        $normalized = array();
+        foreach ($options as $code => $meta) {
+            $normalized[$code] = true;
+        }
+
+        if (is_string($prefs) && $prefs !== '') {
+            $decoded = json_decode($prefs, true);
+            $prefs = is_array($decoded) ? $decoded : array();
+        }
+        if (!is_array($prefs)) {
+            return $normalized;
+        }
+
+        foreach ($options as $code => $meta) {
+            if (array_key_exists($code, $prefs)) {
+                $value = $prefs[$code];
+                $normalized[$code] = !($value === false || $value === 0 || $value === '0' || $value === 'false');
+            } else {
+                $normalized[$code] = false;
+            }
+        }
+
+        return $normalized;
+    }
+}
+
+if (!function_exists('eottae_app_preference_defaults')) {
+    function eottae_app_preference_defaults()
+    {
+        return array(
+            'interest' => '',
+            'region' => '',
+            'notification_prefs' => eottae_app_normalize_notification_prefs(),
+        );
+    }
+}
+
+if (!function_exists('eottae_app_member_preferences')) {
+    function eottae_app_member_preferences($mb_id)
+    {
+        $mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $mb_id);
+        $defaults = eottae_app_preference_defaults();
+        if ($mb_id === '') {
+            return $defaults;
+        }
+
+        eottae_app_ensure_schema();
+        $table = eottae_app_pref_table();
+        $row = sql_fetch(" SELECT * FROM `{$table}` WHERE mb_id = '".sql_escape_string($mb_id)."' LIMIT 1 ", false);
+        if (empty($row)) {
+            return $defaults;
+        }
+
+        return array(
+            'interest' => eottae_app_normalize_interest($row['interest'] ?? ''),
+            'region' => eottae_app_normalize_region($row['region'] ?? ''),
+            'notification_prefs' => eottae_app_normalize_notification_prefs($row['notification_prefs'] ?? ''),
+        );
+    }
+}
+
+if (!function_exists('eottae_app_save_preferences')) {
+    function eottae_app_save_preferences($mb_id, $interest, $region, $notification_prefs)
+    {
+        $mb_id = preg_replace('/[^a-z0-9_@.-]/i', '', (string) $mb_id);
+        if ($mb_id === '') {
+            return false;
+        }
+
+        eottae_app_ensure_schema();
+        $table = eottae_app_pref_table();
+        $interest = eottae_app_normalize_interest($interest);
+        $region = eottae_app_normalize_region($region);
+        $prefs = eottae_app_normalize_notification_prefs($notification_prefs);
+        $prefs_json = json_encode($prefs, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $now = defined('G5_TIME_YMDHIS') ? G5_TIME_YMDHIS : date('Y-m-d H:i:s');
+
+        sql_query(" INSERT INTO `{$table}` SET
+                mb_id = '".sql_escape_string($mb_id)."',
+                interest = '".sql_escape_string($interest)."',
+                region = '".sql_escape_string($region)."',
+                notification_prefs = '".sql_escape_string($prefs_json)."',
+                created_at = '{$now}',
+                updated_at = '{$now}'
+            ON DUPLICATE KEY UPDATE
+                interest = VALUES(interest),
+                region = VALUES(region),
+                notification_prefs = VALUES(notification_prefs),
+                updated_at = VALUES(updated_at) ", false);
+
+        return true;
     }
 }
 

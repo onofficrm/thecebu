@@ -585,15 +585,17 @@ if (!function_exists('eottae_tts_render_board_player')) {
         <strong>세부어때 음성읽기</strong>
         <span data-tts-status>이 글을 AI 음성으로 읽어드릴게요.</span>
     </div>
-    <label class="eottae-tts-player__speed">
-        <span>속도</span>
-        <select data-tts-speed>
-            <?php foreach (array('0.75', '1.00', '1.25', '1.50', '1.75', '2.00') as $speed) { ?>
-            <option value="<?php echo $speed; ?>"<?php echo abs((float) $speed - (float) $settings['speed']) < 0.01 ? ' selected' : ''; ?>><?php echo rtrim(rtrim($speed, '0'), '.'); ?>x</option>
-            <?php } ?>
-        </select>
-    </label>
-    <span class="eottae-tts-player__time">약 <?php echo number_format($estimate); ?>분</span>
+    <div class="eottae-tts-player__meta">
+        <label class="eottae-tts-player__speed">
+            <span>속도</span>
+            <select data-tts-speed>
+                <?php foreach (array('0.75', '1.00', '1.25', '1.50', '1.75', '2.00') as $speed) { ?>
+                <option value="<?php echo $speed; ?>"<?php echo abs((float) $speed - (float) $settings['speed']) < 0.01 ? ' selected' : ''; ?>><?php echo rtrim(rtrim($speed, '0'), '.'); ?>x</option>
+                <?php } ?>
+            </select>
+        </label>
+        <span class="eottae-tts-player__time">약 <?php echo number_format($estimate); ?>분</span>
+    </div>
     <audio preload="none" data-tts-audio></audio>
 </div>
 <script src="<?php echo $js_url; ?>" defer></script>

@@ -1,6 +1,6 @@
 .eottae-tts-player {
     display: grid;
-    grid-template-columns: 48px minmax(0, 1fr) auto auto;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
     gap: 12px;
     align-items: center;
     margin: 16px 0 18px;
@@ -43,6 +43,13 @@
     font-size: 12px;
     line-height: 1.35;
 }
+.eottae-tts-player__meta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    white-space: nowrap;
+}
 .eottae-tts-player__speed {
     display: inline-flex;
     gap: 6px;
@@ -77,10 +84,35 @@
 
 @media (max-width: 640px) {
     .eottae-tts-player {
-        grid-template-columns: 44px minmax(0, 1fr);
+        grid-template-columns: 44px minmax(0, 1fr) auto;
+        gap: 9px;
+        padding: 13px 12px;
+        border-radius: 16px;
     }
-    .eottae-tts-player__speed,
+    .eottae-tts-player__play {
+        width: 42px;
+        height: 42px;
+        border-radius: 13px;
+    }
+    .eottae-tts-player__main strong {
+        font-size: 14px;
+    }
+    .eottae-tts-player__main span {
+        font-size: 11px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .eottae-tts-player__meta {
+        align-items: flex-end;
+        gap: 6px;
+    }
+    .eottae-tts-player__speed {
+        min-height: 30px;
+        padding: 0 8px;
+        font-size: 11px;
+    }
     .eottae-tts-player__time {
-        grid-column: span 1;
+        font-size: 12px;
     }
 }

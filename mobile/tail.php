@@ -1,6 +1,8 @@
 <?php
 if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
+global $config;
+
 if(defined('G5_THEME_PATH')) {
     require_once(G5_THEME_PATH.'/tail.php');
     return;
@@ -16,7 +18,7 @@ if (function_exists('eottae_use_site_chrome') && eottae_use_site_chrome()) {
     </div>
 </div>
 
-
+<div class="eottae-legacy-mobile-footer">
 <?php echo poll('basic'); // 설문조사 ?>
 <?php echo visit('basic'); // 방문자수 ?>
 
@@ -52,6 +54,7 @@ if (function_exists('eottae_use_site_chrome') && eottae_use_site_chrome()) {
         echo $config['cf_analytics'];
     }
     ?>
+</div>
 </div>
 <script>
 jQuery(function($) {

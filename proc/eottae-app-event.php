@@ -46,5 +46,24 @@ if ($action === 'checkin') {
     ));
 }
 
+if ($action === 'prefs') {
+    $region = eottae_app_normalize_region($input['region'] ?? '');
+    $prefs = eottae_app_normalize_notification_prefs($input['notifications'] ?? array());
+    $saved = false;
+    if (!empty($is_member) && $mb_id !== '') {
+        $saved = eottae_app_save_preferences($mb_id, $interest, $region, $prefs);
+    }
+
+    eottae_app_event_record('prefs_save', $region, $interest, $url, $mb_id);
+    eottae_app_json(array(
+        'success' => true,
+        'saved' => $saved,
+        'interest' => $interest,
+        'region' => $region,
+        'notifications' => $prefs,
+        'message' => $saved ? '앱 맞춤 설정을 저장했습니다.' : '이 기기에 앱 맞춤 설정을 저장했습니다.',
+    ));
+}
+
 eottae_app_event_record($event, $label, $interest, $url, $mb_id);
 eottae_app_json(array('success' => true));

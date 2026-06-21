@@ -5,6 +5,8 @@ include_once G5_LIB_PATH.'/eottae-push.lib.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
+global $is_member, $member;
+
 function eottae_push_json($success, $message = '', $extra = array())
 {
     echo json_encode(array_merge(array(
@@ -34,6 +36,7 @@ if ($action === 'state') {
         'configured' => eottae_push_is_configured(),
         'public_key' => eottae_push_public_key(),
         'token' => $logged_in ? eottae_push_token(false) : '',
+        'sw_version' => is_file(G5_PATH.'/eottae-service-worker.js') ? (string) filemtime(G5_PATH.'/eottae-service-worker.js') : '',
         'subscription_count' => $logged_in ? eottae_push_member_subscription_count($mb_id) : 0,
         'unread_total' => (int) ($summary['total'] ?? 0),
         'app_only' => function_exists('g5site_cfg') ? (bool) g5site_cfg('web_push_prompt_app_only', true) : true,

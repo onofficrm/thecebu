@@ -298,9 +298,10 @@ if (!function_exists('eottae_push_send_to_subscription')) {
         }
 
         $headers = array_merge(array(
-            'TTL: 60',
+            'TTL: 86400',
             'Content-Length: 0',
-            'Urgency: normal',
+            'Urgency: high',
+            'Topic: thecebu-app-notification',
         ), eottae_push_vapid_authorization($endpoint));
 
         $ch = curl_init($endpoint);

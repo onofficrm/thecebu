@@ -36,11 +36,18 @@ $app_menu = array(
 $latest_columns = function_exists('eottae_column_list') ? eottae_column_list(array('limit' => 3)) : array();
 $login_url = function_exists('eottae_login_url') ? eottae_login_url(G5_URL.'/page/eottae-app-home.php') : G5_BBS_URL.'/login.php';
 $mypage_url = function_exists('eottae_mypage_url') ? eottae_mypage_url() : G5_URL.'/page/eottae-mypage.php';
-$interest_options = eottae_app_interest_options();
-$selected_interest = eottae_app_normalize_interest($_GET['interest'] ?? '');
+$interest_options = (array) eottae_app_interest_options();
+$region_options = (array) eottae_app_region_options();
+$notification_options = (array) eottae_app_notification_options();
+$member_preferences = (array) (!empty($is_member) ? eottae_app_member_preferences($member['mb_id'] ?? '') : eottae_app_preference_defaults());
+$selected_interest = eottae_app_normalize_interest($_GET['interest'] ?? ($member_preferences['interest'] ?? ''));
 $selected_interest_meta = $selected_interest !== '' ? $interest_options[$selected_interest] : array();
 $selected_interest_label = (string) ($selected_interest_meta['label'] ?? '전체');
 $selected_shop_category = (string) ($selected_interest_meta['shop_category'] ?? '');
+$selected_region = eottae_app_normalize_region($_GET['region'] ?? ($member_preferences['region'] ?? ''));
+$selected_region_meta = $selected_region !== '' ? $region_options[$selected_region] : array();
+$selected_region_label = (string) ($selected_region_meta['label'] ?? '세부 전체');
+$notification_prefs = eottae_app_normalize_notification_prefs($member_preferences['notification_prefs'] ?? array());
 $member_summary = !empty($is_member) ? eottae_app_member_summary($member['mb_id'] ?? '') : array();
 $member_cards = isset($member_summary['cards']) && is_array($member_summary['cards']) ? $member_summary['cards'] : array();
 $active_coupons = !empty($is_member) ? eottae_app_active_coupons($member['mb_id'] ?? '', 3) : array();
@@ -54,6 +61,21 @@ if (empty($sponsor_shops) && $selected_shop_category !== '') {
 }
 $talk_preview = eottae_app_talk_preview(4);
 $talk_rooms = isset($talk_preview['rooms']) && is_array($talk_preview['rooms']) ? $talk_preview['rooms'] : array();
+$today_talk_title = !empty($talk_rooms[0]) ? (string) ($talk_rooms[0]['title'] ?? ($talk_rooms[0]['room_name'] ?? '세부톡')) : '새 질문을 남겨보세요';
+$today_column_title = !empty($latest_columns[0]) ? (string) ($latest_columns[0]['wr_subject'] ?? '최신 생활정보') : '최신 생활정보 준비 중';
+$today_items = array(
+    array('label' => '관심지역', 'value' => $selected_region_label, 'desc' => $selected_region !== '' ? (string) ($selected_region_meta['desc'] ?? '맞춤 지역') : '지역을 설정하면 더 정확해져요'),
+    array('label' => '지금 세부톡', 'value' => $today_talk_title, 'desc' => count($talk_rooms) > 0 ? '인기 톡방 바로가기' : '첫 질문을 올려보세요'),
+    array('label' => '생활정보', 'value' => $today_column_title, 'desc' => 'AI 음성읽기 지원'),
+    array('label' => '혜택', 'value' => !empty($is_member) ? number_format(count($active_coupons)).'개' : '로그인 필요', 'desc' => '받을 수 있는 쿠폰 확인'),
+);
+$emergency_links = array(
+    array('label' => '긴급전화', 'icon' => '🚨', 'href' => 'tel:911', 'desc' => '현지 긴급 911'),
+    array('label' => '병원', 'icon' => '🏥', 'href' => function_exists('eottae_shop_list_url') ? eottae_shop_list_url(array('sca' => '병원')) : G5_BBS_URL.'/board.php?bo_table='.$shop_table.'&sca='.urlencode('병원'), 'desc' => '가까운 병원'),
+    array('label' => '약국', 'icon' => '💊', 'href' => function_exists('eottae_shop_list_url') ? eottae_shop_list_url(array('sca' => '약국')) : G5_BBS_URL.'/board.php?bo_table='.$shop_table.'&sca='.urlencode('약국'), 'desc' => '약국 찾기'),
+    array('label' => '한인도움', 'icon' => '💬', 'href' => function_exists('eottae_talkroom_public_url') ? eottae_talkroom_public_url() : G5_URL.'/page/eottae-talk.php', 'desc' => '세부톡 질문'),
+    array('label' => '지도', 'icon' => '🗺️', 'href' => G5_URL.'/page/map-locator.php', 'desc' => '생활지도'),
+);
 $attendance = array('checked' => false, 'streak' => 0);
 if (!empty($is_member) && is_file(G5_LIB_PATH.'/eottae-promo-coupon.lib.php')) {
     include_once G5_LIB_PATH.'/eottae-promo-coupon.lib.php';
@@ -69,7 +91,7 @@ add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-app-home.css"
 
 g5_page_start('세부어때 앱 홈');
 ?>
-<main class="eottae-app-home" data-app-home data-interest="<?php echo get_text($selected_interest); ?>">
+<main class="eottae-app-home" data-app-home data-interest="<?php echo get_text($selected_interest); ?>" data-region="<?php echo get_text($selected_region); ?>">
     <header class="eottae-app-top">
         <a href="<?php echo G5_URL; ?>/page/eottae-app-home.php" class="eottae-app-top__logo" aria-label="세부어때 홈">
             <?php if ($app_logo_url !== '') { ?>
@@ -119,6 +141,38 @@ g5_page_start('세부어때 앱 홈');
         <a href="<?php echo function_exists('eottae_column_list_url') ? eottae_column_list_url() : G5_URL.'/column/'; ?>" data-app-track="home_column">🎧 음성 컬럼</a>
     </section>
 
+    <section class="eottae-app-section eottae-app-today" aria-labelledby="app-today-title">
+        <div class="eottae-app-section__head">
+            <h2 id="app-today-title">오늘의 세부 카드</h2>
+            <a href="#app-preferences">맞춤 설정</a>
+        </div>
+        <div class="eottae-app-today-grid">
+            <?php foreach ($today_items as $item) { ?>
+            <article class="eottae-app-today-card">
+                <span><?php echo get_text($item['label'] ?? ''); ?></span>
+                <strong><?php echo get_text($item['value'] ?? ''); ?></strong>
+                <em><?php echo get_text($item['desc'] ?? ''); ?></em>
+            </article>
+            <?php } ?>
+        </div>
+    </section>
+
+    <section class="eottae-app-section eottae-app-emergency" aria-labelledby="app-emergency-title">
+        <div class="eottae-app-section__head">
+            <h2 id="app-emergency-title">내 주변 긴급 버튼</h2>
+            <a href="<?php echo G5_URL; ?>/page/map-locator.php">지도보기</a>
+        </div>
+        <div class="eottae-app-emergency-grid">
+            <?php foreach ($emergency_links as $link) { ?>
+            <a href="<?php echo get_text($link['href'] ?? '#'); ?>" data-app-track="emergency_click" data-track-label="<?php echo get_text($link['label'] ?? ''); ?>">
+                <span><?php echo $link['icon']; ?></span>
+                <strong><?php echo get_text($link['label'] ?? ''); ?></strong>
+                <em><?php echo get_text($link['desc'] ?? ''); ?></em>
+            </a>
+            <?php } ?>
+        </div>
+    </section>
+
     <section class="eottae-app-section eottae-app-onboarding" data-app-onboarding aria-labelledby="app-onboarding-title">
         <div class="eottae-app-section__head">
             <h2 id="app-onboarding-title">앱 시작 설정</h2>
@@ -134,6 +188,45 @@ g5_page_start('세부어때 앱 홈');
             <a href="<?php echo $login_url; ?>">로그인 유지</a>
             <a href="<?php echo G5_URL; ?>/page/eottae-notifications.php">알림 허용</a>
         </div>
+    </section>
+
+    <section class="eottae-app-section eottae-app-prefs" id="app-preferences" aria-labelledby="app-prefs-title">
+        <div class="eottae-app-section__head">
+            <h2 id="app-prefs-title">내 앱 맞춤 설정</h2>
+            <span data-app-pref-status><?php echo !empty($is_member) ? '계정 저장 가능' : '이 기기에 저장'; ?></span>
+        </div>
+        <form class="eottae-app-pref-form" data-app-pref-form>
+            <label>
+                <span>관심지역</span>
+                <select name="region">
+                    <option value="">세부 전체</option>
+                    <?php foreach ($region_options as $code => $meta) { ?>
+                    <option value="<?php echo get_text($code); ?>"<?php echo $selected_region === $code ? ' selected' : ''; ?>><?php echo get_text($meta['label'] ?? $code); ?></option>
+                    <?php } ?>
+                </select>
+            </label>
+            <label>
+                <span>관심분야</span>
+                <select name="interest">
+                    <option value="">전체</option>
+                    <?php foreach ($interest_options as $code => $meta) { ?>
+                    <option value="<?php echo get_text($code); ?>"<?php echo $selected_interest === $code ? ' selected' : ''; ?>><?php echo get_text($meta['label'] ?? $code); ?></option>
+                    <?php } ?>
+                </select>
+            </label>
+            <div class="eottae-app-pref-alerts" aria-label="알림 구독 설정">
+                <?php foreach ($notification_options as $code => $meta) { ?>
+                <label>
+                    <input type="checkbox" name="notifications[]" value="<?php echo get_text($code); ?>"<?php echo !empty($notification_prefs[$code]) ? ' checked' : ''; ?>>
+                    <span>
+                        <strong><?php echo get_text($meta['label'] ?? $code); ?></strong>
+                        <em><?php echo get_text($meta['desc'] ?? ''); ?></em>
+                    </span>
+                </label>
+                <?php } ?>
+            </div>
+            <button type="submit">맞춤 설정 저장</button>
+        </form>
     </section>
 
     <?php if (empty($is_member)) { ?>
@@ -313,9 +406,20 @@ g5_page_start('세부어때 앱 홈');
   var root = document.querySelector('[data-app-home]');
   if (!root) return;
   var storageKey = 'eottae_app_interest';
+  var regionKey = 'eottae_app_region';
+  var notificationKey = 'eottae_app_notifications';
   var hiddenKey = 'eottae_app_onboarding_hidden';
   var endpoint = '<?php echo G5_URL; ?>/proc/eottae-app-event.php';
   var interest = root.getAttribute('data-interest') || '';
+  var region = root.getAttribute('data-region') || '';
+  var hasAccountPrefs = <?php echo !empty($is_member) ? 'true' : 'false'; ?>;
+
+  function homeUrl(nextInterest, nextRegion) {
+    var url = new URL('<?php echo G5_URL; ?>/page/eottae-app-home.php', location.origin);
+    if (nextInterest) url.searchParams.set('interest', nextInterest);
+    if (nextRegion) url.searchParams.set('region', nextRegion);
+    return url.toString();
+  }
 
   function postEvent(eventName, label) {
     try {
@@ -334,11 +438,12 @@ g5_page_start('세부어때 앱 홈');
     } catch (e) {}
   }
 
-  if (!interest) {
+  if (!interest || !region) {
     try {
       var saved = localStorage.getItem(storageKey) || '';
-      if (saved) {
-        location.replace('<?php echo G5_URL; ?>/page/eottae-app-home.php?interest=' + encodeURIComponent(saved));
+      var savedRegion = localStorage.getItem(regionKey) || '';
+      if ((!interest && saved) || (!region && savedRegion)) {
+        location.replace(homeUrl(interest || saved, region || savedRegion));
         return;
       }
     } catch (e) {}
@@ -348,6 +453,13 @@ g5_page_start('세부어때 앱 홈');
     if (localStorage.getItem(hiddenKey) === '1') {
       var onboarding = document.querySelector('[data-app-onboarding]');
       if (onboarding && interest) onboarding.classList.add('is-collapsed');
+    }
+    if (!hasAccountPrefs) {
+      var savedNotifications = JSON.parse(localStorage.getItem(notificationKey) || '{}');
+      Object.keys(savedNotifications).forEach(function (code) {
+        var input = document.querySelector('input[name="notifications[]"][value="' + code.replace(/"/g, '\\"') + '"]');
+        if (input) input.checked = !!savedNotifications[code];
+      });
     }
   } catch (e) {}
 
@@ -359,9 +471,53 @@ g5_page_start('세부어때 앱 홈');
         localStorage.removeItem(hiddenKey);
       } catch (e) {}
       postEvent('onboarding_interest', button.textContent || code);
-      location.href = '<?php echo G5_URL; ?>/page/eottae-app-home.php?interest=' + encodeURIComponent(code);
+      location.href = homeUrl(code, region);
     });
   });
+
+  var prefForm = document.querySelector('[data-app-pref-form]');
+  if (prefForm) {
+    prefForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      var nextInterest = prefForm.elements.interest ? prefForm.elements.interest.value : '';
+      var nextRegion = prefForm.elements.region ? prefForm.elements.region.value : '';
+      var notifications = {};
+      prefForm.querySelectorAll('input[name="notifications[]"]').forEach(function (input) {
+        notifications[input.value] = input.checked;
+      });
+      try {
+        localStorage.setItem(storageKey, nextInterest);
+        localStorage.setItem(regionKey, nextRegion);
+        localStorage.setItem(notificationKey, JSON.stringify(notifications));
+        localStorage.removeItem(hiddenKey);
+      } catch (e) {}
+
+      var status = document.querySelector('[data-app-pref-status]');
+      if (status) status.textContent = '저장 중...';
+      fetch(endpoint, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          action: 'prefs',
+          interest: nextInterest,
+          region: nextRegion,
+          notifications: notifications,
+          url: location.href
+        })
+      }).then(function (res) {
+        return res.json();
+      }).then(function (data) {
+        if (status) status.textContent = data.message || '저장되었습니다.';
+        window.setTimeout(function () {
+          location.href = homeUrl(nextInterest, nextRegion);
+        }, 450);
+      }).catch(function () {
+        if (status) status.textContent = '이 기기에 저장되었습니다.';
+        location.href = homeUrl(nextInterest, nextRegion);
+      });
+    });
+  }
 
   var hide = document.querySelector('[data-app-onboarding-hide]');
   if (hide) {
