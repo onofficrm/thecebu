@@ -11,6 +11,7 @@ SIGNING.local.md
 twa/app/build/
 twa/build/
 twa/.gradle/
+twa/release/
 twa/local.properties
 twa/*.apk
 twa/*.aab

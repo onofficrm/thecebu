@@ -257,12 +257,16 @@
   function syncJobMetaFields(data) {
     var wr1 = document.getElementById('wr_1');
     var wr2 = document.getElementById('wr_2');
+    var completed = document.getElementById('job_recruit_completed_checkbox');
     if (wr1) {
       wr1.value = (data && data.region) ? data.region : '';
     }
     if (wr2) {
       var status = (data && data.job_recruit_status) ? data.job_recruit_status : 'recruiting';
       wr2.value = status === 'completed' ? 'completed' : 'recruiting';
+      if (completed) {
+        completed.checked = wr2.value === 'completed';
+      }
     }
     syncJobTemplateJson(data);
   }
@@ -563,6 +567,19 @@
       syncJobMetaFields(getData());
     });
   });
+
+  var completedCheckbox = document.getElementById('job_recruit_completed_checkbox');
+  var recruitSelect = document.getElementById('job_recruit_status');
+  if (completedCheckbox && recruitSelect) {
+    completedCheckbox.addEventListener('change', function () {
+      recruitSelect.value = completedCheckbox.checked ? 'completed' : 'recruiting';
+      syncJobMetaFields(getData());
+    });
+    recruitSelect.addEventListener('change', function () {
+      completedCheckbox.checked = recruitSelect.value === 'completed';
+      syncJobMetaFields(getData());
+    });
+  }
 
   if (window.__SEBU_JOB_TEMPLATE_INITIAL__) {
     applyDataToFields(window.__SEBU_JOB_TEMPLATE_INITIAL__);

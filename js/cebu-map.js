@@ -73,6 +73,7 @@
       thumbnail: item.thumbnail || '',
       owner_mb_id: item.owner_mb_id || '',
       is_dimmed: !!item.is_dimmed,
+      is_soldout: !!(item.is_soldout || item.is_dimmed),
       timestamp: parseInt(item.timestamp, 10) || 0,
       price_num: parseInt(item.price_num, 10) || 0,
       distance_km: null
@@ -107,14 +108,16 @@
   }
 
   function thumbHtml(loc) {
+    var soldout = loc.is_soldout ? '<span class="cebu-map-card__soldout" aria-label="SOLD OUT">SOLD OUT</span>' : '';
     if (loc.thumbnail) {
       return (
         '<div class="cebu-map-card__thumb-wrap">' +
         '<img src="' + escapeHtml(loc.thumbnail) + '" alt="" class="cebu-map-card__thumb" width="96" height="96" loading="lazy" decoding="async">' +
+        soldout +
         '</div>'
       );
     }
-    return '<div class="cebu-map-card__thumb-wrap"><div class="cebu-map-card__thumb cebu-map-card__thumb--empty" aria-hidden="true"></div></div>';
+    return '<div class="cebu-map-card__thumb-wrap"><div class="cebu-map-card__thumb cebu-map-card__thumb--empty" aria-hidden="true"></div>' + soldout + '</div>';
   }
 
   function inquiryButtonHtml(loc) {
@@ -201,7 +204,7 @@
     this.radiusCircle = null;
     this.userMarker = null;
     this.userLocation = null;
-    this.filters = { type: 'all', status: 'all', radius: String(DEFAULT_RADIUS_KM), keyword: '', sort: 'latest' };
+    this.filters = { type: 'all', status: 'all', radius: String(DEFAULT_RADIUS_KM), keyword: '', sort: 'latest', excludeSoldout: false };
     this.bind();
     this.syncRadiusDefault();
     this.applyFilters();
@@ -215,7 +218,11 @@
       var eventName = el.tagName === 'INPUT' ? 'input' : 'change';
       el.addEventListener(eventName, function () {
         var key = el.getAttribute('data-map-filter');
-        self.filters[key] = el.value || (key === 'keyword' ? '' : 'all');
+        if (el.type === 'checkbox') {
+          self.filters[key] = !!el.checked;
+        } else {
+          self.filters[key] = el.value || (key === 'keyword' ? '' : 'all');
+        }
         self.applyFilters();
       });
     });
@@ -375,6 +382,7 @@
     var radius = this.getActiveRadiusKm();
     this.filtered = this.data.filter(function (loc) {
       if (self.filters.type !== 'all' && loc.type !== self.filters.type) return false;
+      if (self.filters.excludeSoldout && loc.is_soldout) return false;
       if (!self.matchesStatus(loc)) return false;
       if (radius > 0 && self.userLocation) {
         if (!self.userLocation || loc.distance_km == null || loc.distance_km > radius) return false;

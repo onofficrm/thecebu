@@ -213,6 +213,7 @@
   function syncEstateMetaFields(data) {
     var wr1 = document.getElementById('wr_1');
     var wr2 = document.getElementById('wr_2');
+    var completed = document.getElementById('estate_deal_completed_checkbox');
     var addressInput = root.querySelector('[name="wr_4"]');
     var latInput = root.querySelector('[name="wr_5"]');
     var lngInput = root.querySelector('[name="wr_6"]');
@@ -222,6 +223,9 @@
     if (wr2) {
       var status = (data && data.estate_deal_status) ? data.estate_deal_status : 'trading';
       wr2.value = status === 'completed' ? 'completed' : 'trading';
+      if (completed) {
+        completed.checked = wr2.value === 'completed';
+      }
     }
     if (addressInput && data && typeof data.address !== 'undefined') {
       addressInput.value = data.address || '';
@@ -351,6 +355,19 @@
       syncEstateMetaFields(getData());
     });
   });
+
+  var completedCheckbox = document.getElementById('estate_deal_completed_checkbox');
+  var dealSelect = document.getElementById('estate_deal_status');
+  if (completedCheckbox && dealSelect) {
+    completedCheckbox.addEventListener('change', function () {
+      dealSelect.value = completedCheckbox.checked ? 'completed' : 'trading';
+      syncEstateMetaFields(mergeLocationData(getData()));
+    });
+    dealSelect.addEventListener('change', function () {
+      completedCheckbox.checked = dealSelect.value === 'completed';
+      syncEstateMetaFields(mergeLocationData(getData()));
+    });
+  }
 
   ['wr_4', 'wr_5', 'wr_6'].forEach(function (name) {
     var el = root.querySelector('[name="' + name + '"]');

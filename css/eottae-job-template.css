@@ -117,6 +117,24 @@
   box-shadow: 0 0 0 3px rgba(254, 229, 0, 0.35);
 }
 
+.sebu-job-template__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  margin-top: 2px;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.sebu-job-template__check input {
+  width: 16px;
+  height: 16px;
+  accent-color: #7c3aed;
+}
+
 .sebu-job-template__privacy {
   margin: 10px 0 0;
   font-size: 0.75rem;

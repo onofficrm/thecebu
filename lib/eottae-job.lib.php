@@ -15,7 +15,7 @@ if (!function_exists('eottae_job_recruit_statuses')) {
     {
         return array(
             'recruiting' => '모집중',
-            'completed'  => '모집완료',
+            'completed'  => '구인완료',
         );
     }
 }
@@ -244,6 +244,9 @@ if (!function_exists('eottae_job_render_list_thumb')) {
                 <img src="<?php echo htmlspecialchars($post_thumb_url, ENT_QUOTES, 'UTF-8'); ?>" alt="" class="job-profile-thumb__img" width="104" height="104" loading="lazy" decoding="async">
                 <?php } ?>
                 <?php echo $recruit_badge; ?>
+                <?php if ($recruit_status === 'completed') { ?>
+                <span class="job-soldout-ribbon" aria-label="구인완료">SOLD OUT</span>
+                <?php } ?>
                 <?php if ($profile_badge_html !== '') { ?>
                 <span class="job-profile-thumb__badge" aria-hidden="true"><?php echo $profile_badge_html; ?></span>
                 <?php } ?>

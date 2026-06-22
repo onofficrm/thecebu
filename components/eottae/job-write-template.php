@@ -149,6 +149,10 @@ $sebu_job_languages = array(
                         <option value="<?php echo get_text($val); ?>"<?php echo $job_recruit_status === $val ? ' selected' : ''; ?>><?php echo get_text($label); ?></option>
                         <?php } ?>
                     </select>
+                    <label class="sebu-job-template__check">
+                        <input type="checkbox" id="job_recruit_completed_checkbox"<?php echo $job_recruit_status === 'completed' ? ' checked' : ''; ?>>
+                        <span>구인완료로 표시</span>
+                    </label>
                 </label>
                 <label class="sebu-job-template__field">
                     <span class="sebu-job-template__label">근무형태</span>

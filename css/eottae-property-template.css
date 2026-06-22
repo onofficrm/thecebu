@@ -111,6 +111,24 @@
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
+.sebu-property-template__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  margin-top: 2px;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.sebu-property-template__check input {
+  width: 16px;
+  height: 16px;
+  accent-color: #0ea5e9;
+}
+
 .sebu-property-template__privacy {
   margin: 10px 0 0;
   font-size: 0.75rem;

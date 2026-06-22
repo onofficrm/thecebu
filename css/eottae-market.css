@@ -206,6 +206,24 @@
   opacity: 0.78;
 }
 
+.market-soldout-ribbon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  transform: translate(-50%, -50%) rotate(-12deg);
+  padding: 7px 13px;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.78);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.24);
+  pointer-events: none;
+}
+
 .market-card__body {
   padding: 0.9rem;
 }

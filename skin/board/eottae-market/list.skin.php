@@ -79,6 +79,9 @@ $market_all_list_url = eottae_market_list_url();
                     <span class="market-card__thumb-empty" aria-hidden="true">중고</span>
                     <?php } ?>
                     <?php echo eottae_market_render_status_badge($status); ?>
+                    <?php if ($status === 'sold') { ?>
+                    <span class="market-soldout-ribbon" aria-label="판매완료">SOLD OUT</span>
+                    <?php } ?>
                 </div>
                 <div class="market-card__body">
                     <h2 class="market-card__title"><?php echo $item['subject']; ?></h2>

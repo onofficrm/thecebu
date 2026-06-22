@@ -155,6 +155,7 @@ if (!function_exists('cebu_map_marker_base')) {
             'datetime'      => (string) ($row['wr_datetime'] ?? ''),
             'timestamp'     => isset($row['wr_datetime']) ? (int) strtotime($row['wr_datetime']) : 0,
             'price_num'     => 0,
+            'is_soldout'    => false,
         );
     }
 }
@@ -225,6 +226,7 @@ if (!function_exists('cebu_map_market_markers')) {
             $marker['status_key'] = $status_key;
             $marker['status'] = eottae_market_status_label($status_key);
             $marker['is_dimmed'] = ($status_key === 'sold');
+            $marker['is_soldout'] = ($status_key === 'sold');
             $markers[] = $marker;
         }
 
@@ -249,6 +251,8 @@ if (!function_exists('cebu_map_job_markers')) {
             $marker['price_num'] = (int) preg_replace('/[^0-9]/', '', $marker['price']);
             $marker['status_key'] = $status_key;
             $marker['status'] = eottae_job_recruit_status_meta($status_key)['label'];
+            $marker['is_dimmed'] = ($status_key === 'completed');
+            $marker['is_soldout'] = ($status_key === 'completed');
             $markers[] = $marker;
         }
 
@@ -273,6 +277,8 @@ if (!function_exists('cebu_map_estate_markers')) {
             $marker['price_num'] = (int) preg_replace('/[^0-9]/', '', $marker['price']);
             $marker['status_key'] = $status_key;
             $marker['status'] = eottae_estate_deal_status_meta($status_key)['label'];
+            $marker['is_dimmed'] = ($status_key === 'completed');
+            $marker['is_soldout'] = ($status_key === 'completed');
             $markers[] = $marker;
         }
 

@@ -15,7 +15,7 @@ if (!function_exists('eottae_estate_deal_statuses')) {
     {
         return array(
             'trading'   => '거래중',
-            'completed' => '거래완료',
+            'completed' => '판매완료',
         );
     }
 }
@@ -188,6 +188,9 @@ if (!function_exists('eottae_estate_render_list_thumb')) {
                 <img src="<?php echo htmlspecialchars($post_thumb_url, ENT_QUOTES, 'UTF-8'); ?>" alt="" class="estate-profile-thumb__img" width="104" height="104" loading="lazy" decoding="async">
                 <?php } ?>
                 <?php echo $deal_badge; ?>
+                <?php if ($deal_status === 'completed') { ?>
+                <span class="estate-soldout-ribbon" aria-label="판매완료">SOLD OUT</span>
+                <?php } ?>
                 <?php if ($profile_badge_html !== '') { ?>
                 <span class="estate-profile-thumb__badge" aria-hidden="true"><?php echo $profile_badge_html; ?></span>
                 <?php } ?>

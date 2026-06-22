@@ -82,6 +82,10 @@ $market_price_ai_url = G5_URL.'/proc/eottae-market-price-ai.php';
                     <option value="<?php echo get_text($key); ?>"<?php echo $market_status === $key ? ' selected' : ''; ?>><?php echo get_text($label); ?></option>
                     <?php } ?>
                 </select>
+                <label class="market-check market-check--inline">
+                    <input type="checkbox" id="market_soldout_checkbox"<?php echo $market_status === 'sold' ? ' checked' : ''; ?>>
+                    <span>판매완료로 표시</span>
+                </label>
             </div>
         </div>
         <div class="market-field">
@@ -166,6 +170,24 @@ $market_price_ai_url = G5_URL.'/proc/eottae-market-price-ai.php';
 </div>
 
 <script>
+(function () {
+    var status = document.getElementById('wr_2');
+    var soldout = document.getElementById('market_soldout_checkbox');
+    if (!status || !soldout) {
+        return;
+    }
+    soldout.addEventListener('change', function () {
+        if (soldout.checked) {
+            status.value = 'sold';
+        } else if (status.value === 'sold') {
+            status.value = 'selling';
+        }
+    });
+    status.addEventListener('change', function () {
+        soldout.checked = status.value === 'sold';
+    });
+})();
+
 function market_write_submit(f) {
     <?php echo $editor_js; ?>
 

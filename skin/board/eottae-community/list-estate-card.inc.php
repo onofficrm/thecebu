@@ -52,6 +52,9 @@ $post_language = function_exists('eottae_lang_normalize') ? eottae_lang_normaliz
             <span class="estate-list-card__deal estate-deal-badge <?php echo get_text($card['deal_class']); ?>">
                 <?php echo get_text($card['deal_label']); ?>
             </span>
+            <?php if (($card['deal_status'] ?? '') === 'completed') { ?>
+            <span class="estate-list-card__soldout" aria-label="판매완료">SOLD OUT</span>
+            <?php } ?>
             <?php if (!empty($card['has_map'])) { ?>
             <span class="estate-list-card__map-pin" aria-hidden="true" title="지도 위치 등록됨">📍</span>
             <?php } ?>

@@ -135,6 +135,10 @@ $sebu_furnishing_types = array(
                         <option value="<?php echo get_text($val); ?>"<?php echo $estate_deal_status === $val ? ' selected' : ''; ?>><?php echo get_text($label); ?></option>
                         <?php } ?>
                     </select>
+                    <label class="sebu-property-template__check">
+                        <input type="checkbox" id="estate_deal_completed_checkbox"<?php echo $estate_deal_status === 'completed' ? ' checked' : ''; ?>>
+                        <span>판매완료로 표시</span>
+                    </label>
                 </label>
                 <label class="sebu-property-template__field">
                     <span class="sebu-property-template__label">지역 <span class="sebu-property-template__req" aria-hidden="true">*</span></span>

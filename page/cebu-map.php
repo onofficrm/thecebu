@@ -116,11 +116,11 @@ g5_page_start('세부생활지도');
                             </optgroup>
                             <optgroup label="구인구직">
                                 <option value="job:recruiting">모집중</option>
-                                <option value="job:completed">마감</option>
+                                <option value="job:completed">구인완료</option>
                             </optgroup>
                             <optgroup label="부동산">
                                 <option value="estate:trading">거래가능</option>
-                                <option value="estate:completed">계약완료</option>
+                                <option value="estate:completed">판매완료</option>
                             </optgroup>
                         </select>
                     </div>
@@ -133,6 +133,10 @@ g5_page_start('세부생활지도');
                         </select>
                     </div>
                 </div>
+                <label class="cebu-map-filter-check">
+                    <input type="checkbox" data-map-filter="excludeSoldout" value="1">
+                    <span>SOLD OUT 제외</span>
+                </label>
             </section>
 
             <p class="cebu-map-status" data-map-status role="status" aria-live="polite"></p>
