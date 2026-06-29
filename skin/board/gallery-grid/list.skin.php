@@ -115,9 +115,6 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
                             <?php if ($list[$i]['icon_new']) echo '<span class="new_icon board-badge board-badge--new">NEW</span>'; ?>
                             <?php if ($list[$i]['comment_cnt']) { ?><span class="cnt_cmt board-list__cmt"><?php echo $list[$i]['wr_comment']; ?></span><?php } ?>
                         </h3>
-                        <?php if ($gal_excerpt !== '') { ?>
-                        <p class="board-list__excerpt"><?php echo get_text($gal_excerpt); ?></p>
-                        <?php } ?>
                         <p class="board-list__meta">
                             <?php if (!empty($list[$i]['name'])) { ?><span class="board-list__author"><?php echo $list[$i]['name']; ?></span><?php } ?>
                             <time class="board-list__date"><?php echo $list[$i]['datetime2'] ?></time>

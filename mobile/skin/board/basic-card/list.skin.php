@@ -98,11 +98,6 @@ $card_excerpt_len = G5_IS_MOBILE ? 60 : 100;
                         </a>
                         <?php if ($list[$i]['icon_new']) echo '<span class="new_icon board-badge board-badge--new">N</span>'; ?>
                     </h3>
-                    <?php if ($excerpt) { ?>
-                    <p class="board-list__card-excerpt"><a href="<?php echo $list[$i]['href'] ?>"><?php echo $excerpt ?></a></p>
-                    <?php } elseif (strstr($list[$i]['wr_option'], 'secret')) { ?>
-                    <p class="board-list__card-excerpt board-list__card-excerpt--secret">비밀글입니다.</p>
-                    <?php } ?>
                     <div class="board-list__card-foot">
                         <span class="board-list__card-author"><?php echo $list[$i]['name'] ?></span>
                         <?php if ($list[$i]['comment_cnt']) { ?><span class="cnt_cmt board-list__cmt"><?php echo $list[$i]['wr_comment']; ?></span><?php } ?>

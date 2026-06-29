@@ -102,11 +102,6 @@ add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0
                             <?php if (isset($list[$i]['icon_secret'])) echo rtrim($list[$i]['icon_secret']); ?>
                             <span class="board-title__text"><?php echo $list[$i]['subject'] ?></span>
                         </h2>
-                        <?php if ($excerpt) { ?>
-                        <span class="board-list__excerpt"><?php echo $excerpt ?></span>
-                        <?php } elseif ($is_secret) { ?>
-                        <span class="board-list__excerpt board-list__excerpt--secret">비밀글입니다.</span>
-                        <?php } ?>
                         <span class="board-list__stats">
                             <?php echo g5b_seo_list_time($list[$i]); ?>
                             <span class="board-list__hit"><i class="fa fa-eye" aria-hidden="true"></i> <?php echo number_format($list[$i]['wr_hit']) ?></span>

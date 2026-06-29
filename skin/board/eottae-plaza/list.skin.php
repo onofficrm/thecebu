@@ -155,9 +155,6 @@ $plaza_list_context = array(
                         <?php } ?>
                     </div>
                     <h2 class="plaza-card__title"><?php echo $item['subject']; ?></h2>
-                    <?php if ($snippet !== '') { ?>
-                    <p class="plaza-card__excerpt"><?php echo $snippet; ?></p>
-                    <?php } ?>
                     <p class="plaza-card__meta">
                         <span class="plaza-card__author"><?php
                         if (!$is_ai_post && function_exists('eottae_member_growth_render_author_line') && !empty($item['mb_id'])) {

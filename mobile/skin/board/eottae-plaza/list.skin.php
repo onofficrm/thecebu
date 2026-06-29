@@ -142,9 +142,6 @@ $plaza_list_context = array(
                         <?php } ?>
                     </div>
                     <h2 class="plaza-card__title"><?php echo $item['subject']; ?></h2>
-                    <?php if ($snippet !== '') { ?>
-                    <p class="plaza-card__excerpt"><?php echo $snippet; ?></p>
-                    <?php } ?>
                     <p class="plaza-card__meta">
                         <span class="plaza-card__author"><?php echo get_text($author); ?></span>
                         <?php if ($time_label !== '') { ?>

@@ -354,6 +354,15 @@
   letter-spacing: -0.01em;
 }
 
+.board-wrap--youtube-list .board-list__excerpt,
+.board-wrap--youtube-list .board-list__card-excerpt,
+.board-wrap--youtube-list .board-yt-card__excerpt,
+.board-wrap--youtube-list .board-yt-card__summary,
+.board-wrap--youtube-list .board-yt-card__description,
+.board-wrap--youtube-list .board-yt-card__desc {
+  display: none !important;
+}
+
 .board-yt-card__link:hover .board-yt-card__title-text {
   color: #0284c7;
 }

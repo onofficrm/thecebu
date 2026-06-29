@@ -121,9 +121,6 @@ if ($adroom_show_guide_btn) {
                         <?php } ?>
                     </div>
                     <h2 class="adroom-card__title"><?php echo $item['subject']; ?></h2>
-                    <?php if ($snippet !== '') { ?>
-                    <p class="adroom-card__excerpt"><?php echo $snippet; ?></p>
-                    <?php } ?>
                     <div class="adroom-card__meta">
                         <?php if ($shop_name !== '') { ?>
                         <span class="adroom-card__shop"><?php echo get_text($shop_name); ?></span>
