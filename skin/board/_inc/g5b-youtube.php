@@ -408,11 +408,24 @@ function g5b_youtube_channel_label($write)
 {
     $label = '';
     if (!empty($write['wr_2'])) {
-        $label = get_text(strip_tags($write['wr_2']));
-        $label = preg_replace('/\s*채널\s*$/u', '', $label);
+        $label = g5b_youtube_normalize_channel_label($write['wr_2']);
     }
     if ($label === '' && !empty($write['wr_name'])) {
-        $label = get_text(strip_tags($write['wr_name']));
+        $label = g5b_youtube_normalize_channel_label($write['wr_name']);
+    }
+
+    return trim((string) $label);
+}
+
+function g5b_youtube_normalize_channel_label($value)
+{
+    $label = get_text(strip_tags((string) $value));
+    $label = preg_replace('/\s+/u', ' ', trim((string) $label));
+    $label = preg_replace('/\s*채널\s*$/u', '', $label);
+
+    // Some imported posts stored the video description in wr_2. Keep metadata YouTube-like.
+    if ($label === '' || mb_strlen($label, 'UTF-8') > 30 || substr_count($label, ' ') > 5) {
+        return '';
     }
 
     return trim((string) $label);
