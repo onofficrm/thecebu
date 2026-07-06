@@ -69,6 +69,14 @@ $market_all_list_url = eottae_market_list_url();
             $time_label = function_exists('eottae_community_relative_time')
                 ? eottae_community_relative_time($item['wr_datetime'] ?? '')
                 : date('Y.m.d', strtotime($item['wr_datetime'] ?? G5_TIME_YMDHIS));
+            $item_manage = function_exists('eottae_board_list_item_manage')
+                ? eottae_board_list_item_manage($item, $bo_table, $page, $qstr)
+                : array('delete_href' => '', 'update_href' => '', 'show_checkbox' => false);
+            $item_manage_delete_href = $item_manage['delete_href'] ?? '';
+            $item_manage_update_href = $item_manage['update_href'] ?? '';
+            $item_manage_show_checkbox = !empty($item_manage['show_checkbox']);
+            $item_manage_chk_index = $i;
+            $item_manage_wr_id = (int) ($item['wr_id'] ?? 0);
             ?>
         <article class="market-card market-card--<?php echo $status; ?>">
             <a href="<?php echo $item['href']; ?>" class="market-card__link">
@@ -96,6 +104,12 @@ $market_all_list_url = eottae_market_list_url();
                     </p>
                 </div>
             </a>
+            <?php
+            $community_manage_partial = G5_SKIN_PATH.'/board/eottae-community/list-manage-actions.inc.php';
+            if (is_file($community_manage_partial)) {
+                include $community_manage_partial;
+            }
+            ?>
         </article>
         <?php } ?>
     </section>

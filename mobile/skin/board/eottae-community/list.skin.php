@@ -225,7 +225,7 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
     </section>
     <?php } ?>
 
-    <form name="fboardlist" id="fboardlist" action="<?php echo G5_BBS_URL; ?>/board_list_update.php" method="post">
+    <form name="fboardlist" id="fboardlist" action="<?php echo G5_BBS_URL; ?>/board_list_update.php" onsubmit="return fboardlist_submit(this);" method="post">
     <input type="hidden" name="bo_table" value="<?php echo $bo_table ?>">
     <?php if ($is_community_hub_all_list) { ?><input type="hidden" name="hub" value="all"><?php } ?>
     <input type="hidden" name="sfl" value="<?php echo $sfl ?>">
@@ -234,6 +234,19 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
     <input type="hidden" name="sst" value="<?php echo $sst ?>">
     <input type="hidden" name="sod" value="<?php echo $sod ?>">
     <input type="hidden" name="page" value="<?php echo $page ?>">
+    <input type="hidden" name="sw" value="">
+
+    <?php if ($is_checkbox && !$is_community_hub_all_list) { ?>
+    <div class="community-list-admin">
+        <label class="community-list-admin__chkall" for="chkall">
+            <input type="checkbox" id="chkall" onclick="if (this.checked) all_checked(true); else all_checked(false);">
+            <span>전체선택</span>
+        </label>
+        <div class="community-list-admin__actions">
+            <button type="submit" name="btn_submit" value="선택삭제" class="community-list-admin__btn community-list-admin__btn--delete" onclick="document.pressed=this.value">선택삭제</button>
+        </div>
+    </div>
+    <?php } ?>
 
     <div class="community-list<?php echo $is_community_hub_all_list ? ' community-list--hub-all' : ''; ?><?php echo !$is_community_hub_all_list && $is_event_board_list ? ' community-list--event' : ''; ?><?php echo !$is_community_hub_all_list && $is_estate_board_list ? ' community-list--estate' : ''; ?>">
         <?php
@@ -358,6 +371,14 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
                     $item_class .= ' community-post--has-thumb';
                 }
             }
+            $item_manage = function_exists('eottae_board_list_item_manage')
+                ? eottae_board_list_item_manage($item, $item_bo_table, $page, $qstr, !$is_community_hub_all_list)
+                : array('delete_href' => '', 'update_href' => '', 'show_checkbox' => false);
+            $item_manage_delete_href = $item_manage['delete_href'] ?? '';
+            $item_manage_update_href = $item_manage['update_href'] ?? '';
+            $item_manage_show_checkbox = !empty($item_manage['show_checkbox']);
+            $item_manage_chk_index = $i;
+            $item_manage_wr_id = (int) ($item['wr_id'] ?? 0);
             if ($is_community_hub_all_list) {
                 include G5_PATH.'/skin/board/eottae-community/list-item.inc.php';
             } elseif ($is_event_board_list) {
@@ -415,3 +436,39 @@ if ($is_community_hub_list && !$is_community_hub_all_list && empty($write_href) 
     });
 })();
 </script>
+<?php if ($is_checkbox && !$is_community_hub_all_list) { ?>
+<script>
+function all_checked(sw) {
+    var f = document.fboardlist;
+    if (!f) return;
+    for (var i = 0; i < f.length; i++) {
+        if (f.elements[i].name === "chk_wr_id[]") {
+            f.elements[i].checked = sw;
+        }
+    }
+}
+function fboardlist_submit(f) {
+    if (!document.pressed) {
+        return true;
+    }
+    var chk_count = 0;
+    for (var i = 0; i < f.length; i++) {
+        if (f.elements[i].name === "chk_wr_id[]" && f.elements[i].checked) {
+            chk_count++;
+        }
+    }
+    if (!chk_count) {
+        alert(document.pressed + "할 게시물을 하나 이상 선택하세요.");
+        return false;
+    }
+    if (document.pressed === "선택삭제") {
+        if (!confirm("선택한 게시물을 정말 삭제하시겠습니까?")) {
+            return false;
+        }
+        f.removeAttribute("target");
+        f.action = g5_bbs_url + "/board_list_update.php";
+    }
+    return true;
+}
+</script>
+<?php } ?>

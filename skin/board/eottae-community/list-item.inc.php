@@ -118,4 +118,5 @@ $has_badges = $is_ai_post || $is_notice || $post_language !== '' || $badge_categ
             </div>
         </div>
     </a>
+    <?php include __DIR__.'/list-manage-actions.inc.php'; ?>
 </article>

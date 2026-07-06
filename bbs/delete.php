@@ -2,10 +2,16 @@
 include_once('./_common.php');
 
 $delete_token = get_session('ss_delete_token');
-set_session('ss_delete_token', '');
+$token_ok = ($token && $delete_token == $token);
+if (!$token_ok && function_exists('eottae_board_consume_delete_token')) {
+    $token_ok = eottae_board_consume_delete_token($board['bo_table'] ?? '', $wr_id, $token);
+} else {
+    set_session('ss_delete_token', '');
+}
 
-if (!($token && $delete_token == $token))
+if (!$token_ok) {
     alert('토큰 에러로 삭제 불가합니다.');
+}
 
 //$wr = sql_fetch(" select * from $write_table where wr_id = '$wr_id' ");
 
@@ -14,6 +20,8 @@ $count_write = $count_comment = 0;
 @include_once($board_skin_path.'/delete.head.skin.php');
 
 if ($is_admin == 'super') // 최고관리자 통과
+    ;
+else if (function_exists('eottae_board_user_can_delete_post') && !empty($board['bo_table']) && is_array($write) && eottae_board_user_can_delete_post($write, $board['bo_table']))
     ;
 else if (function_exists('eottae_shop_user_can_manage') && !empty($board['bo_table']) && is_array($write) && eottae_shop_user_can_manage($write, $board['bo_table']))
     ;

@@ -39,4 +39,5 @@ if ($card['status'] === 'rejected') {
             <?php } ?>
         </p>
     </a>
+    <?php include __DIR__.'/list-manage-actions.inc.php'; ?>
 </article>

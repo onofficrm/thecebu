@@ -85,4 +85,5 @@ $post_language = function_exists('eottae_lang_normalize') ? eottae_lang_normaliz
             </p>
         </div>
     </a>
+    <?php include __DIR__.'/list-manage-actions.inc.php'; ?>
 </article>

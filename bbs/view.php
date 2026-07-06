@@ -90,6 +90,10 @@ if (function_exists('eottae_talkroom_apply_view_links')) {
     eottae_talkroom_apply_view_links($board, $write, $member, $is_admin, $bo_table, $wr_id, $page, $qstr, $update_href, $delete_href);
 }
 
+if (function_exists('eottae_board_apply_view_links')) {
+    eottae_board_apply_view_links($board, $write, $member, $is_admin, $bo_table, $wr_id, $page, $qstr, $update_href, $delete_href);
+}
+
 // 최고, 그룹관리자라면 글 복사, 이동 가능
 $copy_href = $move_href = '';
 if ($write['wr_reply'] == '' && ($is_admin == 'super' || $is_admin == 'group')) {

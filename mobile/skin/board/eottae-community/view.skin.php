@@ -12,6 +12,10 @@ include_once(G5_LIB_PATH.'/eottae-report.lib.php');
 include_once(G5_LIB_PATH.'/eottae-report-template.lib.php');
 add_stylesheet('<link rel="stylesheet" href="'.$board_skin_url.'/style.css">', 0);
 
+if (function_exists('eottae_board_apply_manage_links')) {
+    eottae_board_apply_manage_links($view, $bo_table);
+}
+
 $is_estate_board_view = function_exists('eottae_is_estate_board') && eottae_is_estate_board($bo_table);
 $estate_deal_status = 'trading';
 $estate_can_change_deal = false;

@@ -27,6 +27,7 @@ include_once G5_LIB_PATH.'/eottae-icrm-template.lib.php';
 include_once G5_LIB_PATH.'/eottae-board-editor.lib.php';
 include_once G5_LIB_PATH.'/eottae-business-snippet.lib.php';
 include_once G5_LIB_PATH.'/eottae-shop-owner.lib.php';
+include_once G5_LIB_PATH.'/eottae-board-manage.lib.php';
 include_once G5_LIB_PATH.'/eottae-shop-spot.lib.php';
 include_once G5_LIB_PATH.'/eottae-ad-platform.lib.php';
 

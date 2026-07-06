@@ -58,6 +58,7 @@ if (is_array($event_shop) && function_exists('eottae_event_shop_list_thumb_html'
         <a href="<?php echo get_text($event_shop['view_url']); ?>" class="event-post__btn event-post__btn--shop" onclick="event.stopPropagation();">업체정보 보기</a>
         <?php } ?>
         <a href="<?php echo $item['href']; ?>" class="event-post__btn event-post__btn--detail">상세보기</a>
+        <?php include __DIR__.'/list-manage-actions.inc.php'; ?>
     </div>
         </div>
     </div>
