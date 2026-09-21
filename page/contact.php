@@ -1,10 +1,17 @@
 <?php
 include_once(dirname(__FILE__).'/_init.php');
 
-/** 연락처 — tail.php·section/contact.php 와 동일하게 맞출 것 */
-$g5_contact_tel_display = '02-123-4567';
-$g5_contact_tel_link    = 'tel:021234567';
-$g5_contact_email       = 'info@example.com';
+if (!function_exists('g5site_cfg')) {
+    if (is_file(G5_PATH . '/_site.config.php')) {
+        include_once G5_PATH . '/_site.config.php';
+    }
+}
+
+$g5_contact_tel_display = function_exists('g5site_cfg') ? g5site_cfg('phone', '010-5227-8040') : '010-5227-8040';
+$g5_contact_email       = function_exists('g5site_cfg') ? g5site_cfg('email', 'jong8040@gmail.com') : 'jong8040@gmail.com';
+$g5_contact_address     = function_exists('g5site_cfg') ? g5site_cfg('address', 'Banilad Townhouse One Paseo St. Banilad Cebu City') : 'Banilad Townhouse One Paseo St. Banilad Cebu City';
+$g5_contact_tel_digits  = preg_replace('/[^0-9+]/', '', $g5_contact_tel_display);
+$g5_contact_tel_link    = 'tel:'.$g5_contact_tel_digits;
 
 g5_page_start('문의하기');
 ?>
@@ -13,7 +20,7 @@ g5_page_start('문의하기');
     <div class="page-inner">
       <p class="page-eyebrow">Contact</p>
       <h1 class="page-title">문의하기</h1>
-      <p class="page-desc">전화·온라인·게시판 중 편한 방법으로 연락해 주세요. 영업일 기준 24시간 내 회신합니다.</p>
+      <p class="page-desc">전화·이메일·온라인 문의 중 편한 방법으로 연락해 주세요. 영업일 기준 24시간 내 회신합니다.</p>
     </div>
   </header>
 
@@ -31,7 +38,7 @@ g5_page_start('문의하기');
         </div>
         <div class="page-contact-dl__row">
           <dt>주소</dt>
-          <dd>OO도 OO시 OO구 OO동 123-45</dd>
+          <dd><?php echo get_text($g5_contact_address); ?></dd>
         </div>
         <div class="page-contact-dl__row">
           <dt>운영시간</dt>
@@ -45,10 +52,9 @@ g5_page_start('문의하기');
     <div class="page-inner">
       <h2 class="page-section__title">문의 전 안내</h2>
       <ul class="page-list">
-        <li>프로젝트명·희망 오픈 일정</li>
-        <li>참고 사이트 URL (있을 경우)</li>
-        <li>필요 기능: 게시판, 회원, 쇼핑몰 등</li>
-        <li>예산 범위 (선택 사항)</li>
+        <li>문의 종류 (앱·웹 이용, 업체 등록, 광고, 제휴 등)</li>
+        <li>관련 게시글·페이지 URL (있을 경우)</li>
+        <li>연락 가능한 시간대</li>
       </ul>
       <p class="page-section__desc">상세 문의는 1:1 Q&amp;A 게시판을 이용하셔도 됩니다.</p>
       <a href="<?php echo G5_BBS_URL; ?>/qalist.php" class="btn btn-outline">Q&amp;A 게시판</a>

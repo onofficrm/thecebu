@@ -13,7 +13,7 @@ if (!function_exists('g5site_cfg')) {
 
 $site_name = function_exists('g5site_cfg') ? g5site_cfg('site_name', '세부어때') : '세부어때';
 $company   = function_exists('g5site_cfg') ? g5site_cfg('company_name', $site_name) : $site_name;
-$email     = function_exists('g5site_cfg') ? g5site_cfg('email', 'help@thecebu.co.kr') : 'help@thecebu.co.kr';
+$email     = function_exists('g5site_cfg') ? g5site_cfg('email', 'jong8040@gmail.com') : 'jong8040@gmail.com';
 $phone     = function_exists('g5site_cfg') ? g5site_cfg('phone', '') : '';
 
 $leave_url = G5_BBS_URL.'/member_confirm.php?url='.urlencode(G5_BBS_URL.'/member_leave.php');

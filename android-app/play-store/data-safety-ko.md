@@ -35,7 +35,7 @@ Play Console **앱 콘텐츠 → 데이터 보안** 설문 시 아래를 참고�
 | 질문 | 답변 |
 |------|------|
 | 데이터가 암호화되어 전송되나요? | **예** (HTTPS) |
-| 사용자가 데이터 삭제를 요청할 수 있나요? | **예** — MY 탈퇴 또는 help@thecebu.co.kr |
+| 사용자가 데이터 삭제를 요청할 수 있나요? | **예** — MY 탈퇴 또는 jong8040@gmail.com |
 | 데이터 수집이 필수인가요? | 위치·UGC는 **선택**, 계정 정보는 **필수** |
 
 ---
@@ -53,7 +53,7 @@ https://thecebu.co.kr/page/account-deletion.php
 ```
 
 - MY → 회원탈퇴로 직접 삭제
-- 이메일 요청: help@thecebu.co.kr
+- 이메일 요청: jong8040@gmail.com
 
 ---
 

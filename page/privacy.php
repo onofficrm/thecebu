@@ -13,7 +13,7 @@ if (!function_exists('g5site_cfg')) {
 
 $privacy_site_name = function_exists('g5site_cfg') ? g5site_cfg('site_name', '세부어때') : '세부어때';
 $privacy_company   = function_exists('g5site_cfg') ? g5site_cfg('company_name', $privacy_site_name) : $privacy_site_name;
-$privacy_email     = function_exists('g5site_cfg') ? g5site_cfg('email', 'help@thecebu.co.kr') : 'help@thecebu.co.kr';
+$privacy_email     = function_exists('g5site_cfg') ? g5site_cfg('email', 'jong8040@gmail.com') : 'jong8040@gmail.com';
 $privacy_phone     = function_exists('g5site_cfg') ? g5site_cfg('phone', '') : '';
 $privacy_address   = function_exists('g5site_cfg') ? g5site_cfg('address', '') : '';
 $privacy_manager   = function_exists('g5site_cfg') ? g5site_cfg('privacy_manager', '') : '';

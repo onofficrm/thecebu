@@ -117,7 +117,7 @@ Play Console은 **본인 Google 계정**으로만 등록·업로드할 수 있�
 
 | 항목 | 값 |
 |------|-----|
-| 이메일 | help@thecebu.co.kr |
+| 이메일 | jong8040@gmail.com |
 | 웹사이트 | https://thecebu.co.kr |
 | 개인정보처리방침 | https://thecebu.co.kr/page/privacy.php |
 
