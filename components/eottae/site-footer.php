@@ -105,6 +105,7 @@ if (!function_exists('eottae_site_footer_html')) {
                 <div class="eottae-gnb-footer__legal">
                     <a href="<?php echo get_pretty_url('content', 'provision'); ?>">이용약관</a>
                     <a href="<?php echo G5_URL; ?>/page/privacy.php" class="is-emphasis">개인정보처리방침</a>
+                    <a href="<?php echo G5_URL; ?>/page/account-deletion.php">계정 삭제</a>
                 </div>
                 <p class="eottae-gnb-footer__copy">&copy; <?php echo $eottae_footer_year; ?> <?php echo get_text($eottae_footer_title); ?>. All rights reserved.</p>
             </div>

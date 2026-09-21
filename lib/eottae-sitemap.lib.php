@@ -44,6 +44,7 @@ if (!function_exists('eottae_sitemap_static_entries')) {
             array('loc' => $base.'/cost-calculator/', 'changefreq' => 'monthly', 'priority' => '0.6'),
             array('loc' => $base.'/golf-join/', 'changefreq' => 'weekly', 'priority' => '0.6'),
             array('loc' => $base.'/page/privacy.php', 'changefreq' => 'yearly', 'priority' => '0.3'),
+            array('loc' => $base.'/page/account-deletion.php', 'changefreq' => 'yearly', 'priority' => '0.3'),
         );
 
         $optional = array(

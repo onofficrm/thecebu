@@ -126,6 +126,7 @@ if (!$eottae_hide_g5_aside && !$eottae_setup_minimal) {
                 <ul class="site-footer__menu">
                     <li><a href="<?php echo get_pretty_url('content', 'company'); ?>">회사소개</a></li>
                     <li><a href="<?php echo G5_URL; ?>/page/privacy.php">개인정보처리방침</a></li>
+                    <li><a href="<?php echo G5_URL; ?>/page/account-deletion.php">계정 삭제</a></li>
                     <li><a href="<?php echo get_pretty_url('content', 'provision'); ?>">서비스이용약관</a></li>
                     <li><a href="<?php echo G5_BBS_URL; ?>/faq.php">FAQ</a></li>
                     <li><a href="<?php echo get_device_change_url(); ?>">모바일버전</a></li>

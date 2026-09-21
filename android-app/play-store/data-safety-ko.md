@@ -46,6 +46,15 @@ Play Console **앱 콘텐츠 → 데이터 보안** 설문 시 아래를 참고�
 https://thecebu.co.kr/page/privacy.php
 ```
 
+## 계정 삭제 URL (Play Console · 데이터 보안)
+
+```
+https://thecebu.co.kr/page/account-deletion.php
+```
+
+- MY → 회원탈퇴로 직접 삭제
+- 이메일 요청: help@thecebu.co.kr
+
 ---
 
 ## 심사 시 유의

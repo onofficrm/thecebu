@@ -131,6 +131,11 @@ Play Console **정책** → **앱 콘텐츠**에서 각 항목 완료해야 출�
 
 - URL: `https://thecebu.co.kr/page/privacy.php`
 
+### 계정 삭제 URL (데이터 보안)
+
+- URL: `https://thecebu.co.kr/page/account-deletion.php`
+- 앱 이름·삭제 절차·삭제/보관 데이터 안내 포함
+
 ### 광고
 
 - 현재 앱에 **광고 없음** → "앱에 광고 포함 안 함"

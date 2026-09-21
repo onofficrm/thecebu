@@ -169,6 +169,7 @@ $mypage_menu_groups[] = array(
     'title' => '계정',
     'items' => array(
         array('label' => '정보수정', 'href' => G5_BBS_URL.'/member_confirm.php?url='.urlencode(G5_BBS_URL.'/register_form.php'), 'tone' => 'account'),
+        array('label' => '회원탈퇴', 'href' => G5_BBS_URL.'/member_confirm.php?url='.urlencode(G5_BBS_URL.'/member_leave.php'), 'tone' => 'account-muted'),
         array('label' => '로그아웃', 'href' => G5_BBS_URL.'/logout.php', 'tone' => 'account-muted'),
     ),
 );
