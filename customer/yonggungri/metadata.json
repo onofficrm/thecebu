@@ -1,0 +1,6 @@
+{
+  "name": "용궁리 김치마을(세부) YONGGUNGRI",
+  "description": "세부에서 만나는 제대로 된 한국의 맛. 24시간 영업 한식 전문점 용궁리 김치마을(세부) YONGGUNGRI 공식 반응형 랜딩페이지.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
