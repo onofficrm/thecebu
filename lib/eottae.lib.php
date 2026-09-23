@@ -1666,6 +1666,10 @@ if (!function_exists('eottae_builder_inject_head_meta_tags')) {
         if ($naver !== '') {
             $tags[] = '<meta name="naver-site-verification" content="'.htmlspecialchars($naver, ENT_QUOTES, 'UTF-8').'" />';
         }
+        $google = function_exists('g5site_cfg') ? trim((string) g5site_cfg('google_site_verification', '')) : '';
+        if ($google !== '') {
+            $tags[] = '<meta name="google-site-verification" content="'.htmlspecialchars($google, ENT_QUOTES, 'UTF-8').'" />';
+        }
 
         if (empty($tags)) {
             return $html;

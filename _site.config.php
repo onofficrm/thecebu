@@ -56,6 +56,8 @@ $site_config = array(
     'robots'              => 'index,follow',
     /* 네이버 서치어드바이저 소유 확인 (searchadvisor.naver.com) */
     'naver_site_verification' => 'aee2b0fc0761f0fb5ab3befb9cb0d234f1f5be3b',
+    /* Google Search Console 소유 확인 */
+    'google_site_verification' => 'H5uNwPmDfPFgu46tuDVo2iQwJ5oQEig_cjyNOw8EFhk',
     /* 네이버 RSS 제출 대표 피드 — /rss/{게시판ID} */
     'seo_primary_rss_board' => 'column',
     'consultation_text'   => '상담문의',

@@ -154,6 +154,7 @@ if (!function_exists('g5b_seo_resolve')) {
         $email = function_exists('g5site_cfg') ? g5site_cfg('email', '') : '';
         $address = function_exists('g5site_cfg') ? g5site_cfg('address', '') : '';
         $naver_site_verification = function_exists('g5site_cfg') ? trim((string) g5site_cfg('naver_site_verification', '')) : '';
+        $google_site_verification = function_exists('g5site_cfg') ? trim((string) g5site_cfg('google_site_verification', '')) : '';
 
         $schema_type = 'Organization';
         if (!empty($page_schema_type)) {
@@ -185,6 +186,7 @@ if (!function_exists('g5b_seo_resolve')) {
             'email'           => $email,
             'address'         => $address,
             'naver_site_verification' => $naver_site_verification,
+            'google_site_verification' => $google_site_verification,
             'schema_type'     => $schema_type,
             'site_url'        => defined('G5_URL') ? G5_URL : '',
         );
@@ -237,6 +239,9 @@ if (!function_exists('g5b_seo_build_meta_html')) {
         }
         if (!empty($data['naver_site_verification'])) {
             $lines[] = '<meta name="naver-site-verification" content="' . g5b_seo_escape($data['naver_site_verification']) . '">';
+        }
+        if (!empty($data['google_site_verification'])) {
+            $lines[] = '<meta name="google-site-verification" content="' . g5b_seo_escape($data['google_site_verification']) . '">';
         }
         if ($data['canonical'] !== '') {
             $lines[] = '<link rel="canonical" href="' . g5b_seo_escape($data['canonical']) . '">';
