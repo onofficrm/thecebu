@@ -145,6 +145,7 @@
 }
 
 .eottae-app-menu__icon {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -153,37 +154,34 @@
   border-radius: 17px;
   background: linear-gradient(135deg, #e0f2fe, #f0f9ff);
   font-size: 22px;
+  overflow: visible;
 }
 
-.eottae-app-menu__item,
 .eottae-app-top__icon {
   position: relative;
 }
 
 .eottae-app-menu__badge {
   position: absolute;
-  top: 8px;
-  right: 10px;
+  top: -6px;
+  right: -8px;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
   border: 2px solid #fff;
   border-radius: 999px;
-  background: #ef4444;
+  background: #ff3b30;
   color: #fff;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   line-height: 1;
-  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+  letter-spacing: 0;
+  box-shadow: 0 2px 6px rgba(255, 59, 48, 0.45);
   pointer-events: none;
-}
-
-.eottae-app-menu__badge--new {
-  background: #f97316;
-  box-shadow: 0 4px 10px rgba(249, 115, 22, 0.3);
 }
 
 .eottae-app-top__icon .eottae-app-menu__badge {

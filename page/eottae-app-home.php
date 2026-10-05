@@ -109,7 +109,8 @@ if ($app_logo_url === '' && is_file(G5_PATH.'/img/logo/cebu-logo-main-reference.
     $app_logo_url = G5_URL.'/img/logo/cebu-logo-main-reference.png';
 }
 
-add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-app-home.css">', 24);
+$app_home_css = G5_PATH.'/css/eottae-app-home.css';
+add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/eottae-app-home.css?ver='.(is_file($app_home_css) ? (int) filemtime($app_home_css) : G5_CSS_VER).'">', 24);
 
 g5_page_start('세부어때 앱 홈');
 ?>
@@ -144,10 +145,12 @@ g5_page_start('세부어때 앱 홈');
             $badge = $item['badge'];
             ?>
         <a href="<?php echo get_text($item['href']); ?>" class="eottae-app-menu__item" data-app-menu="<?php echo get_text($item['label']); ?>">
-            <span class="eottae-app-menu__icon" aria-hidden="true"><?php echo $item['icon']; ?></span>
-            <?php if ($badge['label'] !== '') { ?>
-            <span class="eottae-app-menu__badge eottae-app-menu__badge--<?php echo $badge['type']; ?>" data-app-menu-badge="<?php echo $badge['type']; ?>" data-latest="<?php echo (int) $badge['latest']; ?>" aria-label="<?php echo $badge['type'] === 'count' ? '새 알림 '.get_text($badge['label']).'개' : '새 글'; ?>"><?php echo get_text($badge['label']); ?></span>
-            <?php } ?>
+            <span class="eottae-app-menu__icon">
+                <span aria-hidden="true"><?php echo $item['icon']; ?></span>
+                <?php if ($badge['label'] !== '') { ?>
+                <span class="eottae-app-menu__badge eottae-app-menu__badge--<?php echo $badge['type']; ?>" data-app-menu-badge="<?php echo $badge['type']; ?>" data-latest="<?php echo (int) $badge['latest']; ?>" aria-label="<?php echo $badge['type'] === 'count' ? '새 알림 '.get_text($badge['label']).'개' : '새 글'; ?>"><?php echo get_text($badge['label']); ?></span>
+                <?php } ?>
+            </span>
             <strong><?php echo get_text($item['label']); ?></strong>
         </a>
         <?php } ?>
