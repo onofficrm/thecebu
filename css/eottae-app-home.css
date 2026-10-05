@@ -155,6 +155,42 @@
   font-size: 22px;
 }
 
+.eottae-app-menu__item,
+.eottae-app-top__icon {
+  position: relative;
+}
+
+.eottae-app-menu__badge {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+  pointer-events: none;
+}
+
+.eottae-app-menu__badge--new {
+  background: #f97316;
+  box-shadow: 0 4px 10px rgba(249, 115, 22, 0.3);
+}
+
+.eottae-app-top__icon .eottae-app-menu__badge {
+  top: -4px;
+  right: -4px;
+}
+
 .eottae-app-menu__item strong {
   font-size: 12px;
   font-weight: 850;

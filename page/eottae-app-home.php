@@ -50,6 +50,28 @@ $selected_region_label = (string) ($selected_region_meta['label'] ?? '세부 전
 $notification_prefs = eottae_app_normalize_notification_prefs($member_preferences['notification_prefs'] ?? array());
 $member_summary = !empty($is_member) ? eottae_app_member_summary($member['mb_id'] ?? '') : array();
 $member_cards = isset($member_summary['cards']) && is_array($member_summary['cards']) ? $member_summary['cards'] : array();
+$shop_bo_table = function_exists('eottae_shop_table') ? eottae_shop_table() : $shop_table;
+$talk_summary = isset($member_summary['talk_summary']) && is_array($member_summary['talk_summary']) ? $member_summary['talk_summary'] : array();
+$menu_badge_sources = array(
+    '맛집'     => array('board' => $shop_bo_table, 'ca_name' => '맛집'),
+    '업체'     => array('board' => $shop_bo_table),
+    '병원'     => array('board' => $shop_bo_table, 'ca_name' => '병원'),
+    '부동산'   => array('board' => $estate_table),
+    '구인구직' => array('board' => $job_table),
+    '중고장터' => array('board' => $market_table),
+    '세부톡'   => array('count' => (int) ($talk_summary['new_posts'] ?? 0) + (int) ($talk_summary['new_comments'] ?? 0) + (int) ($talk_summary['notifications'] ?? 0)),
+    '골프조인' => array('golf_join' => true),
+    '컬럼'     => array('datetime' => (string) ($latest_columns[0]['wr_datetime'] ?? '')),
+    '이벤트'   => array('board' => $event_table),
+    '쪽지'     => array('count' => (int) ($member_summary['message_unread'] ?? 0)),
+);
+foreach ($app_menu as $menu_index => $menu_item) {
+    $menu_label = (string) $menu_item['label'];
+    $app_menu[$menu_index]['badge'] = isset($menu_badge_sources[$menu_label])
+        ? eottae_app_menu_badge($menu_badge_sources[$menu_label])
+        : array('label' => '', 'type' => '', 'latest' => 0);
+}
+$notification_badge = (int) ($member_summary['notification_total'] ?? 0);
 $active_coupons = !empty($is_member) ? eottae_app_active_coupons($member['mb_id'] ?? '', 3) : array();
 $nearby_shops = eottae_app_latest_shop_cards(4, $selected_shop_category);
 if (empty($nearby_shops) && $selected_shop_category !== '') {
@@ -101,7 +123,7 @@ g5_page_start('세부어때 앱 홈');
             <?php } ?>
         </a>
         <div class="eottae-app-top__actions">
-            <a href="<?php echo G5_URL; ?>/page/eottae-notifications.php" class="eottae-app-top__icon" aria-label="알림">🔔</a>
+            <a href="<?php echo G5_URL; ?>/page/eottae-notifications.php" class="eottae-app-top__icon" aria-label="알림">🔔<?php if ($notification_badge > 0) { ?><span class="eottae-app-menu__badge eottae-app-menu__badge--count"><?php echo $notification_badge > 99 ? '99+' : $notification_badge; ?></span><?php } ?></a>
             <?php if (!empty($is_member)) { ?>
             <a href="<?php echo $mypage_url; ?>" class="eottae-app-top__login">MY</a>
             <?php } else { ?>
@@ -118,9 +140,14 @@ g5_page_start('세부어때 앱 홈');
     </section>
 
     <section class="eottae-app-menu" aria-label="앱 주요 메뉴">
-        <?php foreach ($app_menu as $item) { ?>
-        <a href="<?php echo get_text($item['href']); ?>" class="eottae-app-menu__item">
+        <?php foreach ($app_menu as $item) {
+            $badge = $item['badge'];
+            ?>
+        <a href="<?php echo get_text($item['href']); ?>" class="eottae-app-menu__item" data-app-menu="<?php echo get_text($item['label']); ?>">
             <span class="eottae-app-menu__icon" aria-hidden="true"><?php echo $item['icon']; ?></span>
+            <?php if ($badge['label'] !== '') { ?>
+            <span class="eottae-app-menu__badge eottae-app-menu__badge--<?php echo $badge['type']; ?>" data-app-menu-badge="<?php echo $badge['type']; ?>" data-latest="<?php echo (int) $badge['latest']; ?>" aria-label="<?php echo $badge['type'] === 'count' ? '새 알림 '.get_text($badge['label']).'개' : '새 글'; ?>"><?php echo get_text($badge['label']); ?></span>
+            <?php } ?>
             <strong><?php echo get_text($item['label']); ?></strong>
         </a>
         <?php } ?>
@@ -560,6 +587,21 @@ g5_page_start('세부어때 앱 홈');
       });
     });
   }
+
+  var menuSeenKey = 'eottae_app_menu_seen';
+  var menuSeen = {};
+  try { menuSeen = JSON.parse(localStorage.getItem(menuSeenKey) || '{}') || {}; } catch (e) {}
+  document.querySelectorAll('[data-app-menu]').forEach(function (item) {
+    var key = item.getAttribute('data-app-menu') || '';
+    var badge = item.querySelector('[data-app-menu-badge="new"]');
+    if (badge && (menuSeen[key] || 0) >= parseInt(badge.getAttribute('data-latest') || '0', 10)) {
+      badge.remove();
+    }
+    item.addEventListener('click', function () {
+      menuSeen[key] = Math.floor(Date.now() / 1000);
+      try { localStorage.setItem(menuSeenKey, JSON.stringify(menuSeen)); } catch (e) {}
+    });
+  });
 
   postEvent('home_view', document.title || 'app home');
 })();

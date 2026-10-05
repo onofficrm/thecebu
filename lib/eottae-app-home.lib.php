@@ -490,3 +490,80 @@ if (!function_exists('eottae_app_talk_preview')) {
         );
     }
 }
+
+if (!function_exists('eottae_app_latest_post_time')) {
+    /**
+     * 카테고리 최신 글 작성 시각(unix). 없거나 조회 실패 시 0.
+     *
+     * @param array<string, mixed> $source  board+ca_name | golf_join | datetime
+     */
+    function eottae_app_latest_post_time(array $source)
+    {
+        global $g5;
+
+        $datetime = '';
+        if (isset($source['datetime'])) {
+            $datetime = (string) $source['datetime'];
+        } elseif (!empty($source['board'])) {
+            $bo_table = preg_replace('/[^a-z0-9_]/i', '', (string) $source['board']);
+            if ($bo_table === '') {
+                return 0;
+            }
+            $where = " wr_is_comment = 0 ";
+            if (!empty($source['ca_name'])) {
+                $where .= " AND ca_name = '".sql_escape_string((string) $source['ca_name'])."' ";
+            }
+            $row = sql_fetch(" SELECT wr_datetime FROM `{$g5['write_prefix']}{$bo_table}` WHERE {$where} ORDER BY wr_id DESC LIMIT 1 ", false);
+            $datetime = (string) ($row['wr_datetime'] ?? '');
+        } elseif (!empty($source['golf_join'])) {
+            eottae_app_include_once(G5_LIB_PATH.'/eottae-golf-join.lib.php');
+            if (!function_exists('eottae_golf_join_table_names')) {
+                return 0;
+            }
+            $tables = eottae_golf_join_table_names();
+            $row = sql_fetch("
+                SELECT created_at
+                FROM `{$tables['posts']}`
+                WHERE deleted_at = '0000-00-00 00:00:00' AND status <> 'cancelled'
+                ORDER BY id DESC
+                LIMIT 1
+            ", false);
+            $datetime = (string) ($row['created_at'] ?? '');
+        }
+
+        if ($datetime === '' || $datetime === '0000-00-00 00:00:00') {
+            return 0;
+        }
+
+        return (int) strtotime($datetime);
+    }
+}
+
+if (!function_exists('eottae_app_menu_badge')) {
+    /**
+     * 앱 홈 메뉴 알림배지. 미확인 수가 있으면 숫자(99+), 최근 새 글이면 'N'.
+     *
+     * @param array<string, mixed> $source  count | board/golf_join/datetime
+     * @return array{label: string, type: string, latest: int}
+     */
+    function eottae_app_menu_badge(array $source, $new_hours = 24)
+    {
+        $empty = array('label' => '', 'type' => '', 'latest' => 0);
+
+        if (array_key_exists('count', $source)) {
+            $count = (int) $source['count'];
+            if ($count < 1) {
+                return $empty;
+            }
+
+            return array('label' => $count > 99 ? '99+' : (string) $count, 'type' => 'count', 'latest' => 0);
+        }
+
+        $latest = eottae_app_latest_post_time($source);
+        if ($latest < 1 || $latest < G5_SERVER_TIME - max(1, (int) $new_hours) * 3600) {
+            return $empty;
+        }
+
+        return array('label' => 'N', 'type' => 'new', 'latest' => $latest);
+    }
+}
