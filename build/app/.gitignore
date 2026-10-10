@@ -1,0 +1,16 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# Apple signing material must stay outside the repository.
+*.p12
+*.cer
+*.mobileprovision
+*.provisionprofile
+*.xcarchive
+*.ipa

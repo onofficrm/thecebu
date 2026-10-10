@@ -1,0 +1,6 @@
+{
+  "name": "세부어때 (THE CEBU) 모바일 앱",
+  "description": "교민과 관광객을 위한 필리핀 세부 지역 생활·여행 올인원 플랫폼 모바일 UX/UI 프로토타입",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

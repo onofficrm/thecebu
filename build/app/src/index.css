@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Brand Primary Colors */
+    --color-brand-blue: #079BE8;
+    --color-tropical-cyan: #00C5E8;
+    --color-deep-blue: #0879E7;
+    --color-dark-blue: #075A9D;
+
+    /* Background Colors */
+    --color-main-bg: #F7FBFE;
+    --color-light-sky: #EAF8FF;
+    --color-soft-blue: #F1F9FE;
+    --color-white: #FFFFFF;
+
+    /* Text Colors */
+    --color-text-primary: #183247;
+    --color-text-secondary: #617789;
+    --color-text-muted: #8799A8;
+
+    /* Border Colors */
+    --color-border-default: #E1ECF3;
+    --color-border-divider: #ECF2F6;
+  }
+
+  body {
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    background-color: #F7FBFE;
+    color: #183247;
+    -webkit-tap-highlight-color: transparent;
+    margin: 0;
+    min-width: 320px;
+    overflow-x: hidden;
+    text-rendering: optimizeLegibility;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible {
+    outline: 2px solid #079BE8;
+    outline-offset: 2px;
+  }
+
+  img {
+    max-width: 100%;
+  }
+}
+
+/* Hide scrollbar for mobile carousel tabs */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Safe area support */
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
+}
+.pt-safe {
+  padding-top: max(0.75rem, env(safe-area-inset-top, 0.75rem));
+}
+
+/* Keep native iPhone content below the notch/Dynamic Island without
+   changing the framed desktop preview. */
+.app-safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+@media (min-width: 640px) {
+  .app-safe-top {
+    padding-top: 0;
+  }
+}
+
+.app-screen-enter {
+  animation: app-screen-enter 180ms ease-out both;
+}
+
+.app-map-marker {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 3px solid #fff;
+  border-radius: 50% 50% 50% 8px;
+  background: #079be8;
+  box-shadow: 0 3px 10px rgb(24 50 71 / 25%);
+  transform: rotate(-45deg);
+}
+
+.app-map-marker > span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.leaflet-control-attribution {
+  font-size: 8px !important;
+}
+
+@keyframes app-screen-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
