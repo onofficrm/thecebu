@@ -37,7 +37,7 @@
     background: #eef2ff;
     color: #4338ca;
 }
-@import url('../../../css/eottae.css');
+@import url('../../../../css/eottae.css');
 @import url('../../../css/eottae-community-board.css');
 
 .community-report-btn {

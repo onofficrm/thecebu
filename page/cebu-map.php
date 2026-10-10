@@ -21,13 +21,13 @@ if ($cebu_map_json === false) {
 $cebu_map_css = G5_PATH.'/css/cebu-map.css';
 $cebu_map_js = G5_PATH.'/js/cebu-map.js';
 add_stylesheet('<link rel="stylesheet" href="'.G5_CSS_URL.'/cebu-map.css?ver='.(is_file($cebu_map_css) ? (int) filemtime($cebu_map_css) : 0).'">', 35);
-add_javascript('<script src="'.G5_JS_URL.'/cebu-map.js?ver='.(is_file($cebu_map_js) ? (int) filemtime($cebu_map_js) : 0).'" defer></script>', 25);
+add_javascript('<script src="'.G5_JS_URL.'/cebu-map.js?ver='.(is_file($cebu_map_js) ? (int) filemtime($cebu_map_js) : 0).'" defer></script>', 5);
 
 if ($cebu_map_has_key && !empty($cebu_map_cfg['api_key'])) {
     $map_script_key = htmlspecialchars($cebu_map_cfg['api_key'], ENT_QUOTES, 'UTF-8');
     add_javascript(
         '<script src="https://maps.googleapis.com/maps/api/js?key='.$map_script_key.'&amp;callback=initCebuLifeMap" defer></script>',
-        5
+        25
     );
 }
 

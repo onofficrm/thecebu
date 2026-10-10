@@ -30,7 +30,7 @@
 .eottae-lang-badge--short {
     min-width: 30px;
 }
-@import url('../../css/eottae.css');
+@import url('../../../../css/eottae.css');
 
 .board-wrap--eottae-shop .board-cate ul {
   display: flex;
